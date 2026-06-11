@@ -9,3 +9,19 @@ export class DomainError extends Error {
     this.name = 'DomainError';
   }
 }
+
+/** La entidad pedida no existe. La infraestructura la traduce a HTTP 404. */
+export class NotFoundError extends DomainError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+/** Conflicto con el estado actual (p. ej. email ya registrado). HTTP 409. */
+export class ConflictError extends DomainError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}
