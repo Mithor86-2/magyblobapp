@@ -4,9 +4,10 @@ import { CATEGORIAS } from '../../domain/vocabulary.js';
 
 /**
  * Plantillas de prompt de la capa de IA, con los valores por defecto en código.
- * En la Fase 3 pasarán a ser configurables vía `AppSetting` (clave-valor) sin
- * tocar este módulo: la firma `buildStoryPrompt`/`buildActivitiesPrompt` se
- * mantiene y solo cambiará de dónde salen los textos base.
+ * Desde la Fase 3 son configurables en caliente vía `AppSetting`: si se pasan
+ * `overrides` (texto de `system`/`template` leído de la tabla), se usan esos;
+ * si no, se cae a los defaults de este módulo. El llamador (OllamaProvider)
+ * resuelve los overrides; aquí solo se sustituyen los placeholders.
  *
  * Todo prompt lleva una instrucción de seguridad porque es una app para niños
  * de 2 a 6 años (ver Docs/cumplimiento-menores.md): lenguaje sencillo, tono
@@ -20,6 +21,12 @@ export interface PromptParts {
   prompt: string;
 }
 
+/** Textos base leídos de AppSetting; cualquiera puede faltar (se usa el default). */
+export interface PromptOverrides {
+  system?: string | null;
+  template?: string | null;
+}
+
 const INSTRUCCION_SEGURIDAD: Record<CodigoIdioma, string> = {
   es:
     'Eres un cuentacuentos para niños de 2 a 6 años. Escribe siempre en español, ' +
@@ -31,21 +38,38 @@ const INSTRUCCION_SEGURIDAD: Record<CodigoIdioma, string> = {
     'or adult themes.',
 };
 
-export function buildStoryPrompt(input: GenerateStoryInput): PromptParts {
+/** Sustituye `{clave}` por su valor en una plantilla configurable. */
+function rellenar(template: string, valores: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (original, clave: string) =>
+    clave in valores ? String(valores[clave]) : original,
+  );
+}
+
+export function buildStoryPrompt(
+  input: GenerateStoryInput,
+  overrides: PromptOverrides = {},
+): PromptParts {
   const idioma = input.perfil.idioma.value;
   const { nombre, edad } = input.perfil;
-  const prompt =
-    idioma === 'es'
+  const valores = { nombre, edad: edad.value, tema: input.tema, estilo: input.estilo, idioma };
+
+  const prompt = overrides.template
+    ? rellenar(overrides.template, valores)
+    : idioma === 'es'
       ? `Escribe un cuento corto (4 a 6 frases) para ${nombre}, de ${edad.value} años, ` +
         `sobre "${input.tema}" con un estilo ${input.estilo}. ${nombre} es el protagonista. ` +
         `Devuelve un título breve y el cuerpo del cuento.`
       : `Write a short story (4 to 6 sentences) for ${nombre}, aged ${edad.value}, ` +
         `about "${input.tema}" in a ${input.estilo} style. ${nombre} is the main character. ` +
         `Return a short title and the body of the story.`;
-  return { system: INSTRUCCION_SEGURIDAD[idioma], prompt };
+
+  return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
 }
 
-export function buildActivitiesPrompt(input: RecommendActivitiesInput): PromptParts {
+export function buildActivitiesPrompt(
+  input: RecommendActivitiesInput,
+  overrides: PromptOverrides = {},
+): PromptParts {
   const idioma = input.perfil.idioma.value;
   const { nombre, edad } = input.perfil;
   const categorias = CATEGORIAS.join(', ');
@@ -57,8 +81,16 @@ export function buildActivitiesPrompt(input: RecommendActivitiesInput): PromptPa
       : idioma === 'es'
         ? ` Reparte las categorías entre: ${categorias}.`
         : ` Spread the categories across: ${categorias}.`;
-  const prompt =
-    idioma === 'es'
+
+  const prompt = overrides.template
+    ? rellenar(overrides.template, {
+        nombre,
+        edad: edad.value,
+        n: input.cantidad,
+        categoria: input.categoria ?? categorias,
+        categorias,
+      })
+    : idioma === 'es'
       ? `Propón ${input.cantidad} actividades sencillas para ${nombre}, de ${edad.value} años.` +
         acotacion +
         ` Cada actividad necesita una categoría (${categorias}), un título, una descripción ` +
@@ -67,5 +99,6 @@ export function buildActivitiesPrompt(input: RecommendActivitiesInput): PromptPa
         acotacion +
         ` Each activity needs a category (${categorias}), a title, a short description, ` +
         `a duration in minutes and a difficulty level from 1 to 3.`;
-  return { system: INSTRUCCION_SEGURIDAD[idioma], prompt };
+
+  return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
 }

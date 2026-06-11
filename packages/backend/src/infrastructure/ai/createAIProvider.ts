@@ -1,8 +1,15 @@
 import type { Config } from '../../config.js';
 import type { AIProvider } from '../../domain/ai/AIProvider.js';
+import type { SettingsRepository } from '../../domain/repositories/SettingsRepository.js';
 import { FallbackProvider, type AILogger } from './FallbackProvider.js';
 import { MockProvider } from './MockProvider.js';
 import { OllamaProvider } from './OllamaProvider.js';
+
+export interface CreateAIProviderOptions {
+  logger?: AILogger;
+  /** Config en caliente (AppSetting) para el OllamaProvider. */
+  settings?: SettingsRepository;
+}
 
 /**
  * Selecciona la implementación de `AIProvider` según `config.aiProvider`
@@ -14,7 +21,11 @@ import { OllamaProvider } from './OllamaProvider.js';
  * - `cloud` → todavía no implementado (CloudProvider llega en la Fase 5);
  *             por ahora se avisa y se usa mock para no romper el arranque.
  */
-export function createAIProvider(config: Config, logger: AILogger = NO_OP_LOGGER): AIProvider {
+export function createAIProvider(
+  config: Config,
+  options: CreateAIProviderOptions = {},
+): AIProvider {
+  const logger = options.logger ?? NO_OP_LOGGER;
   const mock = new MockProvider();
 
   switch (config.aiProvider) {
@@ -23,6 +34,7 @@ export function createAIProvider(config: Config, logger: AILogger = NO_OP_LOGGER
         baseUrl: config.ollamaBaseUrl,
         model: config.ollamaModel,
         timeoutMs: config.aiTimeoutMs,
+        settings: options.settings,
       });
       return new FallbackProvider(ollama, mock, logger);
     }
