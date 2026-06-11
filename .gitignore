@@ -19,3 +19,15 @@ node_modules/
 # Build output
 dist/
 build/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Prisma generated client
+packages/backend/src/generated/
+
+# Test / coverage
+coverage/

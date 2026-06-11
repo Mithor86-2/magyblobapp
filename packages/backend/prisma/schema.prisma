@@ -1,0 +1,13 @@
+// Esquema Prisma — Fase 0: solo datasource + generator.
+// Los modelos (ChildProfile, Story, Activity) se definen en la Fase 1
+// (dominio) y se materializan con migraciones en la Fase 3.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
