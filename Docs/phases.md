@@ -133,8 +133,11 @@ design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
 - [x] Cliente HTTP único (`src/api/`) + test (Vitest) del contrato de cable.
 - **DoD:** ✅ `pnpm check` verde (typecheck app+backend, lint, formato, **63 tests**: app 5 +
   backend 58) · ✅ bundle de la app validado con `expo export` (Metro resuelve el monorepo, sin
-  `nodeLinker: hoisted`) · ⏳ **demo en vivo** (crear perfil → ver cuento): pendiente de
-  ejecutar en simulador/Expo Go con `pnpm up:local` + `pnpm --filter @magyblob/app start`.
+  `nodeLinker: hoisted`) · ✅ **demo en vivo verificada** (`AI_PROVIDER=local`, Ollama `gemma:2b`):
+  el flujo completo dejó rastro en PostgreSQL — `guardians` (consentimiento `Ver=1.0`),
+  `audit_logs` (`consentimiento` + `crear`), `child_profiles` (avatar `zorro`, intereses
+  `{animales, musica}`), `stories` ("Joaquin y los animales", en español) e `interaction_events`
+  (`cuento_generado`). Cuento generado por el modelo local real (prosa propia de un 2B).
 
 ---
 
