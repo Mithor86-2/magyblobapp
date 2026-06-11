@@ -1,22 +1,23 @@
 import type { AIProvider } from '../../domain/ai/AIProvider.js';
 import { Story } from '../../domain/entities/Story.js';
-import { DomainError } from '../../domain/errors.js';
+import { DomainError, NotFoundError } from '../../domain/errors.js';
 import type { ChildProfileRepository } from '../../domain/repositories/ChildProfileRepository.js';
+import type { StoryRepository } from '../../domain/repositories/StoryRepository.js';
 import { esEstilo, esTema, type Estilo, type Tema } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { GenerateStoryRequest, StoryOutput } from '../dto.js';
 
 export interface GenerateStoryDeps {
   profiles: ChildProfileRepository;
+  stories: StoryRepository;
   ai: AIProvider;
   newId: IdGenerator;
   now: Clock;
 }
 
 /**
- * Genera un cuento para un perfil delegando en `AIProvider` (cuya implementación
- * concreta llega en la Fase 2). El cuento sale en el idioma del perfil. La
- * persistencia del cuento se conecta en la Fase 3.
+ * Genera un cuento para un perfil delegando en `AIProvider`, lo persiste y lo
+ * devuelve. El cuento sale en el idioma del perfil.
  */
 export class GenerateStory {
   constructor(private readonly deps: GenerateStoryDeps) {}
@@ -29,7 +30,7 @@ export class GenerateStory {
 
     const perfil = await this.deps.profiles.findById(input.profileId);
     if (!perfil) {
-      throw new DomainError(`No existe el perfil con id "${input.profileId}".`);
+      throw new NotFoundError(`No existe el perfil con id "${input.profileId}".`);
     }
 
     const generado = await this.deps.ai.generateStory({ perfil, tema, estilo });
@@ -45,6 +46,8 @@ export class GenerateStory {
       estado: 'nuevo',
       creadoEn: this.deps.now(),
     });
+
+    await this.deps.stories.save(story);
 
     return {
       id: story.id,
