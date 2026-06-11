@@ -6,11 +6,12 @@
 
 ## Contexto
 
-La recomendación de actividades podría beneficiarse de **búsqueda por similitud**
-(embeddings): dado un perfil o una actividad, encontrar las más parecidas. Eso
-sugiere una base de datos vectorial. Pero el proyecto sigue **YAGNI por encima de
-completitud**: no se añade infraestructura que no demuestre aportar valor, y toda
-omisión se justifica por escrito.
+Las actividades se **generan con IA** según el perfil (decisión de producto), no se
+escogen de un catálogo fijo. Aun así, una base de datos vectorial podría aportar como
+**memoria semántica** de lo ya generado: evitar repetir actividades casi idénticas
+para un mismo niño o recuperar las más afines a su historial (embeddings). Pero el
+proyecto sigue **YAGNI por encima de completitud**: no se añade infraestructura que no
+demuestre aportar valor, y toda omisión se justifica por escrito.
 
 ## Decisión
 
@@ -19,17 +20,17 @@ Elegir **Chroma** como base de datos vectorial **del proyecto**, dejándola
 
 - Chroma se incluye en `docker compose` (puerto `8000`) para que la infraestructura
   esté lista y la reproducibilidad no dependa de añadir servicios a posteriori.
-- Su **uso en el código es condicional**: solo se integra en la lógica de
-  recomendación **si demuestra aportar** (recomendación por similitud mejor que una
-  consulta relacional simple sobre PostgreSQL).
+- Su **uso en el código es condicional**: solo se integra **si demuestra aportar**
+  como memoria semántica de las actividades generadas (deduplicación/similitud), mejor
+  que guardar el historial generado en PostgreSQL y filtrarlo de forma relacional.
 - Si al llegar a esa funcionalidad (Fase 5) **no aporta**, **no se integra** y se
   **documenta por qué se omite**. La decisión de "usar o no" se cierra entonces; esta
   ADR registra el marco y se actualizará con el resultado.
 
 ## Alternativas consideradas
 
-- **Sin DB vectorial — solo PostgreSQL.** Para un catálogo pequeño de actividades,
-  filtros y reglas relacionales pueden bastar y evitan un servicio extra. Es el
+- **Sin DB vectorial — solo PostgreSQL.** Guardar las actividades generadas y
+  filtrarlas con reglas relacionales puede bastar y evita un servicio extra. Es el
   **fallback por defecto** si Chroma no aporta.
 - **`pgvector` (extensión de PostgreSQL).** Evitaría un contenedor adicional al vivir
   dentro de Postgres; alternativa preferente si más adelante se decide que la

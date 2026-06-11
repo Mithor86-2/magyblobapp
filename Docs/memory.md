@@ -46,6 +46,26 @@ Es la **fuente de verdad de la UI**; análisis e índice en [Design/README.md](D
 - **El `code.html` de Stitch es maqueta, no producción** (Tailwind CDN + Material
   Symbols). Se usa como referencia visual/tokens; la app Expo (Fase 4) no lo copia.
 
+## Decisiones tras el análisis de historias de usuario (2026-06-10)
+
+Resueltas las inconsistencias detectadas al cruzar plan + diseño + ADRs (ver
+[historias-usuario.md](historias-usuario.md)):
+
+- **I-1:** se añaden `GenerateStory` y `ListProfiles` a los casos de uso oficiales
+  (faltaban; el núcleo y el multi-niño los exigen).
+- **I-2:** **vocabulario de temática único** `animales | espacio | magia | aventuras |
+música`, compartido por `intereses` (perfil) y `tema` (cuento); los intereses
+  pre-seleccionan el tema.
+- **I-3:** las **actividades se generan con IA** según el perfil (no catálogo fijo);
+  `recommendActivities` las produce vía `AIProvider`. Re-enfoca [ADR 0004](ADR/0004-base-de-datos-vectorial-chroma.md):
+  Chroma pasa a evaluarse como memoria semántica (dedup/similitud de lo generado).
+- **I-4:** el cuento se genera **en el idioma del perfil**.
+- **I-5:** rango de **edad 2-6** (lo que ofrece la UI); el "2-5" del brand queda obsoleto.
+- **I-6:** el **progreso se modela como estado** de `Story`/`Activity` (sin entidad
+  `Progress` aparte; YAGNI).
+- **I-7:** nombre visible de la app: **"Aprendizaje Mágico"** (el paquete sigue siendo
+  `magyblob`).
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar

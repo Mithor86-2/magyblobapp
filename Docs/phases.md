@@ -36,11 +36,16 @@ Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
 
 - [ ] `ChildProfile`: `nombre`, `edad`(VO), `idioma`(VO), `avatar`, `intereses[]`.
-- [ ] `Story`: entrada `{perfil, tema, estilo}` → salida `{título, cuerpo}` + metadatos.
-- [ ] `Activity`: `categoría`, `título`, `descripción`, `duración`, `nivel`, `estado`.
+- [ ] `Story`: entrada `{perfil, tema, estilo}` → salida `{título, cuerpo}` + metadatos
+      (estado `nuevo|leído`, fecha). El cuento se genera en `perfil.idioma`.
+- [ ] `Activity` (generada con IA): `categoría`, `título`, `descripción`, `duración`,
+      `nivel`; progreso como estado (`completadaEn`, valoración) — sin entidad extra.
+- [ ] Vocabulario único de temática (`animales | espacio | magia | aventuras | música`)
+      compartido por `intereses` y `tema`; los intereses pre-seleccionan el tema.
 - [ ] Value-objects solo para `edad` (rango 2–6) e `idioma` (ES/EN); el resto escalares (YAGNI).
 - [ ] Interfaces de repositorio en `/domain`.
-- [ ] Caso de uso `CreateChildProfile` + su test.
+- [ ] Casos de uso `CreateChildProfile` y `ListProfiles` + tests; `GenerateStory`
+      (su `AIProvider` se implementa en Fase 2).
 - [ ] DTOs de entrada/salida de los casos de uso.
 - **DoD:** tests de casos de uso en verde, cero dependencias externas en `/domain`.
 
@@ -48,7 +53,8 @@ Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
 
 ## FASE 2 — Capa de IA (el corazón) ⬜
 
-- [ ] Interfaz común `AIProvider`: `generateStory({perfil, tema, estilo})`, `recommendActivities`.
+- [ ] Interfaz común `AIProvider`: `generateStory({perfil, tema, estilo})` en el idioma
+      del perfil; `recommendActivities` (genera actividades con IA según el perfil).
 - [ ] `MockProvider` primero (rápido, testeable sin Ollama).
 - [ ] `OllamaProvider` contra `gemma:2b`.
 - [ ] Selección de modo por env (`mock | local | cloud`).
@@ -83,10 +89,12 @@ design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
 
 ## FASE 5 — Resto de funcionalidad ⬜
 
-- [ ] Casos de uso `RecommendActivities`, `SaveProgress`, `GetHistory` (cada uno con test).
+- [ ] Casos de uso `RecommendActivities` (genera con IA), `SaveProgress`, `GetHistory`
+      (cada uno con test).
 - [ ] Pantallas Inicio, Actividades recomendadas, Historial.
 - [ ] `CloudProvider` opcional (uno basta: Claude u OpenAI), solo si hay clave.
-- [ ] Chroma: integrar si aporta; si no, documentar por qué se omite.
+- [ ] Chroma: evaluar como memoria semántica de actividades generadas (dedup/similitud);
+      si no aporta, documentar por qué se omite.
 - **DoD:** todas las pantallas y casos de uso operativos y testeados.
 
 ---

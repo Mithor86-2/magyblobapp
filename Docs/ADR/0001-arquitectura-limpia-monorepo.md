@@ -24,8 +24,10 @@ Capas:
 - **`/domain`** — entidades (`ChildProfile`, `Story`, `Activity`), value-objects e
   **interfaces de repositorio**. Lógica de negocio pura: **cero dependencias
   externas**, sin frameworks ni IO.
-- **Aplicación** — casos de uso (`CreateChildProfile`, `RecommendActivities`,
-  `SaveProgress`, `GetHistory`), cada uno con su test, y los DTOs de entrada/salida.
+- **Aplicación** — casos de uso (`CreateChildProfile`, `ListProfiles`, `GenerateStory`,
+  `RecommendActivities`, `SaveProgress`, `GetHistory`), cada uno con su test, y los
+  DTOs de entrada/salida. `GenerateStory` y `RecommendActivities` orquestan la IA a
+  través de la interfaz `AIProvider`.
 - **Infraestructura** — repositorios PostgreSQL que implementan las interfaces del
   dominio, controllers/routes HTTP, manejo de errores centralizado, migraciones y
   seeds.

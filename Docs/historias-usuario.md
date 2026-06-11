@@ -80,9 +80,10 @@ para escuchar una historia hecha para mí.
 
 **Criterios de aceptación**
 
-- Dado un perfil seleccionado, un tema (`animales | espacio | magia`) y un estilo
-  (`aventura | divertido | educativo`), Cuando pulso "Generar cuento", Entonces se
-  muestra un cuento con título y cuerpo en el idioma del perfil.
+- Dado un perfil seleccionado, un tema (del vocabulario único
+  `animales | espacio | magia | aventuras | música`, pre-seleccionado por los intereses
+  del perfil) y un estilo (`aventura | divertido | educativo`), Cuando pulso "Generar
+  cuento", Entonces se muestra un cuento con título y cuerpo en el idioma del perfil.
 - Dado que la generación está en curso, Cuando espero, Entonces veo un estado de carga
   ("Invocando a las hadas escritoras…") y la UI no se bloquea.
 - Dado el caso de uso de generación, Cuando se invoca, Entonces delega en la interfaz
@@ -137,14 +138,14 @@ Como **niño/a** quiero ver actividades sugeridas para hoy para jugar y aprender
 
 **Criterios de aceptación**
 
-- Dado un perfil, Cuando abro Actividades, Entonces veo una lista de actividades con
-  categoría (`arte | música | lógica`), título, descripción y, si aplica, duración y
-  nivel.
-- Dada una actividad marcada como `próximamente`, Cuando se muestra, Entonces aparece
-  deshabilitada con esa etiqueta.
+- Dado un perfil, Cuando abro Actividades, Entonces veo actividades **generadas con
+  IA** para ese perfil, cada una con categoría (`arte | música | lógica`), título,
+  descripción y, si aplica, duración y nivel.
 - (Dominio) Dado el caso de uso `RecommendActivities`, Cuando recibe un perfil,
-  Entonces devuelve actividades coherentes con sus intereses/edad (criterio de
-  selección a definir; ver Inconsistencia I-3).
+  Entonces delega en `AIProvider.recommendActivities` y devuelve actividades coherentes
+  con sus intereses/edad.
+- Dado `AI_PROVIDER=mock` o IA caída, Cuando pido actividades, Entonces el fallback a
+  mock devuelve un conjunto determinista válido (sin romper la pantalla).
 
 ### US-10 — Registrar actividad completada · Should
 
@@ -250,30 +251,26 @@ Como **padre/tutor** quiero un modo nocturno para descansar la vista.
 
 ---
 
-## Inconsistencias detectadas y decisiones pendientes
+## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 
-Hallazgos del cruce entre plan, diseño y ADRs. Cada uno propone un ajuste; los
-marcados ⚠️ requieren decisión antes de cerrar el dominio (Fase 1).
+Hallazgos del cruce entre plan, diseño y ADRs. Todas resueltas y aplicadas a la
+documentación; resumen en [memory.md](memory.md).
 
-- **I-1 ⚠️ Casos de uso del núcleo ausentes.** El plan/ADR 0001 nombran
-  `CreateChildProfile`, `RecommendActivities`, `SaveProgress`, `GetHistory`, pero **no**
-  `GenerateStory` (el corazón) ni `ListProfiles` (la UI multi-niño los exige).
-  _Ajuste propuesto:_ añadir `GenerateStory` y `ListProfiles` a la lista de casos de uso.
-- **I-2 ⚠️ Vocabulario intereses vs. tema.** `intereses` = {animales, aventuras,
-  música, espacio}; `tema` de cuento = {animales, espacio, magia}. No coinciden.
-  _Ajuste propuesto:_ decidir si los intereses del perfil pre-seleccionan el tema y
-  unificar/mapear ambos vocabularios.
-- **I-3 ⚠️ Actividades: ¿catálogo o generadas?** El diseño muestra un catálogo fijo
-  (con "próximamente", niveles), pero `AIProvider.recommendActivities` sugiere IA.
-  _Ajuste propuesto:_ definir actividades como **catálogo sembrado** y que
-  `recommendActivities` **filtre/ordene** por perfil (no genere); Chroma solo si la
-  similitud aporta ([ADR 0004](ADR/0004-base-de-datos-vectorial-chroma.md)).
-- **I-4 Idioma de los cuentos.** No está documentado que el cuento se genere en el
-  idioma del perfil. _Ajuste:_ fijar que `generateStory` produce en `perfil.idioma`.
-- **I-5 Rango de edad 2-5 vs 2-6.** El brand de `DESIGN.md` dice 2-5; la pantalla y el
-  VO `Edad` usan 2-6. _Ajuste:_ unificar (recomendado 2-6, que es lo que ofrece la UI).
-- **I-6 Entidad de progreso/historial.** `SaveProgress`/`GetHistory` operan sobre datos
-  de progreso, pero no hay entidad nombrada. _Ajuste:_ valorar una entidad `Progress`
-  (o `HistoryEntry`) o modelar el progreso como estado de `Story`/`Activity`.
-- **I-7 Marca vs. paquete.** Producto = "Aprendizaje Mágico"; repo/paquete = `magyblob`.
-  No es contradicción, pero conviene fijar el nombre visible de la app.
+- **I-1 ✅ Casos de uso del núcleo ausentes.** Faltaban `GenerateStory` (el corazón) y
+  `ListProfiles` (multi-niño). _Decisión:_ **añadidos** al plan, [ADR 0001](ADR/0001-arquitectura-limpia-monorepo.md)
+  y phases.md.
+- **I-2 ✅ Vocabulario intereses vs. tema.** _Decisión:_ **vocabulario único**
+  `animales | espacio | magia | aventuras | música`, compartido por `intereses` y
+  `tema`; los intereses **pre-seleccionan** el tema del cuento.
+- **I-3 ✅ Actividades: ¿catálogo o generadas?** _Decisión:_ se **generan con IA** por
+  perfil; `recommendActivities` las produce vía `AIProvider`. El catálogo del diseño es
+  ilustrativo. Re-enfoca [ADR 0004](ADR/0004-base-de-datos-vectorial-chroma.md) (Chroma
+  como memoria semántica de lo generado, condicional).
+- **I-4 ✅ Idioma de los cuentos.** _Decisión:_ `generateStory` produce en `perfil.idioma`.
+- **I-5 ✅ Rango de edad.** _Decisión:_ **2-6** (lo que ofrece la UI); el "2-5" del brand
+  queda obsoleto.
+- **I-6 ✅ Entidad de progreso/historial.** _Decisión:_ el progreso se modela como
+  **estado** de `Story`/`Activity` (`completadaEn`, valoración, `nuevo|leído`), sin
+  entidad `Progress` aparte (YAGNI).
+- **I-7 ✅ Marca vs. paquete.** _Decisión:_ nombre visible **"Aprendizaje Mágico"**; el
+  paquete sigue siendo `magyblob`.

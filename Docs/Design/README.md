@@ -31,28 +31,36 @@ no se copia tal cual a la app Expo (Fase 4).
 Esto es lo que las pantallas obligan a tener en el dominio. Value-objects **solo**
 para `edad` e `idioma` (regla del plan); el resto son escalares simples (YAGNI).
 
+> **Vocabulario de temática (unificado):** `animales | espacio | magia | aventuras |
+música`. Lo comparten los `intereses` del perfil y el `tema` del cuento; los
+> intereses pre-seleccionan el tema. (El diseño mostraba dos listas distintas; se
+> unificaron — ver decisión I-2 en [../historias-usuario.md](../historias-usuario.md).)
+
 ### ChildProfile (pantalla _Crear perfil_)
 
 - `nombre` — texto libre ("¿Cómo te llamas?").
-- `edad` — 2 a 6 (selector). **Value-object** (rango válido).
+- `edad` — 2 a 6 (selector). **Value-object** (rango válido). El brand de `DESIGN.md`
+  dice 2-5, pero la UI y el VO usan 2-6 (decisión I-5).
 - `idioma` — ES por defecto ("Español (Latinoamérica)"), bilingüe ES/EN. **Value-object**.
 - `avatar` — id de un avatar predefinido (~8 opciones).
-- `intereses[]` — multi-selección: `animales | aventuras | música | espacio`.
-  Alimenta la generación de cuentos.
+- `intereses[]` — multi-selección del vocabulario de temática. Pre-selecciona el tema.
 
 ### Story (pantalla _Generador de cuentos_)
 
-- Entrada: `perfil` destino + `tema` (`animales | espacio | magia`) +
+- Entrada: `perfil` destino + `tema` (del vocabulario unificado) +
   `estilo` (`aventura | divertido | educativo`).
-- Salida: `título` + `cuerpo`.
+- Salida: `título` + `cuerpo`, **en el idioma del perfil** (decisión I-4).
 - Metadatos (Historial): `fecha`, estado `nuevo | leído`, marcable (bookmark).
 - Precisa la firma de `AIProvider.generateStory({ perfil, tema, estilo })` (Fase 2).
 
 ### Activity (pantalla _Actividades_)
 
+- **Generadas con IA** por perfil (decisión I-3), no es un catálogo fijo; el diseño
+  ilustra la presentación. `recommendActivities` las produce vía `AIProvider`.
 - `categoría` (`arte | música | lógica`) — borde de color por categoría.
-- `título`, `descripción`, `duración`, `nivel`, `estado` (`disponible | próximamente`).
-- Historial: `completadaEn` (fecha) + valoración en estrellas.
+- `título`, `descripción`, `duración`, `nivel`.
+- Progreso (Historial): `completadaEn` (fecha) + valoración en estrellas, como estado
+  de la actividad (sin entidad de progreso aparte).
 
 ## Design system (resumen)
 

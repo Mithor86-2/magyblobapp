@@ -20,8 +20,10 @@ núcleo del proyecto**. Esto impone tres tensiones simultáneas:
 ## Decisión
 
 Definir **una única interfaz `AIProvider`** con las operaciones del dominio
-(`generateStory`, `recommendActivities`) y **tres implementaciones intercambiables**
-seleccionadas por la variable de entorno `AI_PROVIDER` (`mock | local | cloud`):
+(`generateStory({perfil, tema, estilo})` en el idioma del perfil, y
+`recommendActivities`, que **genera** actividades según el perfil) y **tres
+implementaciones intercambiables** seleccionadas por la variable de entorno
+`AI_PROVIDER` (`mock | local | cloud`):
 
 - **`MockProvider`** — se construye **primero**. Rápido, determinista, testeable sin
   Ollama. Cumple además dos funciones de seguridad: es el **fallback automático**

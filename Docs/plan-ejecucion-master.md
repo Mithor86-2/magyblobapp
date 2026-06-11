@@ -25,9 +25,12 @@ Objetivo: repo que arranca en limpio sin pasos ocultos.
 Objetivo: lógica de negocio pura, sin frameworks ni IO.
 
 - [ ] Entidades: ChildProfile, Story, Activity.
-- [ ] Value-objects solo donde aporten (edad, idioma); no inventar otros (YAGNI).
+- [ ] Value-objects solo donde aporten (edad [2-6], idioma [ES/EN]); no inventar otros (YAGNI).
+- [ ] Vocabulario de temática único y compartido (animales | espacio | magia |
+      aventuras | música): los intereses del perfil pre-seleccionan el tema del cuento.
 - [ ] Interfaces de repositorio en /domain.
-- [ ] Caso de uso CreateChildProfile + su test.
+- [ ] Casos de uso CreateChildProfile y ListProfiles (multi-niño) + sus tests.
+- [ ] GenerateStory como caso de uso (su AIProvider se implementa en Fase 2).
 - [ ] DTOs de entrada/salida de los casos de uso.
 - Done: tests de los casos de uso en verde, cero dependencias externas en /domain.
 
@@ -37,7 +40,8 @@ Objetivo: lógica de negocio pura, sin frameworks ni IO.
 
 Objetivo: tres modos detrás de una sola interfaz.
 
-- [ ] Interfaz común AIProvider (generateStory, recommendActivities).
+- [ ] Interfaz común AIProvider: generateStory({perfil, tema, estilo}) en el idioma
+      del perfil; recommendActivities (genera actividades con IA según el perfil).
 - [ ] MockProvider primero (rápido, testeable sin Ollama).
 - [ ] OllamaProvider contra gemma:2b.
 - [ ] Selección de modo por variable de entorno (mock | local | cloud).
@@ -75,11 +79,14 @@ Objetivo: demostrar el flujo completo funcionando.
 
 Objetivo: completar el dominio y la app.
 
-- [ ] Casos de uso RecommendActivities, SaveProgress, GetHistory (cada uno con test).
+- [ ] Casos de uso RecommendActivities (genera con IA), SaveProgress, GetHistory
+      (cada uno con test). El progreso se modela como estado de Story/Activity (sin
+      entidad extra; YAGNI).
 - [ ] Pantallas Inicio, Actividades recomendadas, Historial.
 - [ ] CloudProvider opcional (uno basta: Claude u OpenAI), solo si hay clave.
-- [ ] Chroma: integrar si aporta (recomendación por similitud); si no, documentar
-      por qué se omite (YAGNI > completitud).
+- [ ] Chroma: dado que las actividades se generan con IA, evaluar si aporta como
+      memoria semántica (evitar repetición / similitud entre generadas); si no aporta,
+      documentar por qué se omite (YAGNI > completitud).
 - Done: todas las pantallas y casos de uso operativos y testeados.
 
 ---
