@@ -155,6 +155,33 @@ Tres modos detrás de la interfaz `AIProvider`, implementados en `src/infrastruc
   excluye con `.dockerignore`. `prisma` pasó a dependencia de producción para poder
   `migrate deploy` al arrancar el contenedor (requisito "sin pasos ocultos").
 
+## Slice vertical en la app móvil (Fase 4 · 2026-06-11)
+
+App `@magyblob/app` con Expo SDK 56 (lo que da `create-expo-app@latest`, no el 54 previsto)
+
+- React Navigation v7 + Zustand. Decisiones:
+
+* **React Navigation (native-stack manual), no Expo Router.** Decidido con el usuario: stack
+  explícito y minimalista para 3 pantallas. Al ensanchar a las tabs del diseño (Fase 5) se
+  añadirá un tab navigator.
+* **Onboarding mínimo del adulto.** El backend exige `guardianId` y el cumplimiento exige
+  consentimiento + puerta parental (C-1/C-6), pero el export de Stitch no trae alta de adulto.
+  Solución: pantalla **Consent** (puerta parental tipo operación aritmética + alta de `Guardian`
+  con consentimiento). El `guardianId` se persiste; el resto de pantallas son de sesión.
+* **La app es agnóstica del proveedor de IA.** Solo llama a `POST /stories`; el modo (mock |
+  local | cloud) lo decide el backend. La "IA local real" de la DoD se demuestra con
+  `AI_PROVIDER=local` (`pnpm up:local`), sin acoplar la app.
+* **Contrato de cable duplicado a propósito.** `src/api/types.ts` replica los DTO del backend en
+  lugar de importarlos: cliente y servidor se comunican por la frontera JSON, no por código
+  compartido (evita acoplar la app al backend).
+* **Config por `EXPO_PUBLIC_API_URL`.** URL base del backend por env de Expo (se inlinea en el
+  bundle → nunca secretos ahí). En dispositivo físico hay que poner la IP LAN, no `localhost`.
+* **Avatares como emojis**, sin assets externos ni descargas en runtime (coherente con el
+  cumplimiento: cero terceros).
+* **Versionado/CHANGELOG (convención añadida a CLAUDE.md el 2026-06-11):** al cerrar feature se
+  sube versión SemVer (raíz y paquete afectado) y se mueve lo de `[Unreleased]` a una sección
+  versionada del `CHANGELOG.md` del paquete. Esta fase: raíz y app → **0.1.0**.
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar

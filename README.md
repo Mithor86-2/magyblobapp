@@ -130,6 +130,24 @@ pnpm dev                                      # backend en watch (tsx) en :3000
 > (plantillas de prompt, modelo, parámetros). Si falta una clave, el backend usa el
 > valor por defecto en código, así que el flujo funciona sin seed.
 
+## App móvil (Expo)
+
+La app `@magyblob/app` recorre el slice vertical del HITO 1:
+**consentimiento del adulto → crear perfil → ver cuento generado**. Es agnóstica del
+proveedor de IA (solo llama a `POST /stories`); la demo con IA local usa el backend en
+modo `local`.
+
+```bash
+pnpm up:local                                    # backend + PostgreSQL + Ollama (AI_PROVIDER=local)
+# (una vez) pnpm ollama:setup                     # baja gemma:2b al contenedor de Ollama
+
+cp packages/app/.env.example packages/app/.env   # ajusta EXPO_PUBLIC_API_URL si usas móvil físico
+pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Android, w = web)
+```
+
+> En simulador iOS `localhost` sirve. Desde un **móvil físico** (Expo Go) pon la IP LAN
+> del ordenador en `EXPO_PUBLIC_API_URL`. Detalle en [packages/app/README.md](packages/app/README.md).
+
 ## Comandos del monorepo
 
 | Comando                             | Qué hace                                              |
@@ -145,5 +163,5 @@ pnpm dev                                      # backend en watch (tsx) en :3000
 ```
 packages/
   backend/   API Fastify + Prisma + capa de IA (Clean Architecture)
-  app/        App móvil Expo + Zustand (se construye en la Fase 4)
+  app/       App móvil Expo + React Navigation + Zustand (slice vertical del HITO 1)
 ```
