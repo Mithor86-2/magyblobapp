@@ -13,6 +13,12 @@ The authoritative plan lives in [Docs/plan-ejecucion-master.md](Docs/plan-ejecuc
 **must be consulted before building anything**. It defines the architecture, the phase order, and
 the gate (Definition of Done) that closes each phase.
 
+**Living tracking docs (read at the start of a session, update at the end):**
+
+- [Docs/phases.md](Docs/phases.md) — what's done / what's pending per phase. Update when a phase advances or closes.
+- [Docs/memory.md](Docs/memory.md) — decisions made along the way and their rationale.
+- [Docs/lecciones-aprendidas.md](Docs/lecciones-aprendidas.md) — concrete gotchas and how they were solved.
+
 It is the codebase for a Máster (TFM) project: a bilingual children's app that creates a child
 profile and generates stories / recommends activities using a local LLM.
 
