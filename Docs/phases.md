@@ -16,6 +16,9 @@ lleva el **qué está hecho y qué falta**.
 **Modelo de datos:** diagrama ER + value-objects + enums en
 [modelo-datos.md](modelo-datos.md).
 
+**Cumplimiento (app de menores):** reglas de tiendas y legales + checklist en
+[cumplimiento-menores.md](cumplimiento-menores.md).
+
 Leyenda: ✅ hecho · 🔄 en curso · ⬜ pendiente
 
 ---
@@ -38,7 +41,9 @@ Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 
 Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
 
-- [ ] `ChildProfile`: `nombre`, `edad`(VO), `idioma`(VO), `avatar`, `intereses[]`.
+- [ ] `Guardian` (adulto responsable): `nombre`, `apellidos`, `email`, `parentesco`,
+      `telefono?` + consentimiento (`consentimientoDado/En/Ver`). Todo niño cuelga de uno.
+- [ ] `ChildProfile`: `guardianId`(FK), `nombre`, `edad`(VO), `idioma`(VO), `avatar`, `intereses[]`.
 - [ ] `Story`: entrada `{perfil, tema, estilo}` → salida `{título, cuerpo}` + metadatos
       (estado `nuevo|leído`, fecha). El cuento se genera en `perfil.idioma`.
 - [ ] `Activity` (generada con IA): `categoría`, `título`, `descripción`, `duración`,
@@ -47,8 +52,8 @@ Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
       compartido por `intereses` y `tema`; los intereses pre-seleccionan el tema.
 - [ ] Value-objects solo para `edad` (rango 2–6) e `idioma` (ES/EN); el resto escalares (YAGNI).
 - [ ] Interfaces de repositorio en `/domain`.
-- [ ] Casos de uso `CreateChildProfile` y `ListProfiles` + tests; `GenerateStory`
-      (su `AIProvider` se implementa en Fase 2).
+- [ ] Casos de uso `RegisterGuardian` (con consentimiento), `CreateChildProfile` y
+      `ListProfiles` + tests; `GenerateStory` (su `AIProvider` se implementa en Fase 2).
 - [ ] DTOs de entrada/salida de los casos de uso.
 - **DoD:** tests de casos de uso en verde, cero dependencias externas en `/domain`.
 
@@ -68,9 +73,11 @@ Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
 
 ## FASE 3 — Persistencia y API HTTP ⬜
 
-- [ ] Repos PostgreSQL (Prisma) implementando interfaces del dominio.
+- [ ] Repos PostgreSQL (Prisma) implementando interfaces del dominio (incl. `Guardian`).
 - [ ] Migraciones + seeds.
-- [ ] Controllers + routes para perfil y generación de cuento.
+- [ ] Tablas `InteractionEvent` (tracking de primera parte) y `AuditLog` (acciones
+      sensibles del adulto + consentimiento).
+- [ ] Controllers + routes para alta de adulto, perfil y generación de cuento.
 - [ ] Manejo de errores centralizado.
 - [ ] Logs estructurados (pino).
 - **DoD:** test de integración de `POST /stories` en verde.
@@ -107,6 +114,8 @@ design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
 - [ ] Test por cada caso de uso y cada endpoint (significativo).
 - [ ] Estados de carga/error y timeouts de IA en la app.
 - [ ] Revisión de acoplamiento, nombres y separación de capas.
+- [ ] Repaso del checklist de cumplimiento para menores (parental gate, sin terceros,
+      minimización, conservación) — ver [cumplimiento-menores.md](cumplimiento-menores.md).
 - **DoD:** suite completa en verde; app no rompe ante fallos de IA o red.
 
 ---

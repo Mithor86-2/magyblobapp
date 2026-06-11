@@ -66,6 +66,25 @@ música`, compartido por `intereses` (perfil) y `tema` (cuento); los intereses
 - **I-7:** nombre visible de la app: **"Aprendizaje Mágico"** (el paquete sigue siendo
   `magyblob`).
 
+## Cumplimiento y datos de menores (2026-06-10)
+
+La app va dirigida a niños de 2-6 → **todos menores de 14 (España) y de 13 (COPPA)**:
+el consentimiento del adulto es **siempre** obligatorio. Detalle y fuentes en
+[cumplimiento-menores.md](cumplimiento-menores.md). Decisiones:
+
+- **Entidad `Guardian` (adulto responsable):** todo `ChildProfile` cuelga de un
+  `Guardian` (nombre, apellidos, email, parentesco, teléfono opcional) con registro de
+  consentimiento. Caso de uso `RegisterGuardian` previo a `CreateChildProfile`.
+- **Tracking de primera parte:** `InteractionEvent` (uso) y `AuditLog` (acciones
+  sensibles del adulto). **Prohibido** SDKs de analítica/publicidad de terceros e
+  identificadores de dispositivo — lo exigen Apple Kids y Google Play Families.
+- **Minimización:** del adulto solo lo necesario; eventos sin PII, niño pseudónimo por
+  `profileId`. Borrado en cascada (derecho de supresión). Conservación a definir.
+- **Verificación robusta de edad del adulto:** fuera del alcance del TFM; se usa puerta
+  parental + email y se declara como limitación.
+- Sinergia con [ADR 0003](ADR/0003-gemma-2b-llm-local-por-defecto.md): el LLM local
+  refuerza "los datos no salen de la máquina" (privacy by design).
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar

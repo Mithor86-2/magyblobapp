@@ -13,27 +13,49 @@ Should = HITO 2 · Could = si hay margen.
 
 ## Trazabilidad (historia → fase → pantalla)
 
-| ID    | Historia                        | Prioridad | Fase | Pantalla            |
-| ----- | ------------------------------- | --------- | ---- | ------------------- |
-| US-01 | Crear perfil de niño            | Must      | 1→4  | Crear perfil        |
-| US-02 | Listar y seleccionar perfiles   | Must      | 3→4  | Inicio / Generador  |
-| US-03 | Generar cuento personalizado    | Must      | 2→4  | Generador           |
-| US-04 | Fallback automático a mock      | Must      | 2    | Generador           |
-| US-05 | Modo de IA configurable por env | Must      | 2    | —                   |
-| US-06 | Arranque reproducible           | Must      | 0    | —                   |
-| US-07 | Guardar / marcar cuento         | Should    | 3→5  | Generador / Histor. |
-| US-08 | Ver historial de cuentos        | Should    | 5    | Historial           |
-| US-09 | Ver actividades recomendadas    | Should    | 5    | Actividades         |
-| US-10 | Registrar actividad completada  | Should    | 5    | Actividades/Histor. |
-| US-11 | Editar perfil                   | Should    | 5    | Configuración       |
-| US-12 | Cambiar idioma (ES/EN)          | Should    | 5    | Configuración       |
-| US-13 | Eliminar perfil                 | Should    | 5    | Configuración       |
-| US-14 | Proveedor cloud opcional        | Could     | 5    | —                   |
-| US-15 | Modo nocturno                   | Could     | 6    | Configuración       |
+| ID    | Historia                         | Prioridad | Fase | Pantalla             |
+| ----- | -------------------------------- | --------- | ---- | -------------------- |
+| US-16 | Registro del adulto + consentim. | Must      | 1→4  | Alta / parental gate |
+| US-01 | Crear perfil de niño             | Must      | 1→4  | Crear perfil         |
+| US-17 | Logs y tracking de primera parte | Should    | 3→6  | —                    |
+| US-02 | Listar y seleccionar perfiles    | Must      | 3→4  | Inicio / Generador   |
+| US-03 | Generar cuento personalizado     | Must      | 2→4  | Generador            |
+| US-04 | Fallback automático a mock       | Must      | 2    | Generador            |
+| US-05 | Modo de IA configurable por env  | Must      | 2    | —                    |
+| US-06 | Arranque reproducible            | Must      | 0    | —                    |
+| US-07 | Guardar / marcar cuento          | Should    | 3→5  | Generador / Histor.  |
+| US-08 | Ver historial de cuentos         | Should    | 5    | Historial            |
+| US-09 | Ver actividades recomendadas     | Should    | 5    | Actividades          |
+| US-10 | Registrar actividad completada   | Should    | 5    | Actividades/Histor.  |
+| US-11 | Editar perfil                    | Should    | 5    | Configuración        |
+| US-12 | Cambiar idioma (ES/EN)           | Should    | 5    | Configuración        |
+| US-13 | Eliminar perfil                  | Should    | 5    | Configuración        |
+| US-14 | Proveedor cloud opcional         | Could     | 5    | —                    |
+| US-15 | Modo nocturno                    | Could     | 6    | Configuración        |
 
 ---
 
-## Epic A — Perfil del niño
+## Epic A — Perfil del niño y cuenta del adulto
+
+### US-16 — Registro del adulto y consentimiento · Must
+
+Como **padre/tutor** quiero registrarme (nombre, apellidos, parentesco, email) y dar mi
+consentimiento para poder crear perfiles de mis hijos cumpliendo la ley.
+Ver [cumplimiento-menores.md](cumplimiento-menores.md).
+
+**Criterios de aceptación**
+
+- Dado que no hay cuenta, Cuando abro la app, Entonces se me pide registrarme como
+  adulto antes de poder crear un perfil de niño.
+- Dado el alta, Cuando relleno nombre, apellidos, parentesco y email y acepto los
+  términos, Entonces se crea el `Guardian` con el consentimiento registrado
+  (`consentimientoDado`, `consentimientoEn`, versión).
+- Dado que no acepto el consentimiento, Cuando intento continuar, Entonces no puedo
+  crear perfiles de niños.
+- Dado un parentesco, Cuando se guarda, Entonces es uno de
+  `madre | padre | tutor_legal | abuelo_a | otro`.
+- Dada la zona de gestión (configuración/perfiles), Cuando un niño la intenta abrir,
+  Entonces queda tras una **puerta parental** (regla de tiendas Kids/Families).
 
 ### US-01 — Crear perfil de niño · Must
 
@@ -42,6 +64,8 @@ intereses) para que los cuentos y actividades se personalicen.
 
 **Criterios de aceptación**
 
+- Dado un `Guardian` con consentimiento (US-16), Cuando creo un perfil, Entonces el
+  `ChildProfile` queda asociado a ese adulto (`guardianId`).
 - Dado el formulario de perfil, Cuando relleno nombre, selecciono edad, avatar y al
   menos un interés y pulso "Guardar perfil", Entonces el perfil se persiste y queda
   disponible para generar cuentos.
@@ -227,6 +251,24 @@ proyecto sin pasos ocultos.
   sin GPU ni modelo descargado.
 - Dado que quiero IA local real, Cuando ejecuto `pnpm ollama:setup`, Entonces se
   descarga `gemma:2b` (único paso con red, documentado).
+
+### US-17 — Logs y tracking de primera parte · Should
+
+Como **responsable del producto** quiero registrar interacciones y acciones sensibles
+de forma propia (sin terceros) para medir uso y tener trazabilidad cumpliendo las
+reglas de menores. Ver [cumplimiento-menores.md](cumplimiento-menores.md).
+
+**Criterios de aceptación**
+
+- Dado un evento de uso (pantalla vista, cuento generado, actividad completada), Cuando
+  ocurre, Entonces se registra un `InteractionEvent` con `profileId` (pseudónimo) y sin
+  PII en el payload.
+- Dado el tracking, Cuando se implementa, Entonces **no** usa SDKs de analítica/ads de
+  terceros ni identificadores de dispositivo (regla Kids/Families).
+- Dada una acción sensible del adulto (alta/edición/borrado de perfil, consentimiento),
+  Cuando ocurre, Entonces se registra un `AuditLog` con actor, acción y entidad.
+- Dada la política de conservación, Cuando se define, Entonces `InteractionEvent` y
+  `AuditLog` se purgan según un plazo documentado (C-9).
 
 ### US-14 — Proveedor cloud opcional · Could
 
