@@ -10,6 +10,9 @@ lleva el **qué está hecho y qué falta**.
 **Diseño del MVP:** las pantallas y el modelo de datos derivado están en
 [Design/README.md](Design/README.md) (export de Stitch). Es la fuente de verdad de la UI.
 
+**Historias de usuario y criterios de aceptación:** en
+[historias-usuario.md](historias-usuario.md) (incluye inconsistencias detectadas).
+
 Leyenda: ✅ hecho · 🔄 en curso · ⬜ pendiente
 
 ---
