@@ -90,7 +90,8 @@ Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 
 - [ ] Prueba del repo en limpio en otra carpeta/máquina.
 - [ ] README profesional + guías instalación/ejecución/pruebas.
-- [ ] 3-4 ADRs: Clean Architecture, 3 modos de IA, Gemma 2B por defecto, Vector DB.
+- [x] 3-4 ADRs: Clean Architecture, 3 modos de IA, Gemma 2B por defecto, Vector DB
+      (adelantados a Fase 0; ver [ADR/](ADR/) — repasar en la defensa).
 - [ ] Diagrama de arquitectura.
 - [ ] Guion de demo y respuestas a preguntas del tribunal.
 - **DoD:** clonar → `docker compose up` → app corriendo, sin pasos ocultos.
