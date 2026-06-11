@@ -13,6 +13,9 @@ lleva el **qué está hecho y qué falta**.
 **Historias de usuario y criterios de aceptación:** en
 [historias-usuario.md](historias-usuario.md) (incluye inconsistencias detectadas).
 
+**Modelo de datos:** diagrama ER + value-objects + enums en
+[modelo-datos.md](modelo-datos.md).
+
 Leyenda: ✅ hecho · 🔄 en curso · ⬜ pendiente
 
 ---
