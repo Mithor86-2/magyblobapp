@@ -19,6 +19,7 @@
     "format:check": "prettier --check .",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check && pnpm run test",
     "ollama:setup": "bash scripts/setup-ollama.sh",
+    "ai:smoke": "pnpm --filter @magyblob/backend exec tsx scripts/smoke-ollama.ts",
     "up": "docker compose up",
     "up:build": "docker compose up --build"
   },
