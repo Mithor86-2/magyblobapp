@@ -7,3 +7,8 @@ allowBuilds:
   '@prisma/engines': true
   esbuild: true
   prisma: true
+
+minimumReleaseAgeExclude:
+  - expo-file-system@56.0.8
+  - expo-font@56.0.6
+  - expo@56.0.11
