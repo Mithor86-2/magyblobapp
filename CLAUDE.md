@@ -32,6 +32,27 @@ profile and generates stories / recommends activities using a local LLM.
   off (e.g. value-objects only for `edad`/`idioma`; Chroma only if it earns its place — otherwise
   document why it was skipped). Prefer the simpler option and justify omissions in writing.
 
+## Code conventions (enforced)
+
+- **Layer import-boundaries are the project invariant.** Dependencies point inward: `/domain`
+  imports from no other layer and depends on no framework; the application layer depends only on
+  `/domain` interfaces, never on infrastructure. This is enforced by ESLint
+  (`no-restricted-imports` in [eslint.config.mjs](eslint.config.mjs)). **If the lint blocks an
+  import, the design is wrong, not the lint** — move the dependency, don't disable the rule.
+- **Ubiquitous language in Spanish, scaffolding in English.** Domain vocabulary (entities and their
+  fields: `Guardian`, `ChildProfile`, `nombre`, `edad`, `idioma`, `parentesco`, `intereses`) stays
+  in Spanish — it is the shared language with the plan and the user stories. Technical scaffolding
+  (`Repository`, `UseCase`, `Provider`, `Dto`, `*Error`) stays in English. Commits and docs are in
+  Spanish.
+- **Tests: one per use case and per endpoint, co-located.** Vitest, files named `*.test.ts` next to
+  the unit under test. Domain/application tests touch no IO (no DB, no HTTP, no Ollama) — that is
+  what the layering buys; use the `MockProvider` and in-memory repos. Integration tests for routes
+  live under `test/`.
+- **Children's-app compliance constrains every feature.** Before adding anything that touches the
+  network, third-party SDKs, analytics, or data retention, check
+  [Docs/cumplimiento-menores.md](Docs/cumplimiento-menores.md): no third-party SDKs, no external
+  calls in the default (`mock`) mode, data minimization, parental gate. When in doubt, don't add it.
+
 ## Definition of Done (gates every phase)
 
 No phase closes until **all** of these pass (run from the repo root):
