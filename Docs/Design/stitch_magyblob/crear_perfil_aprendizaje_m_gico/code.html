@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-surface": "#382e2a", "on-tertiary-container": "#00485e", "secondary-fixed": "#c5eae5", "on-tertiary-fixed-variant": "#004d65", "primary-fixed-dim": "#ffb3b2", "secondary-fixed-dim": "#a9cec9", "error-container": "#ffdad6", "on-background": "#221a16", outline: "#887271", "surface-container-lowest": "#ffffff", background: "#fff8f6", "surface-container-high": "#f6e5de", "on-primary-container": "#772529", "on-secondary": "#ffffff", "on-surface-variant": "#554242", "on-primary-fixed": "#410008", "primary-fixed": "#ffdad8", "on-secondary-fixed-variant": "#2b4d49", "surface-variant": "#f0dfd8", "surface-dim": "#e8d7d0", "on-secondary-container": "#476965", "surface-container-highest": "#f0dfd8", "outline-variant": "#dbc0bf", "on-error": "#ffffff", "on-error-container": "#93000a", "surface-container": "#fceae3", "tertiary-fixed-dim": "#8ad0f1", "on-primary-fixed-variant": "#7e2a2d", surface: "#fff8f6", "primary-container": "#ff8e8e", tertiary: "#0d6683", "on-tertiary-fixed": "#001f2a", secondary: "#426561", "on-surface": "#221a16", error: "#ba1a1a", "secondary-container": "#c2e7e2", "on-secondary-fixed": "#00201e", "surface-tint": "#9c4143", "inverse-on-surface": "#ffede6", "on-primary": "#ffffff", "tertiary-fixed": "#bee9ff", primary: "#9c4143", "surface-container-low": "#fff1eb", "tertiary-container": "#72b8d8", "inverse-primary": "#ffb3b2", "on-tertiary": "#ffffff", "surface-bright": "#fff8f6"}, borderRadius: {DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px"}, spacing: {xs: "4px", "element-gap": "16px", sm: "12px", lg: "40px", xl: "64px", base: "8px", md: "24px", "container-padding": "24px"}, fontFamily: {"display-lg-mobile": ["Quicksand"], "body-md": ["Quicksand"], "button-text": ["Quicksand"], "label-bold": ["Quicksand"], "display-lg": ["Quicksand"], "headline-md": ["Quicksand"], "body-lg": ["Quicksand"], headline: ["Quicksand"], display: ["Quicksand"], body: ["Quicksand"], label: ["Quicksand"]}, fontSize: {"display-lg-mobile": ["32px", {lineHeight: "38px", fontWeight: "700"}], "body-md": ["18px", {lineHeight: "26px", fontWeight: "500"}], "button-text": ["22px", {lineHeight: "24px", fontWeight: "700"}], "label-bold": ["16px", {lineHeight: "20px", fontWeight: "700"}], "display-lg": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["28px", {lineHeight: "34px", fontWeight: "700"}], "body-lg": ["20px", {lineHeight: "30px", fontWeight: "500"}]}}}};</script>
+<style>
+        body { font-family: 'Quicksand', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .squishy-button {
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.15);
+            transition: all 0.1s ease-in-out;
+        }
+        .squishy-button:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 0 rgba(0,0,0,0.15);
+        }
+        .avatar-selected {
+            border: 4px solid #9c4143;
+            transform: scale(1.05);
+            background-color: #ffdad8;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #dbc0bf;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky z-40 bg-background shadow-[0px_8px_20px_rgba(156,65,67,0.1)] flex justify-between items-center px-container-padding py-md">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary">Aprendizaje Mágico</h1>
+<div class="text-primary active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl">account_circle</span>
+</div>
+</header>
+<main class="max-w-md mx-auto px-container-padding pt-md space-y-lg">
+<!-- Welcome Header -->
+<section class="text-center">
+<h2 class="font-headline-md text-headline-md text-primary">¡Crea tu perfil!</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Vamos a personalizar tu aventura mágica</p>
+</section>
+<!-- Profile Photo / Avatar Selection -->
+<section class="space-y-md">
+<label class="font-label-bold text-label-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">face</span> Elige tu avatar
+            </label>
+<div class="grid grid-cols-4 gap-sm">
+<!-- Avatar 1 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="A cute, colorful cartoon avatar of a happy child with messy hair and big bright eyes. The illustration is clean and modern, set against a soft peach pastel background that matches the whimsical professionalism of a premium children's educational app. Lighting is flat and cheerful with high saturation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBd5OPmMfG9esU33kWKUynGgsppNcO7yOfLF7JZtS3rbnf9pi0KS4omDG3wSmPycXYwLd_CIOGjP5YekS1CiIycTru7sJaxi_pLjHh0DEowRML9R_G90Vf6YN3QKM5DBmpJtNK35TFE6AN2OHc-rSCOGnRqBgVh9f8BI_WqHAMaP0GZjpIFS99FzZEewBlv3ymGQ8AqCewkHOP9SwbrhCp9qOk1CR-q8FWLPi1KBcOI5d2ubVsdIHnt6Jg5AcWjJLczk1n4qdU-pI"/>
+</div>
+<!-- Avatar 2 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="A delightful, flat-style illustration of a smiling child with braided hair and a cheerful expression. The character is rendered in a soft blue pastel theme, designed to feel safe and inviting for a toddler. The aesthetic is clean and minimal, following the brand's tactile and playful design guidelines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCboIFAdeSrg4VoueSGW6FECSiXsJNYUkkhFT5bMtL0DQFva0f_143JHVMt3xgC0MxdS7jojBltk2tMBPOl33YwG-147vOkmYFbi_2ptLqPDyp12yeYkEnrmShS4lykHf5qW4_T8uLv4h3Nxw9P-HPwiqae2C9yWsXwXMlPSe3mR4kEG9FHLUi1ceS4C_oOaQ0WKxnWJ_jiAHBUEUtobQGo-qFU0cMviX7T2RQItIWKejxTRvAm9X7q5sn7zfK-laeuu9W2zVNe-qY"/>
+</div>
+<!-- Avatar 3 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95 avatar-selected" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="A playful digital drawing of a young child with a bright yellow hat and a wide smile. The style is illustrative and friendly, using vibrant yet soft colors that evoke joy and curiosity. The lighting is soft and ambient, emphasizing a whimsical and safe digital environment for early learning." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRMdM95J-LMAqxVFlgiNA5c-0F2EK5suYU9FikeDXoZNMJJkTFsOw0Qj1Ih80MwL_4ITqZf4vAuIfOeEsz9fXai9-JnlOKrWdQR8aEPzjfJmGbTyr-dxR_eWNo47v4Q8CzngnSFd73EanOa29FuCtPlYLe1_lcsjSuLbloWd4O9Ezk3na4SGHvb412FoZnux8779pEr5LdObo-xKKi95u-cbdvshw3NNPIIWckvYXGdN1A29uV_tYq83ejH7RgD32MVV0rWhdUOCg"/>
+</div>
+<!-- Avatar 4 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="A high-end interactive children's book style illustration of a child with curly hair and glasses. The artwork is minimalist yet expressive, perfectly fitting the 'whimsical professionalism' theme. The character radiates friendliness and intelligence, set within a soft red pastel circular frame." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC14_8LxIE2w1QHjEcGqyZbORf48Z4vlzXsgeTJ3dhuCYanaGoNHoT2SR51g2133owtESyOz5gIOaEqWUtWnJvfbbsEsvScHeYPnhd7sf7AluVPaF1C0bof2Fl0Y-9Yf1NXt95jsNST41yvdpeejMynDJvNFEGfdQy9j1YGDHDccra9Q46KZjF8DSIdvrzjDFvqjmrJ1FyDjQZTUMkGWMpSABXGpD1ygKe7rN6iogwjsJLrDWxqiBuoFAX__pg6iEzk-k6NgnRsvlE"/>
+</div>
+<!-- Avatar 5 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="An adorable cartoon kid with a tiny crown and a playful grin. The illustration uses thick lines and vibrant colors to provide tactile feedback and visual appeal for toddlers. The overall feel is one of magic and discovery, consistent with the brand's educational tool identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMoqWwyYG_JaOTk9_FqdUdacWCbD9gH0eJDoPhP-ysV30nPiRfgoFHhY7WVozElII3lKgiAlktFVfBu5KhSR5MCl7Y0uZUkMy4C64bBJXN5O7gN5ec7zKKl8J674rxUH1JeAe8IsGjBbBk6yO7NDEgnd8Aje2cxmrTPSmvI_B58nd9-lh7zVWkF8uCv3WuktOn4OM4Cs3PSGwg-kjwYMMhYJBALN2_0TtTLs_0ovsX38q2UFLlV07fCuUwBOlgGRAHFX2kuF6TaB0"/>
+</div>
+<!-- Avatar 6 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="A striking minimalist vector illustration of a child with space-themed pajamas and a dreaming expression. The style is soft and whimsical, using a palette of blues and whites to create a calm yet curious atmosphere. The background is a clean, creamy pastel that keeps the UI uncluttered." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuNym8Uysx25SFUOLyx4Ueny_P61aDkRYAI7prZQVPvrlgLrZ9XrokfiZF733tc8l4b62Q4EtTlSJK_1E3trBe_BrP3oaddRA4wH44yzFLENzZJuNQa4dCGQwAIxVvXsAEjfTH67XynRwkoEyKGtrIRNs9g3UNTk1SBxoeqVuc2cMT_PTiTvUDyAlY1K7yqgSYqylwJoc6eZX6AsX_QnJyqHja0OpiOIi_HvWrSmMfRgpLcI1o1jZY_xbWWKvuW3GzGW56l9NMtWQ"/>
+</div>
+<!-- Avatar 7 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="A friendly illustrated child character wearing a dinosaur hoodie. The design is bold and playful, featuring high-contrast colors and soft rounded shapes. The image is designed to act as a clear tap target for a child, using a mint green background as a subtle tonal layer." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBc2GaK44PdpBRM3hVX3yEsDHvE-Uiidbs8J-hbTo8UcWucRE87oiYTPOvEHgFtafbUvwgQh6z8oOE-9toveFAJtBvBsyS9vT0AnHQwvgZvT3icozeErCBnW2VpIkC9qwAY2dYev4DJSD507dOAEWl9BqaMosAmgEiZ9k15lCg-R8-Yn66K2i0e87UTRS6yf3JgbRQBrpaW1TbEonsswzwjcCLqx7XAg4HElMR_FcUch-CW2oW1eAIJOHzYEVuk3Lh7e2OcX00e2s"/>
+</div>
+<!-- Avatar 8 -->
+<div class="avatar-option cursor-pointer bg-surface-container-low rounded-lg p-xs transition-all active:scale-95" onclick="selectAvatar(this)">
+<img alt="Avatar infantil" class="w-full h-auto rounded-lg" data-alt="A charming cartoon of a young girl with pigtails and a bright purple shirt. The lighting is warm and welcoming, creating a sense of safety and joy for parents and children alike. The artistic style bridges the gap between fun play and reliable educational quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS4Nj_wH1TZj_wqJqPxjFWI-T7D3AMGUHRlcheikPU9U9KstDCplIft6CJoIqf321kL3oLYj2-gpbbO2kpBdImQlqCX7wZp4EdupoY14NasERY_mDpiY5PEB39-9qh3UR6HuXqrzmGU7aIE3_23HF4RhZodvBohGf26HcUxP9X7eLevjTOkH45G31yNpFas2yzYMhFnmRh4N49S7JhffRUyOAv-e8E0VEEGNqbTXfyUp6BLDlmin925vYrwj89K_qoHtZRrwuXjGM"/>
+</div>
+</div>
+</section>
+<!-- Form Fields -->
+<section class="space-y-lg">
+<!-- Name Input -->
+<div class="space-y-sm">
+<label class="font-label-bold text-label-bold text-on-surface" for="name">¿Cómo te llamas?</label>
+<input class="w-full bg-surface-container-low border-2 border-outline-variant rounded-lg p-md text-body-lg font-body-lg text-on-surface focus:ring-primary focus:border-primary placeholder:text-outline-variant transition-all outline-none" id="name" placeholder="Tu nombre aquí..." type="text"/>
+</div>
+<!-- Age Selection -->
+<div class="space-y-sm">
+<label class="font-label-bold text-label-bold text-on-surface">¿Cuántos años tienes?</label>
+<div class="flex justify-between items-center gap-base overflow-x-auto pb-xs custom-scrollbar">
+<button class="flex-shrink-0 w-16 h-16 rounded-full border-2 border-secondary text-secondary font-display-lg-mobile text-display-lg-mobile flex items-center justify-center hover:bg-secondary-container transition-colors active:scale-90">2</button>
+<button class="flex-shrink-0 w-16 h-16 rounded-full border-2 border-secondary text-secondary font-display-lg-mobile text-display-lg-mobile flex items-center justify-center hover:bg-secondary-container transition-colors active:scale-90">3</button>
+<button class="flex-shrink-0 w-20 h-20 rounded-full bg-secondary text-on-secondary font-display-lg-mobile text-display-lg-mobile flex items-center justify-center shadow-lg active:scale-90">4</button>
+<button class="flex-shrink-0 w-16 h-16 rounded-full border-2 border-secondary text-secondary font-display-lg-mobile text-display-lg-mobile flex items-center justify-center hover:bg-secondary-container transition-colors active:scale-90">5</button>
+<button class="flex-shrink-0 w-16 h-16 rounded-full border-2 border-secondary text-secondary font-display-lg-mobile text-display-lg-mobile flex items-center justify-center hover:bg-secondary-container transition-colors active:scale-90">6</button>
+</div>
+</div>
+<!-- Interests Chips -->
+<div class="space-y-sm">
+<label class="font-label-bold text-label-bold text-on-surface">¿Qué te gusta más?</label>
+<div class="flex flex-wrap gap-sm">
+<button class="px-md py-sm rounded-full bg-secondary-container text-on-secondary-container font-label-bold text-label-bold border-b-4 border-on-secondary-fixed-variant squishy-button flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">pets</span> animales
+                    </button>
+<button class="px-md py-sm rounded-full bg-tertiary-container text-on-tertiary-container font-label-bold text-label-bold border-b-4 border-tertiary text-on-tertiary border-on-tertiary-fixed-variant squishy-button flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">map</span> aventuras
+                    </button>
+<button class="px-md py-sm rounded-full bg-primary-container text-on-primary-container font-label-bold text-label-bold border-b-4 border-on-primary-fixed-variant squishy-button flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">music_note</span> música
+                    </button>
+<button class="px-md py-sm rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-bold border-b-4 border-outline squishy-button flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">rocket_launch</span> espacio
+                    </button>
+</div>
+</div>
+</section>
+<!-- Submit Button -->
+<section class="pt-lg pb-12">
+<button class="w-full bg-primary text-on-primary font-button-text text-button-text py-md rounded-xl border-b-[6px] border-[#7e2a2d] squishy-button shadow-xl flex items-center justify-center gap-3 active:border-b-0">
+                Guardar perfil
+                <span class="material-symbols-outlined text-3xl">auto_fix_high</span>
+</button>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container dark:bg-inverse-surface shadow-lg z-50 rounded-t-lg">
+<!-- Inicio (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-3xl">home</span>
+<span class="font-label-bold text-label-bold">Inicio</span>
+</a>
+<!-- Actividades (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-3xl">smart_toy</span>
+<span class="font-label-bold text-label-bold">Actividades</span>
+</a>
+<!-- Cuentos (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-3xl">auto_stories</span>
+<span class="font-label-bold text-label-bold">Cuentos</span>
+</a>
+<!-- Historial (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-3xl">history</span>
+<span class="font-label-bold text-label-bold">Historial</span>
+</a>
+</nav>
+<script>
+        function selectAvatar(element) {
+            // Remove selection from all
+            const options = document.querySelectorAll('.avatar-option');
+            options.forEach(opt => {
+                opt.classList.remove('avatar-selected');
+                opt.classList.add('bg-surface-container-low');
+            });
+            
+            // Add selection to clicked
+            element.classList.add('avatar-selected');
+            element.classList.remove('bg-surface-container-low');
+
+            // Sound effect or haptic feedback simulation
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(50);
+            }
+        }
+
+        // Interest toggle logic
+        const interestButtons = document.querySelectorAll('.squishy-button');
+        interestButtons.forEach(btn => {
+            if(btn.id !== 'save-btn') { // Filter the big save button if needed
+                btn.addEventListener('click', function() {
+                    this.classList.toggle('bg-secondary-container');
+                    this.classList.toggle('bg-surface-container-high');
+                    this.classList.toggle('text-on-secondary-container');
+                    this.classList.toggle('text-on-surface-variant');
+                });
+            }
+        });
+    </script>
+</body></html>

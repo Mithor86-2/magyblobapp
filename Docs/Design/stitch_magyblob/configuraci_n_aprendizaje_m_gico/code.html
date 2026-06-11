@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Configuración - Aprendizaje Mágico</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-surface": "#382e2a", "on-tertiary-container": "#00485e", "secondary-fixed": "#c5eae5", "on-tertiary-fixed-variant": "#004d65", "primary-fixed-dim": "#ffb3b2", "secondary-fixed-dim": "#a9cec9", "error-container": "#ffdad6", "on-background": "#221a16", outline: "#887271", "surface-container-lowest": "#ffffff", background: "#fff8f6", "surface-container-high": "#f6e5de", "on-primary-container": "#772529", "on-secondary": "#ffffff", "on-surface-variant": "#554242", "on-primary-fixed": "#410008", "primary-fixed": "#ffdad8", "on-secondary-fixed-variant": "#2b4d49", "surface-variant": "#f0dfd8", "surface-dim": "#e8d7d0", "on-secondary-container": "#476965", "surface-container-highest": "#f0dfd8", "outline-variant": "#dbc0bf", "on-error": "#ffffff", "on-error-container": "#93000a", "surface-container": "#fceae3", "tertiary-fixed-dim": "#8ad0f1", "on-primary-fixed-variant": "#7e2a2d", surface: "#fff8f6", primary: "#9c4143", "surface-container-low": "#fff1eb", "tertiary-container": "#72b8d8", "inverse-primary": "#ffb3b2", "on-tertiary": "#ffffff", "surface-bright": "#fff8f6", "primary-container": "#ff8e8e", "inverse-on-surface": "#ffede6", secondary: "#426561", "tertiary-fixed": "#bee9ff", "on-primary": "#ffffff", tertiary: "#0d6683", "on-surface": "#221a16", "surface-tint": "#9c4143", error: "#ba1a1a", "secondary-container": "#c2e7e2", "on-tertiary-fixed": "#001f2a", "on-secondary-fixed": "#00201e"}, borderRadius: {DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px"}, spacing: {xs: "4px", "element-gap": "16px", sm: "12px", lg: "40px", xl: "64px", base: "8px", md: "24px", "container-padding": "24px"}, fontFamily: {"display-lg-mobile": ["Quicksand"], "body-md": ["Quicksand"], "button-text": ["Quicksand"], "label-bold": ["Quicksand"], "display-lg": ["Quicksand"], "headline-md": ["Quicksand"], "body-lg": ["Quicksand"], headline: ["Quicksand"], display: ["Quicksand"], body: ["Quicksand"], label: ["Quicksand"]}, fontSize: {"display-lg-mobile": ["32px", {lineHeight: "38px", fontWeight: "700"}], "body-md": ["18px", {lineHeight: "26px", fontWeight: "500"}], "button-text": ["22px", {lineHeight: "24px", fontWeight: "700"}], "label-bold": ["16px", {lineHeight: "20px", fontWeight: "700"}], "display-lg": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["28px", {lineHeight: "34px", fontWeight: "700"}], "body-lg": ["20px", {lineHeight: "30px", fontWeight: "500"}]}}}};</script>
+<style>
+        body { font-family: 'Quicksand', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bubbly-button {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.1);
+        }
+        .bubbly-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.1);
+        }
+        .custom-switch:checked + .switch-dot {
+            transform: translateX(24px);
+            background-color: #ffffff;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- Top AppBar -->
+<header class="w-full top-0 sticky z-40 bg-background dark:bg-background shadow-[0px_8px_20px_rgba(156,65,67,0.1)] flex justify-between items-center px-container-padding py-md">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim">
+            Aprendizaje Mágico
+        </h1>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-primary text-3xl active:scale-95 transition-transform">
+                account_circle
+            </button>
+</div>
+</header>
+<main class="max-w-md mx-auto px-container-padding mt-lg">
+<div class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Configuración</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Ajustes para padres y tutores</p>
+</div>
+<!-- Settings List -->
+<div class="space-y-element-gap">
+<!-- Information Item -->
+<button class="w-full flex items-center justify-between p-md bg-surface-container-low rounded-lg border-2 border-tertiary-container transition-all active:scale-95 group">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 bg-tertiary-container rounded-full flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined text-3xl">badge</span>
+</div>
+<div class="text-left">
+<p class="font-label-bold text-label-bold text-on-surface">Información del perfil</p>
+<p class="text-sm font-medium text-on-surface-variant">Gestiona tus datos personales</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<!-- Language Item -->
+<button class="w-full flex items-center justify-between p-md bg-surface-container-low rounded-lg border-2 border-secondary-container transition-all active:scale-95 group">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-3xl">language</span>
+</div>
+<div class="text-left">
+<p class="font-label-bold text-label-bold text-on-surface">Cambiar idioma</p>
+<p class="text-sm font-medium text-on-surface-variant">Español (Latinoamérica)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<!-- Avatar Item -->
+<button class="w-full flex items-center justify-between p-md bg-surface-container-low rounded-lg border-2 border-primary-container transition-all active:scale-95 group">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-3xl">face</span>
+</div>
+<div class="text-left">
+<p class="font-label-bold text-label-bold text-on-surface">Cambiar avatar</p>
+<p class="text-sm font-medium text-on-surface-variant">Elige un nuevo personaje</p>
+</div>
+</div>
+<div class="relative">
+<img alt="Current Avatar" class="w-12 h-12 rounded-full border-2 border-primary" data-alt="A whimsical 3D animated character avatar of a friendly baby dragon with soft scales and big expressive eyes. The style is Pixar-like with vibrant warm colors, set against a soft bokeh background that fits a children's educational app theme. High quality 3D render with soft ambient lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMBT8g6kuml15dlR6q-mVlIDflrX2jcUM7ogr_gA40DsxWm3JLpddaxXHCTZUz9O0vD0WcPPjDmgFqssHnCDJNGe4VCFfHGShVw0oc43_uVJZtIjME-jIqFyP71eAAekB0o6mhvOUBNbGX-pXA_iT1Ejcp1O7i3XXXWWLOJ6ZaRu0bdB6fcV_0uRNFIyWTr7k4-PtimHtdnvPCT_f-f8UzV8L9Wc_JzQ5DeAGpcl8aXBj6YZJcADTX6lSwZUdMqK3ZmcfKKdxes9o"/>
+</div>
+</button>
+<!-- Night Mode Toggle -->
+<div class="w-full flex items-center justify-between p-md bg-surface-container-highest rounded-lg border-2 border-outline-variant">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 bg-inverse-surface rounded-full flex items-center justify-center text-inverse-on-surface">
+<span class="material-symbols-outlined text-3xl">dark_mode</span>
+</div>
+<div class="text-left">
+<p class="font-label-bold text-label-bold text-on-surface">Modo Nocturno</p>
+<p class="text-sm font-medium text-on-surface-variant">Descansa la vista</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer custom-switch" id="dark-toggle" onclick="document.documentElement.classList.toggle('dark')" type="checkbox"/>
+<div class="w-14 h-8 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-xl flex flex-col gap-md">
+<button class="w-full py-md bg-primary text-on-primary font-button-text text-button-text rounded-lg bubbly-button border-b-4 border-on-primary-fixed-variant">
+                Guardar Cambios
+            </button>
+<button class="w-full flex items-center justify-center gap-base py-md text-error font-label-bold text-label-bold hover:bg-error-container/20 rounded-lg transition-colors mt-lg">
+<span class="material-symbols-outlined">delete_forever</span>
+                Eliminar perfil
+            </button>
+<p class="text-center text-xs text-on-surface-variant font-medium mt-xs">Esta acción es permanente y borrará todo el progreso.</p>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container dark:bg-inverse-surface shadow-[0px_-8px_20px_rgba(0,0,0,0.05)] rounded-t-lg z-50">
+<!-- Inicio -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all duration-300 active:scale-90" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-bold text-label-bold">Inicio</span>
+</a>
+<!-- Actividades -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all duration-300 active:scale-90" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-bold text-label-bold">Actividades</span>
+</a>
+<!-- Cuentos -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all duration-300 active:scale-90" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-bold text-label-bold">Cuentos</span>
+</a>
+<!-- Historial / Profile Active context for Settings -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl p-sm scale-110 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-bold text-label-bold">Historial</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for tactile feedback on card items
+        const cards = document.querySelectorAll('.bg-surface-container-low, .bg-surface-container-highest');
+        cards.forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.boxShadow = 'inset 0 4px 10px rgba(0,0,0,0.05)';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1)';
+                card.style.boxShadow = 'none';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+                card.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body></html>

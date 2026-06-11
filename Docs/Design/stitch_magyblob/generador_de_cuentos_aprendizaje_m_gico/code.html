@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Generador de Cuentos - Aprendizaje Mágico</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-surface": "#382e2a", "on-tertiary-container": "#00485e", "secondary-fixed": "#c5eae5", "on-tertiary-fixed-variant": "#004d65", "primary-fixed-dim": "#ffb3b2", "secondary-fixed-dim": "#a9cec9", "error-container": "#ffdad6", "on-background": "#221a16", outline: "#887271", "surface-container-lowest": "#ffffff", background: "#fff8f6", "surface-container-high": "#f6e5de", "on-primary-container": "#772529", "on-secondary": "#ffffff", "on-surface-variant": "#554242", "on-primary-fixed": "#410008", "primary-fixed": "#ffdad8", "on-secondary-fixed-variant": "#2b4d49", "surface-variant": "#f0dfd8", "surface-dim": "#e8d7d0", "on-secondary-container": "#476965", "surface-container-highest": "#f0dfd8", "outline-variant": "#dbc0bf", "on-error": "#ffffff", "on-error-container": "#93000a", "surface-container": "#fceae3", "tertiary-fixed-dim": "#8ad0f1", "on-primary-fixed-variant": "#7e2a2d", surface: "#fff8f6", "primary-container": "#ff8e8e", tertiary: "#0d6683", "on-tertiary-fixed": "#001f2a", secondary: "#426561", "on-surface": "#221a16", error: "#ba1a1a", "secondary-container": "#c2e7e2", "on-secondary-fixed": "#00201e", "surface-tint": "#9c4143", "inverse-on-surface": "#ffede6", "on-primary": "#ffffff", "tertiary-fixed": "#bee9ff", primary: "#9c4143", "surface-container-low": "#fff1eb", "tertiary-container": "#72b8d8", "inverse-primary": "#ffb3b2", "on-tertiary": "#ffffff", "surface-bright": "#fff8f6"}, borderRadius: {DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px"}, spacing: {xs: "4px", "element-gap": "16px", sm: "12px", lg: "40px", xl: "64px", base: "8px", md: "24px", "container-padding": "24px"}, fontFamily: {"display-lg-mobile": ["Quicksand"], "body-md": ["Quicksand"], "button-text": ["Quicksand"], "label-bold": ["Quicksand"], "display-lg": ["Quicksand"], "headline-md": ["Quicksand"], "body-lg": ["Quicksand"], headline: ["Quicksand"], display: ["Quicksand"], body: ["Quicksand"], label: ["Quicksand"]}, fontSize: {"display-lg-mobile": ["32px", {lineHeight: "38px", fontWeight: "700"}], "body-md": ["18px", {lineHeight: "26px", fontWeight: "500"}], "button-text": ["22px", {lineHeight: "24px", fontWeight: "700"}], "label-bold": ["16px", {lineHeight: "20px", fontWeight: "700"}], "display-lg": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["28px", {lineHeight: "34px", fontWeight: "700"}], "body-lg": ["20px", {lineHeight: "30px", fontWeight: "500"}]}}}};</script>
+<style>
+        body { font-family: 'Quicksand', sans-serif; }
+        .bubbly-button {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom: 4px solid rgba(0,0,0,0.2);
+        }
+        .bubbly-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+        .magic-glow {
+            animation: magic-shimmer 2s infinite alternate;
+        }
+        @keyframes magic-shimmer {
+            0% { box-shadow: 0 0 10px rgba(156,65,67,0.2); }
+            100% { box-shadow: 0 0 25px rgba(156,65,67,0.5); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #dbc0bf;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-background dark:bg-background shadow-[0px_8px_20px_rgba(156,65,67,0.1)] flex justify-between items-center px-container-padding py-md">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim">Cuento personalizado</h1>
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:opacity-80 active:scale-95 transition-transform duration-200">
+            account_circle
+        </button>
+</header>
+<main class="max-w-2xl mx-auto px-container-padding pt-md space-y-lg">
+<!-- Configuración del Cuento Section -->
+<section class="space-y-md">
+<div class="bg-surface-container-low rounded-lg p-md shadow-sm border-2 border-secondary-container">
+<h2 class="font-headline-md-mobile text-headline-md-mobile text-on-surface mb-md">Configura tu aventura</h2>
+<div class="grid grid-cols-1 gap-md">
+<!-- Selector de Niño -->
+<div class="space-y-xs">
+<label class="font-label-bold text-label-bold text-on-surface-variant block">¿Para quién es el cuento?</label>
+<div class="flex gap-sm overflow-x-auto pb-xs custom-scrollbar">
+<button class="flex-shrink-0 px-md py-sm bg-secondary-container text-on-secondary-container rounded-full font-label-bold text-label-bold bubbly-button border-secondary">
+                                Mateo
+                            </button>
+<button class="flex-shrink-0 px-md py-sm bg-surface-container-highest text-on-surface-variant rounded-full font-label-bold text-label-bold bubbly-button opacity-70">
+                                Sofía
+                            </button>
+<button class="flex-shrink-0 px-md py-sm bg-surface-container-highest text-on-surface-variant rounded-full font-label-bold text-label-bold bubbly-button opacity-70">
+                                + Añadir
+                            </button>
+</div>
+</div>
+<!-- Selector de Tema -->
+<div class="space-y-xs">
+<label class="font-label-bold text-label-bold text-on-surface-variant block">Elige un tema mágico</label>
+<div class="grid grid-cols-3 gap-sm">
+<button class="flex flex-col items-center justify-center p-sm bg-tertiary-container/30 text-on-tertiary-container rounded-lg border-2 border-tertiary-container bubbly-button">
+<span class="material-symbols-outlined text-[32px] mb-xs">pets</span>
+<span class="text-xs font-bold">Animales</span>
+</button>
+<button class="flex flex-col items-center justify-center p-sm bg-surface-container-highest/50 text-on-surface-variant rounded-lg border-2 border-transparent bubbly-button">
+<span class="material-symbols-outlined text-[32px] mb-xs">rocket_launch</span>
+<span class="text-xs font-bold">Espacio</span>
+</button>
+<button class="flex flex-col items-center justify-center p-sm bg-surface-container-highest/50 text-on-surface-variant rounded-lg border-2 border-transparent bubbly-button">
+<span class="material-symbols-outlined text-[32px] mb-xs">auto_fix_high</span>
+<span class="text-xs font-bold">Magia</span>
+</button>
+</div>
+</div>
+<!-- Selector de Estilo -->
+<div class="space-y-xs">
+<label class="font-label-bold text-label-bold text-on-surface-variant block">Estilo del cuento</label>
+<select class="w-full p-sm rounded-lg border-2 border-outline-variant bg-surface font-body-md text-body-md focus:ring-primary focus:border-primary outline-none appearance-none">
+<option>Aventura</option>
+<option>Divertido</option>
+<option>Educativo</option>
+</select>
+</div>
+</div>
+<!-- Botón Generar -->
+<div class="pt-lg flex justify-center">
+<button class="w-full bubbly-button magic-glow bg-primary text-on-primary py-md px-xl rounded-xl font-button-text text-button-text flex items-center justify-center gap-sm shadow-lg" onclick="simulateGeneration()">
+<span class="material-symbols-outlined">auto_fix_normal</span>
+                        Generar cuento
+                    </button>
+</div>
+</div>
+</section>
+<!-- Área de Visualización -->
+<section class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-md" id="story-area">
+<div class="bg-surface-container rounded-lg overflow-hidden shadow-lg border-2 border-primary-container">
+<!-- Ilustración IA -->
+<div class="w-full h-64 bg-surface-container-highest flex items-center justify-center relative overflow-hidden">
+<img alt="Ilustración del cuento" class="w-full h-full object-cover" data-alt="A whimsical children's book illustration in a soft watercolor style featuring a young boy and a friendly lion exploring a magical golden forest. The lighting is warm and ethereal, with floating dust motes and soft sunbeams filtering through leaves of mint green and pastel pink. The overall aesthetic is gentle, playful, and safe, consistent with a high-end educational application for toddlers." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzadrhwkxhMEiELdxFD7Xat94j-zHBCPIGof0kyFwBC7ECDrvk75JQDhaHHWHQhIf-vLorHUyeMsE4BuUYwWPFfJGifnY4Jf6H-T-_2CEaOeRpM8e2IXNTW1V-VF4E-bgfm3q8ZOslei2mV-YkMlfR5JGld6Jaem6mdnqA9svsTmxCV91icfZsdeV0JAAnwJweLmsDKilozoKnlc8wz3qcvlfCEMpRHcMYuHsrCy2zZOIHj8Eke9d8ib4OVj7iRAUpcHwYnP-y764"/>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-surface-container to-transparent h-16"></div>
+</div>
+<!-- Texto del Cuento -->
+<div class="p-md space-y-md">
+<h3 class="font-headline-md text-headline-md text-primary">El León que buscaba sus Gafas</h3>
+<div class="font-body-lg text-body-lg text-on-surface leading-relaxed custom-scrollbar max-h-96 overflow-y-auto">
+<p>Había una vez, en la selva de los Colores, un león muy elegante llamado Mateo. Mateo tenía un pequeño problema: ¡no encontraba sus gafas mágicas! Sin ellas, las flores parecían nubes de algodón y las jirafas parecían árboles amarillos...</p>
+<br/>
+<p>De repente, una mariposa azul se posó en su nariz. "¡Hola Mateo!", dijo la mariposa. "¿Buscas algo brillante? Vi a un pequeño ratoncito jugando con algo redondo cerca del río de cristal."</p>
+</div>
+</div>
+</div>
+<!-- Acción de Guardado -->
+<div class="flex justify-center pb-xl">
+<button class="bubbly-button bg-secondary text-on-secondary px-lg py-sm rounded-full font-label-bold text-label-bold flex items-center gap-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+                    Guardar en historial
+                </button>
+</div>
+</section>
+<!-- Placeholder Loading State (Interacción Micro) -->
+<div class="hidden flex-col items-center justify-center py-xl space-y-md" id="loading-state">
+<div class="relative w-24 h-24">
+<div class="absolute inset-0 border-8 border-primary-container rounded-full opacity-20"></div>
+<div class="absolute inset-0 border-8 border-primary rounded-full border-t-transparent animate-spin"></div>
+</div>
+<p class="font-label-bold text-label-bold text-primary animate-pulse">Invocando a las hadas escritoras...</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-surface-container dark:bg-inverse-surface shadow-[0px_-8px_20px_rgba(0,0,0,0.05)] rounded-t-lg flex justify-around items-center px-4 pb-8 pt-4">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-bold text-label-bold">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-bold text-label-bold">Actividades</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl p-sm scale-110 transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-label-bold text-label-bold">Cuentos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-bold text-label-bold">Historial</span>
+</a>
+</nav>
+<script>
+        function simulateGeneration() {
+            const loading = document.getElementById('loading-state');
+            const storyArea = document.getElementById('story-area');
+            const btn = event.currentTarget;
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            loading.classList.remove('hidden');
+            storyArea.classList.add('hidden');
+
+            // Scroll to loading
+            loading.scrollIntoView({ behavior: 'smooth' });
+
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                storyArea.classList.remove('hidden');
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                
+                // Final scroll to result
+                storyArea.scrollIntoView({ behavior: 'smooth' });
+            }, 2500);
+        }
+    </script>
+</body></html>

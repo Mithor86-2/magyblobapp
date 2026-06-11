@@ -7,6 +7,9 @@ lleva el **qué está hecho y qué falta**.
 **Definition of Done (todas las fases):** `pnpm check` verde
 (typecheck + lint + format + tests) **y** `docker compose up` levanta la pila en limpio.
 
+**Diseño del MVP:** las pantallas y el modelo de datos derivado están en
+[Design/README.md](Design/README.md) (export de Stitch). Es la fuente de verdad de la UI.
+
 Leyenda: ✅ hecho · 🔄 en curso · ⬜ pendiente
 
 ---
@@ -27,8 +30,12 @@ Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 
 ## FASE 1 — Núcleo del dominio y aplicación ⬜
 
-- [ ] Entidades: `ChildProfile`, `Story`, `Activity`.
-- [ ] Value-objects solo donde aporten (`edad`, `idioma`); no inventar otros (YAGNI).
+Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
+
+- [ ] `ChildProfile`: `nombre`, `edad`(VO), `idioma`(VO), `avatar`, `intereses[]`.
+- [ ] `Story`: entrada `{perfil, tema, estilo}` → salida `{título, cuerpo}` + metadatos.
+- [ ] `Activity`: `categoría`, `título`, `descripción`, `duración`, `nivel`, `estado`.
+- [ ] Value-objects solo para `edad` (rango 2–6) e `idioma` (ES/EN); el resto escalares (YAGNI).
 - [ ] Interfaces de repositorio en `/domain`.
 - [ ] Caso de uso `CreateChildProfile` + su test.
 - [ ] DTOs de entrada/salida de los casos de uso.
@@ -38,7 +45,7 @@ Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 
 ## FASE 2 — Capa de IA (el corazón) ⬜
 
-- [ ] Interfaz común `AIProvider` (`generateStory`, `recommendActivities`).
+- [ ] Interfaz común `AIProvider`: `generateStory({perfil, tema, estilo})`, `recommendActivities`.
 - [ ] `MockProvider` primero (rápido, testeable sin Ollama).
 - [ ] `OllamaProvider` contra `gemma:2b`.
 - [ ] Selección de modo por env (`mock | local | cloud`).
@@ -59,6 +66,10 @@ Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 ---
 
 ## FASE 4 — Slice vertical en la app móvil ★ HITO 1 ⬜
+
+Referencia visual: pantallas _Crear perfil_ y _Generador de cuentos_ +
+design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
+[Design/README.md](Design/README.md).
 
 - [ ] Expo + Zustand configurados.
 - [ ] Pantalla Crear perfil conectada al backend.

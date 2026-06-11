@@ -30,6 +30,22 @@ concretas ver [lecciones-aprendidas.md](lecciones-aprendidas.md).
 - **El `app` (Expo) es un placeholder hasta Fase 4.** No se configura antes para no
   arrastrar tooling móvil que aún no se usa.
 
+## Diseño del MVP (2026-06-10)
+
+Llegó el export de Stitch ("Aprendizaje Mágico") con 6 pantallas + design system.
+Es la **fuente de verdad de la UI**; análisis e índice en [Design/README.md](Design/README.md).
+
+- **ChildProfile lleva más campos de los previstos.** El plan solo nombraba VO de
+  `edad`/`idioma`, pero la pantalla de crear perfil pide también `avatar` (preset) e
+  `intereses[]` (`animales | aventuras | música | espacio`). Decisión (2026-06-10):
+  **ambos entran ya en Fase 1**; son escalares simples, sin value-object (YAGNI).
+- **Bilingüe ES/EN confirmado**, con Español (Latinoamérica) por defecto.
+- **Firma de `generateStory` precisada por el diseño:** entrada `{ perfil, tema, estilo }`
+  con `tema ∈ {animales, espacio, magia}` y `estilo ∈ {aventura, divertido, educativo}`;
+  salida `{ título, cuerpo }`. Aplica a la interfaz `AIProvider` de Fase 2.
+- **El `code.html` de Stitch es maqueta, no producción** (Tailwind CDN + Material
+  Symbols). Se usa como referencia visual/tokens; la app Expo (Fase 4) no lo copia.
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aprendizaje Mágico - Inicio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-surface": "#382e2a", "on-tertiary-container": "#00485e", "secondary-fixed": "#c5eae5", "on-tertiary-fixed-variant": "#004d65", "primary-fixed-dim": "#ffb3b2", "secondary-fixed-dim": "#a9cec9", "error-container": "#ffdad6", "on-background": "#221a16", outline: "#887271", "surface-container-lowest": "#ffffff", background: "#fff8f6", "surface-container-high": "#f6e5de", "on-primary-container": "#772529", "on-secondary": "#ffffff", "on-surface-variant": "#554242", "on-primary-fixed": "#410008", "primary-fixed": "#ffdad8", "on-secondary-fixed-variant": "#2b4d49", "surface-variant": "#f0dfd8", "surface-dim": "#e8d7d0", "on-secondary-container": "#476965", "surface-container-highest": "#f0dfd8", "outline-variant": "#dbc0bf", "on-error": "#ffffff", "on-error-container": "#93000a", "surface-container": "#fceae3", "tertiary-fixed-dim": "#8ad0f1", "on-primary-fixed-variant": "#7e2a2d", surface: "#fff8f6", "primary-container": "#ff8e8e", tertiary: "#0d6683", "on-tertiary-fixed": "#001f2a", secondary: "#426561", "on-surface": "#221a16", error: "#ba1a1a", "secondary-container": "#c2e7e2", "on-secondary-fixed": "#00201e", "surface-tint": "#9c4143", "inverse-on-surface": "#ffede6", "on-primary": "#ffffff", "tertiary-fixed": "#bee9ff", primary: "#9c4143", "surface-container-low": "#fff1eb", "tertiary-container": "#72b8d8", "inverse-primary": "#ffb3b2", "on-tertiary": "#ffffff", "surface-bright": "#fff8f6"}, borderRadius: {DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px"}, spacing: {xs: "4px", "element-gap": "16px", sm: "12px", lg: "40px", xl: "64px", base: "8px", md: "24px", "container-padding": "24px"}, fontFamily: {"display-lg-mobile": ["Quicksand"], "body-md": ["Quicksand"], "button-text": ["Quicksand"], "label-bold": ["Quicksand"], "display-lg": ["Quicksand"], "headline-md": ["Quicksand"], "body-lg": ["Quicksand"], headline: ["Quicksand"], display: ["Quicksand"], body: ["Quicksand"], label: ["Quicksand"]}, fontSize: {"display-lg-mobile": ["32px", {lineHeight: "38px", fontWeight: "700"}], "body-md": ["18px", {lineHeight: "26px", fontWeight: "500"}], "button-text": ["22px", {lineHeight: "24px", fontWeight: "700"}], "label-bold": ["16px", {lineHeight: "20px", fontWeight: "700"}], "display-lg": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["28px", {lineHeight: "34px", fontWeight: "700"}], "body-lg": ["20px", {lineHeight: "30px", fontWeight: "500"}]}}}};</script>
+<style>
+        body { font-family: 'Quicksand', sans-serif; background-color: #fff8f6; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .bubbly-button {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.1);
+        }
+        .bubbly-button:active {
+            transform: scale(0.95) translateY(4px);
+            box-shadow: 0 0px 0 0 rgba(0,0,0,0.1);
+        }
+        .magic-tree-container {
+            mask-image: radial-gradient(circle, black 60%, transparent 100%);
+        }
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- Top Navigation Anchor -->
+<header class="w-full top-0 sticky flex justify-between items-center px-container-padding py-md w-full bg-background dark:bg-background shadow-[0px_8px_20px_rgba(156,65,67,0.1)] z-40">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim">Aprendizaje Mágico</h1>
+<button class="text-primary dark:text-primary-fixed-dim hover:opacity-80 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl">account_circle</span>
+</button>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-container-padding pb-32 pt-8 overflow-hidden">
+<!-- Hero Illustration -->
+<div class="relative w-full max-w-lg aspect-square mb-lg magic-tree-container flex items-center justify-center">
+<div class="absolute inset-0 bg-secondary-container/20 rounded-full blur-3xl"></div>
+<img alt="Children playing under a magic tree" class="relative z-10 w-full h-full object-cover rounded-xl shadow-2xl floating" data-alt="A whimsical, warm digital illustration in a soft pastel watercolor style showing a group of diverse toddlers happily reading books and playing with glowing geometric toys under a large, magical tree with leaves made of soft mint and pink tones. The lighting is golden and ethereal, creating a cozy and safe atmosphere. The background is a clean, cream-colored minimalist environment that highlights the vibrant characters and the magical tree, evoking a sense of wonder and educational joy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE__r-Qv_yq07e2fQyFxuXjILcFmvMRU_o_OUs-dJ6_4IP2M4-hWqjs9aSKaNlsV8YSI7ff5bWweU17grxqfl9MEyUr1GX7eFAVfQNGWosL-qPtuRjdf10-uts9I3-FqnYPOjyBSCejRB-pEU-TjaeSlWRrbQQc9SuofADalQQlQU9hKjNsigkNjw8gJHsxgi5sQAqC4h7cKT3cc6_s6gqtRAHYL0ZYrJ19MOK-TQ1mhT_s3xdEa9XsBGPdXhsKbwC4e7u1_A7F8o"/>
+</div>
+<!-- Welcome Message -->
+<div class="text-center space-y-md max-w-md mx-auto">
+<h2 class="font-headline-md-mobile text-headline-md-mobile text-on-surface leading-tight px-4">
+                ¡Hola! Vamos a aprender y jugar juntos
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant px-8">
+                Un espacio mágico diseñado para que los más pequeños exploren, rían y crezcan.
+            </p>
+</div>
+<!-- Call to Action Buttons -->
+<div class="mt-xl flex flex-col gap-element-gap w-full max-w-xs">
+<button class="bubbly-button w-full py-md px-lg bg-primary text-on-primary rounded-lg font-button-text text-button-text border-b-4 border-on-primary-fixed-variant flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                Comenzar
+            </button>
+<button class="bubbly-button w-full py-md px-lg bg-secondary-container text-on-secondary-container rounded-lg font-button-text text-button-text border-b-4 border-on-secondary-fixed-variant flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined">group</span>
+                Ver perfiles
+            </button>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute top-1/4 -left-12 w-24 h-24 bg-tertiary-container/30 rounded-full blur-xl animate-pulse"></div>
+<div class="absolute bottom-1/3 -right-8 w-32 h-32 bg-primary-container/20 rounded-full blur-2xl"></div>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container dark:bg-inverse-surface shadow-[0px_-8px_20px_rgba(0,0,0,0.05)] rounded-t-lg z-50">
+<!-- Inicio (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl p-sm scale-110 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-bold text-label-bold">Inicio</span>
+</a>
+<!-- Actividades -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-bold text-label-bold">Actividades</span>
+</a>
+<!-- Cuentos -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-bold text-label-bold">Cuentos</span>
+</a>
+<!-- Historial -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant dark:hover:bg-surface-container-highest transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-bold text-label-bold">Historial</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction: Particle effect on main button click
+        document.querySelector('.bubbly-button').addEventListener('click', function(e) {
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute pointer-events-none rounded-full';
+                const size = Math.random() * 10 + 5;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.backgroundColor = ['#ff8e8e', '#9aefe3', '#72b8d8'][Math.floor(Math.random() * 3)];
+                particle.style.left = e.clientX + 'px';
+                particle.style.top = e.clientY + 'px';
+                document.body.appendChild(particle);
+
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 100 + 50;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${vx}px, ${vy}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 600,
+                    easing: 'cubic-bezier(0, .9, .57, 1)'
+                }).onfinish = () => particle.remove();
+            }
+        });
+    </script>
+</body></html>

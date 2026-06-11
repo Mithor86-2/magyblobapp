@@ -2,3 +2,6 @@
 **/node_modules/**
 pnpm-lock.yaml
 packages/backend/src/generated/**
+
+# Export generado por Stitch (maquetas de diseño, no se mantiene a mano)
+Docs/Design/stitch_magyblob/**
