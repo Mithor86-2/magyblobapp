@@ -18,20 +18,117 @@ agentes en [CLAUDE.md](CLAUDE.md).
 ```bash
 cp .env.example .env          # ajusta valores si hace falta
 docker compose up --build     # backend + PostgreSQL 16 + Chroma + Ollama
-pnpm ollama:setup             # descarga gemma:2b dentro del contenedor de Ollama
 ```
 
-El backend queda en http://localhost:3000 (healthcheck en `/health`).
+Eso es todo: el backend **aplica las migraciones de la base de datos al arrancar**
+(`prisma migrate deploy`) y queda en <http://localhost:3000> (healthcheck en `/health`).
 
-> El modo de IA por defecto es `mock`, así que la app funciona sin GPU ni modelo
-> descargado. Cambia `AI_PROVIDER=local` en `.env` para usar Ollama real.
+Comprobación rápida:
+
+```bash
+curl http://localhost:3000/health         # -> {"status":"ok","service":"magyblob-backend"}
+```
+
+> **Modo de IA por defecto: `mock`** — la app funciona sin GPU ni modelo descargado,
+> así que un evaluador puede correr todo el flujo tal cual. Para generar cuentos con el
+> LLM local real, ver la sección siguiente.
+
+**Atajos (scripts):** levantan la pila, esperan a `/health` y dejan todo listo en un
+solo comando. El de local además descarga `gemma:2b` si falta.
+
+| Comando         | Qué hace                                                            |
+| --------------- | ------------------------------------------------------------------- |
+| `pnpm up:mock`  | Pila completa en modo **mock** (sin GPU ni modelo).                 |
+| `pnpm up:local` | Pila completa en modo **local**: descarga `gemma:2b` y usa IA real. |
+| `pnpm down`     | Para la pila (los datos persisten en los volúmenes).                |
+
+Para parar la pila: `docker compose down` o `pnpm down` (los datos persisten en los volúmenes).
+
+## Cambiar a IA local (Ollama + `gemma:2b`)
+
+> **Atajo:** `pnpm up:local` hace todo lo de esta sección por ti (descarga el modelo si
+> falta y levanta el backend en modo local). Lo de abajo es el detalle manual equivalente.
+
+El modo de IA lo resuelve el backend al arrancar según la variable `AI_PROVIDER`
+(`mock | local | cloud`); **no hay que tocar código**. Para usar el LLM local hacen
+falta dos cosas: descargar el modelo y poner `AI_PROVIDER=local`.
+
+```bash
+# 1) Descargar gemma:2b dentro del contenedor de Ollama (~1.7 GB, una sola vez).
+#    Requiere que la pila (o al menos el servicio ollama) esté levantada.
+pnpm ollama:setup
+```
+
+Luego, **una de estas dos formas**:
+
+**a) Persistente (vía `.env`)** — queda fijado para próximos arranques:
+
+```bash
+# Edita .env y cambia:  AI_PROVIDER=mock  ->  AI_PROVIDER=local
+docker compose up -d backend     # recrea el backend para tomar el nuevo valor
+```
+
+**b) Puntual (sin tocar `.env`)** — solo para este arranque:
+
+```bash
+AI_PROVIDER=local docker compose up -d backend
+```
+
+> - Docker Compose lee `.env` automáticamente (el compose usa `${AI_PROVIDER:-mock}`).
+> - Si Ollama no responde o el modelo no está, el backend **cae automáticamente al
+>   mock** (la petición nunca falla por la IA) — por eso conviene hacer `pnpm ollama:setup`
+>   antes de cambiar a `local`.
+> - La primera generación con `gemma:2b` tarda ~15 s; las siguientes van más rápidas
+>   (el modelo ya queda cargado en memoria).
+> - El modelo se puede cambiar con `OLLAMA_MODEL` en `.env` (por defecto `gemma:2b`).
+
+## Probar la API
+
+Los endpoints, parámetros y ejemplos `curl` están en **[Docs/api.md](Docs/api.md)**.
+Flujo mínimo (alta de adulto → crear perfil → generar cuento):
+
+```bash
+BASE=http://localhost:3000
+GID=$(curl -s -X POST $BASE/guardians -H "Content-Type: application/json" -d '{
+  "nombre":"Ana","apellidos":"García","email":"ana@example.com",
+  "parentesco":"madre","consentimientoAceptado":true,"consentimientoVersion":"v1"
+}' | jq -r .id)
+PID=$(curl -s -X POST $BASE/profiles -H "Content-Type: application/json" -d "{
+  \"guardianId\":\"$GID\",\"nombre\":\"Mateo\",\"edad\":4,\"idioma\":\"es\",
+  \"avatar\":\"a1\",\"intereses\":[\"animales\"]
+}" | jq -r .id)
+curl -s -X POST $BASE/stories -H "Content-Type: application/json" -d "{
+  \"profileId\":\"$PID\",\"tema\":\"animales\",\"estilo\":\"aventura\"
+}" | jq
+```
+
+| Método y ruta                 | Descripción                                    |
+| ----------------------------- | ---------------------------------------------- |
+| `GET /health`                 | Estado del servicio                            |
+| `POST /guardians`             | Alta del adulto responsable (+ consentimiento) |
+| `GET /guardians/:id/profiles` | Lista los perfiles de un adulto                |
+| `POST /profiles`              | Crea el perfil de un niño                      |
+| `POST /stories`               | Genera y persiste un cuento para un perfil     |
 
 ## Desarrollo local (sin Docker)
 
+Necesitas una base de datos PostgreSQL. Lo más cómodo es levantar solo ese servicio
+con Docker y correr el backend con `tsx`:
+
 ```bash
-pnpm install
-pnpm dev            # backend en watch (tsx)
+pnpm install                                  # instala y genera el cliente Prisma (postinstall)
+docker compose up -d postgres                 # PostgreSQL en localhost:5432
+
+# Prepara la base de datos (una vez):
+pnpm --filter @magyblob/backend prisma:migrate   # aplica las migraciones
+pnpm --filter @magyblob/backend prisma:seed      # opcional: carga AppSetting (prompts, params)
+
+pnpm dev                                      # backend en watch (tsx) en :3000
 ```
+
+> El **seed es opcional**: `AppSetting` solo guarda config ajustable en caliente
+> (plantillas de prompt, modelo, parámetros). Si falta una clave, el backend usa el
+> valor por defecto en código, así que el flujo funciona sin seed.
 
 ## Comandos del monorepo
 
