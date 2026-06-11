@@ -61,17 +61,27 @@ Cerrada el 2026-06-10 · rama `feature/1-dominio`. Campos según el diseño (ver
 
 ---
 
-## FASE 2 — Capa de IA (el corazón) ⬜
+## FASE 2 — Capa de IA (el corazón) ✅
 
-- [ ] Interfaz común `AIProvider`: `generateStory({perfil, tema, estilo})` en el idioma
-      del perfil; `recommendActivities` (genera actividades con IA según el perfil).
-- [ ] `MockProvider` primero (rápido, testeable sin Ollama).
-- [ ] `OllamaProvider` contra `gemma:2b`.
-- [ ] Selección de modo por env (`mock | local | cloud`).
-- [ ] Fallback automático a mock si el proveedor activo no responde.
-- [ ] Prompts (cuento/actividades) como plantillas con valores por defecto en código;
-      en Fase 3 pasan a ser configurables vía `AppSetting`.
-- **DoD:** test del `MockProvider` verde + smoke test manual del `OllamaProvider`.
+Cerrada el 2026-06-10 · rama `feature/2-capa-ia`. Implementaciones en
+`src/infrastructure/ai/` (la interfaz `AIProvider` ya vivía en `/domain` desde Fase 1).
+
+- [x] Interfaz común `AIProvider` (de Fase 1): `generateStory` en el idioma del perfil;
+      `recommendActivities`.
+- [x] `MockProvider`: determinista, sin red — modo por defecto (evaluador sin GPU),
+      red de seguridad del fallback y base de tests.
+- [x] `OllamaProvider` contra `gemma:2b` vía `POST /api/generate` (sin streaming,
+      `format` con esquema JSON para salida estructurada fiable, timeout con `AbortSignal`).
+- [x] Selección de modo por env en `createAIProvider` (`mock | local | cloud`);
+      `cloud` avisa y cae a mock (CloudProvider real es Fase 5).
+- [x] `FallbackProvider` envuelve al proveedor activo y cae a `MockProvider` ante
+      cualquier fallo (caído/timeout/JSON inválido), registrando un `warn`.
+- [x] Prompts (`prompts.ts`) como plantillas bilingües con valores por defecto en
+      código + instrucción de seguridad para menores; en Fase 3 pasan a `AppSetting`.
+- **DoD:** ✅ 45 tests verdes (`pnpm check`: Mock/Ollama/Fallback/factoría) ·
+  ✅ smoke test del `OllamaProvider` (`pnpm ai:smoke`) ejecutado contra `gemma:2b` real
+  (Docker): cuento en el idioma del perfil + 3 actividades con categorías válidas, salida
+  estructurada parseada OK. La calidad del texto es la propia de un modelo de 2B.
 
 ---
 

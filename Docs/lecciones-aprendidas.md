@@ -57,3 +57,38 @@ para que una futura sesión (humana o de Claude) **no tropiece dos veces** con l
 - `no-restricted-imports` bloquea que `/domain` importe de application/infra/frameworks
   y que `application` importe de infraestructura. Si el lint corta un import, el diseño
   está mal, no el lint. Mantener los imports del dominio como relativos `.js`.
+
+## Fase 2
+
+### `noUncheckedIndexedAccess` marca el acceso por índice a una tupla `as const`
+
+- **Síntoma:** `tsc` falla en `CATEGORIAS[i % CATEGORIAS.length]` con
+  `Type '... | undefined' is not assignable`.
+- **Causa:** `tsconfig.base` activa `noUncheckedIndexedAccess`, así que todo acceso por
+  índice es `T | undefined` aunque el módulo garantice que está dentro de rango.
+- **Solución:** aserción no-nula `…]!` cuando el índice es demostrablemente válido
+  (`i % length`). No usar `as` que enmascara más de la cuenta.
+
+### Salida estructurada de Ollama: usar `format` con esquema, no parsear texto
+
+- `gemma:2b` no devuelve JSON fiable solo pidiéndolo en el prompt. La forma robusta es
+  `POST /api/generate` con `format: <JSON Schema>` y `stream:false`: el modelo se ciñe
+  al esquema y `response` es un JSON parseable. Aun así, el `OllamaProvider` valida y
+  filtra (categorías fuera de vocabulario, campos vacíos) — el `FallbackProvider` cubre
+  el resto cayendo a mock.
+
+### Scripts fuera de `src/` no los typechea `tsc` pero sí los lintea `eslint .`
+
+- El `tsconfig` del backend incluye solo `src/**/*.ts`, así que `scripts/smoke-ollama.ts`
+  no entra en `pnpm typecheck`. Pero el `eslint .` de la raíz **sí** lo lintea (no está
+  en `ignores`). Conclusión: los scripts auxiliares deben pasar ESLint + Prettier aunque
+  no los cubra el typecheck; se ejecutan con `tsx` (resuelve los imports `.js` de ESM).
+
+### `gemma:2b` da contenido pobre; el valor está en validar el contrato, no la prosa
+
+- Smoke test real: el español que produce `gemma:2b` es gramaticalmente flojo
+  ("El oso era grande y fuerte, y el león era pequeño yagile"). Es esperable en un
+  modelo de 2B — no es un bug del provider. Lo que el código garantiza y hay que
+  verificar es el **contrato**: JSON estructurado parseable, idioma correcto y
+  categorías dentro del vocabulario. Para mejor prosa, el modo `cloud` (Fase 5) o un
+  modelo local mayor; `gemma:2b` es el default por ser ligero y reproducible sin GPU.
