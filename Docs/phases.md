@@ -79,8 +79,9 @@ Cerrada el 2026-06-10 · rama `feature/2-capa-ia`. Implementaciones en
 - [x] Prompts (`prompts.ts`) como plantillas bilingües con valores por defecto en
       código + instrucción de seguridad para menores; en Fase 3 pasan a `AppSetting`.
 - **DoD:** ✅ 45 tests verdes (`pnpm check`: Mock/Ollama/Fallback/factoría) ·
-  ⏳ smoke test manual del `OllamaProvider` (`pnpm ai:smoke`) — requiere Ollama vivo
-  con `gemma:2b`; queda documentado y ejecutable, pendiente de correr en una máquina con el modelo.
+  ✅ smoke test del `OllamaProvider` (`pnpm ai:smoke`) ejecutado contra `gemma:2b` real
+  (Docker): cuento en el idioma del perfil + 3 actividades con categorías válidas, salida
+  estructurada parseada OK. La calidad del texto es la propia de un modelo de 2B.
 
 ---
 

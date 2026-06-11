@@ -83,3 +83,12 @@ para que una futura sesión (humana o de Claude) **no tropiece dos veces** con l
   no entra en `pnpm typecheck`. Pero el `eslint .` de la raíz **sí** lo lintea (no está
   en `ignores`). Conclusión: los scripts auxiliares deben pasar ESLint + Prettier aunque
   no los cubra el typecheck; se ejecutan con `tsx` (resuelve los imports `.js` de ESM).
+
+### `gemma:2b` da contenido pobre; el valor está en validar el contrato, no la prosa
+
+- Smoke test real: el español que produce `gemma:2b` es gramaticalmente flojo
+  ("El oso era grande y fuerte, y el león era pequeño yagile"). Es esperable en un
+  modelo de 2B — no es un bug del provider. Lo que el código garantiza y hay que
+  verificar es el **contrato**: JSON estructurado parseable, idioma correcto y
+  categorías dentro del vocabulario. Para mejor prosa, el modo `cloud` (Fase 5) o un
+  modelo local mayor; `gemma:2b` es el default por ser ligero y reproducible sin GPU.
