@@ -1,0 +1,9 @@
+{
+  "name": "@magyblob/app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "App móvil (Expo + Zustand). Andamiaje completo en la Fase 4.",
+  "scripts": {
+    "placeholder": "echo \"La app Expo se configura en la Fase 4 (slice vertical)\""
+  }
+}
