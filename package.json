@@ -21,7 +21,10 @@
     "ollama:setup": "bash scripts/setup-ollama.sh",
     "ai:smoke": "pnpm --filter @magyblob/backend exec tsx scripts/smoke-ollama.ts",
     "up": "docker compose up",
-    "up:build": "docker compose up --build"
+    "up:build": "docker compose up --build",
+    "up:mock": "bash scripts/up-mock.sh",
+    "up:local": "bash scripts/up-local.sh",
+    "down": "docker compose down"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
