@@ -37,25 +37,27 @@ Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 
 ---
 
-## FASE 1 — Núcleo del dominio y aplicación ⬜
+## FASE 1 — Núcleo del dominio y aplicación ✅
 
-Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
+Cerrada el 2026-06-10 · rama `feature/1-dominio`. Campos según el diseño (ver
+[Design/README.md](Design/README.md)) y [modelo-datos.md](modelo-datos.md).
 
-- [ ] `Guardian` (adulto responsable): `nombre`, `apellidos`, `email`, `parentesco`,
+- [x] `Guardian` (adulto responsable): `nombre`, `apellidos`, `email`, `parentesco`,
       `telefono?` + consentimiento (`consentimientoDado/En/Ver`). Todo niño cuelga de uno.
-- [ ] `ChildProfile`: `guardianId`(FK), `nombre`, `edad`(VO), `idioma`(VO), `avatar`, `intereses[]`.
-- [ ] `Story`: entrada `{perfil, tema, estilo}` → salida `{título, cuerpo}` + metadatos
+- [x] `ChildProfile`: `guardianId`(FK), `nombre`, `edad`(VO), `idioma`(VO), `avatar`, `intereses[]`.
+- [x] `Story`: entrada `{perfil, tema, estilo}` → salida `{título, cuerpo}` + metadatos
       (estado `nuevo|leído`, fecha). El cuento se genera en `perfil.idioma`.
-- [ ] `Activity` (generada con IA): `categoría`, `título`, `descripción`, `duración`,
+- [x] `Activity` (generada con IA): `categoría`, `título`, `descripción`, `duración`,
       `nivel`; progreso como estado (`completadaEn`, valoración) — sin entidad extra.
-- [ ] Vocabulario único de temática (`animales | espacio | magia | aventuras | música`)
+- [x] Vocabulario único de temática (`animales | espacio | magia | aventuras | música`)
       compartido por `intereses` y `tema`; los intereses pre-seleccionan el tema.
-- [ ] Value-objects solo para `edad` (rango 2–6) e `idioma` (ES/EN); el resto escalares (YAGNI).
-- [ ] Interfaces de repositorio en `/domain`.
-- [ ] Casos de uso `RegisterGuardian` (con consentimiento), `CreateChildProfile` y
+- [x] Value-objects solo para `edad` (rango 2–6) e `idioma` (ES/EN); el resto escalares (YAGNI).
+- [x] Interfaces de repositorio en `/domain` (+ interfaz `AIProvider`).
+- [x] Casos de uso `RegisterGuardian` (con consentimiento), `CreateChildProfile` y
       `ListProfiles` + tests; `GenerateStory` (su `AIProvider` se implementa en Fase 2).
-- [ ] DTOs de entrada/salida de los casos de uso.
-- **DoD:** tests de casos de uso en verde, cero dependencias externas en `/domain`.
+- [x] DTOs de entrada/salida de los casos de uso.
+- **DoD:** ✅ 29 tests verdes (`pnpm check`) · ✅ cero dependencias externas en `/domain`
+  (frontera de capas reforzada en ESLint).
 
 ---
 

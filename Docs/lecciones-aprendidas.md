@@ -35,3 +35,25 @@ para que una futura sesión (humana o de Claude) **no tropiece dos veces** con l
 
 - El linter de Markdown (MD034) marca URLs sueltas. Envolver en `<...>`:
   `<http://localhost:3000/health>`.
+
+## Fase 1
+
+### Puertos deterministas en los casos de uso
+
+- Los casos de uso reciben `IdGenerator` (`() => string`) y `Clock` (`() => Date`) por
+  inyección (`src/application/ports.ts`). En tests se usan un id secuencial y un reloj
+  fijo → resultados deterministas sin tocar el dominio. En Fase 3 se inyectan
+  `crypto.randomUUID` y `() => new Date()`.
+
+### `pnpm typecheck` NO cubre los tests
+
+- El `tsconfig.json` del backend excluye `test/`, así que `tsc --noEmit` no
+  typecheckea los tests; Vitest los corre con esbuild (sin chequeo de tipos). Un error
+  de tipos en un test no lo caza el DoD actual. Si se quiere cubrir, añadir un
+  `tsconfig` aparte para `test/` (pendiente; no se hizo en Fase 1 por YAGNI).
+
+### Frontera de capas en ESLint
+
+- `no-restricted-imports` bloquea que `/domain` importe de application/infra/frameworks
+  y que `application` importe de infraestructura. Si el lint corta un import, el diseño
+  está mal, no el lint. Mantener los imports del dominio como relativos `.js`.
