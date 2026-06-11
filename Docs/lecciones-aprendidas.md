@@ -123,3 +123,38 @@ engine. Importar estáticamente la composición arrastraría Prisma al grafo del
   verificar es el **contrato**: JSON estructurado parseable, idioma correcto y
   categorías dentro del vocabulario. Para mejor prosa, el modo `cloud` (Fase 5) o un
   modelo local mayor; `gemma:2b` es el default por ser ligero y reproducible sin GPU.
+
+## Fase 4
+
+### Expo en monorepo pnpm: `metro.config.js` explícito y andamiaje en dir temporal
+
+- **Andamiaje:** `create-expo-app` no escribe sobre un `packages/app` que ya existe (tenía
+  `package.json` + README de Fase 0). Solución: generar en `/tmp` con `--no-install`, copiar los
+  ficheros (`App.tsx`, `app.json`, `tsconfig.json`, `index.ts`, `.gitignore`, `assets/`) y
+  reescribir `package.json`/README a mano conservando `name: "@magyblob/app"`. Las deps acopladas
+  a RN se añaden con `npx expo install` (resuelve versiones compatibles con el SDK), no a mano.
+- **Metro + pnpm:** aunque Expo SDK 52+ autodetecta monorepos, se añadió `metro.config.js` con
+  `watchFolders=[raíz]` y `resolver.nodeModulesPaths=[app, raíz]` para que la resolución con el
+  linker aislado de pnpm (symlinks) sea determinista. **No hizo falta** `nodeLinker: hoisted`
+  (que habría sido global y arriesgado para el backend/Prisma). Verificado con
+  `npx expo export --platform ios`: bundlea 852 módulos sin errores de resolución.
+
+### Verificar la app headless: `expo export`, no el simulador
+
+- No se puede "tocar" la demo en un agente sin pantalla, pero `npx expo export` corre Metro de
+  punta a punta y caza errores de import/resolución y de compilación del bundle. Es la mejor
+  señal automatizable; la demo en vivo (tap-through en simulador/Expo Go) queda como paso humano.
+
+### `EXPO_PUBLIC_*` se inlinea en el bundle; `localhost` no vale en móvil físico
+
+- Las variables `EXPO_PUBLIC_*` se sustituyen en el bundle en build → **nunca** secretos ahí. Y
+  `http://localhost:3000` solo alcanza al backend desde el simulador iOS o Expo web; desde un
+  móvil físico hay que poner la **IP LAN** del ordenador en `EXPO_PUBLIC_API_URL`.
+
+### El gate de la raíz cubre la app salvo en lint
+
+- `eslint.config.mjs` ya ignora `packages/app/**` (toolchain RN aparte), así que `pnpm lint`
+  (`eslint .`) no la toca. Pero `prettier --check .` y los scripts `-r` de `typecheck`/`test`
+  **sí** la cubren. Conclusión: para que `pnpm check` siga verde, la app debe pasar typecheck,
+  formato y tests; tras andamiar conviene un `pnpm format` para normalizar los ficheros que
+  genera Expo. La app **extiende `expo/tsconfig.base`**, no la base Node del repo (JSX/RN).

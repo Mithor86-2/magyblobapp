@@ -124,3 +124,25 @@ Stage selectively (`git add <file>`), never `git add -A`.
 
 The local commit identity is set to the personal GitHub account `Mithor86-2` (not the global
 work identity) — preserve this; do not reset `git config --local user.*`.
+
+## Versionado y changelog (enforced)
+
+- **Actualiza la documentación al cerrar cada feature.** Antes de finalizar una feature, revisa y
+  pon al día toda la documentación afectada: los tracking docs vivos
+  ([Docs/phases.md](Docs/phases.md), [Docs/memory.md](Docs/memory.md),
+  [Docs/lecciones-aprendidas.md](Docs/lecciones-aprendidas.md)), los `README.md`, la documentación
+  de la API y cualquier guía que el cambio deje desfasada. La documentación se actualiza en el mismo
+  cierre de la feature, no se difiere.
+- **Sube la versión al cerrar cada feature.** Cada vez que se finaliza una feature, actualiza el
+  campo `version` del [package.json](package.json) raíz (y el del paquete afectado en
+  `packages/backend/package.json` / `packages/app/package.json` cuando corresponda) siguiendo
+  [SemVer](https://semver.org/lang/es/): `patch` para correcciones, `minor` para funcionalidad nueva
+  retrocompatible, `major` para cambios incompatibles. El bump va en el mismo cierre de la feature,
+  no se difiere.
+- **Mantén un `CHANGELOG.md` por paquete** (`packages/backend/CHANGELOG.md` y
+  `packages/app/CHANGELOG.md`) siguiendo el formato de
+  [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/): cada cambio se anota primero bajo
+  un encabezado `## [Unreleased]`, agrupado por tipo (`Added`, `Changed`, `Deprecated`, `Removed`,
+  `Fixed`, `Security`). Al cerrar la feature y subir la versión, mueve lo que esté en `Unreleased` a
+  una nueva sección versionada `## [x.y.z] - AAAA-MM-DD`. Las entradas se redactan en español
+  (ubicuous language en español, igual que commits y docs).

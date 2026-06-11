@@ -113,16 +113,28 @@ Cerrada el 2026-06-10 · rama `feature/3-persistencia-api`.
 
 ---
 
-## FASE 4 — Slice vertical en la app móvil ★ HITO 1 ⬜
+## FASE 4 — Slice vertical en la app móvil ★ HITO 1 ✅
 
+Cerrada el 2026-06-11 · rama `feature/4-app-slice`. App `@magyblob/app` v0.1.0.
 Referencia visual: pantallas _Crear perfil_ y _Generador de cuentos_ +
 design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
 [Design/README.md](Design/README.md).
 
-- [ ] Expo + Zustand configurados.
-- [ ] Pantalla Crear perfil conectada al backend.
-- [ ] Pantalla Generador de cuentos con IA local real.
-- **DoD:** demo en vivo — crear perfil → ver cuento generado.
+- [x] Expo SDK 56 + React Navigation v7 (native-stack) + Zustand configurados;
+      `metro.config.js` puentea la resolución de paquetes del monorepo pnpm.
+- [x] Onboarding mínimo del adulto (decisión de fase): pantalla **Consent** con puerta
+      parental + alta de `Guardian` y consentimiento (`POST /guardians`); el `guardianId`
+      se persiste (AsyncStorage). Cumple C-1/C-6 de [cumplimiento-menores.md](cumplimiento-menores.md).
+- [x] Pantalla **Crear perfil** conectada al backend (`POST /profiles`): nombre, edad (2-6),
+      idioma (ES/EN), avatar e intereses (multi-selección).
+- [x] Pantalla **Generador de cuentos** (`POST /stories`) con estados de carga/error/reintento;
+      la app es **agnóstica del proveedor** (la "IA local real" la aporta el backend con
+      `AI_PROVIDER=local`, Ollama `gemma:2b`).
+- [x] Cliente HTTP único (`src/api/`) + test (Vitest) del contrato de cable.
+- **DoD:** ✅ `pnpm check` verde (typecheck app+backend, lint, formato, **63 tests**: app 5 +
+  backend 58) · ✅ bundle de la app validado con `expo export` (Metro resuelve el monorepo, sin
+  `nodeLinker: hoisted`) · ⏳ **demo en vivo** (crear perfil → ver cuento): pendiente de
+  ejecutar en simulador/Expo Go con `pnpm up:local` + `pnpm --filter @magyblob/app start`.
 
 ---
 
