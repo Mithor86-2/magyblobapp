@@ -5,8 +5,15 @@ import type {
 } from '../../src/domain/ai/AIProvider.js';
 import type { ChildProfile } from '../../src/domain/entities/ChildProfile.js';
 import type { Guardian } from '../../src/domain/entities/Guardian.js';
+import type { Story } from '../../src/domain/entities/Story.js';
+import type { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js';
+import type { AuditLog } from '../../src/domain/entities/AuditLog.js';
 import type { ChildProfileRepository } from '../../src/domain/repositories/ChildProfileRepository.js';
 import type { GuardianRepository } from '../../src/domain/repositories/GuardianRepository.js';
+import type { StoryRepository } from '../../src/domain/repositories/StoryRepository.js';
+import type { InteractionEventRepository } from '../../src/domain/repositories/InteractionEventRepository.js';
+import type { AuditLogRepository } from '../../src/domain/repositories/AuditLogRepository.js';
+import type { SettingsRepository } from '../../src/domain/repositories/SettingsRepository.js';
 import type { Clock, IdGenerator } from '../../src/application/ports.js';
 
 /** Repositorio de adultos en memoria para tests. */
@@ -43,6 +50,52 @@ export class InMemoryChildProfileRepository implements ChildProfileRepository {
 
   async findByGuardian(guardianId: string): Promise<ChildProfile[]> {
     return [...this.items.values()].filter((p) => p.guardianId === guardianId);
+  }
+}
+
+/** Repositorio de cuentos en memoria para tests. */
+export class InMemoryStoryRepository implements StoryRepository {
+  readonly items = new Map<string, Story>();
+
+  async save(story: Story): Promise<void> {
+    this.items.set(story.id, story);
+  }
+
+  async findById(id: string): Promise<Story | null> {
+    return this.items.get(id) ?? null;
+  }
+
+  async findByProfile(profileId: string): Promise<Story[]> {
+    return [...this.items.values()]
+      .filter((s) => s.profileId === profileId)
+      .sort((a, b) => b.creadoEn.getTime() - a.creadoEn.getTime());
+  }
+}
+
+/** Repositorio de eventos en memoria para tests. */
+export class InMemoryInteractionEventRepository implements InteractionEventRepository {
+  readonly items: InteractionEvent[] = [];
+
+  async save(event: InteractionEvent): Promise<void> {
+    this.items.push(event);
+  }
+}
+
+/** Repositorio de auditoría en memoria para tests. */
+export class InMemoryAuditLogRepository implements AuditLogRepository {
+  readonly items: AuditLog[] = [];
+
+  async save(entry: AuditLog): Promise<void> {
+    this.items.push(entry);
+  }
+}
+
+/** Settings en memoria: solo lo que se le ponga; si falta la clave devuelve null. */
+export class InMemorySettingsRepository implements SettingsRepository {
+  constructor(private readonly map: Map<string, string> = new Map()) {}
+
+  async get(key: string): Promise<string | null> {
+    return this.map.get(key) ?? null;
   }
 }
 

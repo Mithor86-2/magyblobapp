@@ -84,6 +84,37 @@ para que una futura sesión (humana o de Claude) **no tropiece dos veces** con l
   en `ignores`). Conclusión: los scripts auxiliares deben pasar ESLint + Prettier aunque
   no los cubra el typecheck; se ejecutan con `tsx` (resuelve los imports `.js` de ESM).
 
+## Fase 3
+
+### El cliente Prisma con `output` custom rompe en 3 sitios
+
+Elegir `output = "../src/generated/prisma"` (Fase 0) tiene tres consecuencias no obvias:
+
+1. **ESLint lo analiza** (miles de errores `no-undef`/`require`): añadir `**/generated`
+   a `ignores` en `eslint.config.mjs`.
+2. **`tsc` no copia los `.js` generados a `dist`** (solo compila `.ts`): el `import`
+   en runtime `../../generated/prisma/index.js` apunta a `dist/generated/...` que no
+   existe. Solución: `build = "tsc && cp -r src/generated dist/generated"`.
+3. **Docker:** el cliente trae un engine nativo por plataforma. Hay que **regenerarlo
+   dentro de la imagen** (engine linux/musl) y excluir el del host con `.dockerignore`
+   (`**/generated`). Como `prisma generate` corre en `postinstall`, el Dockerfile debe
+   **copiar `prisma/` antes de `pnpm install`** (si no, no hay schema y falla).
+
+### `migrate deploy` al arrancar exige `prisma` como dependencia de producción
+
+`pnpm deploy --prod` elimina devDependencies, así que el CLI `prisma` no llega al runtime.
+Para aplicar migraciones al arrancar el contenedor (`CMD prisma migrate deploy && node …`)
+hubo que mover `prisma` a `dependencies` y copiar `prisma/` (schema + migraciones) a la
+imagen runtime. Así `docker compose up` levanta la pila **sin pasos ocultos**.
+
+### Import dinámico para que los tests no carguen Prisma
+
+`buildServer(config, deps?)`: cuando se inyectan `deps` (tests), la rama de producción
+`buildProductionDeps` (que importa Prisma) **no se evalúa** porque se usa
+`await import('./infrastructure/composition.js')` solo si faltan `deps`. Así el test de
+integración corre con repos en memoria, sin abrir conexión a PostgreSQL ni cargar el
+engine. Importar estáticamente la composición arrastraría Prisma al grafo del test.
+
 ### `gemma:2b` da contenido pobre; el valor está en validar el contrato, no la prosa
 
 - Smoke test real: el español que produce `gemma:2b` es gramaticalmente flojo

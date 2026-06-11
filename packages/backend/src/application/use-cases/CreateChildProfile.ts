@@ -1,5 +1,5 @@
 import { ChildProfile } from '../../domain/entities/ChildProfile.js';
-import { DomainError } from '../../domain/errors.js';
+import { DomainError, NotFoundError } from '../../domain/errors.js';
 import type { ChildProfileRepository } from '../../domain/repositories/ChildProfileRepository.js';
 import type { GuardianRepository } from '../../domain/repositories/GuardianRepository.js';
 import { Edad } from '../../domain/value-objects/Edad.js';
@@ -25,7 +25,7 @@ export class CreateChildProfile {
   async execute(input: CreateChildProfileInput): Promise<ChildProfileOutput> {
     const guardian = await this.deps.guardians.findById(input.guardianId);
     if (!guardian) {
-      throw new DomainError(`No existe el adulto con id "${input.guardianId}".`);
+      throw new NotFoundError(`No existe el adulto con id "${input.guardianId}".`);
     }
     if (!guardian.haConsentido()) {
       throw new DomainError('El adulto no ha otorgado el consentimiento.');

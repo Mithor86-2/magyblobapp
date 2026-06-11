@@ -19,7 +19,7 @@ describe('createAIProvider', () => {
 
   it('en modo cloud avisa y cae a MockProvider (CloudProvider es Fase 5)', () => {
     const logger = { warn: vi.fn() };
-    const provider = createAIProvider(config({ aiProvider: 'cloud' }), logger);
+    const provider = createAIProvider(config({ aiProvider: 'cloud' }), { logger });
     expect(provider).toBeInstanceOf(MockProvider);
     expect(logger.warn).toHaveBeenCalledOnce();
   });

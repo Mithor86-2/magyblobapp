@@ -5,8 +5,9 @@ import type {
   GenerateStoryInput,
   RecommendActivitiesInput,
 } from '../../domain/ai/AIProvider.js';
+import type { SettingsRepository } from '../../domain/repositories/SettingsRepository.js';
 import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
-import { buildActivitiesPrompt, buildStoryPrompt } from './prompts.js';
+import { buildActivitiesPrompt, buildStoryPrompt, type PromptOverrides } from './prompts.js';
 
 export interface OllamaProviderOptions {
   baseUrl: string;
@@ -15,7 +16,20 @@ export interface OllamaProviderOptions {
   timeoutMs?: number;
   /** Inyectable en tests; por defecto el `fetch` global de Node. */
   fetchFn?: typeof fetch;
+  /** Config en caliente (AppSetting): plantillas y temperatura. Opcional. */
+  settings?: SettingsRepository;
 }
+
+/** Claves de AppSetting que consume la generación de cuentos/actividades. */
+const CLAVES = {
+  storySystem: 'prompt.story.system',
+  storyTemplate: 'prompt.story.template',
+  activitySystem: 'prompt.activity.system',
+  activityTemplate: 'prompt.activity.template',
+  temperature: 'story.temperature',
+} as const;
+
+const TEMPERATURA_DEFECTO = 0.8;
 
 /** Esquema de salida estructurada para el cuento (campo `format` de Ollama). */
 const ESQUEMA_CUENTO = {
@@ -61,16 +75,19 @@ export class OllamaProvider implements AIProvider {
   private readonly model: string;
   private readonly timeoutMs: number;
   private readonly fetchFn: typeof fetch;
+  private readonly settings?: SettingsRepository;
 
   constructor(options: OllamaProviderOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
     this.model = options.model;
     this.timeoutMs = options.timeoutMs ?? 60_000;
     this.fetchFn = options.fetchFn ?? fetch;
+    this.settings = options.settings;
   }
 
   async generateStory(input: GenerateStoryInput): Promise<GeneratedStory> {
-    const { system, prompt } = buildStoryPrompt(input);
+    const overrides = await this.leerOverrides(CLAVES.storySystem, CLAVES.storyTemplate);
+    const { system, prompt } = buildStoryPrompt(input, overrides);
     const data = await this.generate<{ titulo?: unknown; cuerpo?: unknown }>(
       system,
       prompt,
@@ -85,7 +102,8 @@ export class OllamaProvider implements AIProvider {
   }
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
-    const { system, prompt } = buildActivitiesPrompt(input);
+    const overrides = await this.leerOverrides(CLAVES.activitySystem, CLAVES.activityTemplate);
+    const { system, prompt } = buildActivitiesPrompt(input, overrides);
     const data = await this.generate<{ actividades?: unknown }>(
       system,
       prompt,
@@ -124,7 +142,28 @@ export class OllamaProvider implements AIProvider {
     };
   }
 
+  /** Lee de AppSetting los textos de prompt; null/ausente => default en código. */
+  private async leerOverrides(
+    claveSystem: string,
+    claveTemplate: string,
+  ): Promise<PromptOverrides> {
+    if (!this.settings) return {};
+    const [system, template] = await Promise.all([
+      this.settings.get(claveSystem),
+      this.settings.get(claveTemplate),
+    ]);
+    return { system, template };
+  }
+
+  /** Temperatura desde AppSetting (`story.temperature`) o el default en código. */
+  private async leerTemperatura(): Promise<number> {
+    const raw = await this.settings?.get(CLAVES.temperature);
+    const parsed = raw === null || raw === undefined ? NaN : Number(raw);
+    return Number.isFinite(parsed) ? parsed : TEMPERATURA_DEFECTO;
+  }
+
   private async generate<T>(system: string, prompt: string, format: object): Promise<T> {
+    const temperature = await this.leerTemperatura();
     const res = await this.fetchFn(`${this.baseUrl}/api/generate`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -134,7 +173,7 @@ export class OllamaProvider implements AIProvider {
         prompt,
         stream: false,
         format,
-        options: { temperature: 0.8 },
+        options: { temperature },
       }),
       signal: AbortSignal.timeout(this.timeoutMs),
     });

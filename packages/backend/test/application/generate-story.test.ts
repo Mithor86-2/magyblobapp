@@ -7,16 +7,19 @@ import { Idioma } from '../../src/domain/value-objects/Idioma.js';
 import {
   FakeAIProvider,
   InMemoryChildProfileRepository,
+  InMemoryStoryRepository,
   relojFijo,
   secuencialIdGenerator,
 } from '../support/doubles.js';
 
 describe('GenerateStory', () => {
   let profiles: InMemoryChildProfileRepository;
+  let stories: InMemoryStoryRepository;
   let useCase: GenerateStory;
 
   beforeEach(async () => {
     profiles = new InMemoryChildProfileRepository();
+    stories = new InMemoryStoryRepository();
     await profiles.save(
       new ChildProfile({
         id: 'p-1',
@@ -31,6 +34,7 @@ describe('GenerateStory', () => {
     );
     useCase = new GenerateStory({
       profiles,
+      stories,
       ai: new FakeAIProvider(),
       newId: secuencialIdGenerator('s'),
       now: relojFijo(),
@@ -44,6 +48,13 @@ describe('GenerateStory', () => {
     expect(out.estado).toBe('nuevo');
     expect(out.titulo).toContain('Mateo');
     expect(out.cuerpo.length).toBeGreaterThan(0);
+  });
+
+  it('persiste el cuento generado en el repositorio', async () => {
+    const out = await useCase.execute({ profileId: 'p-1', tema: 'animales', estilo: 'aventura' });
+    const guardado = await stories.findById(out.id);
+    expect(guardado?.titulo).toBe(out.titulo);
+    expect(guardado?.profileId).toBe('p-1');
   });
 
   it('rechaza un tema fuera del vocabulario', async () => {

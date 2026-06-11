@@ -1,6 +1,7 @@
-// Esquema Prisma — Fase 0: solo datasource + generator.
-// Los modelos (ChildProfile, Story, Activity) se definen en la Fase 1
-// (dominio) y se materializan con migraciones en la Fase 3.
+// Esquema Prisma — Fase 3: materializa el modelo de datos derivado del dominio.
+// Ver Docs/modelo-datos.md. Los vocabularios cerrados se validan en el dominio
+// (string unions ASCII), por eso aquí se guardan como String/String[] y no como
+// enums de Prisma: evita acoplar la persistencia al ORM y simplifica el mapeo.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,4 +11,116 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+/// Adulto responsable. Presta el consentimiento; todo niño cuelga de él.
+model Guardian {
+  id                 String         @id @default(uuid())
+  nombre             String
+  apellidos          String
+  email              String         @unique
+  parentesco         String
+  telefono           String?
+  consentimientoDado Boolean
+  consentimientoEn   DateTime
+  consentimientoVer  String
+  creadoEn           DateTime       @default(now())
+  perfiles           ChildProfile[]
+  auditLogs          AuditLog[]
+
+  @@map("guardians")
+}
+
+/// Perfil de un niño. Borrado en cascada al borrar su Guardian (GDPR).
+model ChildProfile {
+  id         String             @id @default(uuid())
+  guardianId String
+  guardian   Guardian           @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  nombre     String
+  edad       Int
+  idioma     String
+  avatar     String
+  intereses  String[]
+  creadoEn   DateTime           @default(now())
+  stories    Story[]
+  activities Activity[]
+  events     InteractionEvent[]
+
+  @@index([guardianId])
+  @@map("child_profiles")
+}
+
+/// Cuento generado para un perfil. Se elimina en cascada con el perfil.
+model Story {
+  id        String       @id @default(uuid())
+  profileId String
+  profile   ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tema      String
+  estilo    String
+  titulo    String
+  cuerpo    String
+  idioma    String
+  estado    String       @default("nuevo")
+  creadoEn  DateTime     @default(now())
+
+  @@index([profileId])
+  @@map("stories")
+}
+
+/// Actividad generada por IA para un perfil (progreso como estado, sin entidad aparte).
+model Activity {
+  id           String       @id @default(uuid())
+  profileId    String
+  profile      ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  categoria    String
+  titulo       String
+  descripcion  String
+  duracionMin  Int?
+  nivel        Int?
+  completadaEn DateTime?
+  valoracion   Int?
+  creadoEn     DateTime     @default(now())
+
+  @@index([profileId])
+  @@map("activities")
+}
+
+/// Tracking de primera parte. Sin PII en payload; niño referido por profileId.
+model InteractionEvent {
+  id        String       @id @default(uuid())
+  profileId String
+  profile   ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tipo      String
+  payload   Json?
+  creadoEn  DateTime     @default(now())
+
+  @@index([profileId])
+  @@map("interaction_events")
+}
+
+/// Trazabilidad de acciones sensibles del adulto (incl. consentimiento).
+model AuditLog {
+  id         String    @id @default(uuid())
+  guardianId String?
+  guardian   Guardian? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+  accion     String
+  entidad    String
+  entidadId  String
+  metadatos  Json?
+  creadoEn   DateTime  @default(now())
+
+  @@index([guardianId])
+  @@map("audit_logs")
+}
+
+/// Configuración clave-valor ajustable en caliente (prompts, modelo, parámetros).
+/// Secretos NO van aquí (siguen en variables de entorno).
+model AppSetting {
+  id            String   @id @default(uuid())
+  key           String   @unique
+  value         String
+  descripcion   String?
+  actualizadoEn DateTime @updatedAt
+
+  @@map("app_settings")
 }

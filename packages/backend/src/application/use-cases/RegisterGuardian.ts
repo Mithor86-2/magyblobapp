@@ -1,5 +1,5 @@
 import { Guardian } from '../../domain/entities/Guardian.js';
-import { DomainError } from '../../domain/errors.js';
+import { ConflictError, DomainError } from '../../domain/errors.js';
 import type { GuardianRepository } from '../../domain/repositories/GuardianRepository.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { GuardianOutput, RegisterGuardianInput } from '../dto.js';
@@ -24,7 +24,7 @@ export class RegisterGuardian {
 
     const existente = await this.deps.guardians.findByEmail(input.email);
     if (existente) {
-      throw new DomainError(`Ya existe una cuenta con el email "${input.email}".`);
+      throw new ConflictError(`Ya existe una cuenta con el email "${input.email}".`);
     }
 
     const guardian = new Guardian({
