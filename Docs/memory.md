@@ -85,6 +85,22 @@ el consentimiento del adulto es **siempre** obligatorio. Detalle y fuentes en
 - Sinergia con [ADR 0003](ADR/0003-gemma-2b-llm-local-por-defecto.md): el LLM local
   refuerza "los datos no salen de la máquina" (privacy by design).
 
+## Configuración en BD: AppSetting (2026-06-10)
+
+Tabla clave-valor (`id`, `key`, `value`) para config **ajustable sin redeploy**:
+plantillas de prompt (cuento/actividades), ids de modelo de IA y parámetros de
+generación (`maxTokens`, `temperature`, `activity.count`). Detalle en
+[modelo-datos.md](modelo-datos.md).
+
+- **Separación env vs BD:** el **entorno** (`.env`) fija arranque y **secretos**
+  (`AI_PROVIDER`, `DATABASE_URL`, `ANTHROPIC_API_KEY`...); `AppSetting` guarda solo
+  tunables **no sensibles**. Los secretos **nunca** van en la tabla.
+- **Valores por defecto en código:** si una clave no está en `AppSetting`, se usa el
+  default del código (así la Fase 2 funciona antes de que exista la tabla, que llega en
+  Fase 3).
+- **Prompts seguros:** las plantillas imponen contenido apto para niños (guardarraíl),
+  ligado a [cumplimiento-menores.md](cumplimiento-menores.md).
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar

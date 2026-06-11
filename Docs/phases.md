@@ -67,6 +67,8 @@ Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
 - [ ] `OllamaProvider` contra `gemma:2b`.
 - [ ] Selección de modo por env (`mock | local | cloud`).
 - [ ] Fallback automático a mock si el proveedor activo no responde.
+- [ ] Prompts (cuento/actividades) como plantillas con valores por defecto en código;
+      en Fase 3 pasan a ser configurables vía `AppSetting`.
 - **DoD:** test del `MockProvider` verde + smoke test manual del `OllamaProvider`.
 
 ---
@@ -77,6 +79,8 @@ Campos del dominio según el diseño (ver [Design/README.md](Design/README.md)):
 - [ ] Migraciones + seeds.
 - [ ] Tablas `InteractionEvent` (tracking de primera parte) y `AuditLog` (acciones
       sensibles del adulto + consentimiento).
+- [ ] Tabla `AppSetting` (clave-valor) + seed de prompts, ids de modelo y parámetros;
+      secretos siguen en env, no en DB.
 - [ ] Controllers + routes para alta de adulto, perfil y generación de cuento.
 - [ ] Manejo de errores centralizado.
 - [ ] Logs estructurados (pino).

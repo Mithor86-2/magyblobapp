@@ -13,25 +13,26 @@ Should = HITO 2 · Could = si hay margen.
 
 ## Trazabilidad (historia → fase → pantalla)
 
-| ID    | Historia                         | Prioridad | Fase | Pantalla             |
-| ----- | -------------------------------- | --------- | ---- | -------------------- |
-| US-16 | Registro del adulto + consentim. | Must      | 1→4  | Alta / parental gate |
-| US-01 | Crear perfil de niño             | Must      | 1→4  | Crear perfil         |
-| US-17 | Logs y tracking de primera parte | Should    | 3→6  | —                    |
-| US-02 | Listar y seleccionar perfiles    | Must      | 3→4  | Inicio / Generador   |
-| US-03 | Generar cuento personalizado     | Must      | 2→4  | Generador            |
-| US-04 | Fallback automático a mock       | Must      | 2    | Generador            |
-| US-05 | Modo de IA configurable por env  | Must      | 2    | —                    |
-| US-06 | Arranque reproducible            | Must      | 0    | —                    |
-| US-07 | Guardar / marcar cuento          | Should    | 3→5  | Generador / Histor.  |
-| US-08 | Ver historial de cuentos         | Should    | 5    | Historial            |
-| US-09 | Ver actividades recomendadas     | Should    | 5    | Actividades          |
-| US-10 | Registrar actividad completada   | Should    | 5    | Actividades/Histor.  |
-| US-11 | Editar perfil                    | Should    | 5    | Configuración        |
-| US-12 | Cambiar idioma (ES/EN)           | Should    | 5    | Configuración        |
-| US-13 | Eliminar perfil                  | Should    | 5    | Configuración        |
-| US-14 | Proveedor cloud opcional         | Could     | 5    | —                    |
-| US-15 | Modo nocturno                    | Could     | 6    | Configuración        |
+| ID    | Historia                            | Prioridad | Fase | Pantalla             |
+| ----- | ----------------------------------- | --------- | ---- | -------------------- |
+| US-16 | Registro del adulto + consentim.    | Must      | 1→4  | Alta / parental gate |
+| US-01 | Crear perfil de niño                | Must      | 1→4  | Crear perfil         |
+| US-17 | Logs y tracking de primera parte    | Should    | 3→6  | —                    |
+| US-18 | Configuración editable (prompts/IA) | Should    | 2→3  | —                    |
+| US-02 | Listar y seleccionar perfiles       | Must      | 3→4  | Inicio / Generador   |
+| US-03 | Generar cuento personalizado        | Must      | 2→4  | Generador            |
+| US-04 | Fallback automático a mock          | Must      | 2    | Generador            |
+| US-05 | Modo de IA configurable por env     | Must      | 2    | —                    |
+| US-06 | Arranque reproducible               | Must      | 0    | —                    |
+| US-07 | Guardar / marcar cuento             | Should    | 3→5  | Generador / Histor.  |
+| US-08 | Ver historial de cuentos            | Should    | 5    | Historial            |
+| US-09 | Ver actividades recomendadas        | Should    | 5    | Actividades          |
+| US-10 | Registrar actividad completada      | Should    | 5    | Actividades/Histor.  |
+| US-11 | Editar perfil                       | Should    | 5    | Configuración        |
+| US-12 | Cambiar idioma (ES/EN)              | Should    | 5    | Configuración        |
+| US-13 | Eliminar perfil                     | Should    | 5    | Configuración        |
+| US-14 | Proveedor cloud opcional            | Could     | 5    | —                    |
+| US-15 | Modo nocturno                       | Could     | 6    | Configuración        |
 
 ---
 
@@ -269,6 +270,23 @@ reglas de menores. Ver [cumplimiento-menores.md](cumplimiento-menores.md).
   Cuando ocurre, Entonces se registra un `AuditLog` con actor, acción y entidad.
 - Dada la política de conservación, Cuando se define, Entonces `InteractionEvent` y
   `AuditLog` se purgan según un plazo documentado (C-9).
+
+### US-18 — Configuración editable (prompts y parámetros de IA) · Should
+
+Como **desarrollador/administrador** quiero ajustar prompts, ids de modelo y parámetros
+de generación sin tocar código ni reconstruir la imagen, para iterar la calidad de
+cuentos y actividades. Ver `AppSetting` en [modelo-datos.md](modelo-datos.md).
+
+**Criterios de aceptación**
+
+- Dada la tabla `AppSetting` (`key`, `value`), Cuando cambio un prompt o parámetro,
+  Entonces la siguiente generación usa el nuevo valor sin redeploy.
+- Dada una clave ausente en `AppSetting`, Cuando se lee, Entonces se aplica el valor por
+  defecto definido en código.
+- Dado un secreto (API key), Cuando se configura, Entonces va en variables de entorno,
+  **nunca** en `AppSetting`.
+- Dada una plantilla de prompt, Cuando se define, Entonces fuerza contenido apto y
+  seguro para niños (guardarraíl).
 
 ### US-14 — Proveedor cloud opcional · Could
 

@@ -84,7 +84,50 @@ erDiagram
         json     metadatos  "contexto"
         datetime creadoEn
     }
+
+    AppSetting {
+        uuid     id            PK
+        string   key           "única — p. ej. prompt.story.template"
+        text     value         "valor (texto; JSON si es estructurado)"
+        string   descripcion   "opcional — para qué sirve"
+        datetime actualizadoEn "opcional"
+    }
 ```
+
+`AppSetting` es **global** (no se relaciona con otras entidades): es una tabla
+clave-valor para configuración de la app editable sin redeploy.
+
+## AppSetting (configuración de la app)
+
+Tabla clave-valor (`id`, `key`, `value`) para parámetros **ajustables en caliente**:
+plantillas de prompt, identificadores de modelo y opciones de generación, sin tocar
+código ni reconstruir la imagen.
+
+**Claves previstas (seed inicial):**
+
+| key                        | Ejemplo de value                                      | Uso                                    |
+| -------------------------- | ----------------------------------------------------- | -------------------------------------- |
+| `ai.model.local`           | `gemma:2b`                                            | Modelo Ollama por defecto              |
+| `ai.model.cloud`           | `claude-opus-4-8` (id de modelo, **no** la clave)     | Modelo de la ruta cloud                |
+| `prompt.story.system`      | "Eres un cuentacuentos infantil…"                     | System prompt de `generateStory`       |
+| `prompt.story.template`    | "Crea un cuento para {nombre} ({edad}) sobre {tema}…" | Plantilla del cuento                   |
+| `prompt.activity.system`   | "Diseñas actividades educativas seguras…"             | System prompt de `recommendActivities` |
+| `prompt.activity.template` | "Propón {n} actividades para {edad} de {categoria}…"  | Plantilla de actividades               |
+| `story.maxTokens`          | `800`                                                 | Límite de longitud del cuento          |
+| `story.temperature`        | `0.8`                                                 | Creatividad del LLM                    |
+| `activity.count`           | `3`                                                   | Nº de actividades a generar            |
+
+**Reglas (importante):**
+
+- **Secretos NO van aquí.** Las claves de API (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) y
+  el bootstrap (`DATABASE_URL`, `PORT`, `AI_PROVIDER`) siguen en **variables de entorno**
+  (`.env`), nunca en `AppSetting`. Esta tabla guarda solo config no sensible.
+- **Precedencia:** el entorno fija el arranque y los secretos; `AppSetting` ajusta los
+  tunables en runtime. Si una clave falta en `AppSetting`, se usa un **valor por defecto
+  en código** (así la Fase 2 funciona antes de existir la tabla, en Fase 3).
+- **`value` es texto;** los valores estructurados se guardan como JSON y se parsean al leer.
+- **Prompts seguros:** las plantillas deben imponer contenido **apto y seguro para
+  niños** (guardarraíl), coherente con [cumplimiento-menores.md](cumplimiento-menores.md).
 
 ## Value-objects
 
