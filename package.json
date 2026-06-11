@@ -1,0 +1,33 @@
+{
+  "name": "magyblobapp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "App infantil bilingüe que crea perfiles y genera cuentos con IA local (TFM Máster)",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.2.2",
+  "scripts": {
+    "dev": "pnpm --filter @magyblob/backend dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check && pnpm run test",
+    "ollama:setup": "bash scripts/setup-ollama.sh",
+    "up": "docker compose up",
+    "up:build": "docker compose up --build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1"
+  }
+}
