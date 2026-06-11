@@ -125,6 +125,36 @@ Tres modos detrás de la interfaz `AIProvider`, implementados en `src/infrastruc
   (sin fallback, para que los fallos se vean). No es test automatizado: el DoD lo define
   como manual porque depende del modelo descargado.
 
+## Persistencia y API HTTP (Fase 3 · 2026-06-10)
+
+- **Inyección de dependencias en `buildServer(config, deps?)`.** Los tests pasan repos
+  en memoria + `MockProvider` y ejercitan el HTTP con `app.inject` **sin tocar la DB**;
+  en producción, si no se inyectan `deps`, se construyen con `buildProductionDeps`
+  (repos Prisma) **importado de forma diferida** (`await import`) para que Prisma no
+  entre en el grafo de módulos de los tests. El test de integración del DoD es, por
+  tanto, rápido y sin Postgres.
+- **Audit/eventos se escriben en la frontera HTTP, no en los casos de uso.** Decisión
+  para no acoplar la aplicación (ya cerrada y testeada en Fase 1) a una preocupación
+  transversal de cumplimiento. La ruta llama al caso de uso y luego registra
+  `AuditLog`/`InteractionEvent`. Si esto creciera, se reconsideraría moverlo a un
+  decorador de caso de uso.
+- **Errores de dominio tipados para HTTP:** `NotFoundError` (404) y `ConflictError`
+  (409) extienden `DomainError` (400). Los tests de Fase 1 siguen verdes porque ambos
+  son `DomainError`. El error handler central devuelve `{ error: { tipo, mensaje } }`.
+- **Vocabularios como `String`/`String[]` en Prisma, no enums de la DB.** El dominio ya
+  valida los vocabularios cerrados (string unions ASCII); duplicarlos como enums de
+  Postgres añadiría fricción de mapeo y migraciones por cada cambio. `intereses` es
+  `String[]` (array nativo), sin tabla puente (YAGNI).
+- **`AppSetting` se consume en caliente:** el `OllamaProvider` lee `prompt.story.*`,
+  `prompt.activity.*` y `story.temperature` por llamada, con **fallback al default en
+  código** si la clave falta. Por eso la app funciona aunque no se haya corrido el seed.
+  Las plantillas usan placeholders `{nombre}`, `{edad}`, `{tema}`… sustituidos en `prompts.ts`.
+- **Cliente Prisma con salida custom (`src/generated`) y su coste:** `tsc` no copia los
+  `.js` generados, así que `build` hace `cp -r src/generated dist/generated`; en Docker
+  el cliente se **regenera dentro de la imagen** (engine linux/musl) y el del host se
+  excluye con `.dockerignore`. `prisma` pasó a dependencia de producción para poder
+  `migrate deploy` al arrancar el contenedor (requisito "sin pasos ocultos").
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar

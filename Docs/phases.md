@@ -85,18 +85,31 @@ Cerrada el 2026-06-10 · rama `feature/2-capa-ia`. Implementaciones en
 
 ---
 
-## FASE 3 — Persistencia y API HTTP ⬜
+## FASE 3 — Persistencia y API HTTP ✅
 
-- [ ] Repos PostgreSQL (Prisma) implementando interfaces del dominio (incl. `Guardian`).
-- [ ] Migraciones + seeds.
-- [ ] Tablas `InteractionEvent` (tracking de primera parte) y `AuditLog` (acciones
-      sensibles del adulto + consentimiento).
-- [ ] Tabla `AppSetting` (clave-valor) + seed de prompts, ids de modelo y parámetros;
-      secretos siguen en env, no en DB.
-- [ ] Controllers + routes para alta de adulto, perfil y generación de cuento.
-- [ ] Manejo de errores centralizado.
-- [ ] Logs estructurados (pino).
-- **DoD:** test de integración de `POST /stories` en verde.
+Cerrada el 2026-06-10 · rama `feature/3-persistencia-api`.
+
+- [x] Repos PostgreSQL (Prisma) de `Guardian`, `ChildProfile` y `Story` con mappers
+      fila↔entidad; repos de `InteractionEvent`, `AuditLog` y `Settings`.
+- [x] Migración inicial (`prisma/migrations/…_init`) + seed de `AppSetting` (idempotente).
+- [x] Tablas `InteractionEvent` (evento `cuento_generado`) y `AuditLog`
+      (`consentimiento` en alta de adulto, `crear` en alta de perfil), escritas en la
+      frontera HTTP (no se acopla la aplicación a la trazabilidad transversal).
+- [x] Tabla `AppSetting` (clave-valor) + seed de prompts, ids de modelo y parámetros;
+      el `OllamaProvider` lee plantilla/temperatura en caliente con fallback a código.
+      Secretos siguen en env, nunca en DB.
+- [x] Rutas: `POST /guardians`, `GET /guardians/:id/profiles`, `POST /profiles`,
+      `POST /stories` con validación de esquema (vocabularios cerrados) en la entrada.
+- [x] Manejo de errores centralizado (`DomainError`→400, `NotFoundError`→404,
+      `ConflictError`→409, validación→400, resto→500) con cuerpo uniforme.
+- [x] Logs estructurados (pino) ya de Fase 0; errores 5xx se registran.
+- [x] Inyección de dependencias: `buildServer(config, deps?)`; tests con repos en
+      memoria vía `app.inject` (sin DB), producción con `buildProductionDeps` (Prisma)
+      cargado por import dinámico.
+- **DoD:** ✅ test de integración de `POST /stories` en verde (flujo completo por HTTP) ·
+  ✅ 58 tests (`pnpm check`) · ✅ `docker compose up` levanta la pila, aplica migraciones
+  al arrancar (`migrate deploy`) y el flujo alta→perfil→cuento responde 201 · ✅ validado
+  además contra PostgreSQL real en local (repos Prisma, audit y eventos persistidos).
 
 ---
 
