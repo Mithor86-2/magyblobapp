@@ -101,6 +101,30 @@ generación (`maxTokens`, `temperature`, `activity.count`). Detalle en
 - **Prompts seguros:** las plantillas imponen contenido apto para niños (guardarraíl),
   ligado a [cumplimiento-menores.md](cumplimiento-menores.md).
 
+## Capa de IA (Fase 2 · 2026-06-10)
+
+Tres modos detrás de la interfaz `AIProvider`, implementados en `src/infrastructure/ai/`.
+
+- **`MockProvider` cumple tres papeles a la vez** y por eso es código de producción,
+  no un doble de test: (1) modo por defecto sin GPU, (2) red de seguridad del fallback,
+  (3) base de los tests rápidos. El `FakeAIProvider` de `test/support/doubles.ts` se
+  mantiene aparte (más escueto) para los tests de aplicación de Fase 1.
+- **Fallback como decorador (`FallbackProvider`), no como `if` en cada caso de uso.**
+  Envuelve al proveedor activo y cae a mock ante cualquier fallo (caído/timeout/JSON
+  inválido), registrando `warn`. La aplicación no sabe que existe el fallback.
+- **Salida estructurada vía `format` (esquema JSON) de Ollama**, no parseo de texto
+  libre. `gemma:2b` es pequeño y poco fiable con formato; el esquema lo fuerza. Se usa
+  `POST /api/generate` sin streaming + `AbortSignal.timeout` (`AI_TIMEOUT_MS`, 60 s).
+- **`createAIProvider(config, logger)` centraliza la selección por env.** `mock`→Mock;
+  `local`→Ollama envuelto en Fallback; `cloud`→avisa y usa mock (CloudProvider es Fase 5,
+  no se adelanta — regla "una sesión por fase").
+- **Prompts bilingües con valores por defecto en código** (`prompts.ts`), cada uno con
+  instrucción de seguridad para menores. La firma se mantiene cuando en Fase 3 los textos
+  salgan de `AppSetting` (solo cambia el origen, no el llamador).
+- **Smoke test manual del Ollama** (`pnpm ai:smoke`): script directo contra Ollama vivo
+  (sin fallback, para que los fallos se vean). No es test automatizado: el DoD lo define
+  como manual porque depende del modelo descargado.
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar
