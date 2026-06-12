@@ -1,3 +1,4 @@
+import { Guardian } from '../../domain/entities/Guardian.js';
 import { NotFoundError } from '../../domain/errors.js';
 import type { GuardianRepository } from '../../domain/repositories/GuardianRepository.js';
 import type { GuardianOutput, LoginGuardianInput } from '../dto.js';
@@ -15,9 +16,10 @@ export class LoginGuardian {
   constructor(private readonly deps: LoginGuardianDeps) {}
 
   async execute(input: LoginGuardianInput): Promise<GuardianOutput> {
-    const guardian = await this.deps.guardians.findByEmail(input.email);
+    const email = Guardian.normalizarEmail(input.email);
+    const guardian = await this.deps.guardians.findByEmail(email);
     if (!guardian) {
-      throw new NotFoundError(`No hay ninguna cuenta con el email "${input.email}".`);
+      throw new NotFoundError(`No hay ninguna cuenta con el email "${email}".`);
     }
 
     return {

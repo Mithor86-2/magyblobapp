@@ -22,16 +22,17 @@ export class RegisterGuardian {
       throw new DomainError('Hay que aceptar el consentimiento para registrarse.');
     }
 
-    const existente = await this.deps.guardians.findByEmail(input.email);
+    const email = Guardian.normalizarEmail(input.email);
+    const existente = await this.deps.guardians.findByEmail(email);
     if (existente) {
-      throw new ConflictError(`Ya existe una cuenta con el email "${input.email}".`);
+      throw new ConflictError(`Ya existe una cuenta con el email "${email}".`);
     }
 
     const guardian = new Guardian({
       id: this.deps.newId(),
       nombre: input.nombre,
       apellidos: input.apellidos,
-      email: input.email,
+      email,
       parentesco: input.parentesco,
       telefono: input.telefono,
       consentimiento: {

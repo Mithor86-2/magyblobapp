@@ -17,6 +17,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- El email del adulto se **normaliza** (recorte + minúsculas) en la entidad `Guardian`, y el alta
+  y el login normalizan la clave de búsqueda antes de `findByEmail`. Así el login encuentra la
+  cuenta y la unicidad del alta se respeta aunque se teclee con mayúsculas o espacios.
+
 ### Deprecated
 
 ### Removed

@@ -43,4 +43,10 @@ describe('LoginGuardian', () => {
       NotFoundError,
     );
   });
+
+  it('normaliza el email (mayúsculas y espacios) y encuentra la cuenta', async () => {
+    const out = await login.execute({ email: '  ANA@Example.com  ' });
+    expect(out.id).toBe('g-1');
+    expect(out.email).toBe('ana@example.com');
+  });
 });

@@ -52,6 +52,13 @@ describe('RegisterGuardian', () => {
     await expect(useCase.execute(inputValido())).rejects.toThrow(DomainError);
   });
 
+  it('normaliza el email y rechaza el duplicado aunque cambie el caso/espacios', async () => {
+    await useCase.execute(inputValido({ email: 'ana@example.com' }));
+    await expect(useCase.execute(inputValido({ email: '  ANA@Example.com  ' }))).rejects.toThrow(
+      DomainError,
+    );
+  });
+
   it('rechaza email con formato inválido', async () => {
     await expect(useCase.execute(inputValido({ email: 'no-es-email' }))).rejects.toThrow(
       DomainError,
