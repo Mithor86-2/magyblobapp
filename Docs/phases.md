@@ -163,6 +163,49 @@ Se ejecuta por **features secuenciales** (plan en [planes/fase-5.md](planes/fase
 
 ---
 
+## FASE 5.5 — Sesión del guardián y multi-perfil ⬜
+
+Hoy la app solo persiste `guardianId` tras el consentimiento: no hay forma de que un
+guardián que vuelve (o en otro dispositivo) recupere su cuenta, ni de elegir entre varios
+hijos, ni de cerrar sesión. Esta fase añade una **sesión de guardián** completa, separando la
+zona de adultos (tras puerta parental) de la zona infantil. Se ejecuta por **features
+secuenciales** (plan en `planes/fase-5-5.md` cuando se abra). Refuerza el cumplimiento
+(C-1/C-6): identificación del adulto + puerta parental.
+
+> Limitación reconocida (coherente con [cumplimiento-menores.md](cumplimiento-menores.md)): el
+> "login" es una **identificación ligera por email** (sin contraseña ni verificación robusta de
+> edad), que queda fuera del alcance del TFM y se declara como tal.
+
+**F1 — Identificar al guardián (backend).**
+
+- [ ] Caso de uso `LoginGuardian` (identifica por email vía `GuardianRepository.findByEmail`,
+      ya existente) + DTO; `NotFoundError` si no hay cuenta con ese email.
+- [ ] Ruta `POST /guardians/login` (o `GET /guardians?email=`) con validación de esquema +
+      test de caso de uso (dobles in-memory) y test de integración de la ruta.
+
+**F2 — Sesión y selección de perfil activo (app).**
+
+- [ ] Store: ampliar la sesión persistida — guardar el `guardian` (no solo el id) y el
+      `activeProfileId`; `currentProfile` deja de ser solo de sesión.
+- [ ] Gateway/uso de `GET /guardians/:id/profiles` (ListProfiles, ya en backend) para listar
+      los hijos del guardián.
+- [ ] Pantalla **Seleccionar perfil** (lista de hijos + "crear nuevo"); fija el `currentProfile`.
+      Corresponde al "Ver perfiles" del diseño de Inicio.
+- [ ] Onboarding revisado: sin sesión → Consent (alta) **o** "Ya tengo cuenta" → login por email;
+      con sesión → selección de perfil → pestañas.
+
+**F3 — Área parental y cierre de sesión (app).**
+
+- [ ] Zona de adultos protegida por la **puerta parental** (componente ya existente) para gestión
+      de cuenta/perfiles, separada de la zona infantil.
+- [ ] Acción **Cerrar sesión / cambiar guardián** (reset del store → vuelve al onboarding).
+
+- **DoD:** un guardián puede registrarse, salir y volver a entrar por email recuperando su
+  sesión; elegir entre sus hijos; acceder a la zona de adultos solo tras la puerta parental; y
+  cerrar sesión. `pnpm check` verde + bundle (`expo export`) + e2e del login contra PostgreSQL.
+
+---
+
 ## FASE 6 — Calidad y robustez ★ HITO 2 ⬜
 
 - [ ] Test por cada caso de uso y cada endpoint (significativo).
