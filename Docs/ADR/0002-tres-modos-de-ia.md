@@ -5,6 +5,14 @@
 - **Actualización (2026-06-12):** se retira el tercer modo `cloud` del alcance. El proyecto
   se queda con `mock | local` (privacidad por diseño: los datos del menor no salen de la
   máquina). El resto de la decisión (interfaz única + fallback a mock) se mantiene.
+- **Actualización (2026-06-12, reabre la anterior):** se **reintroduce** el modo `cloud`,
+  pero como **opt-in apagado por defecto** y **conmutable en caliente desde la base de datos**
+  (tabla `AppSetting`, clave JSON `ai.cloud` = `{activo, target, model}`). Los secretos
+  (API keys) **siguen en variables de entorno**, nunca en BD. El defecto del proyecto sigue
+  siendo `mock`/`local`; `cloud` solo se usa si un adulto lo activa explícitamente. Ver
+  [US-14](../historias-usuario/epic-f-plataforma.md#us-14), el plan
+  [14-proveedor-cloud](../planes/14-proveedor-cloud.md) y las salvedades de cumplimiento
+  ([cumplimiento-menores.md](../cumplimiento-menores.md), C-5).
 - **Relacionada con:** [ADR 0001](0001-arquitectura-limpia-monorepo.md),
   [ADR 0003](0003-gemma-2b-llm-local-por-defecto.md)
 
@@ -34,10 +42,19 @@ implementaciones intercambiables** seleccionadas por la variable de entorno
   evaluador sin GPU corra todo en modo mock.
 - **`OllamaProvider`** — ejecuta contra el modelo local por defecto, `gemma:2b` (ver
   [ADR 0003](0003-gemma-2b-llm-local-por-defecto.md)).
+- **`CloudProvider`** _(opt-in, OFF por defecto — reintroducido el 2026-06-12)_ — adaptador
+  único **compatible con OpenAI** (`/chat/completions`) que sirve a cualquier proveedor del
+  mismo dialecto (Groq, Gemini, OpenRouter, Cerebras…) cambiando `baseUrl + model + apiKey`.
+  Se **activa desde la BD** (clave `ai.cloud` de `AppSetting`, no por código); el `target`
+  mapea en código a su `baseUrl` y a la variable de entorno con la API key. Cae a
+  `MockProvider` ante fallo, igual que `local`.
 
 El valor por defecto es `mock`, de modo que clonar y arrancar funciona sin pasos
-adicionales. La interfaz única deja la puerta abierta a añadir otros proveedores en el
-futuro sin tocar el dominio, pero **ninguno se incluye en el alcance**.
+adicionales. El modo `local` se selecciona por env (`AI_PROVIDER=local`); el modo `cloud`
+**no** se enciende por env sino por una decisión explícita del adulto en BD
+(`ai.cloud.activo=true` + key en env), de modo que **privacidad por diseño sigue siendo el
+comportamiento por defecto** y el cloud es una elección consciente y trazada
+([AuditLog](../cumplimiento-menores.md)).
 
 ## Alternativas consideradas
 
@@ -45,8 +62,12 @@ futuro sin tocar el dominio, pero **ninguno se incluye en el alcance**.
   testabilidad, exige hardware para todo y deja al evaluador sin GPU fuera de juego.
 - **Incluir un proveedor cloud (Claude/OpenAI).** Daría mejor calidad de texto, pero
   introduce coste, dependencia externa y, sobre todo, sacar datos del menor de la máquina.
-  Se **descartó** (privacidad por diseño + YAGNI); la interfaz permite añadirlo si algún día
-  compensa.
+  Se descartó el 2026-06-12 y se **reintrodujo el mismo día** como modo `cloud` **opt-in
+  OFF por defecto**: la interfaz lo permitía sin tocar el dominio, y se acota con datos
+  minimizados, activación explícita por BD y secretos en env (ver actualizaciones arriba).
+- **Adaptador cloud por proveedor (uno para Groq, otro para Gemini…).** Descartado: casi
+  todos los gratuitos exponen el dialecto OpenAI, así que un **único adaptador
+  parametrizado** cubre todos (YAGNI). Cambiar de proveedor es cambiar datos, no código.
 - **Mock solo en tests (no como proveedor de runtime).** Perderíamos el fallback
   automático y el modo de evaluación sin GPU, que son requisitos.
 
@@ -67,3 +88,8 @@ futuro sin tocar el dominio, pero **ninguno se incluye en el alcance**.
 - Hay que mantener la paridad de contrato entre las tres implementaciones.
 - El modo mock produce contenido fijo/plantillado; no representa la calidad real del
   LLM (se asume y se documenta).
+- El modo `cloud` **rompe la privacidad por diseño** (C-5): saca datos del perfil a un
+  tercero. Se mitiga manteniéndolo OFF por defecto, enviando solo datos minimizados (sin
+  nombre ni identificadores) y registrando su activación; el riesgo residual (incl. que los
+  free tiers entrenen con los datos) se documenta en
+  [cumplimiento-menores.md](../cumplimiento-menores.md).

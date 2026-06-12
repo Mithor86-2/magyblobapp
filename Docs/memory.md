@@ -254,3 +254,34 @@ de lo retirado"). Decisión del usuario:
   fuera de `docker-compose.yml`, `CHROMA_URL` fuera; ADR 0004 marcada **Rechazada**.
 - Si en el futuro hiciera falta similitud semántica, la vía preferente sería `pgvector` (sin
   contenedor aparte), no Chroma.
+
+## Reintroducción del modo cloud (Feature 14 · 2026-06-12 · backend v0.3.0)
+
+A petición del usuario se **reabre** la decisión anterior y se reintroduce el modo `cloud` (US-14,
+reactivada), pero acotado para no romper la privacidad por diseño. Detalle en
+[planes/14-proveedor-cloud.md](planes/14-proveedor-cloud.md) y [ADR 0002](ADR/0002-tres-modos-de-ia.md).
+
+- **Adaptador único compatible con OpenAI**, no uno por proveedor. Groq, Gemini, OpenRouter y
+  Cerebras exponen el mismo dialecto `/chat/completions`; un solo `CloudProvider` parametrizado los
+  cubre todos cambiando `baseUrl + model + apiKey`. Registro de presets en `cloudPresets.ts`
+  (solo info no secreta: `baseUrl` + nombre de la env con la key). YAGNI: una abstracción, no N.
+- **Selección por BD (hot-swap), no por env.** La clave `ai.cloud` de `AppSetting`
+  (`{activo,target,model}`, validada en `cloudSettings.ts`) decide el proveedor. Se eligió **una
+  clave JSON** (atómica, sin estados inconsistentes) en vez de claves sueltas o tabla nueva
+  (`AppSetting` ya existía para esto). El cambio se aplica **por petición**: `HotSwapAIProvider`
+  (en `createAIProvider`) lee `ai.cloud` en cada generación y enruta a cloud o al base, así que
+  cambiar el proveedor es un `UPDATE` sin reiniciar.
+- **Decisión clave de cumplimiento: `cloud` NO se activa por `AI_PROVIDER`.** El env solo elige el
+  base (`mock`/`local`); cloud requiere encenderlo explícitamente en BD **y** tener la key en env.
+  Así "privacidad por defecto" se mantiene: nadie enciende la nube por una variable de entorno por
+  accidente. C-5 de cumplimiento pasa de ✔ absoluto a "✔ por defecto / Cond. en cloud" (solo salen
+  datos minimizados; los free tiers pueden entrenar con ellos; incompatible con Apple Kids).
+- **Secretos solo en env.** La BD guarda selectores no secretos; la API key se lee de
+  `process.env[preset.apiKeyEnv]` vía `config.cloudApiKeys`. `docker-compose.yml` pasa
+  `GROQ/GEMINI/OPENROUTER/CEREBRAS_API_KEY` al backend (vacías por defecto).
+- **Reutilización con Ollama:** se extrajo el parseo/saneo del LLM a `parseResponse.ts` y las claves
+  de `AppSetting` a `AI_SETTING_KEYS` (`prompts.ts`), compartidos por ambos proveedores. El
+  `CloudProvider` usa `response_format: {type:'json_object'}` (más portable que `json_schema` entre
+  proveedores) y añade al prompt la forma JSON esperada. Fallback a mock vía el mismo `FallbackProvider`.
+- **Smoke `pnpm ai:smoke:cloud`** (`scripts/smoke-cloud.ts`): CloudProvider directo contra el
+  proveedor real (key en env), verificado contra Groq `llama-3.3-70b-versatile`.

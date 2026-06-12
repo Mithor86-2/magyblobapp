@@ -170,3 +170,44 @@ engine. Importar estáticamente la composición arrastraría Prisma al grafo del
   lo concreto y lo expone tipado como las interfaces. Las pantallas importan ese `api`, no `fetch`.
 - `ApiError` se colocó en `domain/errors.ts` (no en infraestructura) para que la presentación lo
   capture con `instanceof` **sin** importar la capa de infraestructura (mantiene la frontera).
+
+## Feature 14 — Proveedor cloud
+
+### El contenedor no toma el `.env` nuevo hasta recrearlo (y el env del shell gana)
+
+- **Síntoma:** `.env` con `AI_PROVIDER=local`, pero `docker exec backend env` mostraba
+  `AI_PROVIDER=mock`; al apagar el cloud, generaba con mock en vez de Ollama.
+- **Causa:** `docker compose` resuelve `${AI_PROVIDER:-mock}` **en el momento de crear/recrear** el
+  contenedor, leyendo el `.env` de entonces. El contenedor en marcha conserva el valor con el que
+  arrancó; editar `.env` después no lo cambia. (Además, una variable exportada en el shell tiene
+  **precedencia** sobre el `.env` en la sustitución de compose.)
+- **Solución:** `docker compose up -d backend` para recrearlo y que tome el `.env` actual. Verificar
+  con `docker exec <backend> sh -c 'echo $AI_PROVIDER'`. Igual que la lección de Fase 5: **tras
+  tocar backend o `.env`, recrear el contenedor**.
+
+### El seed no corre al arrancar; la clave `ai.cloud` nueva no aparece sola
+
+- **Síntoma:** `UPDATE app_settings ... WHERE key='ai.cloud'` afectó **0 filas** en una BD ya
+  sembrada antes de añadir la clave al seed.
+- **Causa:** el arranque del contenedor solo hace `prisma migrate deploy`, **no** `prisma:seed`
+  (el seed es un paso manual idempotente). Una clave nueva del seed no llega a una BD existente.
+- **Solución:** re-ejecutar `pnpm prisma:seed` (upsert idempotente) o `INSERT ... ON CONFLICT`. Lado
+  bueno: que `ai.cloud` **no exista** por defecto es correcto — `parseCloudSetting` devuelve `null`
+  y el modo base (mock/local) se mantiene → privacidad por defecto sin depender del seed.
+
+### `json_object` es más portable que `json_schema` entre proveedores OpenAI-compatibles
+
+- Para la salida estructurada del `CloudProvider` se usó `response_format: {type:'json_object'}`
+  (soportado por Groq, Gemini-compat, OpenRouter…) en vez de `json_schema` (más nuevo y no
+  universal). El modo `json_object` **exige** que el prompt describa la forma JSON y mencione
+  "JSON"; por eso `CloudProvider` añade esa instrucción al prompt de usuario (el `system` de
+  seguridad infantil se mantiene intacto). El parseo/saneo se reutiliza con Ollama
+  (`parseResponse.ts`), que ya filtraba categorías inválidas y números fuera de rango.
+
+### Hot-swap por petición, no por arranque
+
+- Para que cambiar de proveedor sea **en caliente** (un `UPDATE` a `ai.cloud` sin reiniciar), la
+  selección se resuelve **en cada llamada** (`HotSwapAIProvider` lee `ai.cloud` por petición), no al
+  construir el provider. `createAIProvider` sigue siendo síncrono: solo envuelve el base con el
+  hot-swap **cuando hay `settings`** (producción); sin `settings` (tests, mock puro) devuelve el
+  base directo, preservando los tests existentes y evitando IO en la factoría.

@@ -19,6 +19,31 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.3.0] - 2026-06-12
+
+Feature 14 (US-14): modo de IA `cloud` opt-in, conmutable en caliente desde BD.
+
+### Added
+
+- Modo de IA **`cloud`** (opt-in, OFF por defecto) reintroducido (US-14): `CloudProvider`
+  compatible con OpenAI (`POST /chat/completions`, `response_format: json_object`) que sirve a
+  cualquier proveedor del mismo dialecto (Groq, Gemini, OpenRouter, Cerebras) vía un registro de
+  presets (`cloudPresets.ts`). Selección **conmutable en caliente desde BD** (`AppSetting` clave
+  `ai.cloud` = `{activo,target,model}`, validada en `cloudSettings.ts`); las API keys van en
+  variables de entorno (`<TARGET>_API_KEY`), nunca en BD. `createAIProvider` resuelve el proveedor
+  por petición (`HotSwapAIProvider`) con fallback a mock; `config.cloudApiKeys` lee las keys de env.
+  Seed de `ai.cloud` desactivado por defecto. Tests de `CloudProvider`, validación y factoría.
+- Smoke test manual `pnpm ai:smoke:cloud` (`scripts/smoke-cloud.ts`): genera contra el proveedor
+  cloud real (key en env), verificado contra Groq `llama-3.3-70b-versatile`.
+
+### Changed
+
+- Extraído el parseo/saneo de la salida del LLM a `parseResponse.ts` y las claves de `AppSetting`
+  a `AI_SETTING_KEYS` (`prompts.ts`), compartidos por `OllamaProvider` y `CloudProvider` (sin
+  cambio de comportamiento del modo local).
+- `docker-compose.yml` pasa las API keys de cloud (`GROQ/GEMINI/OPENROUTER/CEREBRAS_API_KEY`,
+  vacías por defecto) al backend.
+
 ## [0.2.1] - 2026-06-12
 
 ### Fixed

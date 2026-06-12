@@ -2,7 +2,9 @@
 
 App infantil bilingüe (ES/EN) que crea perfiles de niño y genera cuentos /
 recomienda actividades usando un LLM **local** (Ollama + Gemma 2B), con
-arquitectura limpia y dos modos de IA intercambiables (`mock | local`).
+arquitectura limpia y modos de IA intercambiables: `mock` y `local` (el modo
+base, por env) más un modo **`cloud` opcional** (opt-in, OFF por defecto,
+conmutable desde la base de datos — ver más abajo).
 
 Proyecto de TFM. El plan por fases está en
 [Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) y la guía para
@@ -81,6 +83,42 @@ AI_PROVIDER=local docker compose up -d backend
 > - La primera generación con `gemma:2b` tarda ~15 s; las siguientes van más rápidas
 >   (el modelo ya queda cargado en memoria).
 > - El modelo se puede cambiar con `OLLAMA_MODEL` en `.env` (por defecto `gemma:2b`).
+
+## Modo cloud (opt-in, opcional)
+
+Además de `mock`/`local`, existe un modo **`cloud`** que genera con un proveedor de IA en la nube
+**compatible con OpenAI** (Groq, Gemini, OpenRouter, Cerebras…). Está **apagado por defecto** y, por
+diseño de privacidad, **no se activa con `AI_PROVIDER`** sino desde la base de datos: así nadie lo
+enciende por accidente por una variable de entorno.
+
+> ⚠️ El modo cloud **saca datos del perfil a un tercero** (rompe la privacidad por diseño). Solo se
+> envían datos minimizados (edad, intereses, idioma; nunca nombre ni identificadores), pero los
+> _free tiers_ pueden entrenar con ellos. Es una función de iteración/calidad, no el modo recomendado
+> para datos reales de menores. Ver [Docs/cumplimiento-menores.md](Docs/cumplimiento-menores.md).
+
+Activarlo (ejemplo con **Groq**):
+
+```bash
+# 1) Pon la API key del proveedor en .env (solo secretos; nunca van en la BD).
+echo 'GROQ_API_KEY=gsk_...' >> .env
+docker compose up -d backend          # recrea el backend para tomar la key
+
+# 2) Activa el proveedor en la BD (clave AppSetting `ai.cloud`). Conmutable en
+#    caliente: el cambio aplica en la siguiente generación, sin reiniciar.
+docker exec magyblobapp-postgres-1 psql -U magyblob -d magyblob -c \
+  "UPDATE app_settings SET value='{\"activo\":true,\"target\":\"groq\",\"model\":\"llama-3.3-70b-versatile\"}' WHERE key='ai.cloud';"
+```
+
+Targets disponibles y su variable de entorno: `groq` (`GROQ_API_KEY`), `gemini` (`GEMINI_API_KEY`),
+`openrouter` (`OPENROUTER_API_KEY`), `cerebras` (`CEREBRAS_API_KEY`). Para desactivar, pon
+`"activo":false`. Si el proveedor falla o falta la key, el backend **cae al modo base** (mock/local).
+
+Smoke test directo contra el proveedor real (sin BD, lee la key de `.env`):
+
+```bash
+pnpm ai:smoke:cloud                                          # target groq por defecto
+SMOKE_CLOUD_TARGET=gemini SMOKE_CLOUD_MODEL=gemini-2.0-flash pnpm ai:smoke:cloud
+```
 
 ## Probar la API
 
