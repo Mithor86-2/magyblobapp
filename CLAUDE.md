@@ -18,6 +18,9 @@ the gate (Definition of Done) that closes each phase.
 - [Docs/phases.md](Docs/phases.md) — what's done / what's pending per phase. Update when a phase advances or closes.
 - [Docs/memory.md](Docs/memory.md) — decisions made along the way and their rationale.
 - [Docs/lecciones-aprendidas.md](Docs/lecciones-aprendidas.md) — concrete gotchas and how they were solved.
+- [Docs/historias-usuario/](Docs/historias-usuario/README.md) — historias de usuario y criterios de
+  aceptación (Gherkin), un documento por épica + índice con la tabla de trazabilidad
+  (historia → fase → pantalla). Es la fuente de los tests del DoD.
 
 It is the codebase for a Máster (TFM) project: a bilingual children's app that creates a child
 profile and generates stories / recommends activities using a local LLM.
@@ -133,6 +136,12 @@ work identity) — preserve this; do not reset `git config --local user.*`.
   [Docs/lecciones-aprendidas.md](Docs/lecciones-aprendidas.md)), los `README.md`, la documentación
   de la API y cualquier guía que el cambio deje desfasada. La documentación se actualiza en el mismo
   cierre de la feature, no se difiere.
+- **Actualiza las historias de usuario al implementar funcionalidad.** Cada vez que se construye o
+  cambia una funcionalidad, refleja el estado en [Docs/historias-usuario/](Docs/historias-usuario/README.md):
+  ajusta la historia afectada (US-NN) y su criterios de aceptación si cambiaron, y mantén al día la
+  tabla de trazabilidad del índice (fase y pantalla). Si la funcionalidad no tiene historia, crea
+  una nueva con su ID y criterios en formato Gherkin en el documento de la épica que corresponda
+  (o una épica nueva) antes de darla por hecha — los criterios son la fuente de los tests del DoD.
 - **Sube la versión al cerrar cada feature.** Cada vez que se finaliza una feature, actualiza el
   campo `version` del [package.json](package.json) raíz (y el del paquete afectado en
   `packages/backend/package.json` / `packages/app/package.json` cuando corresponda) siguiendo

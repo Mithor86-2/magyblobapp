@@ -11,7 +11,8 @@ lleva el **qué está hecho y qué falta**.
 [Design/README.md](Design/README.md) (export de Stitch). Es la fuente de verdad de la UI.
 
 **Historias de usuario y criterios de aceptación:** en
-[historias-usuario.md](historias-usuario.md) (incluye inconsistencias detectadas).
+[historias-usuario/](historias-usuario/README.md) (un documento por épica; incluye
+inconsistencias detectadas).
 
 **Modelo de datos:** diagrama ER + value-objects + enums en
 [modelo-datos.md](modelo-datos.md).

@@ -49,7 +49,7 @@ Es la **fuente de verdad de la UI**; análisis e índice en [Design/README.md](D
 ## Decisiones tras el análisis de historias de usuario (2026-06-10)
 
 Resueltas las inconsistencias detectadas al cruzar plan + diseño + ADRs (ver
-[historias-usuario.md](historias-usuario.md)):
+[historias-usuario/](historias-usuario/README.md)):
 
 - **I-1:** se añaden `GenerateStory` y `ListProfiles` a los casos de uso oficiales
   (faltaban; el núcleo y el multi-niño los exigen).
