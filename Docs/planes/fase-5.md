@@ -7,17 +7,16 @@
 ## Contexto
 
 Cerrados el HITO 1 (Fase 4) y el refactor del app a Clean Architecture, toca **ensanchar**:
-actividades recomendadas con IA, progreso e historial, proveedor cloud opcional y la decisión sobre
-Chroma. La exploración confirma que buena parte del andamiaje del backend **ya existe** y no hay que
-rehacerlo:
+actividades recomendadas con IA, progreso e historial. La exploración confirma que buena parte del
+andamiaje del backend **ya existe** y no hay que rehacerlo:
 
 - ✅ Entidad `Activity` (`domain/entities/Activity.ts`, con `completar()`), vocabulario `CATEGORIAS`
   (`arte|musica|logica`), modelo Prisma `activities`, y `Story.marcarLeido()` + `estado`.
 - ✅ `AIProvider.recommendActivities` ya implementado en `MockProvider` y `OllamaProvider`
-  (+ `FallbackProvider`). El modo `cloud` de `createAIProvider` hoy avisa y cae a mock.
+  (+ `FallbackProvider`).
 - ❌ Faltan: `ActivityRepository` (interfaz + Prisma + doble in-memory), casos de uso
-  `RecommendActivities` / `SaveProgress` / `GetHistory`, sus DTOs, rutas, `CloudProvider` real, y en
-  la app: tipo/gateway `Activity`, tab navigator y pantallas Inicio/Actividades/Historial.
+  `RecommendActivities` / `SaveProgress` / `GetHistory`, sus DTOs, rutas, y en la app:
+  tipo/gateway `Activity`, tab navigator y pantallas Inicio/Actividades/Historial.
 
 **Decisiones (con el usuario):** trocear en **features secuenciales** cerradas una a una con la
 skill `cerrar-feature`. **CloudProvider y Chroma se retiraron del alcance** (2026-06-12): el
@@ -157,8 +156,8 @@ Rama: `feature/5-historial-progreso`.
 
 ## Fuera de alcance (retirado el 2026-06-12)
 
-- **CloudProvider (Claude):** no se implementa el modo `cloud`. Se mantienen `mock`/`local`
-  (privacidad por diseño, sin clave en la nube). El stub actual de `createAIProvider` (cloud →
-  aviso + mock) se deja como está.
-- **Chroma (base vectorial):** no se usa. El **dedup simple por título** (F1) cubre "no repetir"
-  para el MVP; Chroma añadiría infra sin aporte claro (YAGNI).
+- **CloudProvider (Claude):** no se implementa el modo `cloud` y se **elimina del código** el
+  caso `cloud` (`config.ts`/`createAIProvider`) y las claves del `.env.example`. Se mantienen
+  `mock`/`local` (privacidad por diseño). ADR 0002 actualizada a "dos modos".
+- **Chroma (base vectorial):** no se usa y se **retira de `docker-compose.yml`**. El **dedup
+  simple por título** (F1) cubre "no repetir" para el MVP. ADR 0004 marcada Rechazada.

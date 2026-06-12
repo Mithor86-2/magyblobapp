@@ -121,8 +121,8 @@ engine. Importar estáticamente la composición arrastraría Prisma al grafo del
   ("El oso era grande y fuerte, y el león era pequeño yagile"). Es esperable en un
   modelo de 2B — no es un bug del provider. Lo que el código garantiza y hay que
   verificar es el **contrato**: JSON estructurado parseable, idioma correcto y
-  categorías dentro del vocabulario. Para mejor prosa, el modo `cloud` (Fase 5) o un
-  modelo local mayor; `gemma:2b` es el default por ser ligero y reproducible sin GPU.
+  categorías dentro del vocabulario. Para mejor prosa, un modelo local mayor (variable de
+  entorno); `gemma:2b` es el default por ser ligero y reproducible sin GPU.
 
 ## Fase 4
 

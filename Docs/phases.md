@@ -29,7 +29,8 @@ Leyenda: ✅ hecho · 🔄 en curso · ⬜ pendiente
 Cerrada el 2026-06-10 · rama `feature/0-andamiaje`.
 
 - [x] Monorepo pnpm workspaces (`packages/backend`, `packages/app`).
-- [x] `docker-compose.yml`: backend + PostgreSQL 16 + Chroma + Ollama (con healthchecks).
+- [x] `docker-compose.yml`: backend + PostgreSQL 16 + Ollama (con healthchecks). _(El
+      servicio Chroma se provisionó aquí y se retiró el 2026-06-12 al descartarse — ADR 0004.)_
 - [x] `.env.example` completo + `scripts/setup-ollama.sh`.
 - [x] ESLint + Prettier + Vitest configurados y funcionando.
 - [x] `ollama pull gemma:2b` documentado (`pnpm ollama:setup` + README).
@@ -73,8 +74,8 @@ Cerrada el 2026-06-10 · rama `feature/2-capa-ia`. Implementaciones en
       red de seguridad del fallback y base de tests.
 - [x] `OllamaProvider` contra `gemma:2b` vía `POST /api/generate` (sin streaming,
       `format` con esquema JSON para salida estructurada fiable, timeout con `AbortSignal`).
-- [x] Selección de modo por env en `createAIProvider` (`mock | local | cloud`);
-      `cloud` avisa y cae a mock (CloudProvider real es Fase 5).
+- [x] Selección de modo por env en `createAIProvider` (`mock | local`). _(Hubo un tercer
+      modo `cloud` que avisaba y caía a mock; se retiró del alcance el 2026-06-12 — ADR 0002.)_
 - [x] `FallbackProvider` envuelve al proveedor activo y cae a `MockProvider` ante
       cualquier fallo (caído/timeout/JSON inválido), registrando un `warn`.
 - [x] Prompts (`prompts.ts`) como plantillas bilingües con valores por defecto en

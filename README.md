@@ -2,7 +2,7 @@
 
 App infantil bilingüe (ES/EN) que crea perfiles de niño y genera cuentos /
 recomienda actividades usando un LLM **local** (Ollama + Gemma 2B), con
-arquitectura limpia y tres modos de IA intercambiables (`mock | local | cloud`).
+arquitectura limpia y dos modos de IA intercambiables (`mock | local`).
 
 Proyecto de TFM. El plan por fases está en
 [Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) y la guía para
@@ -17,7 +17,7 @@ agentes en [CLAUDE.md](CLAUDE.md).
 
 ```bash
 cp .env.example .env          # ajusta valores si hace falta
-docker compose up --build     # backend + PostgreSQL 16 + Chroma + Ollama
+docker compose up --build     # backend + PostgreSQL 16 + Ollama
 ```
 
 Eso es todo: el backend **aplica las migraciones de la base de datos al arrancar**
@@ -50,7 +50,7 @@ Para parar la pila: `docker compose down` o `pnpm down` (los datos persisten en 
 > falta y levanta el backend en modo local). Lo de abajo es el detalle manual equivalente.
 
 El modo de IA lo resuelve el backend al arrancar según la variable `AI_PROVIDER`
-(`mock | local | cloud`); **no hay que tocar código**. Para usar el LLM local hacen
+(`mock | local`); **no hay que tocar código**. Para usar el LLM local hacen
 falta dos cosas: descargar el modelo y poner `AI_PROVIDER=local`.
 
 ```bash

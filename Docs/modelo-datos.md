@@ -108,7 +108,6 @@ código ni reconstruir la imagen.
 | key                        | Ejemplo de value                                      | Uso                                    |
 | -------------------------- | ----------------------------------------------------- | -------------------------------------- |
 | `ai.model.local`           | `gemma:2b`                                            | Modelo Ollama por defecto              |
-| `ai.model.cloud`           | `claude-opus-4-8` (id de modelo, **no** la clave)     | Modelo de la ruta cloud                |
 | `prompt.story.system`      | "Eres un cuentacuentos infantil…"                     | System prompt de `generateStory`       |
 | `prompt.story.template`    | "Crea un cuento para {nombre} ({edad}) sobre {tema}…" | Plantilla del cuento                   |
 | `prompt.activity.system`   | "Diseñas actividades educativas seguras…"             | System prompt de `recommendActivities` |
@@ -119,9 +118,9 @@ código ni reconstruir la imagen.
 
 **Reglas (importante):**
 
-- **Secretos NO van aquí.** Las claves de API (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) y
-  el bootstrap (`DATABASE_URL`, `PORT`, `AI_PROVIDER`) siguen en **variables de entorno**
-  (`.env`), nunca en `AppSetting`. Esta tabla guarda solo config no sensible.
+- **Secretos NO van aquí.** El bootstrap (`DATABASE_URL`, `PORT`, `AI_PROVIDER`) sigue en
+  **variables de entorno** (`.env`), nunca en `AppSetting`. Esta tabla guarda solo config no
+  sensible.
 - **Precedencia:** el entorno fija el arranque y los secretos; `AppSetting` ajusta los
   tunables en runtime. Si una clave falta en `AppSetting`, se usa un **valor por defecto
   en código** (así la Fase 2 funciona antes de existir la tabla, en Fase 3).
@@ -164,9 +163,9 @@ tema del cuento; los intereses pre-seleccionan el tema (decisión I-2).
   `Story.estado`; la realización de una actividad vive en `Activity.completadaEn` +
   `Activity.valoracion`. `GetHistory` consulta ambas tablas por `profileId`.
 - **Actividades generadas con IA (decisión I-3):** cada `Activity` es una instancia
-  generada para un perfil y se persiste (no es un catálogo global). Chroma se evaluará
-  como memoria semántica para deduplicar/relacionar lo generado
-  ([ADR 0004](ADR/0004-base-de-datos-vectorial-chroma.md)).
+  generada para un perfil y se persiste (no es un catálogo global). Para no repetir se usa un
+  **dedup simple por título** sobre PostgreSQL; se descartó una base vectorial (Chroma)
+  ([ADR 0004](ADR/0004-base-de-datos-vectorial-chroma.md), Rechazada).
 - **Borrado de perfil (US-13):** `Story`, `Activity` e `InteractionEvent` se eliminan
   en cascada con su `ChildProfile`; borrar un `Guardian` elimina en cascada todos sus
   niños y datos asociados (derecho de supresión, GDPR).

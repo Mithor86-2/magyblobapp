@@ -1,6 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
-Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**. Volver al [índice](README.md).
+Historias: **US-06**, **US-17**, **US-18**, **US-15** (y **US-14**, descartada). Volver al
+[índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -10,8 +11,7 @@ proyecto sin pasos ocultos.
 **Criterios de aceptación**
 
 - Dado un equipo limpio, Cuando ejecuto `cp .env.example .env && docker compose up`,
-  Entonces la pila (backend + PostgreSQL + Chroma + Ollama) levanta y `/health`
-  responde 200.
+  Entonces la pila (backend + PostgreSQL + Ollama) levanta y `/health` responde 200.
 - Dado el modo por defecto `AI_PROVIDER=mock`, Cuando arranco, Entonces todo funciona
   sin GPU ni modelo descargado.
 - Dado que quiero IA local real, Cuando ejecuto `pnpm ollama:setup`, Entonces se
@@ -52,17 +52,11 @@ cuentos y actividades. Ver `AppSetting` en [modelo-datos.md](../modelo-datos.md)
 - Dada una plantilla de prompt, Cuando se define, Entonces fuerza contenido apto y
   seguro para niños (guardarraíl).
 
-## US-14 — Proveedor cloud opcional · Could
+## US-14 — Proveedor cloud opcional · ~~Could~~ Descartada
 
-Como **desarrollador** quiero poder usar un proveedor cloud (Claude u OpenAI) si hay
-clave para obtener mayor calidad de texto.
-
-**Criterios de aceptación**
-
-- Dado `AI_PROVIDER=cloud` con clave presente, Cuando genero un cuento, Entonces se
-  usa el proveedor cloud configurado (un solo proveedor, [ADR 0002](../ADR/0002-tres-modos-de-ia.md)).
-- Dado que no hay clave, Cuando arranco en cloud, Entonces no se activa y se degrada a
-  mock con aviso.
+**Retirada del alcance (2026-06-12).** No se implementa proveedor cloud: el proyecto se
+queda con `mock`/`local` por privacidad por diseño (los datos del menor no salen de la
+máquina). Ver [ADR 0002](../ADR/0002-tres-modos-de-ia.md).
 
 ## US-15 — Modo nocturno · Could
 

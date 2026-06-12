@@ -169,7 +169,7 @@ App `@magyblob/app` con Expo SDK 56 (lo que da `create-expo-app@latest`, no el 5
   Solución: pantalla **Consent** (puerta parental tipo operación aritmética + alta de `Guardian`
   con consentimiento). El `guardianId` se persiste; el resto de pantallas son de sesión.
 * **La app es agnóstica del proveedor de IA.** Solo llama a `POST /stories`; el modo (mock |
-  local | cloud) lo decide el backend. La "IA local real" de la DoD se demuestra con
+  local) lo decide el backend. La "IA local real" de la DoD se demuestra con
   `AI_PROVIDER=local` (`pnpm up:local`), sin acoplar la app.
 * **Contrato de cable duplicado a propósito.** `src/api/types.ts` replica los DTO del backend en
   lugar de importarlos: cliente y servidor se comunican por la frontera JSON, no por código
@@ -188,8 +188,8 @@ Primera feature de la Fase 5 (US-09), ejecutada por slices:
 
 - **Dedup simple en vez de Chroma.** `RecommendActivities` descarta las actividades cuyo título
   ya exista para el perfil (case-insensitive), comparando contra `ActivityRepository.findByProfile`.
-  Es la alternativa adoptada a la base vectorial: cubre "no repetir" sin añadir infra. La decisión
-  formal de omitir Chroma se documentará en F4 (ver [planes/fase-5.md](planes/fase-5.md)).
+  Es la alternativa adoptada a la base vectorial: cubre "no repetir" sin añadir infra. Chroma se
+  descartó formalmente (ver "Alcance retirado" más abajo y [ADR 0004](ADR/0004-base-de-datos-vectorial-chroma.md)).
 - **App: navegación a dos niveles.** Stack raíz (Consent → CreateProfile → Main) + **tab navigator**
   (`@react-navigation/bottom-tabs`) en `Main`. F1 trae 2 pestañas (Cuentos, Actividades); Inicio e
   Historial llegan en F2 (se evita andamiar pantallas placeholder). Indicador activo tipo "blob"
@@ -241,12 +241,16 @@ sin sobre-ingeniería). **Clean ligera**, no estricta:
 
 ## Alcance retirado: CloudProvider y Chroma (2026-06-12)
 
-Se sacan del plan (antes "pendientes de decidir" en Fase 5). Decisión del usuario:
+Se sacan del plan y, a petición del usuario, se **eliminan del repo por completo** ("sin rastro
+de lo retirado"). Decisión del usuario:
 
 - **CloudProvider (Claude/OpenAI):** no se implementa el modo `cloud`. El proyecto se queda con
-  `mock`/`local` (privacidad por diseño: los datos del niño no salen de la máquina). El stub de
-  `createAIProvider` (cloud → aviso + mock) se deja como está; no se borra el enum ni los ADR.
+  `mock`/`local` (privacidad por diseño: los datos del niño no salen de la máquina). **Eliminado
+  del código:** `AI_PROVIDER` pasa a `mock | local` en `config.ts`; el caso `cloud` desaparece de
+  `createAIProvider`; fuera las claves `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` y `ai.model.cloud` del
+  `.env.example`/`modelo-datos.md`. ADR 0002 actualizada a "dos modos"; US-14 marcada descartada.
 - **Chroma (base vectorial):** no se usa. El **dedup simple por título** en `RecommendActivities`
-  cubre "no repetir" para el MVP; Chroma añadiría un servicio y embeddings sin aporte claro (YAGNI).
-- Pendiente menor (opcional): retirar el servicio `chroma` de `docker-compose.yml` y revisar los
-  ADR 0002 (tres modos) / 0004 (vector DB) si se quiere dejar el repo sin rastro de lo retirado.
+  cubre "no repetir" para el MVP. **Eliminado del repo:** servicio `chroma` y volumen `chromadata`
+  fuera de `docker-compose.yml`, `CHROMA_URL` fuera; ADR 0004 marcada **Rechazada**.
+- Si en el futuro hiciera falta similitud semántica, la vía preferente sería `pgvector` (sin
+  contenedor aparte), no Chroma.
