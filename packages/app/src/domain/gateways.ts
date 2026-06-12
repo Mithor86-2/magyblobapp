@@ -13,6 +13,7 @@ import type {
   CreateChildProfileInput,
   GenerateStoryRequest,
   Guardian,
+  History,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
   Story,
@@ -28,10 +29,18 @@ export interface ProfileGateway {
 
 export interface StoryGateway {
   generate(request: GenerateStoryRequest): Promise<Story>;
+  /** Marca un cuento como leído (US-07). */
+  markRead(storyId: string): Promise<Story>;
 }
 
 export interface ActivityGateway {
   recommend(request: RecommendActivitiesRequest): Promise<Activity[]>;
+  /** Registra una actividad completada con valoración 1-3 (US-10). */
+  complete(activityId: string, valoracion: number): Promise<Activity>;
+}
+
+export interface HistoryGateway {
+  get(profileId: string): Promise<History>;
 }
 
 /** Conjunto de gateways que el composition root cablea y la presentación consume. */
@@ -40,4 +49,5 @@ export interface Api {
   profiles: ProfileGateway;
   stories: StoryGateway;
   activities: ActivityGateway;
+  history: HistoryGateway;
 }

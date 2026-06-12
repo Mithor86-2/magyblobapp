@@ -102,6 +102,41 @@ describe('createApiGateways (adaptador HTTP)', () => {
     });
   });
 
+  it('stories.markRead hace POST /stories/:id/read', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 's1', estado: 'leido' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.stories.markRead('s1');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/stories/s1/read`);
+    expect(options.method).toBe('POST');
+  });
+
+  it('activities.complete hace POST /activities/:id/complete con la valoración', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 'a1', valoracion: 3 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.activities.complete('a1', 3);
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/activities/a1/complete`);
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body)).toEqual({ valoracion: 3 });
+  });
+
+  it('history.get hace GET /profiles/:id/history', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ stories: [], activities: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.history.get('p1');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/profiles/p1/history`);
+    expect(options.method).toBe('GET');
+    expect(out).toEqual({ stories: [], activities: [] });
+  });
+
   it('mapea un error del backend a ApiError con su tipo', async () => {
     vi.stubGlobal(
       'fetch',

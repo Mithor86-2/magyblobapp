@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
@@ -37,6 +37,15 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
       setError(e instanceof ApiError ? e.message : 'No se pudieron generar las actividades.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onComplete(activityId: string, valoracion: number) {
+    try {
+      const updated = await api.activities.complete(activityId, valoracion);
+      setActivities((prev) => prev.map((a) => (a.id === activityId ? updated : a)));
+    } catch (e) {
+      Alert.alert('Ups', e instanceof ApiError ? e.message : 'No se pudo guardar la valoración.');
     }
   }
 
@@ -92,7 +101,11 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
       ) : null}
 
       {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} />
+        <ActivityCard
+          key={activity.id}
+          activity={activity}
+          onComplete={(v) => onComplete(activity.id, v)}
+        />
       ))}
     </Screen>
   );

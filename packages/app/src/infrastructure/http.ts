@@ -16,6 +16,7 @@ import type {
   CreateChildProfileInput,
   GenerateStoryRequest,
   Guardian,
+  History,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
   Story,
@@ -73,10 +74,21 @@ export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
     stories: {
       generate: (req: GenerateStoryRequest) =>
         request<Story>(baseUrl, '/stories', { method: 'POST', body: req }),
+      markRead: (storyId: string) =>
+        request<Story>(baseUrl, `/stories/${storyId}/read`, { method: 'POST' }),
     },
     activities: {
       recommend: (req: RecommendActivitiesRequest) =>
         request<Activity[]>(baseUrl, '/activities/recommend', { method: 'POST', body: req }),
+      complete: (activityId: string, valoracion: number) =>
+        request<Activity>(baseUrl, `/activities/${activityId}/complete`, {
+          method: 'POST',
+          body: { valoracion },
+        }),
+    },
+    history: {
+      get: (profileId: string) =>
+        request<History>(baseUrl, `/profiles/${profileId}/history`, { method: 'GET' }),
     },
   };
 }
