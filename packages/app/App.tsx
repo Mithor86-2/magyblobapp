@@ -5,12 +5,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
-import { ConsentScreen } from './src/screens/ConsentScreen';
-import { CreateProfileScreen } from './src/screens/CreateProfileScreen';
-import { StoryGeneratorScreen } from './src/screens/StoryGeneratorScreen';
-import { useAppStore } from './src/store/useAppStore';
-import type { RootStackParamList } from './src/navigation';
-import { colors } from './src/theme/tokens';
+import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
+import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
+import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
+import { useAppStore } from './src/presentation/store/useAppStore';
+import type { RootStackParamList } from './src/presentation/navigation';
+import { colors } from './src/presentation/theme/tokens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

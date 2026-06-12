@@ -1,20 +1,19 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, createProfile, generateStory, registerGuardian } from './client';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '../domain/errors';
+import { createApiGateways } from './http';
 
 /**
- * Tests del único punto de red de la app. Se mockea `fetch` global: verificamos
- * que cada función arma la petición correcta (URL, método, cabecera, cuerpo) y
- * que el cuerpo de error del backend se mapea a `ApiError` con su `tipo`.
+ * Tests del adaptador HTTP (implementación de los gateways de domain). Se mockea
+ * `fetch` global y se inyecta `baseUrl`: verificamos que cada operación arma la
+ * petición correcta (URL, método, cabecera, cuerpo) y que el cuerpo de error del
+ * backend se mapea a `ApiError` con su `tipo`.
  */
 
 const BASE = 'http://localhost:3000';
+const api = createApiGateways(BASE);
 
 function okResponse(body: unknown): Response {
-  return {
-    ok: true,
-    status: 201,
-    json: async () => body,
-  } as unknown as Response;
+  return { ok: true, status: 201, json: async () => body } as unknown as Response;
 }
 
 function errorResponse(status: number, tipo: string, mensaje: string): Response {
@@ -25,17 +24,12 @@ function errorResponse(status: number, tipo: string, mensaje: string): Response 
   } as unknown as Response;
 }
 
-describe('api client', () => {
-  beforeEach(() => {
-    process.env.EXPO_PUBLIC_API_URL = BASE;
-  });
-
+describe('createApiGateways (adaptador HTTP)', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    delete process.env.EXPO_PUBLIC_API_URL;
   });
 
-  it('registerGuardian hace POST /guardians con cuerpo JSON', async () => {
+  it('guardians.register hace POST /guardians con cuerpo JSON', async () => {
     const guardian = { id: 'g1', nombre: 'Ana', consentimientoDado: true };
     const fetchMock = vi.fn().mockResolvedValue(okResponse(guardian));
     vi.stubGlobal('fetch', fetchMock);
@@ -48,7 +42,7 @@ describe('api client', () => {
       consentimientoAceptado: true,
       consentimientoVersion: '1.0',
     };
-    const result = await registerGuardian(input);
+    const result = await api.guardians.register(input);
 
     expect(result).toEqual(guardian);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -59,11 +53,11 @@ describe('api client', () => {
     expect(JSON.parse(options.body)).toEqual(input);
   });
 
-  it('createProfile hace POST /profiles', async () => {
+  it('profiles.create hace POST /profiles', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 'p1' }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await createProfile({
+    await api.profiles.create({
       guardianId: 'g1',
       nombre: 'Leo',
       edad: 4,
@@ -77,11 +71,11 @@ describe('api client', () => {
     expect(JSON.parse(options.body).intereses).toEqual(['animales']);
   });
 
-  it('generateStory hace POST /stories', async () => {
+  it('stories.generate hace POST /stories', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 's1', titulo: 'Hola' }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await generateStory({ profileId: 'p1', tema: 'magia', estilo: 'aventura' });
+    await api.stories.generate({ profileId: 'p1', tema: 'magia', estilo: 'aventura' });
 
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/stories`);
@@ -99,7 +93,7 @@ describe('api client', () => {
     );
 
     await expect(
-      generateStory({ profileId: 'x', tema: 'magia', estilo: 'aventura' }),
+      api.stories.generate({ profileId: 'x', tema: 'magia', estilo: 'aventura' }),
     ).rejects.toMatchObject({
       name: 'ApiError',
       status: 404,
@@ -111,14 +105,16 @@ describe('api client', () => {
   it('un fallo de red se convierte en ApiError de tipo network', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Network request failed')));
 
-    const error = await registerGuardian({
-      nombre: 'Ana',
-      apellidos: 'Pérez',
-      email: 'ana@example.com',
-      parentesco: 'madre',
-      consentimientoAceptado: true,
-      consentimientoVersion: '1.0',
-    }).catch((e) => e);
+    const error = await api.guardians
+      .register({
+        nombre: 'Ana',
+        apellidos: 'Pérez',
+        email: 'ana@example.com',
+        parentesco: 'madre',
+        consentimientoAceptado: true,
+        consentimientoVersion: '1.0',
+      })
+      .catch((e) => e);
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.tipo).toBe('network');

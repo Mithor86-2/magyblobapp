@@ -8,16 +8,16 @@
  *   sobre el que se genera el cuento. No se persiste en este slice.
  */
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { ChildProfileOutput } from '../api/types';
+import { persist } from 'zustand/middleware';
+import { persistStorage } from '../../infrastructure/storage';
+import type { ChildProfile } from '../../domain/types';
 
 interface AppState {
   guardianId: string | null;
   consentVersion: string | null;
-  currentProfile: ChildProfileOutput | null;
+  currentProfile: ChildProfile | null;
   setGuardian: (id: string, consentVersion: string) => void;
-  setProfile: (profile: ChildProfileOutput) => void;
+  setProfile: (profile: ChildProfile) => void;
   reset: () => void;
 }
 
@@ -33,7 +33,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'magyblob-app',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: persistStorage,
       // Solo el ancla de cumplimiento se persiste; el perfil es de sesión.
       partialize: (state) => ({
         guardianId: state.guardianId,

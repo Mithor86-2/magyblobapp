@@ -1,8 +1,10 @@
 /**
- * Tipos del contrato HTTP del backend. Espejo intencional de los DTO de
- * `packages/backend/src/application/dto.ts`: la app y el servidor se comunican
- * por la frontera de cable (JSON), así que el cliente declara su propia copia en
- * lugar de acoplarse al código del backend.
+ * Modelos y vocabularios del dominio del app. Espejo del contrato de cable del
+ * backend (`packages/backend/src/application/dto.ts`): cliente y servidor se
+ * comunican por la frontera JSON, así que el app declara su propia copia en lugar
+ * de acoplarse al código del backend.
+ *
+ * Capa `domain`: sin dependencias de framework (ni React, ni fetch, ni Expo).
  *
  * Los vocabularios son cerrados (ver `packages/backend/src/domain/vocabulary.ts`):
  * valores ASCII en minúscula; la presentación con acentos es cosa de la UI.
@@ -33,7 +35,7 @@ export interface RegisterGuardianInput {
   consentimientoVersion: string;
 }
 
-export interface GuardianOutput {
+export interface Guardian {
   id: string;
   nombre: string;
   apellidos: string;
@@ -52,7 +54,7 @@ export interface CreateChildProfileInput {
   intereses: Tema[];
 }
 
-export interface ChildProfileOutput {
+export interface ChildProfile {
   id: string;
   guardianId: string;
   nombre: string;
@@ -69,7 +71,7 @@ export interface GenerateStoryRequest {
   estilo: Estilo;
 }
 
-export interface StoryOutput {
+export interface Story {
   id: string;
   profileId: string;
   tema: Tema;
@@ -78,9 +80,4 @@ export interface StoryOutput {
   cuerpo: string;
   idioma: CodigoIdioma;
   estado: EstadoStory;
-}
-
-/** Cuerpo de error uniforme del backend (errorHandler centralizado). */
-export interface ApiErrorBody {
-  error: { tipo: string; mensaje: string };
 }

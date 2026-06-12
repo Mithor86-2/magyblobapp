@@ -4,10 +4,11 @@ import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
-import { PARENTESCOS } from '../api/types';
-import type { Parentesco } from '../api/types';
+import { PARENTESCOS } from '../../domain/types';
+import type { Parentesco } from '../../domain/types';
+import { ApiError } from '../../domain/errors';
 import { PARENTESCO_LABEL } from '../labels';
-import { ApiError, registerGuardian } from '../api/client';
+import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
 import type { ScreenProps } from '../navigation';
@@ -70,7 +71,7 @@ export function ConsentScreen({ navigation }: ScreenProps<'Consent'>) {
     if (!parentesco) return;
     setSubmitting(true);
     try {
-      const guardian = await registerGuardian({
+      const guardian = await api.guardians.register({
         nombre: nombre.trim(),
         apellidos: apellidos.trim(),
         email: email.trim(),
