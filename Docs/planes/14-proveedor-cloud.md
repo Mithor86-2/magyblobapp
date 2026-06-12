@@ -63,14 +63,15 @@ Ver [../cumplimiento-menores.md](../cumplimiento-menores.md). El modo `cloud` **
 
 ### Fase A — Diseño y documentación de la decisión
 
-- [ ] ❌ A1 · Actualizar [ADR 0002](../ADR/0002-tres-modos-de-ia.md): nota fechada reintroduciendo
-      el modo `cloud` como opt-in OFF por defecto, con selección por BD y secretos en env. (Seguir
-      el patrón de "Actualización" en el propio ADR; valorar si merece ADR nuevo.)
-- [ ] ❌ A2 · Reactivar **US-14** en [epic-f-plataforma.md](../historias-usuario/epic-f-plataforma.md)
-      con criterios Gherkin del diseño por BD + actualizar la tabla de trazabilidad del
-      [índice](../historias-usuario/README.md) (estado, fase, pantalla). *(hecho en la apertura)*
-- [ ] ❌ A3 · Revisar [cumplimiento-menores.md](../cumplimiento-menores.md): C-5 pasa de ✔ a
-      condicionado; documentar el opt-in y el riesgo de entrenamiento de los free tiers.
+- [x] ✅ A1 · Actualizar [ADR 0002](../ADR/0002-tres-modos-de-ia.md): nota fechada reintroduciendo
+      el modo `cloud` como opt-in OFF por defecto, con selección por BD y secretos en env. (Se siguió
+      el patrón de "Actualización" en el propio ADR; cuerpo y alternativas actualizados.)
+- [x] ✅ A2 · Reactivar **US-14** en [epic-f-plataforma.md](../historias-usuario/epic-f-plataforma.md)
+      con criterios Gherkin del diseño por BD + tabla de trazabilidad del
+      [índice](../historias-usuario/README.md) actualizada (estado Could, fase 14, pantalla Config).
+- [x] ✅ A3 · Revisar [cumplimiento-menores.md](../cumplimiento-menores.md): C-5 pasa de ✔ a
+      "✔ por defecto / Cond. en `cloud`"; nota con el opt-in, datos minimizados, riesgo de
+      entrenamiento de los free tiers e incompatibilidad con Apple Kids.
 
 ### Fase B — Backend: adaptador y configuración
 
