@@ -105,9 +105,15 @@ docker compose up -d backend          # recrea el backend para tomar la key
 
 # 2) Activa el proveedor en la BD (clave AppSetting `ai.cloud`). Conmutable en
 #    caliente: el cambio aplica en la siguiente generación, sin reiniciar.
+#    INSERT ... ON CONFLICT crea la fila si no existe (BD antigua) o la actualiza.
 docker exec magyblobapp-postgres-1 psql -U magyblob -d magyblob -c \
-  "UPDATE app_settings SET value='{\"activo\":true,\"target\":\"groq\",\"model\":\"llama-3.3-70b-versatile\"}' WHERE key='ai.cloud';"
+  "INSERT INTO app_settings (id, key, value, descripcion, \"actualizadoEn\")
+   VALUES (gen_random_uuid(), 'ai.cloud', '{\"activo\":true,\"target\":\"groq\",\"model\":\"llama-3.3-70b-versatile\"}', 'Modo cloud (opt-in)', now())
+   ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, \"actualizadoEn\" = now();"
 ```
+
+> Alternativa: `pnpm prisma:seed` (idempotente) crea la fila `ai.cloud` desactivada; luego solo
+> tendrías que cambiar `"activo"` a `true`.
 
 Targets disponibles y su variable de entorno: `groq` (`GROQ_API_KEY`), `gemini` (`GEMINI_API_KEY`),
 `openrouter` (`OPENROUTER_API_KEY`), `cerebras` (`CEREBRAS_API_KEY`). Para desactivar, pon
