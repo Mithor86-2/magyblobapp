@@ -49,7 +49,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-11 | Editar perfil                       | Should     | 5    | Configuración         | [E](epic-e-config.md#us-11)      |
 | US-12 | Cambiar idioma (ES/EN)              | Should     | 5    | Configuración         | [E](epic-e-config.md#us-12)      |
 | US-13 | Eliminar perfil                     | Should     | 5    | Configuración         | [E](epic-e-config.md#us-13)      |
-| US-14 | Proveedor cloud opcional            | Descartada | —    | —                     | [F](epic-f-plataforma.md#us-14)  |
+| US-14 | Proveedor cloud opcional            | Could      | 14   | Config (zona padres)  | [F](epic-f-plataforma.md#us-14)  |
 | US-15 | Modo nocturno                       | Could      | 6    | Configuración         | [F](epic-f-plataforma.md#us-15)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
