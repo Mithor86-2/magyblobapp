@@ -145,9 +145,13 @@ design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
 
 ---
 
-## FASE 5 — Resto de funcionalidad 🔄
+## FASE 5 — Resto de funcionalidad ✅
 
-Se ejecuta por **features secuenciales** (plan en [planes/fase-5.md](planes/fase-5.md)).
+Cerrada el 2026-06-12. Se ejecutó por **features secuenciales** (plan en
+[planes/fase-5.md](planes/fase-5.md)). **CloudProvider y Chroma se retiraron del alcance**
+(2026-06-12): el proyecto se queda con los modos de IA `mock`/`local` (privacidad por diseño,
+sin clave en la nube) y con el **dedup simple por título** para no repetir actividades (Chroma
+no gana su sitio — YAGNI).
 
 - [x] **F1 Actividades end-to-end** (2026-06-11, US-09 · backend v0.1.0 / app v0.2.0 ·
       rama `feature/5-actividades`): caso de uso `RecommendActivities` (con dedup simple por
@@ -162,9 +166,10 @@ Se ejecuta por **features secuenciales** (plan en [planes/fase-5.md](planes/fase
       Historial), pantallas **Inicio** e **Historial**, y valoración con estrellas (`StarRating`).
       Verificado: `pnpm check` (87 tests), `expo export`, y e2e contra PostgreSQL (cuento→leído,
       actividad→completada con estrellas, validación 400, historial coherente).
-- [ ] **F3** `CloudProvider` con Claude (solo si hay `ANTHROPIC_API_KEY`).
-- [ ] **F4 Chroma**: documentar la omisión (dedup simple cubre el MVP — YAGNI).
-- **DoD:** todas las pantallas y casos de uso operativos y testeados.
+- ~~F3 CloudProvider · F4 Chroma~~ — **retiradas del alcance** (ver nota arriba).
+- **DoD:** ✅ casos de uso (`RecommendActivities`, `GetHistory`, `MarkStoryRead`,
+  `CompleteActivity`) y pantallas (Inicio · Actividades · Cuentos · Historial) operativos y
+  testeados; `pnpm check` verde (88 tests) y verificado e2e contra PostgreSQL.
 
 ---
 

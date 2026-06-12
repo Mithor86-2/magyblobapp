@@ -239,9 +239,14 @@ sin sobre-ingeniería). **Clean ligera**, no estricta:
 - **Refactor sin cambio de comportamiento:** mismas llamadas HTTP y misma UI; gate verde (63
   tests) y `expo export` revalidado. SemVer **patch** (0.1.0 → 0.1.1).
 
-## Pendientes de decidir (cuando toque)
+## Alcance retirado: CloudProvider y Chroma (2026-06-12)
 
-- Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar
-  documentado por qué se omite (regla YAGNI > completitud del plan).
-- CloudProvider: elegir **uno** (Claude u OpenAI). Solo se activa si hay clave. Para
-  la ruta cloud usar los modelos Claude más recientes (ver skill `claude-api`).
+Se sacan del plan (antes "pendientes de decidir" en Fase 5). Decisión del usuario:
+
+- **CloudProvider (Claude/OpenAI):** no se implementa el modo `cloud`. El proyecto se queda con
+  `mock`/`local` (privacidad por diseño: los datos del niño no salen de la máquina). El stub de
+  `createAIProvider` (cloud → aviso + mock) se deja como está; no se borra el enum ni los ADR.
+- **Chroma (base vectorial):** no se usa. El **dedup simple por título** en `RecommendActivities`
+  cubre "no repetir" para el MVP; Chroma añadiría un servicio y embeddings sin aporte claro (YAGNI).
+- Pendiente menor (opcional): retirar el servicio `chroma` de `docker-compose.yml` y revisar los
+  ADR 0002 (tres modos) / 0004 (vector DB) si se quiere dejar el repo sin rastro de lo retirado.

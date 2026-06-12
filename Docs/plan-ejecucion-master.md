@@ -83,10 +83,10 @@ Objetivo: completar el dominio y la app.
       (cada uno con test). El progreso se modela como estado de Story/Activity (sin
       entidad extra; YAGNI).
 - [ ] Pantallas Inicio, Actividades recomendadas, Historial.
-- [ ] CloudProvider opcional (uno basta: Claude u OpenAI), solo si hay clave.
-- [ ] Chroma: dado que las actividades se generan con IA, evaluar si aporta como
-      memoria semántica (evitar repetición / similitud entre generadas); si no aporta,
-      documentar por qué se omite (YAGNI > completitud).
+- ~~CloudProvider opcional~~ y ~~Chroma~~: **retirados del alcance** (2026-06-12). Se mantienen
+  los modos de IA `mock`/`local` (privacidad por diseño) y un **dedup simple por título**
+  para no repetir actividades; ni la IA en la nube ni la base vectorial aportan lo suficiente
+  para el MVP (YAGNI).
 - Done: todas las pantallas y casos de uso operativos y testeados.
 
 ---

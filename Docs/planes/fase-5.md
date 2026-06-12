@@ -20,18 +20,16 @@ rehacerlo:
   la app: tipo/gateway `Activity`, tab navigator y pantallas Inicio/Actividades/Historial.
 
 **Decisiones (con el usuario):** trocear en **features secuenciales** cerradas una a una con la
-skill `cerrar-feature`; **CloudProvider con Claude** como feature final (modelos recientes vía skill
-`claude-api`; solo activo si hay `ANTHROPIC_API_KEY`); **omitir Chroma** documentando el porqué
-(dedup simple por título basta para el MVP — YAGNI).
+skill `cerrar-feature`. **CloudProvider y Chroma se retiraron del alcance** (2026-06-12): el
+proyecto se queda con los modos `mock`/`local` (privacidad por diseño) y con el **dedup simple por
+título** para no repetir actividades; ni la IA en la nube ni la base vectorial ganan su sitio para
+el MVP (YAGNI).
 
 ## Descomposición (orden de ejecución)
 
-1. **Actividades end-to-end** ← detallada abajo; se ejecuta primero.
-2. **Historial + Progreso**: `GetHistory` + `SaveProgress` (marcar cuento leído / completar
+1. **Actividades end-to-end** ✅ — detallada abajo.
+2. **Historial + Progreso** ✅: `GetHistory` + `SaveProgress` (marcar cuento leído / completar
    actividad con estrellas) + pantallas **Inicio** e **Historial** (tabs a 4).
-3. **CloudProvider (Claude)**: implementar el modo `cloud` real en `createAIProvider`.
-4. **Decisión Chroma**: documentar la omisión (memory.md + nota en ADR 0004) con el dedup simple
-   como alternativa adoptada.
 
 Cada feature: rama `git flow feature start <n>-<desc>`, gate verde, cierre con `cerrar-feature`
 (SemVer, CHANGELOG, docs). Convenciones del repo: dominio en español, andamiaje en inglés;
@@ -157,11 +155,10 @@ Rama: `feature/5-historial-progreso`.
 
 ---
 
-## Features 3-4 (resumen; se detallan al llegar)
+## Fuera de alcance (retirado el 2026-06-12)
 
-- **F3 CloudProvider (Claude)**: `infrastructure/ai/CloudProvider.ts` (consultar skill `claude-api`
-  para modelos/SDK); `createAIProvider` modo `cloud` lo usa **solo si hay `ANTHROPIC_API_KEY`**, si
-  no, mock con aviso. Salida estructurada equivalente a la de Ollama. Tests con SDK mockeado.
-- **F4 Chroma — documentar omisión**: nota en `Docs/memory.md` y addendum en
-  `Docs/ADR/0004-base-de-datos-vectorial-chroma.md` explicando que el dedup simple por título (F1)
-  cubre el MVP y Chroma no gana su sitio (YAGNI); dejar el contenedor documentado como opcional.
+- **CloudProvider (Claude):** no se implementa el modo `cloud`. Se mantienen `mock`/`local`
+  (privacidad por diseño, sin clave en la nube). El stub actual de `createAIProvider` (cloud →
+  aviso + mock) se deja como está.
+- **Chroma (base vectorial):** no se usa. El **dedup simple por título** (F1) cubre "no repetir"
+  para el MVP; Chroma añadiría infra sin aporte claro (YAGNI).
