@@ -24,11 +24,15 @@ async function main(): Promise<void> {
   const model = process.env.SMOKE_CLOUD_MODEL ?? 'llama-3.3-70b-versatile';
 
   if (!esCloudTarget(target)) {
-    throw new Error(`Target desconocido: ${target}. Opciones: ${Object.keys(CLOUD_PRESETS).join(', ')}.`);
+    throw new Error(
+      `Target desconocido: ${target}. Opciones: ${Object.keys(CLOUD_PRESETS).join(', ')}.`,
+    );
   }
   const apiKey = config.cloudApiKeys[target];
   if (apiKey === undefined) {
-    throw new Error(`Falta la API key en env (${CLOUD_PRESETS[target].apiKeyEnv}) para el target "${target}".`);
+    throw new Error(
+      `Falta la API key en env (${CLOUD_PRESETS[target].apiKeyEnv}) para el target "${target}".`,
+    );
   }
 
   const provider = new CloudProvider({

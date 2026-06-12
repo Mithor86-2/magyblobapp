@@ -115,12 +115,14 @@ código ni reconstruir la imagen.
 | `story.maxTokens`          | `800`                                                 | Límite de longitud del cuento          |
 | `story.temperature`        | `0.8`                                                 | Creatividad del LLM                    |
 | `activity.count`           | `3`                                                   | Nº de actividades a generar            |
+| `ai.cloud`                 | `{"activo":false,"target":"groq","model":"…"}`        | Modo cloud (opt-in, OFF por defecto)   |
 
 **Reglas (importante):**
 
-- **Secretos NO van aquí.** El bootstrap (`DATABASE_URL`, `PORT`, `AI_PROVIDER`) sigue en
-  **variables de entorno** (`.env`), nunca en `AppSetting`. Esta tabla guarda solo config no
-  sensible.
+- **Secretos NO van aquí.** El bootstrap (`DATABASE_URL`, `PORT`, `AI_PROVIDER`) y las **API keys**
+  del modo cloud (`GROQ_API_KEY`, `GEMINI_API_KEY`…) van en **variables de entorno** (`.env`), nunca
+  en `AppSetting`. La clave `ai.cloud` guarda solo selectores no secretos (`activo`, `target`,
+  `model`); la key del `target` se resuelve desde env.
 - **Precedencia:** el entorno fija el arranque y los secretos; `AppSetting` ajusta los
   tunables en runtime. Si una clave falta en `AppSetting`, se usa un **valor por defecto
   en código** (así la Fase 2 funciona antes de existir la tabla, en Fase 3).

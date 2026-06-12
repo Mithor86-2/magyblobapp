@@ -174,6 +174,35 @@ no gana su sitio — YAGNI).
 
 ---
 
+## FEATURE 14 — Proveedor cloud (US-14, reactivada) ✅
+
+Cerrada el 2026-06-12 · rama `feature/14-proveedor-cloud` · backend v0.3.0. **Reabre** la retirada
+del CloudProvider de la Fase 5: a petición del usuario se reintroduce el modo `cloud`, pero como
+**opt-in OFF por defecto y conmutable en caliente desde BD** (no rompe el default `mock`/`local`).
+Plan en [planes/14-proveedor-cloud.md](planes/14-proveedor-cloud.md); decisión en
+[ADR 0002](ADR/0002-tres-modos-de-ia.md) y [memory.md](memory.md).
+
+- [x] `CloudProvider` compatible OpenAI (`/chat/completions`, `response_format: json_object`,
+      `AbortSignal`) que sirve a cualquier proveedor del dialecto (Groq, Gemini, OpenRouter,
+      Cerebras) vía registro de presets (`cloudPresets.ts`). Reutiliza prompts y el parseo/saneo
+      compartido `parseResponse.ts`.
+- [x] Selección **por BD** (`AppSetting` clave `ai.cloud` = `{activo,target,model}`, validada en
+      `cloudSettings.ts`); `HotSwapAIProvider` la resuelve **por petición** (cambio en caliente sin
+      reiniciar) con fallback a mock. Cloud **no** se activa por `AI_PROVIDER` (privacidad por
+      defecto); las API keys van en env (`config.cloudApiKeys`), nunca en BD.
+- [x] `docker-compose.yml` pasa `<TARGET>_API_KEY` al backend (vacías por defecto); seed de
+      `ai.cloud` desactivado; `.env.example` documentado.
+- [x] Cumplimiento: C-5 pasa a "✔ por defecto / Cond. en `cloud`"; documentados datos minimizados,
+      riesgo de entrenamiento de free tiers e incompatibilidad con Apple Kids.
+- **DoD:** ✅ `pnpm check` verde (92 tests: `CloudProvider`, `cloudSettings`, factoría hot-swap) ·
+  ✅ smoke `pnpm ai:smoke:cloud` contra **Groq** real · ✅ **e2e por la pila**: `POST /stories` con
+  `ai.cloud` activa → prosa de Groq; desactivada en BD **sin reiniciar** → cae al base → hot-swap
+  demostrado.
+- **Diferido a sub-feature posterior:** UI admin (tras puerta parental) para cambiar `ai.cloud` sin
+  SQL + `AuditLog` del cambio.
+
+---
+
 ## FASE 5.5 — Sesión del guardián y multi-perfil ⬜
 
 Hoy la app solo persiste `guardianId` tras el consentimiento: no hay forma de que un
