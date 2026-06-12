@@ -8,10 +8,12 @@
  * "cliente", para que cada pantalla dependa solo de lo que usa.
  */
 import type {
+  Activity,
   ChildProfile,
   CreateChildProfileInput,
   GenerateStoryRequest,
   Guardian,
+  RecommendActivitiesRequest,
   RegisterGuardianInput,
   Story,
 } from './types';
@@ -28,9 +30,14 @@ export interface StoryGateway {
   generate(request: GenerateStoryRequest): Promise<Story>;
 }
 
+export interface ActivityGateway {
+  recommend(request: RecommendActivitiesRequest): Promise<Activity[]>;
+}
+
 /** Conjunto de gateways que el composition root cablea y la presentación consume. */
 export interface Api {
   guardians: GuardianGateway;
   profiles: ProfileGateway;
   stories: StoryGateway;
+  activities: ActivityGateway;
 }

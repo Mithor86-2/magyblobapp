@@ -11,7 +11,7 @@ import { PARENTESCO_LABEL } from '../labels';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
-import type { ScreenProps } from '../navigation';
+import type { RootScreenProps } from '../navigation';
 
 /** Versión de los términos/política que el adulto acepta (se registra en el AuditLog). */
 export const CONSENT_VERSION = '1.0';
@@ -21,7 +21,7 @@ const GATE_QUESTION = '7 + 6';
 const GATE_OPTIONS = [12, 13, 15];
 const GATE_ANSWER = 13;
 
-export function ConsentScreen({ navigation }: ScreenProps<'Consent'>) {
+export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const setGuardian = useAppStore((s) => s.setGuardian);
 
   const [gatePassed, setGatePassed] = useState(false);
