@@ -1,7 +1,7 @@
 # Modelo de datos propuesto
 
 Derivado del dominio (Fase 1) y de las decisiones I-1..I-7 de
-[historias-usuario.md](historias-usuario.md). Es el modelo **conceptual**; su
+[historias-usuario/](historias-usuario/README.md). Es el modelo **conceptual**; su
 materialización relacional (Prisma + PostgreSQL) llega en la Fase 3.
 
 Todo `ChildProfile` cuelga de un `Guardian` (adulto responsable), que es quien presta

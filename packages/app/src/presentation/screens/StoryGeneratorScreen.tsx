@@ -3,11 +3,12 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
-import { ESTILOS } from '../api/types';
-import type { Estilo, StoryOutput, Tema } from '../api/types';
+import { ESTILOS } from '../../domain/types';
+import type { Estilo, Story, Tema } from '../../domain/types';
+import { ApiError } from '../../domain/errors';
 import { ESTILO_LABEL, TEMA_LABEL } from '../labels';
 import { avatarEmoji } from '../components/AvatarPicker';
-import { ApiError, generateStory } from '../api/client';
+import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { ScreenProps } from '../navigation';
@@ -21,7 +22,7 @@ export function StoryGeneratorScreen(_props: ScreenProps<'StoryGenerator'>) {
   const [tema, setTema] = useState<Tema>(temasDisponibles[0] ?? 'magia');
   const [estilo, setEstilo] = useState<Estilo>('aventura');
   const [loading, setLoading] = useState(false);
-  const [story, setStory] = useState<StoryOutput | null>(null);
+  const [story, setStory] = useState<Story | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function onGenerate() {
@@ -30,7 +31,7 @@ export function StoryGeneratorScreen(_props: ScreenProps<'StoryGenerator'>) {
     setError(null);
     setStory(null);
     try {
-      const result = await generateStory({ profileId: profile.id, tema, estilo });
+      const result = await api.stories.generate({ profileId: profile.id, tema, estilo });
       setStory(result);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'No se pudo generar el cuento.');

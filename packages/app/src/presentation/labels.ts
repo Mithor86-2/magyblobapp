@@ -3,7 +3,7 @@
  * guarda identificadores ASCII (`musica`, `tutor_legal`); la UI los muestra
  * bonitos. Único sitio donde vive esta traducción id→etiqueta.
  */
-import type { CodigoIdioma, Estilo, Parentesco, Tema } from './api/types';
+import type { CodigoIdioma, Estilo, Parentesco, Tema } from '../domain/types';
 
 export const TEMA_LABEL: Record<Tema, string> = {
   animales: 'Animales',

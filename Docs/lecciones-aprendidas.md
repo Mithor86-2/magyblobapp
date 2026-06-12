@@ -158,3 +158,15 @@ engine. Importar estáticamente la composición arrastraría Prisma al grafo del
   **sí** la cubren. Conclusión: para que `pnpm check` siga verde, la app debe pasar typecheck,
   formato y tests; tras andamiar conviene un `pnpm format` para normalizar los ficheros que
   genera Expo. La app **extiende `expo/tsconfig.base`**, no la base Node del repo (JSX/RN).
+
+### Refactor a Clean Architecture en el app: mover con `git mv` y revalidar con `expo export`
+
+- Reorganizar `src/` en `domain`/`infrastructure`/`presentation` cambia **todas** las rutas de
+  import relativas. Mover con `git mv` (preserva historial) y luego arreglar imports capa a capa.
+  El `tsc --noEmit` caza los imports rotos de tipos, pero **no** garantiza que Metro resuelva en
+  runtime: confirmar con `npx expo export` (revalidó 855 módulos sin errores tras el refactor).
+- Truco de inversión de dependencias sin capa `application`: las interfaces de gateway viven en
+  `domain`, el adaptador HTTP en `infrastructure`, y un `composition.ts` (composition root) instancia
+  lo concreto y lo expone tipado como las interfaces. Las pantallas importan ese `api`, no `fetch`.
+- `ApiError` se colocó en `domain/errors.ts` (no en infraestructura) para que la presentación lo
+  capture con `instanceof` **sin** importar la capa de infraestructura (mantiene la frontera).

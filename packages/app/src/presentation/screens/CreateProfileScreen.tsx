@@ -5,10 +5,11 @@ import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { AvatarPicker } from '../components/AvatarPicker';
-import { IDIOMAS, TEMAS } from '../api/types';
-import type { CodigoIdioma, Tema } from '../api/types';
+import { IDIOMAS, TEMAS } from '../../domain/types';
+import type { CodigoIdioma, Tema } from '../../domain/types';
+import { ApiError } from '../../domain/errors';
 import { IDIOMA_LABEL, TEMA_LABEL } from '../labels';
-import { ApiError, createProfile } from '../api/client';
+import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
 import type { ScreenProps } from '../navigation';
@@ -44,7 +45,7 @@ export function CreateProfileScreen({ navigation }: ScreenProps<'CreateProfile'>
     if (edad === null || avatar === null || guardianId === null) return;
     setSubmitting(true);
     try {
-      const profile = await createProfile({
+      const profile = await api.profiles.create({
         guardianId,
         nombre: nombre.trim(),
         edad,

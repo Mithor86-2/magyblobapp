@@ -34,7 +34,7 @@ para `edad` e `idioma` (regla del plan); el resto son escalares simples (YAGNI).
 > **Vocabulario de temática (unificado):** `animales | espacio | magia | aventuras |
 música`. Lo comparten los `intereses` del perfil y el `tema` del cuento; los
 > intereses pre-seleccionan el tema. (El diseño mostraba dos listas distintas; se
-> unificaron — ver decisión I-2 en [../historias-usuario.md](../historias-usuario.md).)
+> unificaron — ver decisión I-2 en [../historias-usuario/](../historias-usuario/README.md).)
 
 ### ChildProfile (pantalla _Crear perfil_)
 
