@@ -3,13 +3,15 @@ import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 
 /**
  * Navegación en dos niveles:
- * - Stack raíz: onboarding (consentimiento → crear perfil) y, ya con perfil, las
- *   pestañas principales (`Main`).
- * - Tabs (`Main`): pestañas inferiores. En esta feature, Cuentos y Actividades;
- *   Inicio e Historial se añaden en la siguiente.
+ * - Stack raíz: onboarding (bienvenida → alta o login → selección de perfil →
+ *   crear perfil) y, ya con perfil activo, las pestañas principales (`Main`).
+ * - Tabs (`Main`): pestañas inferiores (Inicio · Actividades · Cuentos · Historial).
  */
 export type RootStackParamList = {
+  Welcome: undefined;
   Consent: undefined;
+  Login: undefined;
+  SelectProfile: undefined;
   CreateProfile: undefined;
   Main: undefined;
 };

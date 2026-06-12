@@ -6,7 +6,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
+import { WelcomeScreen } from './src/presentation/screens/WelcomeScreen';
 import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
+import { LoginScreen } from './src/presentation/screens/LoginScreen';
+import { SelectProfileScreen } from './src/presentation/screens/SelectProfileScreen';
 import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
 import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
@@ -77,7 +80,8 @@ function useStoreHydrated(): boolean {
 export default function App() {
   const [fontsLoaded] = useFonts({ Quicksand_500Medium, Quicksand_700Bold });
   const hydrated = useStoreHydrated();
-  const guardianId = useAppStore((s) => s.guardianId);
+  const guardian = useAppStore((s) => s.guardian);
+  const currentProfile = useAppStore((s) => s.currentProfile);
 
   if (!fontsLoaded || !hydrated) {
     return (
@@ -87,15 +91,20 @@ export default function App() {
     );
   }
 
-  // Si el adulto ya consintió en una sesión anterior, saltamos directos a crear perfil.
-  const initialRoute = guardianId ? 'CreateProfile' : 'Consent';
+  // Recupera la sesión persistida: con guardián y perfil activo entra directo a
+  // las pestañas; con guardián pero sin perfil, a elegir entre sus hijos; sin
+  // sesión, al onboarding.
+  const initialRoute = guardian ? (currentProfile ? 'Main' : 'SelectProfile') : 'Welcome';
 
   return (
     <SafeAreaProvider>
       <NavigationContainer>
         <StatusBar style="dark" />
         <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="Consent" component={ConsentScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="SelectProfile" component={SelectProfileScreen} />
           <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
           <Stack.Screen name="Main" component={MainTabs} />
         </Stack.Navigator>

@@ -52,17 +52,19 @@ selección de perfil, onboarding con "Ya tengo cuenta", área parental y cierre 
       test de integración de la ruta (`app.inject`: 200 con guardián, 404 email inexistente,
       400 email inválido). `pnpm check` verde (97 tests backend).
 
-### F2 — Sesión y selección de perfil activo (app)
+### F2 — Sesión y selección de perfil activo (app) ✅
 
-- [ ] ❌ Store: ampliar la sesión persistida — guardar el `guardian` completo (no solo el id) y el
-      `activeProfileId`; `currentProfile` deja de ser solo de sesión (sobrevive a reinicios).
-- [ ] ❌ Gateway/uso de `GET /guardians/:id/profiles` (ListProfiles) para listar los hijos del
-      guardián; gateway de login (`POST /guardians/login`) en `infrastructure/http`.
-- [ ] ❌ Pantalla **Seleccionar perfil** (lista de hijos con nombre+avatar + "crear nuevo"); fija
-      el `currentProfile` / `activeProfileId`. Corresponde al "Ver perfiles" del diseño de Inicio.
-- [ ] ❌ Onboarding revisado: sin sesión → Consent (alta) **o** "Ya tengo cuenta" → login por
-      email; con sesión → selección de perfil → pestañas.
-- [ ] ❌ Tests del gateway (contrato de cable) de login y, si aplica, del store de sesión.
+- [x] ✅ Store: sesión persistida ampliada — guarda el `guardian` completo (no solo el id) y el
+      `currentProfile` activo (sobrevive a reinicios), más `consentVersion`; nuevas acciones
+      `clearProfile` y `logout`. Migración de persistencia a v1 (descarta el estado v0).
+- [x] ✅ Gateways `profiles.list` (`GET /guardians/:id/profiles`) y `guardians.login`
+      (`POST /guardians/login`) en `infrastructure/http`.
+- [x] ✅ Pantalla **Seleccionar perfil** (lista de hijos con avatar+nombre+edad + "crear nuevo");
+      fija el `currentProfile`. Estados de carga/error/reintento.
+- [x] ✅ Onboarding revisado: pantalla **Bienvenida** (crear cuenta / "Ya tengo cuenta" → **Login**
+      por email); con sesión → selección de perfil → pestañas. Ruta inicial calculada en `App.tsx`.
+- [x] ✅ Tests del gateway (contrato de cable) de `login` y `list`. `pnpm check` verde (11 tests
+      app + 99 backend) y bundle validado (`expo export`).
 
 ### F3 — Área parental y cierre de sesión (app)
 

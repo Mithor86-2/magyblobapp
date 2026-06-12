@@ -108,8 +108,8 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
         consentimientoAceptado: true,
         consentimientoVersion: CONSENT_VERSION,
       });
-      setGuardian(guardian.id, CONSENT_VERSION);
-      navigation.replace('CreateProfile');
+      setGuardian(guardian, CONSENT_VERSION);
+      navigation.replace('SelectProfile');
     } catch (error) {
       const mensaje =
         error instanceof ApiError ? error.message : 'No se pudo completar el registro.';

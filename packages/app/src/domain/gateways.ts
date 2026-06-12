@@ -14,6 +14,7 @@ import type {
   GenerateStoryRequest,
   Guardian,
   History,
+  LoginGuardianInput,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
   Story,
@@ -21,10 +22,14 @@ import type {
 
 export interface GuardianGateway {
   register(input: RegisterGuardianInput): Promise<Guardian>;
+  /** Identifica al adulto por su email (login ligero, US-19). */
+  login(input: LoginGuardianInput): Promise<Guardian>;
 }
 
 export interface ProfileGateway {
   create(input: CreateChildProfileInput): Promise<ChildProfile>;
+  /** Lista los perfiles de un guardián para elegir el activo (US-02). */
+  list(guardianId: string): Promise<ChildProfile[]>;
 }
 
 export interface StoryGateway {

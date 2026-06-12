@@ -47,6 +47,11 @@ export interface Guardian {
   consentimientoDado: boolean;
 }
 
+// Login ligero por email (sin contraseña; ver Docs/historias-usuario US-19).
+export interface LoginGuardianInput {
+  email: string;
+}
+
 // --- ChildProfile ---
 export interface CreateChildProfileInput {
   guardianId: string;
