@@ -16,15 +16,39 @@ import type { RootScreenProps } from '../navigation';
 /** Versión de los términos/política que el adulto acepta (se registra en el AuditLog). */
 export const CONSENT_VERSION = '1.0';
 
-/** Puerta parental: operación simple no resoluble por un niño de 2-6 años. */
-const GATE_QUESTION = '7 + 6';
-const GATE_OPTIONS = [12, 13, 15];
-const GATE_ANSWER = 13;
+interface RetoParental {
+  a: number;
+  b: number;
+  respuesta: number;
+  opciones: number[];
+}
+
+const aleatorio = (min: number, max: number): number =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
+
+/**
+ * Puerta parental: una suma sencilla **aleatoria** (no memorizable por un niño).
+ * Se genera una nueva en cada apertura y tras cada fallo. Disuasorio ligero; la
+ * verificación robusta de edad queda fuera de alcance (ver cumplimiento-menores).
+ */
+function crearReto(): RetoParental {
+  const a = aleatorio(3, 9);
+  const b = aleatorio(2, 6);
+  const respuesta = a + b;
+  // Respuesta + dos distractores contiguos, barajados.
+  const opciones = [respuesta, respuesta - 1, respuesta + 1];
+  for (let i = opciones.length - 1; i > 0; i--) {
+    const j = aleatorio(0, i);
+    [opciones[i], opciones[j]] = [opciones[j]!, opciones[i]!];
+  }
+  return { a, b, respuesta, opciones };
+}
 
 export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const setGuardian = useAppStore((s) => s.setGuardian);
 
   const [gatePassed, setGatePassed] = useState(false);
+  const [reto, setReto] = useState<RetoParental>(crearReto);
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [email, setEmail] = useState('');
@@ -40,18 +64,23 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
           Para continuar, resuelve esta operación. Así nos aseguramos de que hay una persona adulta
           configurando la app.
         </Text>
-        <Text style={styles.gateQuestion}>{GATE_QUESTION} = ?</Text>
+        <Text style={styles.gateQuestion}>
+          {reto.a} + {reto.b} = ?
+        </Text>
         <View style={styles.gateOptions}>
-          {GATE_OPTIONS.map((option) => (
+          {reto.opciones.map((option) => (
             <SelectableChip
               key={option}
               label={String(option)}
               selected={false}
-              onPress={() =>
-                option === GATE_ANSWER
-                  ? setGatePassed(true)
-                  : Alert.alert('Casi', 'Esa no es. Inténtalo de nuevo.')
-              }
+              onPress={() => {
+                if (option === reto.respuesta) {
+                  setGatePassed(true);
+                } else {
+                  Alert.alert('Casi', 'Esa no es. Prueba con otra operación.');
+                  setReto(crearReto());
+                }
+              }}
             />
           ))}
         </View>
