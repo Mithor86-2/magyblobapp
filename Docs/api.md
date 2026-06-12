@@ -266,6 +266,32 @@ existían ya.)
 
 ---
 
+## `POST /activities/:id/complete`
+
+Registra que una actividad se completó con una valoración de 1 a 3 estrellas (US-10).
+Escribe un `InteractionEvent` de tipo `actividad_completada`.
+
+**Body:** `{ "valoracion": 1|2|3 }`. **Respuesta `200`:** la actividad con `valoracion` y
+`completadaEn`. **Errores:** `404` la actividad no existe · `400` valoración fuera de 1-3.
+
+---
+
+## `POST /stories/:id/read`
+
+Marca un cuento como leído (US-07). Idempotente.
+
+**Respuesta `200`:** el cuento con `estado: "leido"`. **Errores:** `404` el cuento no existe.
+
+---
+
+## `GET /profiles/:profileId/history`
+
+Devuelve el historial del perfil: sus cuentos y actividades, cada lista por fecha desc (US-08).
+
+**Respuesta `200`:** `{ "stories": StoryOutput[], "activities": ActivityOutput[] }`.
+
+---
+
 ## Ejemplo de flujo completo (bash)
 
 Encadena las tres llamadas extrayendo los ids con [`jq`](https://jqlang.github.io/jq/):

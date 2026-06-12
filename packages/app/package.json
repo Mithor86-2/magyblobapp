@@ -1,6 +1,6 @@
 {
   "name": "@magyblob/app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "App móvil (Expo + Zustand). Slice vertical del HITO 1 (Fase 4).",
   "main": "index.ts",

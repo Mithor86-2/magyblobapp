@@ -79,7 +79,7 @@ Patrón de referencia ya en el repo: `CreateChildProfile` y `GenerateStory`.
 - Si la entidad es nueva, añade su modelo a `prisma/schema.prisma` y genera la migración. **Todo
   cambio en `schema.prisma`** (modelo, campo, relación, índice o `@@map`) se refleja en el **mismo
   paso** en [Docs/modelo-datos.md](../../../Docs/modelo-datos.md): actualiza el bloque `mermaid
-  erDiagram` (parte mecánica) y revisa si la parte conceptual (vocabularios, value-objects, cascadas)
+erDiagram` (parte mecánica) y revisa si la parte conceptual (vocabularios, value-objects, cascadas)
   sigue siendo cierta.
 - Cablea el repo en `src/infrastructure/composition.ts` (`buildProductionDeps`) y añade el campo a
   `AppDeps` en `src/dependencies.ts`. Refleja el mismo campo en `makeInMemoryDeps` de

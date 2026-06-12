@@ -106,7 +106,7 @@ completadaEn?, valoracion? }`.
 
 ---
 
-## FEATURE 2 — Historial + Progreso (en curso)
+## FEATURE 2 — Historial + Progreso ✅ (cerrada 2026-06-12)
 
 Objetivo: ver el historial del perfil (cuentos + actividades) y registrar progreso (marcar
 cuento leído, completar actividad con estrellas). Completa las 4 pestañas del diseño.
@@ -124,9 +124,9 @@ Rama: `feature/5-historial-progreso`.
 
 ### Backend (tareas)
 
-- [ ] ❌ `GetHistory` (caso de uso): `execute({ profileId })` → `{ stories: StoryOutput[],
-      activities: ActivityOutput[] }` ordenados por fecha desc. Reusa `StoryRepository.findByProfile`
-      y `ActivityRepository.findByProfile` (ambos ya existen). DTO `HistoryOutput`.
+- [ ] ❌ `GetHistory` (caso de uso): devuelve `{ stories, activities }` ordenados por fecha desc.
+      Reusa `StoryRepository.findByProfile` y `ActivityRepository.findByProfile` (ambos ya existen).
+      DTO `HistoryOutput`.
 - [ ] ❌ `MarkStoryRead` (US-07): `findById` → `Story.marcarLeido()` → persistir. Requiere que
       `PrismaStoryRepository.save` sea **upsert** (hoy hace `create`); `InMemoryStoryRepository` ya
       sobrescribe. Sin método nuevo en el puerto.

@@ -19,6 +19,21 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.3.0] - 2026-06-12
+
+Feature 2 de la Fase 5 (US-07/08/10): historial y progreso. Pestañas a 4.
+
+### Added
+
+- Navegación a **4 pestañas** (Inicio · Actividades · Cuentos · Historial).
+- Pantalla **Inicio**: bienvenida con el nombre del niño + accesos a Cuentos/Actividades.
+- Pantalla **Historial**: cuentos con estado `nuevo|leído` y acción "Marcar como leído"
+  (US-07/08), y actividades hechas con su valoración en estrellas; recarga al recibir foco.
+- Completar actividades con **valoración (1-3 estrellas)** desde la tarjeta (US-10) vía
+  componente `StarRating`.
+- `domain`: tipo `History` y gateways `history.get`, `stories.markRead`, `activities.complete`;
+  implementación HTTP correspondiente.
+
 ## [0.2.0] - 2026-06-11
 
 Feature 1 de la Fase 5 (US-09): actividades recomendadas con IA y shell de pestañas.
