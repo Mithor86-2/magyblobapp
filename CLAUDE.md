@@ -39,6 +39,19 @@ profile and generates stories / recommends activities using a local LLM.
 Hay skills disponibles que automatizan flujos de este repo. Úsalas en lugar de reproducir los pasos
 a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son de otros stacks):
 
+- **`abrir-feature`** — al iniciar una feature o fase. Crea la rama con Git Flow desde `develop`,
+  escribe/enlaza el plan en [Docs/planes/](Docs/planes/) (fases→tareas con seguimiento de estado),
+  vincula la historia de usuario (US-NN) y deja el `## [Unreleased]` del CHANGELOG listo. Es el
+  extremo de apertura del ciclo que cierra `cerrar-feature`. Vive en el repo:
+  [.claude/skills/abrir-feature/](.claude/skills/abrir-feature/).
+- **`nuevo-caso-uso`** — al añadir un caso de uso o endpoint al backend. Andamia el vertical slice
+  Clean Arch: interfaz de repositorio en `domain`, caso de uso + DTOs en `application` con su test
+  (dobles in-memory), repo Prisma en `infrastructure`, ruta Fastify con JSON Schema y su test de
+  integración. Vive en el repo: [.claude/skills/nuevo-caso-uso/](.claude/skills/nuevo-caso-uso/).
+- **`nueva-pantalla`** — al añadir una pantalla o flujo a la app Expo. Andamia las capas del app
+  (`domain` tipos/gateway → `infrastructure/http` → estado en store Zustand o `useState` →
+  `presentation/screens` consumiendo el `api` inyectado y los tokens de theme → registro en el
+  navegador). Vive en el repo: [.claude/skills/nueva-pantalla/](.claude/skills/nueva-pantalla/).
 - **`cerrar-feature`** — al finalizar una feature o cerrar una fase. Aplica la Definition of Done
   (gate verde con `pnpm check`), el versionado SemVer, el `CHANGELOG.md` por paquete, la
   actualización de docs y el cierre con Git Flow. Es la skill que ejecuta el proceso descrito en
