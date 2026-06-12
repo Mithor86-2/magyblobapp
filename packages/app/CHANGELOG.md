@@ -19,6 +19,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.3.1] - 2026-06-12
+
+### Changed
+
+- Puerta parental **aleatoria**: suma de dos números al azar con opciones barajadas en cada
+  apertura (y regeneración tras un fallo), en lugar de una operación fija memorizable.
+
 ## [0.3.0] - 2026-06-12
 
 Feature 2 de la Fase 5 (US-07/08/10): historial y progreso. Pestañas a 4.
