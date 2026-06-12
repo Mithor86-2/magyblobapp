@@ -4,14 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-**Phase 0 (andamiaje) is closed.** The monorepo scaffolding is in place: pnpm workspaces
-(`packages/backend`, `packages/app`), a Fastify backend with a `/health` route, ESLint + Prettier +
-Vitest wired up, and a `docker compose up` that brings the full stack (backend + PostgreSQL 16 +
-Chroma + Ollama) up on a clean machine. No domain/application code yet — that is Phase 1.
-
-The authoritative plan lives in [Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) and
-**must be consulted before building anything**. It defines the architecture, the phase order, and
-the gate (Definition of Done) that closes each phase.
+El **estado por fase es volátil y vive en [Docs/phases.md](Docs/phases.md)** — léelo al empezar la
+sesión; no se duplica aquí. El plan maestro
+[Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) **debe consultarse antes de construir
+nada**: define la arquitectura, el orden de fases y el gate (Definition of Done) que cierra cada una.
 
 **Living tracking docs (read at the start of a session, update at the end):**
 
@@ -178,36 +174,21 @@ work identity) — preserve this; do not reset `git config --local user.*`.
 
 ## Versionado y changelog (enforced)
 
-- **Actualiza la documentación al cerrar cada feature.** Antes de finalizar una feature, revisa y
-  pon al día toda la documentación afectada: los tracking docs vivos
-  ([Docs/phases.md](Docs/phases.md), [Docs/memory.md](Docs/memory.md),
-  [Docs/lecciones-aprendidas.md](Docs/lecciones-aprendidas.md)), los `README.md`, la documentación
-  de la API y cualquier guía que el cambio deje desfasada. La documentación se actualiza en el mismo
-  cierre de la feature, no se difiere.
-- **Mantén [Docs/modelo-datos.md](Docs/modelo-datos.md) en sincronía con
-  [packages/backend/prisma/schema.prisma](packages/backend/prisma/schema.prisma).** El doc y el
-  esquema **no** son lo mismo: el doc tiene una **parte mecánica** (el bloque `mermaid erDiagram`:
-  modelos, campos, relaciones) que duplica el esquema, y una **parte conceptual** (value-objects,
-  vocabularios cerrados, notas de persistencia y cumplimiento) que no vive en Prisma. Siempre que
-  cambie el esquema —modelo, campo, relación, índice o `@@map`— actualiza en el **mismo cambio** el
-  doc: refleja la parte mecánica en el diagrama y revisa si la conceptual (enums, VOs, cascadas,
-  minimización) sigue siendo cierta. No se difiere.
-- **Actualiza las historias de usuario al implementar funcionalidad.** Cada vez que se construye o
-  cambia una funcionalidad, refleja el estado en [Docs/historias-usuario/](Docs/historias-usuario/README.md):
-  ajusta la historia afectada (US-NN) y su criterios de aceptación si cambiaron, y mantén al día la
-  tabla de trazabilidad del índice (fase y pantalla). Si la funcionalidad no tiene historia, crea
-  una nueva con su ID y criterios en formato Gherkin en el documento de la épica que corresponda
-  (o una épica nueva) antes de darla por hecha — los criterios son la fuente de los tests del DoD.
-- **Sube la versión al cerrar cada feature.** Cada vez que se finaliza una feature, actualiza el
-  campo `version` del [package.json](package.json) raíz (y el del paquete afectado en
-  `packages/backend/package.json` / `packages/app/package.json` cuando corresponda) siguiendo
-  [SemVer](https://semver.org/lang/es/): `patch` para correcciones, `minor` para funcionalidad nueva
-  retrocompatible, `major` para cambios incompatibles. El bump va en el mismo cierre de la feature,
-  no se difiere.
-- **Mantén un `CHANGELOG.md` por paquete** (`packages/backend/CHANGELOG.md` y
-  `packages/app/CHANGELOG.md`) siguiendo el formato de
-  [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/): cada cambio se anota primero bajo
-  un encabezado `## [Unreleased]`, agrupado por tipo (`Added`, `Changed`, `Deprecated`, `Removed`,
-  `Fixed`, `Security`). Al cerrar la feature y subir la versión, mueve lo que esté en `Unreleased` a
-  una nueva sección versionada `## [x.y.z] - AAAA-MM-DD`. Las entradas se redactan en español
-  (ubicuous language en español, igual que commits y docs).
+El **cierre de una feature** lo orquesta paso a paso la skill **`cerrar-feature`** — úsala, no
+repitas el procedimiento a mano. Cubre, en el mismo cierre (no se difiere): poner al día la
+documentación afectada (tracking docs, README, API, etc.), subir `version` por
+[SemVer](https://semver.org/lang/es/) en los `package.json` (raíz + paquete afectado), y mover el
+`CHANGELOG.md` de cada paquete (formato [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/),
+entradas en español) de `## [Unreleased]` a una sección versionada `## [x.y.z] - AAAA-MM-DD`.
+
+Dos reglas que aplican **durante** el desarrollo, no solo al cerrar:
+
+- **Modelo de datos ↔ esquema.** Siempre que cambie
+  [packages/backend/prisma/schema.prisma](packages/backend/prisma/schema.prisma) (modelo, campo,
+  relación, índice o `@@map`), actualiza en el **mismo cambio** [Docs/modelo-datos.md](Docs/modelo-datos.md):
+  el bloque `mermaid erDiagram` (parte mecánica) y revisa si la parte conceptual (value-objects,
+  vocabularios cerrados, cascadas, minimización) sigue siendo cierta. No se difiere.
+- **Historias de usuario.** Al construir o cambiar funcionalidad, refleja el estado en
+  [Docs/historias-usuario/](Docs/historias-usuario/README.md): ajusta la US-NN y sus criterios, y la
+  tabla de trazabilidad del índice (fase y pantalla). Si no tiene historia, créala (ID + criterios
+  Gherkin en la épica que corresponda) antes de darla por hecha — son la fuente de los tests del DoD.
