@@ -7,6 +7,7 @@ import { createPrismaClient } from './db/prismaClient.js';
 import { PrismaGuardianRepository } from './repositories/PrismaGuardianRepository.js';
 import { PrismaChildProfileRepository } from './repositories/PrismaChildProfileRepository.js';
 import { PrismaStoryRepository } from './repositories/PrismaStoryRepository.js';
+import { PrismaActivityRepository } from './repositories/PrismaActivityRepository.js';
 import { PrismaInteractionEventRepository } from './repositories/PrismaInteractionEventRepository.js';
 import { PrismaAuditLogRepository } from './repositories/PrismaAuditLogRepository.js';
 import { PrismaSettingsRepository } from './repositories/PrismaSettingsRepository.js';
@@ -25,6 +26,7 @@ export function buildProductionDeps(config: Config, logger?: AILogger): AppDeps 
     guardians: new PrismaGuardianRepository(prisma),
     profiles: new PrismaChildProfileRepository(prisma),
     stories: new PrismaStoryRepository(prisma),
+    activities: new PrismaActivityRepository(prisma),
     events: new PrismaInteractionEventRepository(prisma),
     audit: new PrismaAuditLogRepository(prisma),
     ai: createAIProvider(config, { logger, settings }),

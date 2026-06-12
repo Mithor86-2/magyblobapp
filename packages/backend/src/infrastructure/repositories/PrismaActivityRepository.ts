@@ -1,0 +1,53 @@
+import type { Activity as PrismaActivity } from '../../generated/prisma/index.js';
+import { Activity } from '../../domain/entities/Activity.js';
+import type { ActivityRepository } from '../../domain/repositories/ActivityRepository.js';
+import type { Categoria } from '../../domain/vocabulary.js';
+import type { PrismaClient } from '../db/prismaClient.js';
+
+/** Repositorio de actividades sobre PostgreSQL (Prisma). */
+export class PrismaActivityRepository implements ActivityRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async save(activity: Activity): Promise<void> {
+    await this.prisma.activity.upsert({
+      where: { id: activity.id },
+      create: {
+        id: activity.id,
+        profileId: activity.profileId,
+        categoria: activity.categoria,
+        titulo: activity.titulo,
+        descripcion: activity.descripcion,
+        duracionMin: activity.duracionMin ?? null,
+        nivel: activity.nivel ?? null,
+        completadaEn: activity.completadaEn ?? null,
+        valoracion: activity.valoracion ?? null,
+      },
+      update: {
+        completadaEn: activity.completadaEn ?? null,
+        valoracion: activity.valoracion ?? null,
+      },
+    });
+  }
+
+  async findByProfile(profileId: string): Promise<Activity[]> {
+    const rows = await this.prisma.activity.findMany({
+      where: { profileId },
+      orderBy: { creadoEn: 'desc' },
+    });
+    return rows.map(toActivity);
+  }
+}
+
+function toActivity(row: PrismaActivity): Activity {
+  return new Activity({
+    id: row.id,
+    profileId: row.profileId,
+    categoria: row.categoria as Categoria,
+    titulo: row.titulo,
+    descripcion: row.descripcion,
+    duracionMin: row.duracionMin ?? undefined,
+    nivel: row.nivel ?? undefined,
+    completadaEn: row.completadaEn ?? undefined,
+    valoracion: row.valoracion ?? undefined,
+  });
+}

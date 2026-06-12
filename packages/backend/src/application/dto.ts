@@ -1,4 +1,4 @@
-import type { Parentesco, Tema, Estilo, EstadoStory } from '../domain/vocabulary.js';
+import type { Categoria, Parentesco, Tema, Estilo, EstadoStory } from '../domain/vocabulary.js';
 import type { CodigoIdioma } from '../domain/value-objects/Idioma.js';
 
 // --- RegisterGuardian ---
@@ -64,4 +64,25 @@ export interface StoryOutput {
   cuerpo: string;
   idioma: CodigoIdioma;
   estado: EstadoStory;
+}
+
+// --- RecommendActivities ---
+export interface RecommendActivitiesRequest {
+  profileId: string;
+  /** Si se indica, acota a una categoría; si no, libre. */
+  categoria?: string;
+  /** Cuántas actividades generar (por defecto 3). */
+  cantidad?: number;
+}
+
+export interface ActivityOutput {
+  id: string;
+  profileId: string;
+  categoria: Categoria;
+  titulo: string;
+  descripcion: string;
+  duracionMin?: number;
+  nivel?: number;
+  completadaEn?: string;
+  valoracion?: number;
 }
