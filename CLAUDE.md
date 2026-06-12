@@ -21,6 +21,11 @@ the gate (Definition of Done) that closes each phase.
 - [Docs/historias-usuario/](Docs/historias-usuario/README.md) — historias de usuario y criterios de
   aceptación (Gherkin), un documento por épica + índice con la tabla de trazabilidad
   (historia → fase → pantalla). Es la fuente de los tests del DoD.
+- [Docs/modelo-datos.md](Docs/modelo-datos.md) — modelo de datos (diagrama entidad-relación y
+  entidades: `Guardian`, `ChildProfile`, `Story`, `Activity`, `InteractionEvent`, `AuditLog`). Es la
+  fuente conceptual; su materialización relacional vive en el esquema Prisma
+  [packages/backend/prisma/schema.prisma](packages/backend/prisma/schema.prisma). Si cambias el
+  esquema, actualiza también este doc.
 
 **Regla de planes (enforced):** todo plan de implementación se escribe como documento en
 [Docs/planes/](Docs/planes/) (un fichero por fase, p. ej. [Docs/planes/fase-5.md](Docs/planes/fase-5.md)),
@@ -158,6 +163,13 @@ intentionally not added) — use `git flow` directly. See the **git-flow** skill
 Commit messages follow **Conventional Commits in Spanish**, imperative mood, ≤72-char subject:
 `tipo(alcance): descripción` with types `feat|fix|refactor|docs|style|test|chore|perf|ci`.
 Stage selectively (`git add <file>`), never `git add -A`.
+
+**Quédate dentro del alcance de la rama (enforced).** Antes de modificar o crear un archivo que
+**no** esté en el plan de la feature (`Docs/planes/`) o que **no** corresponda a la intención de la
+rama actual, **pregunta** si conviene abrir otra rama siguiendo Git Flow (feature / hotfix según el
+caso) en lugar de mezclar el cambio aquí. No mezcles trabajo no relacionado en una rama de feature:
+un cambio fuera de alcance va en su propia rama desde `develop` (usa la skill **abrir-feature**), o
+se difiere. Si el usuario confirma que va aquí, adelante; si no, créalo en su rama.
 
 The local commit identity is set to the personal GitHub account `Mithor86-2` (not the global
 work identity) — preserve this; do not reset `git config --local user.*`.
