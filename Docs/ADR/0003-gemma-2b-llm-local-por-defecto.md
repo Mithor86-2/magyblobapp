@@ -27,9 +27,9 @@ defecto**.
 
 - **Un modelo local mayor (7B+).** Mejor calidad de texto, pero descarga y consumo de
   memoria que muchos equipos de evaluación no soportan; choca con la reproducibilidad.
-- **Solo nube (Claude/OpenAI).** Mejor calidad, pero introduce coste, dependencia de
-  red y de claves, y compromete la privacidad de datos de menores. Queda como ruta
-  **opcional** (`CloudProvider`), no por defecto.
+- **Nube (Claude/OpenAI).** Mejor calidad, pero introduce coste, dependencia de
+  red y de claves, y compromete la privacidad de datos de menores. **Descartada**
+  (ver [ADR 0002](0002-tres-modos-de-ia.md)): el proyecto se queda en local/mock.
 - **Otros runtimes locales (llama.cpp directo, LM Studio).** Ollama ofrece una API
   HTTP simple, imágenes oficiales y `pull` de modelos integrado; encaja mejor con
   `docker compose`.
@@ -46,7 +46,7 @@ defecto**.
 
 - `gemma:2b` es un modelo pequeño: la calidad/coherencia de los cuentos es limitada.
   Se asume como compromiso consciente (privacidad y reproducibilidad sobre calidad
-  máxima) y se mitiga con el `MockProvider` para demos y tests, y la opción cloud para
-  quien quiera más calidad.
+  máxima) y se mitiga con el `MockProvider` para demos y tests. Para más calidad,
+  cambiar el modelo local por uno mayor (variable de entorno), sin sacar datos a la nube.
 - La primera descarga del modelo requiere conexión; es el único paso no
   autocontenido del arranque y por eso queda explícitamente documentado.

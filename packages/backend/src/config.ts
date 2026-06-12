@@ -6,7 +6,7 @@ export interface Config {
   nodeEnv: string;
   port: number;
   logLevel: string;
-  aiProvider: 'mock' | 'local' | 'cloud';
+  aiProvider: 'mock' | 'local';
   ollamaBaseUrl: string;
   ollamaModel: string;
   /** Tiempo máximo de espera al proveedor de IA antes de caer a mock (ms). */
@@ -19,7 +19,7 @@ function parsePort(value: string | undefined, fallback: number): number {
 }
 
 function parseAiProvider(value: string | undefined): Config['aiProvider'] {
-  return value === 'local' || value === 'cloud' ? value : 'mock';
+  return value === 'local' ? 'local' : 'mock';
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {

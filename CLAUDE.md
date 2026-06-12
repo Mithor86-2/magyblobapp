@@ -68,8 +68,8 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
 - **One session per phase.** Work only the current phase and stop at its Definition of Done
   before moving on. Do not pull work forward from later phases.
 - **YAGNI over completeness.** The plan repeatedly favors less abstraction where it doesn't pay
-  off (e.g. value-objects only for `edad`/`idioma`; Chroma only if it earns its place — otherwise
-  document why it was skipped). Prefer the simpler option and justify omissions in writing.
+  off (e.g. value-objects only for `edad`/`idioma`; a vector DB was considered and dropped in
+  favor of simple title-dedup). Prefer the simpler option and justify omissions in writing.
 
 ## Code conventions (enforced)
 
@@ -125,8 +125,8 @@ con la regla de confirmación: pruebas → confirmación explícita → `git flo
 ## Planned architecture
 
 Clean Architecture in a **monorepo** (pnpm workspaces or turborepo) with `backend` and `app`
-packages. Stack per the plan: PostgreSQL 16, Chroma (vector DB, conditional), Ollama (local LLM),
-Expo + Zustand (mobile app), Prisma (or chosen ORM), pino (structured logs).
+packages. Stack: PostgreSQL 16, Ollama (local LLM), Expo + Zustand (mobile app), Prisma (or chosen
+ORM), pino (structured logs).
 
 Layering (dependencies point inward — `/domain` has **zero external dependencies**):
 
@@ -139,17 +139,16 @@ Layering (dependencies point inward — `/domain` has **zero external dependenci
 
 ### The AI layer is the core of the project
 
-A single `AIProvider` interface (`generateStory`, `recommendActivities`) with **three swappable
-modes** selected by env var (`mock | local | cloud`):
+A single `AIProvider` interface (`generateStory`, `recommendActivities`) with **two swappable
+modes** selected by env var (`mock | local`):
 
 - **MockProvider** — built first; fast, testable without Ollama. Also the **automatic fallback**
   when the active provider doesn't respond, and the safety net so an evaluator with no GPU can run
   everything in mock mode.
 - **OllamaProvider** — runs against `gemma:2b` (the default local model).
-- **CloudProvider** — optional, one only (Claude or OpenAI), active only if an API key is present.
 
-When working on AI features, default to the latest Claude models for any cloud path
-(see the claude-api skill for current model IDs).
+A cloud provider was considered and **dropped from scope** (privacy by design: child data never
+leaves the machine). See ADR 0002.
 
 ## Git workflow (established, follow it)
 

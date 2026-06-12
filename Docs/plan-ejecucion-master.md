@@ -12,7 +12,7 @@ tests verdes, levanta con `docker compose up`.
 Objetivo: repo que arranca en limpio sin pasos ocultos.
 
 - [ ] Monorepo (pnpm workspaces o turborepo) con paquetes backend y app.
-- [ ] docker-compose.yml: backend, PostgreSQL 16, Chroma, Ollama.
+- [ ] docker-compose.yml: backend, PostgreSQL 16, Ollama.
 - [ ] .env.example completo + scripts de arranque.
 - [ ] ESLint + Prettier + Vitest configurados y funcionando.
 - [ ] `ollama pull gemma:2b` documentado en el arranque.
@@ -44,7 +44,7 @@ Objetivo: tres modos detrás de una sola interfaz.
       del perfil; recommendActivities (genera actividades con IA según el perfil).
 - [ ] MockProvider primero (rápido, testeable sin Ollama).
 - [ ] OllamaProvider contra gemma:2b.
-- [ ] Selección de modo por variable de entorno (mock | local | cloud).
+- [ ] Selección de modo por variable de entorno (mock | local).
 - [ ] Fallback automático a mock si el proveedor activo no responde.
 - Done: test del MockProvider verde + smoke test manual del OllamaProvider.
 

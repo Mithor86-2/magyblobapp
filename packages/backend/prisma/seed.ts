@@ -12,11 +12,6 @@ import { PrismaClient } from '../src/generated/prisma/index.js';
 const SETTINGS: { key: string; value: string; descripcion: string }[] = [
   { key: 'ai.model.local', value: 'gemma:2b', descripcion: 'Modelo Ollama por defecto.' },
   {
-    key: 'ai.model.cloud',
-    value: 'claude-opus-4-8',
-    descripcion: 'Id del modelo de la ruta cloud (no la clave de API).',
-  },
-  {
     key: 'prompt.story.system',
     value:
       'Eres un cuentacuentos para niños de 2 a 6 años. Lenguaje sencillo y tono ' +

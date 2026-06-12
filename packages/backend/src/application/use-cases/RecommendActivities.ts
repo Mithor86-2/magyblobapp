@@ -21,7 +21,7 @@ const CANTIDAD_POR_DEFECTO = 3;
  * Recomienda actividades para un perfil delegando en `AIProvider`, las persiste y
  * las devuelve. Aplica un dedup simple por título (case-insensitive) frente a las
  * actividades ya generadas del perfil: evita repeticiones sin necesidad de una base
- * vectorial (ver decisión sobre Chroma).
+ * vectorial (Chroma descartada — ADR 0004).
  */
 export class RecommendActivities {
   constructor(private readonly deps: RecommendActivitiesDeps) {}

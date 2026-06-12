@@ -37,15 +37,13 @@ ejecutar la demo sin GPU ni modelo descargado.
 ## US-05 — Modo de IA configurable por entorno · Must
 
 Como **desarrollador/evaluador** quiero seleccionar el modo de IA por variable de
-entorno para alternar mock / local / cloud sin tocar código.
+entorno para alternar mock / local sin tocar código.
 
 **Criterios de aceptación**
 
-- Dado `AI_PROVIDER ∈ {mock, local, cloud}`, Cuando arranca el backend, Entonces se
-  instancia el proveedor correspondiente.
+- Dado `AI_PROVIDER ∈ {mock, local}`, Cuando arranca el backend, Entonces se instancia el
+  proveedor correspondiente ([ADR 0002](../ADR/0002-tres-modos-de-ia.md)).
 - Dado un valor ausente o inválido, Cuando arranca, Entonces se usa `mock` por defecto.
-- Dado `AI_PROVIDER=cloud` sin clave de API presente, Cuando arranca, Entonces no se
-  activa cloud (se degrada/avisa según [ADR 0002](../ADR/0002-tres-modos-de-ia.md)).
 
 ## US-07 — Guardar / marcar cuento · Should
 

@@ -48,18 +48,18 @@ arquitectura.
 
 ## Implicaciones de diseño (qué hacemos)
 
-| #    | Requisito                                 | Cómo lo cumple el proyecto                                                                                                                       | Estado |
-| ---- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| C-1  | Consentimiento parental verificable       | Entidad `Guardian` + registro de consentimiento (`consentimientoEn`, versión); alta del niño solo dentro de una cuenta de adulto                 | Diseño |
-| C-2  | Sin analítica/publicidad de terceros      | Tracking **de primera parte** en tabla propia (`InteractionEvent`); **cero SDKs** de analítica/ads de terceros                                   | Diseño |
-| C-3  | Sin transmitir identificadores de menores | No se usa Advertising ID; los eventos referencian `profileId` interno (pseudónimo), no identificadores de dispositivo                            | Diseño |
-| C-4  | Minimización de datos                     | Del adulto solo lo necesario (nombre, apellidos, email, parentesco); del niño: nombre, edad, idioma, avatar, intereses                           | Diseño |
-| C-5  | Privacidad por diseño / datos no salen    | LLM **local** por defecto (Ollama/Gemma); modo cloud opcional y desactivado salvo clave ([ADR 0003](ADR/0003-gemma-2b-llm-local-por-defecto.md)) | ✔ base |
-| C-6  | Parental gate (zona de adultos)           | Configuración y gestión de perfiles tras una puerta parental; UI infantil sin enlaces externos ni compras                                        | Diseño |
-| C-7  | Política de privacidad + lenguaje claro   | Documento de privacidad; textos al niño en lenguaje sencillo (coherente con el design system)                                                    | Pend.  |
-| C-8  | Derechos GDPR (acceso, borrado)           | Borrado de `Guardian` en cascada con sus `ChildProfile`, cuentos, actividades y eventos (US-13)                                                  | Diseño |
-| C-9  | Limitación de conservación                | Retención acotada de `InteractionEvent`/`AuditLog`; documentar política de purga                                                                 | Pend.  |
-| C-10 | Verificación robusta de edad del adulto   | **Limitación reconocida:** se usa puerta parental + email; la verificación fuerte de edad queda fuera del alcance del TFM y se declara           | Limit. |
+| #    | Requisito                                 | Cómo lo cumple el proyecto                                                                                                                                                                                 | Estado |
+| ---- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| C-1  | Consentimiento parental verificable       | Entidad `Guardian` + registro de consentimiento (`consentimientoEn`, versión); alta del niño solo dentro de una cuenta de adulto                                                                           | Diseño |
+| C-2  | Sin analítica/publicidad de terceros      | Tracking **de primera parte** en tabla propia (`InteractionEvent`); **cero SDKs** de analítica/ads de terceros                                                                                             | Diseño |
+| C-3  | Sin transmitir identificadores de menores | No se usa Advertising ID; los eventos referencian `profileId` interno (pseudónimo), no identificadores de dispositivo                                                                                      | Diseño |
+| C-4  | Minimización de datos                     | Del adulto solo lo necesario (nombre, apellidos, email, parentesco); del niño: nombre, edad, idioma, avatar, intereses                                                                                     | Diseño |
+| C-5  | Privacidad por diseño / datos no salen    | LLM **local** (Ollama/Gemma) o mock; **sin modo cloud** — los datos del menor nunca salen de la máquina ([ADR 0003](ADR/0003-gemma-2b-llm-local-por-defecto.md), [ADR 0002](ADR/0002-tres-modos-de-ia.md)) | ✔      |
+| C-6  | Parental gate (zona de adultos)           | Configuración y gestión de perfiles tras una puerta parental; UI infantil sin enlaces externos ni compras                                                                                                  | Diseño |
+| C-7  | Política de privacidad + lenguaje claro   | Documento de privacidad; textos al niño en lenguaje sencillo (coherente con el design system)                                                                                                              | Pend.  |
+| C-8  | Derechos GDPR (acceso, borrado)           | Borrado de `Guardian` en cascada con sus `ChildProfile`, cuentos, actividades y eventos (US-13)                                                                                                            | Diseño |
+| C-9  | Limitación de conservación                | Retención acotada de `InteractionEvent`/`AuditLog`; documentar política de purga                                                                                                                           | Pend.  |
+| C-10 | Verificación robusta de edad del adulto   | **Limitación reconocida:** se usa puerta parental + email; la verificación fuerte de edad queda fuera del alcance del TFM y se declara                                                                     | Limit. |
 
 ## Notas
 

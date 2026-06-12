@@ -14,7 +14,7 @@ import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
  * 1. Modo por defecto (`AI_PROVIDER=mock`): un evaluador sin GPU puede ejecutar
  *    todo el flujo (crear perfil → ver cuento) sin descargar modelos.
  * 2. Red de seguridad: es el fallback automático cuando el proveedor activo
- *    (Ollama/cloud) no responde — ver `FallbackProvider`.
+ *    (Ollama) no responde — ver `FallbackProvider`.
  * 3. Base de los tests rápidos del dominio/aplicación.
  *
  * El contenido sale en el idioma del perfil y es estable para una misma entrada.

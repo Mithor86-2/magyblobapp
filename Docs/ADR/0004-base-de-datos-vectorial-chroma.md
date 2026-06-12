@@ -1,8 +1,18 @@
 # ADR 0004 — Chroma como base de datos vectorial (condicional)
 
-- **Estado:** Aceptada
+- **Estado:** **Rechazada** (2026-06-12) — provisionada de forma condicional el 2026-06-10;
+  al cerrar la Fase 5 se decide **no integrarla** y **retirar el servicio**.
 - **Fecha:** 2026-06-10
 - **Relacionada con:** [ADR 0001](0001-arquitectura-limpia-monorepo.md)
+
+## Resolución (2026-06-12)
+
+Chroma **no se adopta** y se **retira de `docker compose`**. La deduplicación de actividades
+se resuelve con la alternativa "solo PostgreSQL": `RecommendActivities` descarta las generadas
+cuyo **título ya existe** para el perfil (filtrado relacional, sin embeddings). Para el MVP la
+similitud semántica no aporta lo suficiente frente al coste de un servicio extra (YAGNI). Si en
+el futuro se quisiera, `pgvector` sería la vía preferente (sin contenedor aparte). El resto de
+esta ADR queda como contexto histórico de la decisión.
 
 ## Contexto
 

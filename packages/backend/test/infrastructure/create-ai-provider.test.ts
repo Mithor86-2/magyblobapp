@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createAIProvider } from '../../src/infrastructure/ai/createAIProvider.js';
 import { MockProvider } from '../../src/infrastructure/ai/MockProvider.js';
 import { FallbackProvider } from '../../src/infrastructure/ai/FallbackProvider.js';
@@ -17,10 +17,10 @@ describe('createAIProvider', () => {
     expect(createAIProvider(config({ aiProvider: 'local' }))).toBeInstanceOf(FallbackProvider);
   });
 
-  it('en modo cloud avisa y cae a MockProvider (CloudProvider es Fase 5)', () => {
-    const logger = { warn: vi.fn() };
-    const provider = createAIProvider(config({ aiProvider: 'cloud' }), { logger });
-    expect(provider).toBeInstanceOf(MockProvider);
-    expect(logger.warn).toHaveBeenCalledOnce();
+  it('ante un AI_PROVIDER desconocido, loadConfig cae a mock', () => {
+    expect(loadConfig({ AI_PROVIDER: 'desconocido' }).aiProvider).toBe('mock');
+    expect(createAIProvider(loadConfig({ AI_PROVIDER: 'desconocido' }))).toBeInstanceOf(
+      MockProvider,
+    );
   });
 });

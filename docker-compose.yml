@@ -16,14 +16,6 @@ services:
       timeout: 5s
       retries: 10
 
-  chroma:
-    image: chromadb/chroma:latest
-    restart: unless-stopped
-    ports:
-      - '8000:8000'
-    volumes:
-      - chromadata:/data
-
   ollama:
     image: ollama/ollama:latest
     restart: unless-stopped
@@ -42,8 +34,6 @@ services:
         condition: service_healthy
       ollama:
         condition: service_started
-      chroma:
-        condition: service_started
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -53,7 +43,6 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma:2b}
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-60000}
-      CHROMA_URL: http://chroma:8000
     ports:
       - '3000:3000'
     healthcheck:
@@ -66,5 +55,4 @@ services:
 
 volumes:
   pgdata:
-  chromadata:
   ollamadata:
