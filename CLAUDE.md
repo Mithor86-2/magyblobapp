@@ -182,6 +182,14 @@ work identity) — preserve this; do not reset `git config --local user.*`.
   [Docs/lecciones-aprendidas.md](Docs/lecciones-aprendidas.md)), los `README.md`, la documentación
   de la API y cualquier guía que el cambio deje desfasada. La documentación se actualiza en el mismo
   cierre de la feature, no se difiere.
+- **Mantén [Docs/modelo-datos.md](Docs/modelo-datos.md) en sincronía con
+  [packages/backend/prisma/schema.prisma](packages/backend/prisma/schema.prisma).** El doc y el
+  esquema **no** son lo mismo: el doc tiene una **parte mecánica** (el bloque `mermaid erDiagram`:
+  modelos, campos, relaciones) que duplica el esquema, y una **parte conceptual** (value-objects,
+  vocabularios cerrados, notas de persistencia y cumplimiento) que no vive en Prisma. Siempre que
+  cambie el esquema —modelo, campo, relación, índice o `@@map`— actualiza en el **mismo cambio** el
+  doc: refleja la parte mecánica en el diagrama y revisa si la conceptual (enums, VOs, cascadas,
+  minimización) sigue siendo cierta. No se difiere.
 - **Actualiza las historias de usuario al implementar funcionalidad.** Cada vez que se construye o
   cambia una funcionalidad, refleja el estado en [Docs/historias-usuario/](Docs/historias-usuario/README.md):
   ajusta la historia afectada (US-NN) y su criterios de aceptación si cambiaron, y mantén al día la

@@ -76,7 +76,11 @@ Patrón de referencia ya en el repo: `CreateChildProfile` y `GenerateStory`.
 - En `src/infrastructure/repositories/Prisma<Entidad>Repository.ts`: clase que **implementa** la
   interfaz del dominio (no crea una propia), recibe `PrismaClient` por constructor, y mapea
   ORM↔entidad con una función privada `to<Entidad>(row)`. Sin lógica de negocio.
-- Si la entidad es nueva, añade su modelo a `prisma/schema.prisma` y genera la migración.
+- Si la entidad es nueva, añade su modelo a `prisma/schema.prisma` y genera la migración. **Todo
+  cambio en `schema.prisma`** (modelo, campo, relación, índice o `@@map`) se refleja en el **mismo
+  paso** en [Docs/modelo-datos.md](../../../Docs/modelo-datos.md): actualiza el bloque `mermaid
+  erDiagram` (parte mecánica) y revisa si la parte conceptual (vocabularios, value-objects, cascadas)
+  sigue siendo cierta.
 - Cablea el repo en `src/infrastructure/composition.ts` (`buildProductionDeps`) y añade el campo a
   `AppDeps` en `src/dependencies.ts`. Refleja el mismo campo en `makeInMemoryDeps` de
   `test/support/server.ts`.
@@ -112,6 +116,7 @@ feature complete, ciérrala con la skill **cerrar-feature**.
 - [ ] DTOs en `application/dto.ts`; caso de uso con `Deps` y `execute()`.
 - [ ] Test del caso de uso con dobles in-memory (sin IO), cubriendo errores.
 - [ ] `Prisma<Entidad>Repository` + modelo/migración Prisma si la entidad es nueva.
+- [ ] Si tocaste `schema.prisma`, `Docs/modelo-datos.md` actualizado (diagrama + parte conceptual).
 - [ ] Cableado en `composition.ts`, `dependencies.ts` y `test/support/server.ts`.
 - [ ] Ruta con JSON Schema + registro en `buildServer()`.
 - [ ] Test de integración con `app.inject()` (2xx/400/404 + side effects).

@@ -38,6 +38,9 @@ Antes de versionar, pon al día **toda** la documentación que el cambio deje de
   - [Docs/lecciones-aprendidas.md](../../../Docs/lecciones-aprendidas.md) — gotchas concretos y cómo se resolvieron.
 - **README** (raíz y/o del paquete afectado) si cambian comandos, arranque o uso.
 - **Docs/api.md** si cambian endpoints, parámetros o el contrato HTTP.
+- **Docs/modelo-datos.md** si la feature tocó `packages/backend/prisma/schema.prisma` (modelo, campo,
+  relación, índice o `@@map`): actualiza el bloque `mermaid erDiagram` y revisa la parte conceptual
+  (vocabularios, value-objects, cascadas, minimización).
 - Cualquier ADR, historia de usuario o doc de cumplimiento afectado.
 
 Todo en **español** (lenguaje ubicuo del proyecto).
@@ -104,6 +107,7 @@ Recuerda: la identidad local de commit es la cuenta personal `Mithor86-2` — **
 - [ ] (si aplica) `docker compose up` levanta la pila en limpio.
 - [ ] phases.md / memory.md / lecciones-aprendidas.md actualizados.
 - [ ] README / api.md / docs afectadas actualizados.
+- [ ] Si la feature tocó `schema.prisma`, `modelo-datos.md` sincronizado (diagrama + parte conceptual).
 - [ ] `version` subida en package.json(s) según SemVer.
 - [ ] CHANGELOG movido de Unreleased a versión fechada (por paquete).
 - [ ] Commit(s) en Conventional Commits (español) + rama cerrada con Git Flow.
