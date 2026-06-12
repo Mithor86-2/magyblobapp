@@ -6,7 +6,7 @@ description: Cierra una feature aplicando la Definition of Done del proyecto —
 # Cerrar feature
 
 Guía para finalizar una feature de **magyblobApp** sin saltarse ningún paso del cierre.
-Sigue las reglas *enforced* del [CLAUDE.md](../../../CLAUDE.md): Definition of Done, versionado
+Sigue las reglas _enforced_ del [CLAUDE.md](../../../CLAUDE.md): Definition of Done, versionado
 y changelog, actualización de documentación, y Git workflow.
 
 Ejecuta los pasos **en orden**. No avances al siguiente si el actual no está verde.
@@ -71,6 +71,7 @@ Por cada paquete con cambios, edita su `CHANGELOG.md`
    ```
 
    Usa la fecha de hoy en formato `AAAA-MM-DD`.
+
 2. Deja un `## [Unreleased]` vacío con los seis grupos para la próxima feature.
 3. Las entradas se redactan en español.
 

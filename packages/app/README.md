@@ -27,15 +27,23 @@ pnpm --filter @magyblob/app start                # abre Expo (i = iOS sim, a = A
 > **IP LAN** del ordenador en `EXPO_PUBLIC_API_URL` (p. ej. `http://192.168.1.42:3000`)
 > con el móvil en la misma red. En el simulador iOS `localhost` funciona.
 
-## Estructura
+## Estructura (Clean Architecture ligera)
+
+Dependencias hacia dentro: `presentation → domain ← infrastructure`. El composition
+root (`src/composition.ts`) es el único módulo que conoce la implementación concreta.
 
 ```text
-App.tsx                 navegación (native-stack) + carga de fuentes + hidratación del store
-src/theme/tokens.ts     design system (paleta coral/menta, Quicksand, tap targets ≥64px)
-src/api/                cliente HTTP del backend (+ test) y tipos del contrato de cable
-src/store/              estado Zustand (guardianId persistido; perfil de sesión)
-src/components/         Screen, BubblyButton, SelectableChip, AvatarPicker, TextField
-src/screens/            ConsentScreen, CreateProfileScreen, StoryGeneratorScreen
+App.tsx               navegación (native-stack) + fuentes + hidratación del store
+src/domain/           modelos, vocabularios, interfaces de gateway y ApiError (sin framework)
+src/infrastructure/   adaptador HTTP (createApiGateways) + storage (AsyncStorage) + test
+src/composition.ts    composition root: api = createApiGateways() (tipado como domain)
+src/presentation/
+  theme/tokens.ts     design system (paleta coral/menta, Quicksand, tap targets ≥64px)
+  store/              estado Zustand (guardianId persistido; perfil de sesión)
+  components/         Screen, BubblyButton, SelectableChip, AvatarPicker, TextField
+  screens/            ConsentScreen, CreateProfileScreen, StoryGeneratorScreen
+  labels.ts           presentación con acentos de los vocabularios
+  navigation.ts       tipos del native-stack
 ```
 
 ## Pruebas y gate

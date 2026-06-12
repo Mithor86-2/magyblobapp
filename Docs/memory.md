@@ -182,6 +182,28 @@ App `@magyblob/app` con Expo SDK 56 (lo que da `create-expo-app@latest`, no el 5
   sube versión SemVer (raíz y paquete afectado) y se mueve lo de `[Unreleased]` a una sección
   versionada del `CHANGELOG.md` del paquete. Esta fase: raíz y app → **0.1.0**.
 
+## Clean Architecture en el app (2026-06-11 · app v0.1.1)
+
+Tras cerrar Fase 4, el app se reorganizó por capas (decisión del usuario: alinear con el backend
+sin sobre-ingeniería). **Clean ligera**, no estricta:
+
+- **Capas:** `domain` (modelos, vocabularios, interfaces de gateway, `ApiError`),
+  `infrastructure` (adaptador HTTP `createApiGateways` + `storage` de AsyncStorage) y
+  `presentation` (pantallas, componentes, store, theme, navegación, labels). Un `composition.ts`
+  en la raíz de `src/` actúa de **composition root**: es el único que importa infraestructura y
+  expone `api` tipado como las interfaces de `domain`.
+- **Inversión de dependencias:** las pantallas llaman a `api.guardians.register(...)` etc., donde
+  `api` está tipado contra `domain/gateways`, no contra `fetch`. La presentación no conoce la
+  implementación HTTP.
+- **Sin capa `application`:** los casos de uso del cliente son una sola llamada HTTP, así que el
+  gateway **es** la frontera (no se añaden clases de caso de uso → YAGNI). Si en Fase 5 aparece
+  orquestación real en el cliente, se introducirá entonces.
+- **Sin frontera ESLint nueva:** el ESLint raíz ya ignora `packages/app/**`; la disciplina de
+  capas se mantiene por convención (a diferencia del backend, que sí la refuerza con
+  `no-restricted-imports`).
+- **Refactor sin cambio de comportamiento:** mismas llamadas HTTP y misma UI; gate verde (63
+  tests) y `expo export` revalidado. SemVer **patch** (0.1.0 → 0.1.1).
+
 ## Pendientes de decidir (cuando toque)
 
 - Chroma: ¿aporta para recomendación por similitud? Decidir en Fase 5; si no, dejar

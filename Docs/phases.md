@@ -139,6 +139,9 @@ design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
   `audit_logs` (`consentimiento` + `crear`), `child_profiles` (avatar `zorro`, intereses
   `{animales, musica}`), `stories` ("Joaquin y los animales", en español) e `interaction_events`
   (`cuento_generado`). Cuento generado por el modelo local real (prosa propia de un 2B).
+- **Post-cierre (2026-06-11, app v0.1.1, rama `feature/app-clean-arch`):** refactor del app a
+  **Clean Architecture ligera** (`domain` / `infrastructure` / `presentation` + composition
+  root), sin cambio de comportamiento; gate verde y bundle validado. Detalle en [memory.md](memory.md).
 
 ---
 

@@ -19,6 +19,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.1.1] - 2026-06-11
+
+### Changed
+
+- Reorganización a **Clean Architecture ligera** sin cambio de comportamiento: capas
+  `domain` (modelos, vocabularios, interfaces de gateway, `ApiError`), `infrastructure`
+  (adaptador HTTP `createApiGateways` + `storage` de AsyncStorage) y `presentation`
+  (pantallas, componentes, store, theme, navegación), con un `composition.ts` como
+  composition root. Las pantallas dependen de las interfaces de `domain`, no del `fetch`.
+
 ## [0.1.0] - 2026-06-11
 
 Slice vertical del HITO 1 (Fase 4): la app deja de ser placeholder y recorre el flujo
