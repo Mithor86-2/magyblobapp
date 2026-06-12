@@ -15,8 +15,10 @@ export type RootStackParamList = {
 };
 
 export type MainTabParamList = {
-  Cuentos: undefined;
+  Inicio: undefined;
   Actividades: undefined;
+  Cuentos: undefined;
+  Historial: undefined;
 };
 
 export type RootScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<

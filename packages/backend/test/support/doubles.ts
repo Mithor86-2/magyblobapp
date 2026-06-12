@@ -82,6 +82,10 @@ export class InMemoryActivityRepository implements ActivityRepository {
     this.items.set(activity.id, activity);
   }
 
+  async findById(id: string): Promise<Activity | null> {
+    return this.items.get(id) ?? null;
+  }
+
   async findByProfile(profileId: string): Promise<Activity[]> {
     return [...this.items.values()].filter((a) => a.profileId === profileId);
   }

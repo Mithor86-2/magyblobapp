@@ -106,14 +106,59 @@ completadaEn?, valoracion? }`.
 
 ---
 
-## Features 2-4 (resumen; se detallan al llegar)
+## FEATURE 2 — Historial + Progreso ✅ (cerrada 2026-06-12)
 
-- **F2 Historial + Progreso**: `GetHistory` (lista cuentos + actividades del perfil; reusa
-  `StoryRepository.findByProfile` y `ActivityRepository.findByProfile`), `SaveProgress`
-  (`Story.marcarLeido()` → requiere `StoryRepository.update/save`; `Activity.completar(valoracion)`
-  → `ActivityRepository.save`). Rutas `GET /profiles/:id/history`, `PATCH /stories/:id`,
-  `POST /activities/:id/complete`. App: pestañas **Inicio** (bienvenida con el niño actual) e
-  **Historial** (cuentos con estado/bookmark + actividades con estrellas); tabs a 4.
+Objetivo: ver el historial del perfil (cuentos + actividades) y registrar progreso (marcar
+cuento leído, completar actividad con estrellas). Completa las 4 pestañas del diseño.
+Rama: `feature/5-historial-progreso`.
+
+### Historias cubiertas
+
+- **US-07** — Guardar / marcar cuento (estado `nuevo|leído`) ([epic-b](../historias-usuario/epic-b-cuentos.md)).
+- **US-08** — Ver historial de cuentos; dominio `GetHistory` ordena por fecha desc ([epic-d](../historias-usuario/epic-d-historial.md)).
+- **US-10** — Registrar actividad completada con valoración ([epic-c](../historias-usuario/epic-c-actividades.md)).
+
+> **Decisión:** el plan nombraba `SaveProgress` genérico; se parte en **dos casos de uso cohesivos**
+> (`MarkStoryRead`, `CompleteActivity`) porque el progreso es estado de `Story`/`Activity`
+> (decisión I-6), y cada uno toca una entidad distinta. Más limpio que un caso de uso "cajón".
+
+### Backend (tareas)
+
+- [ ] ❌ `GetHistory` (caso de uso): devuelve `{ stories, activities }` ordenados por fecha desc.
+      Reusa `StoryRepository.findByProfile` y `ActivityRepository.findByProfile` (ambos ya existen).
+      DTO `HistoryOutput`.
+- [ ] ❌ `MarkStoryRead` (US-07): `findById` → `Story.marcarLeido()` → persistir. Requiere que
+      `PrismaStoryRepository.save` sea **upsert** (hoy hace `create`); `InMemoryStoryRepository` ya
+      sobrescribe. Sin método nuevo en el puerto.
+- [ ] ❌ `CompleteActivity` (US-10): añadir `findById(id)` a `ActivityRepository` (+ Prisma +
+      in-memory) → `Activity.completar(valoracion, now)` → `save` (ya hace upsert). Valida 1-3.
+- [ ] ❌ Rutas: `GET /profiles/:profileId/history`, `POST /stories/:id/read`,
+      `POST /activities/:id/complete` (body `{ valoracion }`). Registrar en `server.ts`. El
+      `actividad_completada` se escribe como `InteractionEvent` en la frontera HTTP.
+- [ ] ❌ Tests: caso de uso por cada uno (dobles in-memory) + integración de las 3 rutas.
+
+### App (tareas)
+
+- [ ] ❌ `domain`: tipos `HistoryOutput`; gateways — `history.get(profileId)`,
+      `stories.markRead(id)`, `activities.complete(id, valoracion)`; impl en `infrastructure/http`.
+- [ ] ❌ Pestañas a **4** (Inicio · Actividades · Cuentos · Historial), orden del diseño.
+- [ ] ❌ Pantalla **Inicio**: bienvenida con el nombre del niño actual + CTAs a Cuentos/Actividades.
+- [ ] ❌ Pantalla **Historial**: sección Cuentos (estado `nuevo|leído` + "Ver de nuevo" → `markRead`)
+      y sección Actividades hechas (estrellas + fecha). Carga vía `history.get`.
+- [ ] ❌ Completar actividad con valoración (estrellas) desde `ActivityCard`/Actividades → `complete`.
+- [ ] ❌ Test del gateway (`infrastructure/http.test.ts`) para las nuevas operaciones.
+- [ ] ❌ Docs + cierre con `cerrar-feature` (SemVer, CHANGELOG, api.md, phases.md).
+
+### Verificación F2
+
+1. `pnpm check` verde (tests nuevos incluidos) + `expo export` sin errores.
+2. e2e contra PostgreSQL real (rebuild backend): generar cuento → `read` → estado `leído`;
+   recomendar actividad → `complete` con estrellas → aparece en `GET .../history`.
+
+---
+
+## Features 3-4 (resumen; se detallan al llegar)
+
 - **F3 CloudProvider (Claude)**: `infrastructure/ai/CloudProvider.ts` (consultar skill `claude-api`
   para modelos/SDK); `createAIProvider` modo `cloud` lo usa **solo si hay `ANTHROPIC_API_KEY`**, si
   no, mock con aviso. Salida estructurada equivalente a la de Ollama. Tests con SDK mockeado.

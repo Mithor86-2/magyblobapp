@@ -10,6 +10,8 @@ import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
 import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
 import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
+import { HomeScreen } from './src/presentation/screens/HomeScreen';
+import { HistoryScreen } from './src/presentation/screens/HistoryScreen';
 import { useAppStore } from './src/presentation/store/useAppStore';
 import type { MainTabParamList, RootStackParamList } from './src/presentation/navigation';
 import { colors, fonts, radius } from './src/presentation/theme/tokens';
@@ -38,14 +40,24 @@ function MainTabs() {
       }}
     >
       <Tab.Screen
-        name="Cuentos"
-        component={StoryGeneratorScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📖" focused={focused} /> }}
+        name="Inicio"
+        component={HomeScreen}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} /> }}
       />
       <Tab.Screen
         name="Actividades"
         component={ActivitiesScreen}
         options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🎨" focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="Cuentos"
+        component={StoryGeneratorScreen}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📖" focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="Historial"
+        component={HistoryScreen}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📚" focused={focused} /> }}
       />
     </Tab.Navigator>
   );

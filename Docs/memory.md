@@ -199,6 +199,24 @@ Primera feature de la Fase 5 (US-09), ejecutada por slices:
 - **Verificar e2e tras tocar el backend exige reconstruir su contenedor** (`docker compose up
 --build backend`): el contenedor en marcha no tiene las rutas nuevas hasta rebuild.
 
+## Historial y progreso — Fase 5 F2 (2026-06-12 · backend v0.2.0 / app v0.3.0)
+
+US-07/08/10. Decisiones:
+
+- **`SaveProgress` partido en dos casos de uso** (`MarkStoryRead`, `CompleteActivity`): el
+  progreso es estado de `Story`/`Activity` (I-6) y cada operación toca una entidad distinta; un
+  caso de uso "cajón" sería peor. `GetHistory` solo lee (reusa los `findByProfile`).
+- **`PrismaStoryRepository.save` ahora hace upsert** para persistir el cambio a `leído` sin añadir
+  un método al puerto; `update` solo toca `estado` (lo único mutable del cuento). `PrismaActivity`
+  ya hacía upsert; se le añadió `findById` para completar.
+- **Mappers compartidos** (`application/mappers.ts`: `toStoryOutput`/`toActivityOutput`) para no
+  duplicar el mapeo entidad→DTO entre casos de uso de lectura.
+- **App: 4 pestañas** (Inicio·Actividades·Cuentos·Historial); el Historial **recarga al recibir
+  foco** (`useFocusEffect`) para reflejar lo leído/hecho al cambiar de pestaña. Valoración con
+  `StarRating` (1-3) desde la tarjeta de actividad.
+- **Evento `actividad_completada`** se escribe en la frontera HTTP (como los demás), no en el caso
+  de uso.
+
 ## Clean Architecture en el app (2026-06-11 · app v0.1.1)
 
 Tras cerrar Fase 4, el app se reorganizó por capas (decisión del usuario: alinear con el backend

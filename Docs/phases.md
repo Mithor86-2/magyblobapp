@@ -155,8 +155,13 @@ Se ejecuta por **features secuenciales** (plan en [planes/fase-5.md](planes/fase
       **tab navigator** (pestañas Cuentos y Actividades) + pantalla **Actividades** con
       `ActivityCard`. Verificado: `pnpm check` (73 tests), `expo export`, y e2e contra
       PostgreSQL real (3 actividades persistidas + dedup devuelve `[]` en la 2ª llamada).
-- [ ] **F2 Historial + Progreso**: `GetHistory`, `SaveProgress` (US-10) + pantallas Inicio e
-      Historial (tabs a 4).
+- [x] **F2 Historial + Progreso** (2026-06-12, US-07/08/10 · backend v0.2.0 / app v0.3.0 ·
+      rama `feature/5-historial-progreso`): casos de uso `GetHistory`, `MarkStoryRead` y
+      `CompleteActivity` (+ rutas `GET /profiles/:id/history`, `POST /stories/:id/read`,
+      `POST /activities/:id/complete`); en la app, **4 pestañas** (Inicio·Actividades·Cuentos·
+      Historial), pantallas **Inicio** e **Historial**, y valoración con estrellas (`StarRating`).
+      Verificado: `pnpm check` (87 tests), `expo export`, y e2e contra PostgreSQL (cuento→leído,
+      actividad→completada con estrellas, validación 400, historial coherente).
 - [ ] **F3** `CloudProvider` con Claude (solo si hay `ANTHROPIC_API_KEY`).
 - [ ] **F4 Chroma**: documentar la omisión (dedup simple cubre el MVP — YAGNI).
 - **DoD:** todas las pantallas y casos de uso operativos y testeados.

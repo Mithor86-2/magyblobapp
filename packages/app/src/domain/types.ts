@@ -103,3 +103,9 @@ export interface Activity {
   completadaEn?: string;
   valoracion?: number;
 }
+
+// --- Historial ---
+export interface History {
+  stories: Story[];
+  activities: Activity[];
+}
