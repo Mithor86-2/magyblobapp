@@ -111,6 +111,12 @@ docker compose up     # whole stack comes up on a clean machine
 Single backend test: `pnpm --filter @magyblob/backend exec vitest run <file>`
 (or `vitest run -t "<test name>"`).
 
+**Regla de seguridad (enforced): pruebas con el usuario como último paso.** Cuando la fase lo
+amerite, además del gate automático, el **último paso** antes de cerrarla es **solicitar las
+pruebas al usuario**: que las haga **manualmente** (dale pasos/comandos concretos) o que se le
+**ofrezca/genere una verificación automatizada**. No des la fase por cerrada sin ese paso. Encadena
+con la regla de confirmación: pruebas → confirmación explícita → `git flow feature finish`.
+
 `docker compose up` reproducibility is a hard requirement — clone → `cp .env.example .env` →
 `docker compose up` → backend on <http://localhost:3000/health>, with no hidden steps. The default
 `AI_PROVIDER=mock` means it runs with no GPU/model. For real local AI, run `pnpm ollama:setup`
@@ -153,6 +159,11 @@ Git Flow is initialized: `main` (production) + `develop` (development). Branch f
 git flow feature start <id>-<descripcion-kebab-case>
 git flow feature finish <id>-<descripcion-kebab-case>
 ```
+
+**Regla de seguridad (enforced): no finalizar una feature sin confirmación.** Nunca ejecutes
+`git flow feature finish` (ni mergees una rama de feature a `develop`/`main`) sin **confirmación
+explícita del usuario** en ese momento. Completa el resto del cierre (gate verde, versión,
+CHANGELOG, docs, commits) y **detente antes** del `finish`; pregunta y espera el "sí".
 
 Use `git flow` directly. The plugin **`gitflow-es`** (skills `gitflow-es:git` para el ciclo de
 ramas/operaciones y `gitflow-es:commit` para los mensajes) cubre el flujo completo — úsalo para

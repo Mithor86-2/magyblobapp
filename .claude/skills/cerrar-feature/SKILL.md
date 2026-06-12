@@ -92,8 +92,17 @@ tipo(alcance): descripción
 
 Tipos: `feat|fix|refactor|docs|style|test|chore|perf|ci`.
 
-Cierra la rama con Git Flow usando `git flow` directamente. La skill **`gitflow-es:git`** del plugin
-cubre el detalle del flujo:
+**Regla de seguridad (enforced): pruebas con el usuario.** Cuando la fase/feature lo amerite, antes
+de finalizar **solicita las pruebas al usuario**: que las realice **manualmente** (dale pasos o
+comandos concretos) o **ofrécele/genera una verificación automatizada**. No cierres sin ese paso.
+
+**Regla de seguridad (enforced): pide confirmación antes de finalizar.** No ejecutes
+`git flow feature finish` (ni el merge a `develop`/`main`) sin **confirmación explícita del
+usuario**. Haz todo lo anterior (gate, versión, CHANGELOG, docs, commits, pruebas) y **detente
+aquí**: pregunta y espera el "sí" antes de cerrar la rama.
+
+Tras la confirmación, cierra la rama con Git Flow usando `git flow` directamente. La skill
+**`gitflow-es:git`** del plugin cubre el detalle del flujo:
 
 ```bash
 git flow feature finish <id>-<descripcion-kebab-case>
