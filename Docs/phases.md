@@ -231,3 +231,41 @@ secuenciales** (plan en `planes/fase-5-5.md` cuando se abra). Refuerza el cumpli
 - [ ] Diagrama de arquitectura.
 - [ ] Guion de demo y respuestas a preguntas del tribunal.
 - **DoD:** clonar → `docker compose up` → app corriendo, sin pasos ocultos.
+
+---
+
+## FASE DE MEJORAS — Pulido visual y de experiencia ⬜
+
+Mejoras posteriores al núcleo funcional: reemplazar los _placeholders_ (emojis) por
+recursos gráficos propios, reforzar la personalización por niño y completar interacciones
+de cuentos/actividades. Se ejecutará por **features secuenciales** (plan en `planes/` cuando
+se abra). Algunas parten de algo ya existente (se indica).
+
+**Recursos visuales (imágenes propias en vez de emojis):**
+
+- [ ] **Avatares con imagen.** Crear un set de imágenes para los avatares e implementarlas en
+      la app (hoy `AvatarPicker` usa emojis con `id` ASCII; sustituir por assets locales sin
+      romper el `avatar` que se guarda en el perfil). Sin descargas en runtime (cumplimiento).
+- [ ] **Imágenes de temas y estilos de cuento.** Ilustraciones para los temas
+      (`animales · espacio · magia · aventuras · música`) y los estilos
+      (`aventura · divertido · educativo`), usadas en el selector y en la cabecera del cuento.
+- [ ] **Iconos del menú (pestañas).** Reemplazar los emojis de las 4 pestañas
+      (Inicio · Actividades · Cuentos · Historial) por iconos propios, conservando el "blob"
+      activo.
+
+**Funcionalidad y personalización:**
+
+- [ ] **Personalización por niño en cuentos y actividades.** Reforzar los prompts para usar de
+      forma explícita `nombre`, `edad` e `intereses` del perfil (hoy el prompt ya recibe el
+      perfil, pero conviene afinar tono/dificultad por edad y temática por intereses). Afecta a
+      `prompts.ts` / `AppSetting`; verificar en `mock` y `local`.
+- [ ] **Releer cuento desde el Historial.** Al tocar un cuento en el Historial, abrir una
+      vista de lectura con su `título`+`cuerpo` (pantalla de detalle nueva) y marcarlo `leído`
+      al abrirlo (US-07/08). Hoy el Historial solo lista y permite "marcar leído".
+- [ ] **Botón "Realizado" en actividades.** Añadir un botón explícito para marcar una actividad
+      como hecha, además de la valoración por estrellas (hoy se completa tocando directamente las
+      estrellas). Flujo sugerido: "Realizado" → pide la valoración (1-3) → `complete`.
+
+- **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
+  personalizados por perfil; releer desde Historial y botón "Realizado" operativos; `pnpm check`
+  verde + bundle + pruebas con el usuario.
