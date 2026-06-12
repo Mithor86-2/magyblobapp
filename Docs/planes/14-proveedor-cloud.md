@@ -100,7 +100,10 @@ Ver [../cumplimiento-menores.md](../cumplimiento-menores.md). El modo `cloud` **
       contra **Groq** real (`llama-3.3-70b-versatile`): cuento en español + 3 actividades con
       categorías válidas. Fallback a mock (sin key / HTTP error) cubierto por los tests de la
       factoría.
-- [ ] ❌ C3 · `pnpm check` verde + `docker compose up` levanta la pila (con `cloud` OFF por defecto).
+- [x] ✅ C3 · `pnpm check` verde + `docker compose up` levanta la pila. **E2E real verificado**: con
+      `ai.cloud` activa, `POST /stories` devolvió prosa de Groq; al desactivarla en BD **sin
+      reiniciar**, la siguiente petición cayó al MockProvider → hot-swap por BD demostrado. El compose
+      pasa las `<TARGET>_API_KEY` al backend (vacías por defecto).
 - [ ] ❌ C4 · Docs + `CHANGELOG.md` (backend) + versión SemVer + cierre con **`cerrar-feature`**.
 - [ ] ❌ C5 · Pruebas con el usuario (regla de seguridad) → confirmación → `git flow feature finish`.
 
