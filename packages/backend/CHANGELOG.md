@@ -19,6 +19,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.2.1] - 2026-06-12
+
+### Fixed
+
+- `OllamaProvider` sanea la salida del LLM: `nivel` (entero 1-3) y `duracionMin` (entero 1-60)
+  fuera de rango pasan a `undefined`, en vez de propagarse (gemma:2b a veces devuelve, p. ej.,
+  `nivel: 1000`).
+
 ## [0.2.0] - 2026-06-12
 
 Feature 2 de la Fase 5 (US-07/08/10): historial y progreso.
