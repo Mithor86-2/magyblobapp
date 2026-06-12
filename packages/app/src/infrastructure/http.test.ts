@@ -86,6 +86,22 @@ describe('createApiGateways (adaptador HTTP)', () => {
     });
   });
 
+  it('activities.recommend hace POST /activities/recommend', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse([{ id: 'a1', categoria: 'arte' }]));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.activities.recommend({ profileId: 'p1', categoria: 'musica', cantidad: 2 });
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/activities/recommend`);
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body)).toEqual({
+      profileId: 'p1',
+      categoria: 'musica',
+      cantidad: 2,
+    });
+  });
+
   it('mapea un error del backend a ApiError con su tipo', async () => {
     vi.stubGlobal(
       'fetch',

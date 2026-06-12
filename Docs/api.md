@@ -223,6 +223,49 @@ curl -X POST http://localhost:3000/stories \
 
 ---
 
+## `POST /activities/recommend`
+
+Recomienda (vía `AIProvider`) y **persiste** actividades para un perfil. Aplica un dedup
+simple por título: no devuelve actividades cuyo título ya exista para ese perfil.
+
+**Body**
+
+| Campo       | Tipo    | Req. | Notas                                          |
+| ----------- | ------- | ---- | ---------------------------------------------- |
+| `profileId` | string  | sí   | id de un `ChildProfile`                        |
+| `categoria` | string  | no   | acota a una categoría (`arte\|musica\|logica`) |
+| `cantidad`  | integer | no   | cuántas generar, 1-5 (por defecto 3)           |
+
+**Ejemplo**
+
+```bash
+curl -X POST http://localhost:3000/activities/recommend \
+  -H "Content-Type: application/json" \
+  -d '{ "profileId": "b9a5faf1-d90e-48dc-a400-92194886c398", "cantidad": 3 }'
+```
+
+**Respuesta `201`** — array de actividades:
+
+```json
+[
+  {
+    "id": "3971...d9",
+    "profileId": "b9a5faf1-d90e-48dc-a400-92194886c398",
+    "categoria": "arte",
+    "titulo": "Actividad de arte nº 1",
+    "descripcion": "Una propuesta sencilla de arte para jugar y aprender en casa.",
+    "duracionMin": 10,
+    "nivel": 1
+  }
+]
+```
+
+**Errores:** `404` el perfil no existe · `400` categoría fuera del vocabulario o cantidad
+fuera de rango. (El dedup puede devolver menos elementos de los pedidos, o `[]` si todos
+existían ya.)
+
+---
+
 ## Ejemplo de flujo completo (bash)
 
 Encadena las tres llamadas extrayendo los ids con [`jq`](https://jqlang.github.io/jq/):

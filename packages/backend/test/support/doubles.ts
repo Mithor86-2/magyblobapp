@@ -6,11 +6,13 @@ import type {
 import type { ChildProfile } from '../../src/domain/entities/ChildProfile.js';
 import type { Guardian } from '../../src/domain/entities/Guardian.js';
 import type { Story } from '../../src/domain/entities/Story.js';
+import type { Activity } from '../../src/domain/entities/Activity.js';
 import type { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js';
 import type { AuditLog } from '../../src/domain/entities/AuditLog.js';
 import type { ChildProfileRepository } from '../../src/domain/repositories/ChildProfileRepository.js';
 import type { GuardianRepository } from '../../src/domain/repositories/GuardianRepository.js';
 import type { StoryRepository } from '../../src/domain/repositories/StoryRepository.js';
+import type { ActivityRepository } from '../../src/domain/repositories/ActivityRepository.js';
 import type { InteractionEventRepository } from '../../src/domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from '../../src/domain/repositories/AuditLogRepository.js';
 import type { SettingsRepository } from '../../src/domain/repositories/SettingsRepository.js';
@@ -69,6 +71,19 @@ export class InMemoryStoryRepository implements StoryRepository {
     return [...this.items.values()]
       .filter((s) => s.profileId === profileId)
       .sort((a, b) => b.creadoEn.getTime() - a.creadoEn.getTime());
+  }
+}
+
+/** Repositorio de actividades en memoria para tests. */
+export class InMemoryActivityRepository implements ActivityRepository {
+  readonly items = new Map<string, Activity>();
+
+  async save(activity: Activity): Promise<void> {
+    this.items.set(activity.id, activity);
+  }
+
+  async findByProfile(profileId: string): Promise<Activity[]> {
+    return [...this.items.values()].filter((a) => a.profileId === profileId);
   }
 }
 

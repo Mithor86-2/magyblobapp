@@ -11,10 +11,12 @@
 import { ApiError } from '../domain/errors';
 import type { Api } from '../domain/gateways';
 import type {
+  Activity,
   ChildProfile,
   CreateChildProfileInput,
   GenerateStoryRequest,
   Guardian,
+  RecommendActivitiesRequest,
   RegisterGuardianInput,
   Story,
 } from '../domain/types';
@@ -71,6 +73,10 @@ export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
     stories: {
       generate: (req: GenerateStoryRequest) =>
         request<Story>(baseUrl, '/stories', { method: 'POST', body: req }),
+    },
+    activities: {
+      recommend: (req: RecommendActivitiesRequest) =>
+        request<Activity[]>(baseUrl, '/activities/recommend', { method: 'POST', body: req }),
     },
   };
 }

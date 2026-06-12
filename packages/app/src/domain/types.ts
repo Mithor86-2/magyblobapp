@@ -16,6 +16,9 @@ export type Tema = (typeof TEMAS)[number];
 export const ESTILOS = ['aventura', 'divertido', 'educativo'] as const;
 export type Estilo = (typeof ESTILOS)[number];
 
+export const CATEGORIAS = ['arte', 'musica', 'logica'] as const;
+export type Categoria = (typeof CATEGORIAS)[number];
+
 export const PARENTESCOS = ['madre', 'padre', 'tutor_legal', 'abuelo_a', 'otro'] as const;
 export type Parentesco = (typeof PARENTESCOS)[number];
 
@@ -80,4 +83,23 @@ export interface Story {
   cuerpo: string;
   idioma: CodigoIdioma;
   estado: EstadoStory;
+}
+
+// --- Activity ---
+export interface RecommendActivitiesRequest {
+  profileId: string;
+  categoria?: Categoria;
+  cantidad?: number;
+}
+
+export interface Activity {
+  id: string;
+  profileId: string;
+  categoria: Categoria;
+  titulo: string;
+  descripcion: string;
+  duracionMin?: number;
+  nivel?: number;
+  completadaEn?: string;
+  valoracion?: number;
 }

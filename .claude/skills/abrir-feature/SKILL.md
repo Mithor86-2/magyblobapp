@@ -49,12 +49,15 @@ El plan se estructura en **fases → tareas** y debe permitir seguir su estado. 
 > [../phases.md](../phases.md). Aquí va el **cómo** se trocea y ejecuta.
 
 ## Contexto
+
 Qué existe ya (✅) y qué falta (❌). Decisiones tomadas con el usuario y su porqué.
 
 ## Historias cubiertas
+
 - US-NN — <título> ([épica](../historias-usuario/<epica>.md))
 
 ## Tareas
+
 - [ ] ❌ Tarea 1 …
 - [ ] ❌ Tarea 2 …
 - [ ] ❌ Tests (uno por caso de uso / endpoint / gateway)

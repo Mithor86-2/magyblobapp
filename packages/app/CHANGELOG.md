@@ -19,6 +19,21 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.2.0] - 2026-06-11
+
+Feature 1 de la Fase 5 (US-09): actividades recomendadas con IA y shell de pestañas.
+
+### Added
+
+- Navegación con **pestañas inferiores** (`@react-navigation/bottom-tabs`): tras crear el
+  perfil se entra a un tab navigator. En esta entrega, pestañas **Cuentos** y **Actividades**
+  (Inicio e Historial llegan en la siguiente feature).
+- Pantalla **Actividades** (`presentation/screens/ActivitiesScreen.tsx`): genera actividades
+  para el perfil (`POST /activities/recommend`), con filtro de categoría, estados de
+  carga/error/reintento y tarjetas `ActivityCard` (color/emoji por categoría).
+- `domain`: modelo `Activity`, vocabulario `CATEGORIAS` y `ActivityGateway`; implementación
+  HTTP en `infrastructure/http.ts`.
+
 ## [0.1.1] - 2026-06-11
 
 ### Changed

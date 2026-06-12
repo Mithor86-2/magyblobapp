@@ -3,6 +3,7 @@ import { buildServer } from '../../src/server.js';
 import type { AppDeps } from '../../src/dependencies.js';
 import { MockProvider } from '../../src/infrastructure/ai/MockProvider.js';
 import {
+  InMemoryActivityRepository,
   InMemoryAuditLogRepository,
   InMemoryChildProfileRepository,
   InMemoryGuardianRepository,
@@ -27,6 +28,7 @@ export function makeInMemoryDeps() {
   const guardians = new InMemoryGuardianRepository();
   const profiles = new InMemoryChildProfileRepository();
   const stories = new InMemoryStoryRepository();
+  const activities = new InMemoryActivityRepository();
   const events = new InMemoryInteractionEventRepository();
   const audit = new InMemoryAuditLogRepository();
 
@@ -34,6 +36,7 @@ export function makeInMemoryDeps() {
     guardians,
     profiles,
     stories,
+    activities,
     events,
     audit,
     ai: new MockProvider(),
@@ -41,7 +44,7 @@ export function makeInMemoryDeps() {
     now: relojFijo(),
   };
 
-  return { deps, guardians, profiles, stories, events, audit };
+  return { deps, guardians, profiles, stories, activities, events, audit };
 }
 
 /** Construye el servidor con dobles en memoria (no toca Prisma ni la DB). */

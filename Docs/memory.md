@@ -182,6 +182,23 @@ App `@magyblob/app` con Expo SDK 56 (lo que da `create-expo-app@latest`, no el 5
   sube versión SemVer (raíz y paquete afectado) y se mueve lo de `[Unreleased]` a una sección
   versionada del `CHANGELOG.md` del paquete. Esta fase: raíz y app → **0.1.0**.
 
+## Actividades — Fase 5 F1 (2026-06-11 · backend v0.1.0 / app v0.2.0)
+
+Primera feature de la Fase 5 (US-09), ejecutada por slices:
+
+- **Dedup simple en vez de Chroma.** `RecommendActivities` descarta las actividades cuyo título
+  ya exista para el perfil (case-insensitive), comparando contra `ActivityRepository.findByProfile`.
+  Es la alternativa adoptada a la base vectorial: cubre "no repetir" sin añadir infra. La decisión
+  formal de omitir Chroma se documentará en F4 (ver [planes/fase-5.md](planes/fase-5.md)).
+- **App: navegación a dos niveles.** Stack raíz (Consent → CreateProfile → Main) + **tab navigator**
+  (`@react-navigation/bottom-tabs`) en `Main`. F1 trae 2 pestañas (Cuentos, Actividades); Inicio e
+  Historial llegan en F2 (se evita andamiar pantallas placeholder). Indicador activo tipo "blob"
+  con emoji (sin `@expo/vector-icons`, cero deps extra).
+- **Versionado del backend arranca en 0.1.0.** Las Fases 0-3 son anteriores a la convención de
+  CHANGELOG; el `CHANGELOG.md` del backend empieza a registrarse aquí.
+- **Verificar e2e tras tocar el backend exige reconstruir su contenedor** (`docker compose up
+--build backend`): el contenedor en marcha no tiene las rutas nuevas hasta rebuild.
+
 ## Clean Architecture en el app (2026-06-11 · app v0.1.1)
 
 Tras cerrar Fase 4, el app se reorganizó por capas (decisión del usuario: alinear con el backend

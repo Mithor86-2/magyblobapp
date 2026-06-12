@@ -145,14 +145,20 @@ design system (Quicksand, paleta coral/menta, tap targets ≥64px) en
 
 ---
 
-## FASE 5 — Resto de funcionalidad ⬜
+## FASE 5 — Resto de funcionalidad 🔄
 
-- [ ] Casos de uso `RecommendActivities` (genera con IA), `SaveProgress`, `GetHistory`
-      (cada uno con test).
-- [ ] Pantallas Inicio, Actividades recomendadas, Historial.
-- [ ] `CloudProvider` opcional (uno basta: Claude u OpenAI), solo si hay clave.
-- [ ] Chroma: evaluar como memoria semántica de actividades generadas (dedup/similitud);
-      si no aporta, documentar por qué se omite.
+Se ejecuta por **features secuenciales** (plan en [planes/fase-5.md](planes/fase-5.md)).
+
+- [x] **F1 Actividades end-to-end** (2026-06-11, US-09 · backend v0.1.0 / app v0.2.0 ·
+      rama `feature/5-actividades`): caso de uso `RecommendActivities` (con dedup simple por
+      título) + `ActivityRepository` (Prisma) + ruta `POST /activities/recommend`; en la app,
+      **tab navigator** (pestañas Cuentos y Actividades) + pantalla **Actividades** con
+      `ActivityCard`. Verificado: `pnpm check` (73 tests), `expo export`, y e2e contra
+      PostgreSQL real (3 actividades persistidas + dedup devuelve `[]` en la 2ª llamada).
+- [ ] **F2 Historial + Progreso**: `GetHistory`, `SaveProgress` (US-10) + pantallas Inicio e
+      Historial (tabs a 4).
+- [ ] **F3** `CloudProvider` con Claude (solo si hay `ANTHROPIC_API_KEY`).
+- [ ] **F4 Chroma**: documentar la omisión (dedup simple cubre el MVP — YAGNI).
 - **DoD:** todas las pantallas y casos de uso operativos y testeados.
 
 ---

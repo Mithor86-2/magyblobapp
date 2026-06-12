@@ -12,11 +12,11 @@ import { IDIOMA_LABEL, TEMA_LABEL } from '../labels';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
-import type { ScreenProps } from '../navigation';
+import type { RootScreenProps } from '../navigation';
 
 const EDADES = [2, 3, 4, 5, 6] as const;
 
-export function CreateProfileScreen({ navigation }: ScreenProps<'CreateProfile'>) {
+export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfile'>) {
   const guardianId = useAppStore((s) => s.guardianId);
   const setProfile = useAppStore((s) => s.setProfile);
 
@@ -54,7 +54,7 @@ export function CreateProfileScreen({ navigation }: ScreenProps<'CreateProfile'>
         intereses,
       });
       setProfile(profile);
-      navigation.navigate('StoryGenerator');
+      navigation.navigate('Main');
     } catch (error) {
       const mensaje = error instanceof ApiError ? error.message : 'No se pudo crear el perfil.';
       Alert.alert('Ups', mensaje);

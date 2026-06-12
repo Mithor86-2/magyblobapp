@@ -11,9 +11,9 @@ import { avatarEmoji } from '../components/AvatarPicker';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
-import type { ScreenProps } from '../navigation';
+import type { TabScreenProps } from '../navigation';
 
-export function StoryGeneratorScreen(_props: ScreenProps<'StoryGenerator'>) {
+export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   const profile = useAppStore((s) => s.currentProfile);
 
   // El perfil siempre existe al llegar aquí (se navega tras crearlo); guarda defensiva.
