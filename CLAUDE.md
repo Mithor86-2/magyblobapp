@@ -22,8 +22,29 @@ the gate (Definition of Done) that closes each phase.
   aceptación (Gherkin), un documento por épica + índice con la tabla de trazabilidad
   (historia → fase → pantalla). Es la fuente de los tests del DoD.
 
+**Regla de planes (enforced):** todo plan de implementación se escribe como documento en
+[Docs/planes/](Docs/planes/) (un fichero por fase, p. ej. [Docs/planes/fase-5.md](Docs/planes/fase-5.md)),
+nunca solo en el chat. Cada plan se estructura en **fases → tareas** y debe permitir seguir su
+estado: marca cada tarea como pendiente / en curso / hecha (p. ej. `❌`/`🔄`/`✅` o checkboxes) y
+actualiza esas marcas a medida que avanza el trabajo. El alcance global sigue viviendo en
+[Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) y el estado por fase en
+[Docs/phases.md](Docs/phases.md); los documentos de `Docs/planes/` desarrollan el **cómo** se trocea
+y ejecuta cada fase.
+
 It is the codebase for a Máster (TFM) project: a bilingual children's app that creates a child
 profile and generates stories / recommends activities using a local LLM.
+
+## Skills del proyecto
+
+Hay skills disponibles que automatizan flujos de este repo. Úsalas en lugar de reproducir los pasos
+a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son de otros stacks):
+
+- **`cerrar-feature`** — al finalizar una feature o cerrar una fase. Aplica la Definition of Done
+  (gate verde con `pnpm check`), el versionado SemVer, el `CHANGELOG.md` por paquete, la
+  actualización de docs y el cierre con Git Flow. Es la skill que ejecuta el proceso descrito en
+  "Versionado y changelog" más abajo. Vive en el repo: [.claude/skills/cerrar-feature/](.claude/skills/cerrar-feature/).
+- **`git-flow`** — para cualquier operación de ramas o commits (start/finish de features, hotfixes,
+  releases, mensajes en Conventional Commits en español). Ver "Git workflow" más abajo.
 
 ## Working strategy (non-obvious, enforced)
 
