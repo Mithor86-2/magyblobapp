@@ -30,7 +30,7 @@ export interface GeneratedActivity {
 
 /**
  * Puerto de la capa de IA: una sola interfaz con tres implementaciones
- * intercambiables (mock | local | cloud), que se construyen en la Fase 2.
+ * intercambiables (mock | local), que se construyen en la Fase 2.
  * El cuento se genera en el idioma del perfil (`perfil.idioma`).
  */
 export interface AIProvider {

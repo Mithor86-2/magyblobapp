@@ -13,7 +13,7 @@ export interface AILogger {
 
 /**
  * Decora un proveedor de IA `primary` con una red de seguridad: si falla (Ollama
- * caído, timeout, JSON inválido, error de cloud…), delega en `fallback` —en la
+ * caído, timeout, JSON inválido…), delega en `fallback` —en la
  * práctica el `MockProvider`— para que el flujo nunca se rompa por la IA.
  *
  * El fallo se registra (warn) pero no se propaga: el usuario recibe contenido

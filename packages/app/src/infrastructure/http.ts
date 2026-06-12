@@ -6,7 +6,7 @@
  * `localhost` sirve, en dispositivo físico hay que usar la IP LAN del host.
  *
  * El app es agnóstico del proveedor de IA: solo llama a `POST /stories` y el
- * backend decide (mock | local | cloud) según su propia configuración.
+ * backend decide (mock | local) según su propia configuración.
  */
 import { ApiError } from '../domain/errors';
 import type { Api } from '../domain/gateways';
