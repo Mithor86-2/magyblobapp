@@ -40,16 +40,17 @@ selección de perfil, onboarding con "Ya tengo cuenta", área parental y cierre 
 
 ## Tareas
 
-### F1 — Identificar al guardián (backend)
+### F1 — Identificar al guardián (backend) ✅
 
-- [ ] ❌ Caso de uso `LoginGuardian` (identifica por email vía `GuardianRepository.findByEmail`,
+- [x] ✅ Caso de uso `LoginGuardian` (identifica por email vía `GuardianRepository.findByEmail`,
       ya existente) + DTO de entrada/salida; `NotFoundError` si no hay cuenta con ese email.
-- [ ] ❌ Ruta `POST /guardians/login` con validación de esquema (email con formato) en la entrada.
-- [ ] ❌ `AuditLog` `accion=login` con el `guardianId` como actor, escrito en la frontera HTTP
+- [x] ✅ Ruta `POST /guardians/login` con validación de esquema (email por `pattern`, misma regex
+      que la entidad `Guardian`, porque ajv-formats no está cableado) en la entrada.
+- [x] ✅ `AuditLog` `accion=login` con el `guardianId` como actor, escrito en la frontera HTTP
       (coherente con cómo se escriben `consentimiento`/`crear`).
-- [ ] ❌ Tests: caso de uso `LoginGuardian` (dobles in-memory, éxito + `NotFoundError`) +
+- [x] ✅ Tests: caso de uso `LoginGuardian` (dobles in-memory, éxito + `NotFoundError`) +
       test de integración de la ruta (`app.inject`: 200 con guardián, 404 email inexistente,
-      400 email inválido).
+      400 email inválido). `pnpm check` verde (97 tests backend).
 
 ### F2 — Sesión y selección de perfil activo (app)
 

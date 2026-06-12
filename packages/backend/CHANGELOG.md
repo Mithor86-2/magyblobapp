@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Caso de uso `LoginGuardian` y ruta `POST /guardians/login` (US-19): identificación del adulto
+  por email (login ligero, sin contraseña; la autenticación robusta queda fuera del alcance del
+  TFM). Devuelve la cuenta si el email existe y `NotFoundError`/404 si no; registra un `AuditLog`
+  con `accion=login` en la frontera HTTP. Reutiliza `GuardianRepository.findByEmail` (sin cambios
+  de esquema).
+
 ### Changed
 
 ### Deprecated
