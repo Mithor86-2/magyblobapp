@@ -68,7 +68,7 @@ y actividades, sin tocar código ni exponer secretos en la base de datos, y mant
 **Criterios de aceptación**
 
 - Dada la clave `ai.cloud` de `AppSetting` con JSON `{"activo": true, "target": "groq",
-  "model": "..."}` y la API key del `target` en variables de entorno, Cuando se genera un
+"model": "..."}` y la API key del `target` en variables de entorno, Cuando se genera un
   cuento o una actividad, Entonces se usa el proveedor cloud resuelto por el preset del
   `target` (su `baseUrl`) y la key leída de env.
 - Dado `activo=false`, o la clave ausente, o un JSON inválido, Cuando se construye el

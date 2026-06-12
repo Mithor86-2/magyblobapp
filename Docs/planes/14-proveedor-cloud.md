@@ -19,7 +19,7 @@ Decisiones tomadas con el usuario (y su porqué):
   ([schema.prisma](../../packages/backend/prisma/schema.prisma)) con **una clave JSON** `ai.cloud`
   = `{"activo": bool, "target": "groq", "model": "..."}`. Atómica, sin estados inconsistentes.
   Se descarta crear una tabla nueva (`AppSetting` se diseñó para esto; tabla nueva = migración +
-  repo + doc, *gold-plating*).
+  repo + doc, _gold-plating_).
 - **Secretos siempre en env, nunca en BD.** La BD guarda solo selectores no secretos
   (`target`, `model`, `activo`). El `target` mapea en **código** (registro de presets) a su
   `baseUrl` y a la **variable de entorno** que contiene la API key. Coherente con la regla de
@@ -43,7 +43,7 @@ datos si aplica, historias).
 
 ## Historias cubiertas
 
-- **US-14 — Proveedor cloud opcional** (reactivada; antes *Descartada*)
+- **US-14 — Proveedor cloud opcional** (reactivada; antes _Descartada_)
   ([épica F](../historias-usuario/epic-f-plataforma.md#us-14))
 - Apoyo: **US-18** (configuración editable vía `AppSetting`) y **US-05** (modo de IA configurable).
 
@@ -75,24 +75,27 @@ Ver [../cumplimiento-menores.md](../cumplimiento-menores.md). El modo `cloud` **
 
 ### Fase B — Backend: adaptador y configuración
 
-- [ ] ❌ B1 · `CloudProvider` (compatible OpenAI `/chat/completions`) implementando `AIProvider`
-      (`generateStory`, `recommendActivities`) con salida estructurada y `AbortSignal` (timeout),
-      reutilizando prompts existentes. + test con doble de `fetch`/HTTP.
-- [ ] ❌ B2 · Registro de **presets** en código (`groq`, `gemini`, `openrouter`, `cerebras`…):
-      `{ baseUrl, apiKeyEnv }`. La key se lee de `process.env[apiKeyEnv]`.
-- [ ] ❌ B3 · Lectura + **validación** de `AppSetting` clave `ai.cloud` (JSON `{activo,target,model}`)
-      vía `SettingsRepository`, con valores por defecto/seguros si falta o es inválida. + test.
-- [ ] ❌ B4 · Cablear `createAIProvider`: si `ai.cloud.activo` y hay key → `CloudProvider` envuelto
-      en `FallbackProvider`; si no → comportamiento actual (`mock`/`local`). Ajustar `config.ts`
-      (`aiProvider` admite `cloud`; presets/keys por env). + test de la factoría.
-- [ ] ❌ B5 · `.env.example`: documentar `<TARGET>_API_KEY` (p. ej. `GROQ_API_KEY`) y el formato de
-      la clave `ai.cloud`. Seed idempotente de `AppSetting` con `ai.cloud` desactivado por defecto.
-- [ ] ❌ B6 · `AuditLog` al cambiar el proveedor (cuando exista el punto de cambio; si el cambio es
-      manual por SQL/seed en esta fase, dejar anotado para la sub-feature de UI admin).
+- [x] ✅ B1 · `CloudProvider` (compatible OpenAI `/chat/completions`, `response_format: json_object`,
+      `AbortSignal`) implementando `AIProvider`, reutilizando `prompts.ts` y el parseo/saneo
+      compartido `parseResponse.ts` (extraído de `OllamaProvider` para no duplicar). + test con doble
+      de `fetch`.
+- [x] ✅ B2 · Registro de **presets** en `cloudPresets.ts` (`groq`, `gemini`, `openrouter`,
+      `cerebras`): `{ baseUrl, apiKeyEnv }`. La key se lee de `process.env[apiKeyEnv]`.
+- [x] ✅ B3 · `cloudSettings.ts`: `parseCloudSetting`/`readCloudSetting` de la clave `ai.cloud`
+      (JSON `{activo,target,model}`), devuelve `null` si falta/ inválida/target desconocido. + test.
+- [x] ✅ B4 · `createAIProvider` con `HotSwapAIProvider`: resuelve `cloud` **por petición** (cambio en
+      caliente). **Decisión refinada:** cloud NO se activa por `AI_PROVIDER` sino solo por BD
+      (`ai.cloud.activo`), para preservar privacidad por defecto. `config.ts` añade `cloudApiKeys`
+      (keys por target leídas de env). + tests de la factoría (hot-swap, sin key, fallback).
+- [x] ✅ B5 · `.env.example` documenta las `<TARGET>_API_KEY` (solo secretos) y que el modo se activa
+      en BD. Seed idempotente de `ai.cloud` **desactivado** por defecto.
+- [ ] 🔜 B6 · `AuditLog` al cambiar el proveedor: **diferido a la sub-feature de UI admin** (en esta
+      fase el cambio es manual por SQL/seed, sin endpoint que auditar). Anotado en "Fuera de alcance".
 
 ### Fase C — Verificación y cierre
 
-- [ ] ❌ C1 · Tests (uno por unidad: `CloudProvider`, validación de `ai.cloud`, factoría) en verde.
+- [x] ✅ C1 · Tests en verde: `cloud-provider` (5), `cloud-settings` (4), `create-ai-provider`
+      ampliado (7). Gate `pnpm check` verde (92 tests backend + app, typecheck, lint, formato).
 - [ ] ❌ C2 · Smoke test manual contra **Groq** real (key en env, `ai.cloud.activo=true`): cuento en
       el idioma del perfil + actividades con categorías válidas; y verificar fallback a mock si la
       key falta o el proveedor falla.

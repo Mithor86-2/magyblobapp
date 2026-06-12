@@ -43,6 +43,15 @@ const SETTINGS: { key: string; value: string; descripcion: string }[] = [
   { key: 'story.maxTokens', value: '800', descripcion: 'Límite de longitud del cuento.' },
   { key: 'story.temperature', value: '0.8', descripcion: 'Creatividad del LLM (0-1).' },
   { key: 'activity.count', value: '3', descripcion: 'Nº de actividades a generar.' },
+  {
+    // Selección del proveedor cloud (opt-in). Solo selectores NO secretos; la API
+    // key va en env (p. ej. GROQ_API_KEY). Por defecto DESACTIVADO: privacidad por
+    // diseño (los datos no salen de la máquina salvo que un adulto active el cloud).
+    key: 'ai.cloud',
+    value: JSON.stringify({ activo: false, target: 'groq', model: 'llama-3.3-70b-versatile' }),
+    descripcion:
+      'Modo cloud (opt-in): {activo,target,model}. Key del target en env. OFF por defecto.',
+  },
 ];
 
 async function main(): Promise<void> {

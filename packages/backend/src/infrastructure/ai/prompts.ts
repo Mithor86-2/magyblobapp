@@ -14,8 +14,21 @@ import { CATEGORIAS } from '../../domain/vocabulary.js';
  * amable, sin violencia, miedo ni temas para adultos.
  */
 
+/**
+ * Claves de `AppSetting` que consume la generación (prompts + temperatura).
+ * Compartidas por `OllamaProvider` y `CloudProvider` para que ambos lean la misma
+ * config en caliente y no dupliquen literales que deben casar con el seed.
+ */
+export const AI_SETTING_KEYS = {
+  storySystem: 'prompt.story.system',
+  storyTemplate: 'prompt.story.template',
+  activitySystem: 'prompt.activity.system',
+  activityTemplate: 'prompt.activity.template',
+  temperature: 'story.temperature',
+} as const;
+
 export interface PromptParts {
-  /** Rol/Instrucción de sistema (se envía en el campo `system` de Ollama). */
+  /** Rol/Instrucción de sistema (se envía como mensaje `system`). */
   system: string;
   /** Instrucción concreta de la petición. */
   prompt: string;

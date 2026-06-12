@@ -6,8 +6,14 @@ import type {
   RecommendActivitiesInput,
 } from '../../domain/ai/AIProvider.js';
 import type { SettingsRepository } from '../../domain/repositories/SettingsRepository.js';
-import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
-import { buildActivitiesPrompt, buildStoryPrompt, type PromptOverrides } from './prompts.js';
+import { CATEGORIAS } from '../../domain/vocabulary.js';
+import { parseActivities, parseStory } from './parseResponse.js';
+import {
+  AI_SETTING_KEYS,
+  buildActivitiesPrompt,
+  buildStoryPrompt,
+  type PromptOverrides,
+} from './prompts.js';
 
 export interface OllamaProviderOptions {
   baseUrl: string;
@@ -19,15 +25,6 @@ export interface OllamaProviderOptions {
   /** Config en caliente (AppSetting): plantillas y temperatura. Opcional. */
   settings?: SettingsRepository;
 }
-
-/** Claves de AppSetting que consume la generación de cuentos/actividades. */
-const CLAVES = {
-  storySystem: 'prompt.story.system',
-  storyTemplate: 'prompt.story.template',
-  activitySystem: 'prompt.activity.system',
-  activityTemplate: 'prompt.activity.template',
-  temperature: 'story.temperature',
-} as const;
 
 const TEMPERATURA_DEFECTO = 0.8;
 
@@ -86,62 +83,31 @@ export class OllamaProvider implements AIProvider {
   }
 
   async generateStory(input: GenerateStoryInput): Promise<GeneratedStory> {
-    const overrides = await this.leerOverrides(CLAVES.storySystem, CLAVES.storyTemplate);
+    const overrides = await this.leerOverrides(
+      AI_SETTING_KEYS.storySystem,
+      AI_SETTING_KEYS.storyTemplate,
+    );
     const { system, prompt } = buildStoryPrompt(input, overrides);
     const data = await this.generate<{ titulo?: unknown; cuerpo?: unknown }>(
       system,
       prompt,
       ESQUEMA_CUENTO,
     );
-    const titulo = typeof data.titulo === 'string' ? data.titulo.trim() : '';
-    const cuerpo = typeof data.cuerpo === 'string' ? data.cuerpo.trim() : '';
-    if (titulo === '' || cuerpo === '') {
-      throw new Error('Ollama devolvió un cuento sin título o sin cuerpo.');
-    }
-    return { titulo, cuerpo };
+    return parseStory(data, 'Ollama');
   }
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
-    const overrides = await this.leerOverrides(CLAVES.activitySystem, CLAVES.activityTemplate);
+    const overrides = await this.leerOverrides(
+      AI_SETTING_KEYS.activitySystem,
+      AI_SETTING_KEYS.activityTemplate,
+    );
     const { system, prompt } = buildActivitiesPrompt(input, overrides);
     const data = await this.generate<{ actividades?: unknown }>(
       system,
       prompt,
       ESQUEMA_ACTIVIDADES,
     );
-    const crudas = Array.isArray(data.actividades) ? data.actividades : [];
-    const actividades = crudas
-      .map((a) => this.parseActividad(a))
-      .filter((a): a is GeneratedActivity => a !== null);
-    if (actividades.length === 0) {
-      throw new Error('Ollama no devolvió ninguna actividad válida.');
-    }
-    return actividades.slice(0, input.cantidad);
-  }
-
-  private parseActividad(raw: unknown): GeneratedActivity | null {
-    if (typeof raw !== 'object' || raw === null) return null;
-    const o = raw as Record<string, unknown>;
-    const categoria = o.categoria;
-    if (
-      typeof categoria !== 'string' ||
-      !(CATEGORIAS as readonly string[]).includes(categoria) ||
-      typeof o.titulo !== 'string' ||
-      typeof o.descripcion !== 'string' ||
-      o.titulo.trim() === '' ||
-      o.descripcion.trim() === ''
-    ) {
-      return null;
-    }
-    return {
-      categoria: categoria as Categoria,
-      titulo: o.titulo.trim(),
-      descripcion: o.descripcion.trim(),
-      // gemma:2b a veces inventa números fuera de rango (p. ej. nivel 1000):
-      // saneamos a rangos sensatos y descartamos lo no válido.
-      duracionMin: enteroEnRango(o.duracionMin, 1, 60),
-      nivel: enteroEnRango(o.nivel, 1, 3),
-    };
+    return parseActivities(data, input.cantidad, 'Ollama');
   }
 
   /** Lee de AppSetting los textos de prompt; null/ausente => default en código. */
@@ -159,7 +125,7 @@ export class OllamaProvider implements AIProvider {
 
   /** Temperatura desde AppSetting (`story.temperature`) o el default en código. */
   private async leerTemperatura(): Promise<number> {
-    const raw = await this.settings?.get(CLAVES.temperature);
+    const raw = await this.settings?.get(AI_SETTING_KEYS.temperature);
     const parsed = raw === null || raw === undefined ? NaN : Number(raw);
     return Number.isFinite(parsed) ? parsed : TEMPERATURA_DEFECTO;
   }
@@ -192,11 +158,4 @@ export class OllamaProvider implements AIProvider {
       throw new Error('Ollama devolvió un JSON no parseable.');
     }
   }
-}
-
-/** Entero dentro de `[min, max]`, o `undefined` si no lo es (descarta basura del LLM). */
-function enteroEnRango(value: unknown, min: number, max: number): number | undefined {
-  return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max
-    ? value
-    : undefined;
 }
