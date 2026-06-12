@@ -90,4 +90,26 @@ describe('OllamaProvider', () => {
     expect(actividades).toHaveLength(2);
     expect(actividades.map((a) => a.categoria)).toEqual(['arte', 'musica']);
   });
+
+  it('descarta nivel y duración fuera de rango (basura del LLM)', async () => {
+    const fetchFn = fakeFetch({
+      actividades: [
+        { categoria: 'logica', titulo: 'Contar', descripcion: 'Hasta diez', nivel: 1000 },
+        {
+          categoria: 'arte',
+          titulo: 'Pintar',
+          descripcion: 'Con ceras',
+          duracionMin: 999,
+          nivel: 2,
+        },
+      ],
+    });
+    const actividades = await provider(fetchFn).recommendActivities({
+      perfil: perfil(),
+      cantidad: 5,
+    });
+    expect(actividades[0]?.nivel).toBeUndefined(); // 1000 fuera de 1-3
+    expect(actividades[1]?.duracionMin).toBeUndefined(); // 999 fuera de 1-60
+    expect(actividades[1]?.nivel).toBe(2); // válido se conserva
+  });
 });

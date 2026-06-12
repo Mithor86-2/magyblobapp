@@ -137,8 +137,10 @@ export class OllamaProvider implements AIProvider {
       categoria: categoria as Categoria,
       titulo: o.titulo.trim(),
       descripcion: o.descripcion.trim(),
-      duracionMin: typeof o.duracionMin === 'number' ? o.duracionMin : undefined,
-      nivel: typeof o.nivel === 'number' ? o.nivel : undefined,
+      // gemma:2b a veces inventa números fuera de rango (p. ej. nivel 1000):
+      // saneamos a rangos sensatos y descartamos lo no válido.
+      duracionMin: enteroEnRango(o.duracionMin, 1, 60),
+      nivel: enteroEnRango(o.nivel, 1, 3),
     };
   }
 
@@ -190,4 +192,11 @@ export class OllamaProvider implements AIProvider {
       throw new Error('Ollama devolvió un JSON no parseable.');
     }
   }
+}
+
+/** Entero dentro de `[min, max]`, o `undefined` si no lo es (descarta basura del LLM). */
+function enteroEnRango(value: unknown, min: number, max: number): number | undefined {
+  return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max
+    ? value
+    : undefined;
 }
