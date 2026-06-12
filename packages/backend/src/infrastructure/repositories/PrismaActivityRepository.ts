@@ -29,6 +29,11 @@ export class PrismaActivityRepository implements ActivityRepository {
     });
   }
 
+  async findById(id: string): Promise<Activity | null> {
+    const row = await this.prisma.activity.findUnique({ where: { id } });
+    return row ? toActivity(row) : null;
+  }
+
   async findByProfile(profileId: string): Promise<Activity[]> {
     const rows = await this.prisma.activity.findMany({
       where: { profileId },

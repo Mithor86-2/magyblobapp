@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { GenerateStory } from '../application/use-cases/GenerateStory.js';
+import { MarkStoryRead } from '../application/use-cases/MarkStoryRead.js';
 import type { GenerateStoryRequest } from '../application/dto.js';
 import { InteractionEvent } from '../domain/entities/InteractionEvent.js';
 import { ESTILOS, TEMAS } from '../domain/vocabulary.js';
@@ -19,6 +20,7 @@ const bodySchema = {
 /** Genera (y persiste) un cuento para un perfil; registra el evento de uso. */
 export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
   const generateStory = new GenerateStory(deps);
+  const markStoryRead = new MarkStoryRead(deps);
 
   app.post<{ Body: GenerateStoryRequest }>(
     '/stories',
@@ -38,5 +40,10 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
 
       return reply.code(201).send(story);
     },
+  );
+
+  // Marca un cuento como leído (US-07). Idempotente.
+  app.post<{ Params: { id: string } }>('/stories/:id/read', async (request) =>
+    markStoryRead.execute({ storyId: request.params.id }),
   );
 }

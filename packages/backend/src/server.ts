@@ -7,6 +7,7 @@ import { guardianRoutes } from './routes/guardians.js';
 import { profileRoutes } from './routes/profiles.js';
 import { storyRoutes } from './routes/stories.js';
 import { activityRoutes } from './routes/activities.js';
+import { historyRoutes } from './routes/history.js';
 
 /**
  * Construye una instancia de Fastify lista para usar. No la arranca: así los
@@ -45,6 +46,7 @@ export async function buildServer(
   profileRoutes(app, resolved);
   storyRoutes(app, resolved);
   activityRoutes(app, resolved);
+  historyRoutes(app, resolved);
 
   return app;
 }

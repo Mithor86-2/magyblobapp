@@ -10,8 +10,9 @@ export class PrismaStoryRepository implements StoryRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async save(story: Story): Promise<void> {
-    await this.prisma.story.create({
-      data: {
+    await this.prisma.story.upsert({
+      where: { id: story.id },
+      create: {
         id: story.id,
         profileId: story.profileId,
         tema: story.tema,
@@ -22,6 +23,8 @@ export class PrismaStoryRepository implements StoryRepository {
         estado: story.estado,
         creadoEn: story.creadoEn,
       },
+      // Lo único mutable del cuento es su estado de lectura (US-07).
+      update: { estado: story.estado },
     });
   }
 

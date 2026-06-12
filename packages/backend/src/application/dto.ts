@@ -86,3 +86,23 @@ export interface ActivityOutput {
   completadaEn?: string;
   valoracion?: number;
 }
+
+// --- GetHistory ---
+export interface GetHistoryRequest {
+  profileId: string;
+}
+
+export interface HistoryOutput {
+  stories: StoryOutput[];
+  activities: ActivityOutput[];
+}
+
+// --- SaveProgress (partido en dos casos de uso cohesivos) ---
+export interface MarkStoryReadRequest {
+  storyId: string;
+}
+
+export interface CompleteActivityRequest {
+  activityId: string;
+  valoracion: number;
+}
