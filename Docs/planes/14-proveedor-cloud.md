@@ -96,9 +96,10 @@ Ver [../cumplimiento-menores.md](../cumplimiento-menores.md). El modo `cloud` **
 
 - [x] ✅ C1 · Tests en verde: `cloud-provider` (5), `cloud-settings` (4), `create-ai-provider`
       ampliado (7). Gate `pnpm check` verde (92 tests backend + app, typecheck, lint, formato).
-- [ ] ❌ C2 · Smoke test manual contra **Groq** real (key en env, `ai.cloud.activo=true`): cuento en
-      el idioma del perfil + actividades con categorías válidas; y verificar fallback a mock si la
-      key falta o el proveedor falla.
+- [x] ✅ C2 · Smoke `pnpm ai:smoke:cloud` (script `scripts/smoke-cloud.ts`, key en env) ejecutado
+      contra **Groq** real (`llama-3.3-70b-versatile`): cuento en español + 3 actividades con
+      categorías válidas. Fallback a mock (sin key / HTTP error) cubierto por los tests de la
+      factoría.
 - [ ] ❌ C3 · `pnpm check` verde + `docker compose up` levanta la pila (con `cloud` OFF por defecto).
 - [ ] ❌ C4 · Docs + `CHANGELOG.md` (backend) + versión SemVer + cierre con **`cerrar-feature`**.
 - [ ] ❌ C5 · Pruebas con el usuario (regla de seguridad) → confirmación → `git flow feature finish`.
