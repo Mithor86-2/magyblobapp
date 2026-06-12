@@ -14,6 +14,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   `POST /guardians/login`) y pantalla **Seleccionar perfil** (lista los hijos del guardián vía
   `GET /guardians/:id/profiles` y fija el perfil activo; invita a crear el primero si no hay).
 - Gateways `guardians.login` y `profiles.list` en el adaptador HTTP (con sus tests de contrato).
+- **Zona de personas adultas** accesible desde Inicio y protegida por la puerta parental, con
+  **cambiar de perfil** (vuelve a la selección) y **cerrar sesión** (vuelve al onboarding). La
+  puerta parental se extrae a un componente reutilizable `ParentalGate` (usado por el alta y la
+  zona de adultos).
 
 ### Changed
 

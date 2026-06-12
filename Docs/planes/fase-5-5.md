@@ -66,12 +66,15 @@ selección de perfil, onboarding con "Ya tengo cuenta", área parental y cierre 
 - [x] ✅ Tests del gateway (contrato de cable) de `login` y `list`. `pnpm check` verde (11 tests
       app + 99 backend) y bundle validado (`expo export`).
 
-### F3 — Área parental y cierre de sesión (app)
+### F3 — Área parental y cierre de sesión (app) ✅
 
-- [ ] ❌ Zona de adultos protegida por la **puerta parental** (componente existente) para gestión
-      de cuenta/perfiles, separada de la zona infantil.
-- [ ] ❌ Acción **Cerrar sesión / cambiar guardián** (reset del store → vuelve al onboarding,
-      borra `guardian`/`activeProfileId` de AsyncStorage).
+- [x] ✅ Puerta parental **extraída** a componente reutilizable `ParentalGate` (antes inline en
+      Consent); usado por el alta y por la zona de adultos.
+- [x] ✅ Zona de adultos (`ParentalScreen`) accesible desde **Inicio**, protegida por `ParentalGate`,
+      separada de la zona infantil; muestra la cuenta del guardián.
+- [x] ✅ Acciones **Cambiar de perfil** (`clearProfile` → vuelve a `SelectProfile`) y **Cerrar
+      sesión** (`logout` con confirmación → reset al onboarding `Welcome`; borra la sesión de
+      AsyncStorage). `pnpm check` verde + bundle (`expo export`) validado.
 
 ### Cierre
 

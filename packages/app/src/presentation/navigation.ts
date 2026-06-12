@@ -14,6 +14,7 @@ export type RootStackParamList = {
   SelectProfile: undefined;
   CreateProfile: undefined;
   Main: undefined;
+  Parental: undefined;
 };
 
 export type MainTabParamList = {

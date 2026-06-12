@@ -4,6 +4,7 @@ import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
+import { ParentalGate } from '../components/ParentalGate';
 import { PARENTESCOS } from '../../domain/types';
 import type { Parentesco } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -16,77 +17,15 @@ import type { RootScreenProps } from '../navigation';
 /** Versión de los términos/política que el adulto acepta (se registra en el AuditLog). */
 export const CONSENT_VERSION = '1.0';
 
-interface RetoParental {
-  a: number;
-  b: number;
-  respuesta: number;
-  opciones: number[];
-}
-
-const aleatorio = (min: number, max: number): number =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
-
-/**
- * Puerta parental: una suma sencilla **aleatoria** (no memorizable por un niño).
- * Se genera una nueva en cada apertura y tras cada fallo. Disuasorio ligero; la
- * verificación robusta de edad queda fuera de alcance (ver cumplimiento-menores).
- */
-function crearReto(): RetoParental {
-  const a = aleatorio(3, 9);
-  const b = aleatorio(2, 6);
-  const respuesta = a + b;
-  // Respuesta + dos distractores contiguos, barajados.
-  const opciones = [respuesta, respuesta - 1, respuesta + 1];
-  for (let i = opciones.length - 1; i > 0; i--) {
-    const j = aleatorio(0, i);
-    [opciones[i], opciones[j]] = [opciones[j]!, opciones[i]!];
-  }
-  return { a, b, respuesta, opciones };
-}
-
 export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const setGuardian = useAppStore((s) => s.setGuardian);
 
-  const [gatePassed, setGatePassed] = useState(false);
-  const [reto, setReto] = useState<RetoParental>(crearReto);
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [email, setEmail] = useState('');
   const [parentesco, setParentesco] = useState<Parentesco | null>(null);
   const [aceptado, setAceptado] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  if (!gatePassed) {
-    return (
-      <Screen>
-        <Text style={styles.title}>Zona de personas adultas</Text>
-        <Text style={styles.body}>
-          Para continuar, resuelve esta operación. Así nos aseguramos de que hay una persona adulta
-          configurando la app.
-        </Text>
-        <Text style={styles.gateQuestion}>
-          {reto.a} + {reto.b} = ?
-        </Text>
-        <View style={styles.gateOptions}>
-          {reto.opciones.map((option) => (
-            <SelectableChip
-              key={option}
-              label={String(option)}
-              selected={false}
-              onPress={() => {
-                if (option === reto.respuesta) {
-                  setGatePassed(true);
-                } else {
-                  Alert.alert('Casi', 'Esa no es. Prueba con otra operación.');
-                  setReto(crearReto());
-                }
-              }}
-            />
-          ))}
-        </View>
-      </Screen>
-    );
-  }
 
   const canSubmit =
     nombre.trim() !== '' &&
@@ -120,63 +59,65 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   }
 
   return (
-    <Screen
-      footer={
-        <BubblyButton
-          label="Aceptar y continuar"
-          onPress={onSubmit}
-          disabled={!canSubmit}
-          loading={submitting}
-        />
-      }
-    >
-      <Text style={styles.title}>Crea tu cuenta</Text>
-      <Text style={styles.body}>
-        Eres la persona responsable del menor. Necesitamos tus datos para asociar los perfiles y
-        registrar tu consentimiento.
-      </Text>
-
-      <TextField label="Nombre" value={nombre} onChangeText={setNombre} autoCapitalize="words" />
-      <TextField
-        label="Apellidos"
-        value={apellidos}
-        onChangeText={setApellidos}
-        autoCapitalize="words"
-      />
-      <TextField
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        placeholder="tu@email.com"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <Text style={styles.fieldLabel}>Parentesco</Text>
-      <View style={styles.chips}>
-        {PARENTESCOS.map((p) => (
-          <SelectableChip
-            key={p}
-            label={PARENTESCO_LABEL[p]}
-            selected={parentesco === p}
-            onPress={() => setParentesco(p)}
+    <ParentalGate intro="Para crear la cuenta, resuelve esta operación. Así nos aseguramos de que hay una persona adulta configurando la app.">
+      <Screen
+        footer={
+          <BubblyButton
+            label="Aceptar y continuar"
+            onPress={onSubmit}
+            disabled={!canSubmit}
+            loading={submitting}
           />
-        ))}
-      </View>
-
-      <View style={styles.consentBox}>
-        <SelectableChip
-          label={aceptado ? '✓ Acepto' : 'Acepto'}
-          selected={aceptado}
-          onPress={() => setAceptado((v) => !v)}
-        />
-        <Text style={styles.consentText}>
-          Doy mi consentimiento para tratar los datos del menor con la única finalidad de generar
-          cuentos y actividades. Los datos no se comparten con terceros y el contenido se genera en
-          local. (Versión {CONSENT_VERSION})
+        }
+      >
+        <Text style={styles.title}>Crea tu cuenta</Text>
+        <Text style={styles.body}>
+          Eres la persona responsable del menor. Necesitamos tus datos para asociar los perfiles y
+          registrar tu consentimiento.
         </Text>
-      </View>
-    </Screen>
+
+        <TextField label="Nombre" value={nombre} onChangeText={setNombre} autoCapitalize="words" />
+        <TextField
+          label="Apellidos"
+          value={apellidos}
+          onChangeText={setApellidos}
+          autoCapitalize="words"
+        />
+        <TextField
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="tu@email.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
+        <Text style={styles.fieldLabel}>Parentesco</Text>
+        <View style={styles.chips}>
+          {PARENTESCOS.map((p) => (
+            <SelectableChip
+              key={p}
+              label={PARENTESCO_LABEL[p]}
+              selected={parentesco === p}
+              onPress={() => setParentesco(p)}
+            />
+          ))}
+        </View>
+
+        <View style={styles.consentBox}>
+          <SelectableChip
+            label={aceptado ? '✓ Acepto' : 'Acepto'}
+            selected={aceptado}
+            onPress={() => setAceptado((v) => !v)}
+          />
+          <Text style={styles.consentText}>
+            Doy mi consentimiento para tratar los datos del menor con la única finalidad de generar
+            cuentos y actividades. Los datos no se comparten con terceros y el contenido se genera
+            en local. (Versión {CONSENT_VERSION})
+          </Text>
+        </View>
+      </Screen>
+    </ParentalGate>
   );
 }
 
@@ -188,17 +129,6 @@ const styles = StyleSheet.create({
   body: {
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,
-  },
-  gateQuestion: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
-  gateOptions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'center',
   },
   fieldLabel: {
     ...typography.labelBold,

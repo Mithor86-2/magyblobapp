@@ -10,6 +10,7 @@ import { WelcomeScreen } from './src/presentation/screens/WelcomeScreen';
 import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
 import { LoginScreen } from './src/presentation/screens/LoginScreen';
 import { SelectProfileScreen } from './src/presentation/screens/SelectProfileScreen';
+import { ParentalScreen } from './src/presentation/screens/ParentalScreen';
 import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
 import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
@@ -107,6 +108,7 @@ export default function App() {
           <Stack.Screen name="SelectProfile" component={SelectProfileScreen} />
           <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
           <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="Parental" component={ParentalScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
