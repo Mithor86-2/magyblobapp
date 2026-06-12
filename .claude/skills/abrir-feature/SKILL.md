@@ -25,8 +25,7 @@ Antes de tocar nada, ten claro:
 
 ## 2. Crea la rama con Git Flow
 
-Desde `develop` (consulta la skill **git-flow** para el detalle; el wrapper `gflow` **no** existe en
-este repo — usa `git flow` directamente):
+Desde `develop` (la skill **`gitflow-es:git`** del plugin cubre el detalle del flujo):
 
 ```bash
 git flow feature start <id>-<descripcion-kebab-case>

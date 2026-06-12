@@ -92,8 +92,8 @@ tipo(alcance): descripción
 
 Tipos: `feat|fix|refactor|docs|style|test|chore|perf|ci`.
 
-Cierra la rama con Git Flow (el wrapper `gflow` **no** existe en este repo — usa `git flow`
-directamente). Consulta la skill **git-flow** para el detalle del flujo:
+Cierra la rama con Git Flow usando `git flow` directamente. La skill **`gitflow-es:git`** del plugin
+cubre el detalle del flujo:
 
 ```bash
 git flow feature finish <id>-<descripcion-kebab-case>

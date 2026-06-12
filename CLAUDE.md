@@ -61,8 +61,9 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
   (gate verde con `pnpm check`), el versionado SemVer, el `CHANGELOG.md` por paquete, la
   actualización de docs y el cierre con Git Flow. Es la skill que ejecuta el proceso descrito en
   "Versionado y changelog" más abajo. Vive en el repo: [.claude/skills/cerrar-feature/](.claude/skills/cerrar-feature/).
-- **`git-flow`** — para cualquier operación de ramas o commits (start/finish de features, hotfixes,
-  releases, mensajes en Conventional Commits en español). Ver "Git workflow" más abajo.
+- **`gitflow-es:git`** / **`gitflow-es:commit`** (plugin `gitflow-es`) — para cualquier operación de
+  ramas o commits (start/finish de features, hotfixes, releases, mensajes en Conventional Commits en
+  español). Ver "Git workflow" más abajo.
 
 ## Working strategy (non-obvious, enforced)
 
@@ -157,8 +158,9 @@ git flow feature start <id>-<descripcion-kebab-case>
 git flow feature finish <id>-<descripcion-kebab-case>
 ```
 
-The `gflow` wrapper is **not** available in this repo (it expects `scripts/flow.sh`, which was
-intentionally not added) — use `git flow` directly. See the **git-flow** skill for the full flow.
+Use `git flow` directly. The plugin **`gitflow-es`** (skills `gitflow-es:git` para el ciclo de
+ramas/operaciones y `gitflow-es:commit` para los mensajes) cubre el flujo completo — úsalo para
+cualquier operación de ramas o commits.
 
 Commit messages follow **Conventional Commits in Spanish**, imperative mood, ≤72-char subject:
 `tipo(alcance): descripción` with types `feat|fix|refactor|docs|style|test|chore|perf|ci`.
