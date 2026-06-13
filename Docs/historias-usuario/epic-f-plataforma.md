@@ -138,3 +138,29 @@ adultos), **conservando las pestañas sin cabecera** (la zona infantil no cambia
   ellas, Entonces **no** aparece la cabecera del stack (la zona infantil mantiene su diseño).
 - Dada la cabecera, Cuando se muestra, Entonces respeta los tokens de tema (color, tipografía
   Quicksand) y un título legible por pantalla.
+
+## US-25 — Ver el proveedor de IA que generó el contenido (Autor) · Should (Mejoras)
+
+Como **padre/tutor** quiero ver con qué proveedor de IA se generó cada cuento y actividad
+(simulado, local o en la nube) para entender de un vistazo el origen del contenido, sobre todo
+cuando el sistema cae al modo simulado (fallback).
+
+**Contexto.** El `AIProvider` activo puede ser `mock`, `local` (Ollama) o `cloud`, y ante un fallo
+el `FallbackProvider` cae a `mock`. Hoy no se registra **cuál** sirvió realmente. Se propaga el
+proveedor **efectivo** desde la capa de IA, se **persiste** en `Story` y `Activity` (campo
+`proveedor`) y se muestra como "Autor" en la app (generador, actividades e Historial). Relacionada
+con [US-04](epic-b-cuentos.md#us-04) (fallback) y [US-05](epic-b-cuentos.md#us-05) (modo por env).
+**Backend + app.**
+
+**Criterios de aceptación**
+
+- Dado un cuento o actividad generado, Cuando se persiste, Entonces guarda el **proveedor efectivo**
+  que lo produjo (`mock` | `local` | `cloud`), no el modo configurado.
+- Dado que el proveedor activo falla y se cae al fallback, Cuando se genera, Entonces el proveedor
+  persistido es **`mock`** (refleja lo que de verdad generó, no el que se intentó).
+- Dado el contrato HTTP, Cuando se devuelve un cuento o actividad (`POST /stories`,
+  `POST /activities/recommend`, `GET /profiles/:id/history`), Entonces el cuerpo incluye `proveedor`.
+- Dado un cuento o actividad en la app (generador, lista de actividades, Historial), Cuando se
+  muestra, Entonces aparece **"Autor:"** con un icono por proveedor (mock | local | cloud).
+- (Dominio) Dado un `proveedor` fuera del vocabulario, Cuando se construye la entidad, Entonces se
+  rechaza (vocabulario cerrado, como el resto).
