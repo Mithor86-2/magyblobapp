@@ -97,6 +97,45 @@ curl -X POST http://localhost:3000/guardians \
 
 **Errores:** `400` sin consentimiento o datos inválidos · `409` email ya registrado.
 
+> El email se **normaliza** (recorte + minúsculas) antes de guardarse, de modo que la unicidad y el
+> login posterior casan aunque se teclee con mayúsculas o espacios.
+
+---
+
+## `POST /guardians/login`
+
+Inicia sesión del **adulto** identificándolo por su email (login ligero, **sin contraseña**: la
+autenticación robusta queda fuera del alcance del TFM). Escribe un `AuditLog` de tipo `login`.
+
+**Body**
+
+| Campo   | Tipo   | Req. | Notas                                      |
+| ------- | ------ | ---- | ------------------------------------------ |
+| `email` | string | sí   | formato de email; se normaliza para buscar |
+
+**Ejemplo**
+
+```bash
+curl -X POST http://localhost:3000/guardians/login \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "ana@example.com" }'
+```
+
+**Respuesta `200`** — misma forma que `POST /guardians` (la cuenta del adulto):
+
+```json
+{
+  "id": "b3eca48e-d77f-4869-951b-92dbce221c11",
+  "nombre": "Ana",
+  "apellidos": "García",
+  "email": "ana@example.com",
+  "parentesco": "madre",
+  "consentimientoDado": true
+}
+```
+
+**Errores:** `400` email con formato inválido · `404` no hay cuenta con ese email.
+
 ---
 
 ## `GET /guardians/:guardianId/profiles`

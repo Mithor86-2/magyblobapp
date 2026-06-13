@@ -203,46 +203,38 @@ Plan en [planes/14-proveedor-cloud.md](planes/14-proveedor-cloud.md); decisión 
 
 ---
 
-## FASE 5.5 — Sesión del guardián y multi-perfil ⬜
+## FASE 5.5 — Sesión del guardián y multi-perfil ✅
 
-Hoy la app solo persiste `guardianId` tras el consentimiento: no hay forma de que un
-guardián que vuelve (o en otro dispositivo) recupere su cuenta, ni de elegir entre varios
-hijos, ni de cerrar sesión. Esta fase añade una **sesión de guardián** completa, separando la
-zona de adultos (tras puerta parental) de la zona infantil. Se ejecuta por **features
-secuenciales** (plan en `planes/fase-5-5.md` cuando se abra). Refuerza el cumplimiento
-(C-1/C-6): identificación del adulto + puerta parental.
+Cerrada el 2026-06-12 · rama `feature/5-5-sesion-guardian` · backend v0.4.0 / app v0.4.0.
+Añade una **sesión de guardián** completa (login ligero por email, selección de perfil activo,
+zona de adultos tras puerta parental, cierre de sesión), separando la zona de adultos de la
+infantil. Plan en [planes/fase-5-5.md](planes/fase-5-5.md). Cubre **US-19** (login del adulto) y
+**US-02** (listar/seleccionar perfiles). Refuerza el cumplimiento (C-1/C-6).
 
 > Limitación reconocida (coherente con [cumplimiento-menores.md](cumplimiento-menores.md)): el
 > "login" es una **identificación ligera por email** (sin contraseña ni verificación robusta de
 > edad), que queda fuera del alcance del TFM y se declara como tal.
 
-**F1 — Identificar al guardián (backend).**
-
-- [ ] Caso de uso `LoginGuardian` (identifica por email vía `GuardianRepository.findByEmail`,
-      ya existente) + DTO; `NotFoundError` si no hay cuenta con ese email.
-- [ ] Ruta `POST /guardians/login` (o `GET /guardians?email=`) con validación de esquema +
-      test de caso de uso (dobles in-memory) y test de integración de la ruta.
-
-**F2 — Sesión y selección de perfil activo (app).**
-
-- [ ] Store: ampliar la sesión persistida — guardar el `guardian` (no solo el id) y el
-      `activeProfileId`; `currentProfile` deja de ser solo de sesión.
-- [ ] Gateway/uso de `GET /guardians/:id/profiles` (ListProfiles, ya en backend) para listar
-      los hijos del guardián.
-- [ ] Pantalla **Seleccionar perfil** (lista de hijos + "crear nuevo"); fija el `currentProfile`.
-      Corresponde al "Ver perfiles" del diseño de Inicio.
-- [ ] Onboarding revisado: sin sesión → Consent (alta) **o** "Ya tengo cuenta" → login por email;
-      con sesión → selección de perfil → pestañas.
-
-**F3 — Área parental y cierre de sesión (app).**
-
-- [ ] Zona de adultos protegida por la **puerta parental** (componente ya existente) para gestión
-      de cuenta/perfiles, separada de la zona infantil.
-- [ ] Acción **Cerrar sesión / cambiar guardián** (reset del store → vuelve al onboarding).
-
-- **DoD:** un guardián puede registrarse, salir y volver a entrar por email recuperando su
-  sesión; elegir entre sus hijos; acceder a la zona de adultos solo tras la puerta parental; y
-  cerrar sesión. `pnpm check` verde + bundle (`expo export`) + e2e del login contra PostgreSQL.
+- [x] **F1 — Identificar al guardián (backend).** Caso de uso `LoginGuardian` (por email vía
+      `GuardianRepository.findByEmail`) + ruta `POST /guardians/login` (validación por `pattern`) +
+      `AuditLog accion=login` en la frontera HTTP. El email se **normaliza** (recorte + minúsculas)
+      en la entidad `Guardian`, y alta y login normalizan la clave de búsqueda. Tests de caso de uso
+      e integración (200/404/400).
+- [x] **F2 — Sesión y selección de perfil (app).** Store persiste el `guardian` completo y el
+      `currentProfile` activo (antes solo `guardianId`); migración de persistencia a v1. Gateways
+      `guardians.login` y `profiles.list`. Pantallas **Bienvenida**, **Login** y **Seleccionar
+      perfil** (carga/error/reintento); onboarding por stack Bienvenida → (alta/login) → selección
+      → pestañas.
+- [x] **F3 — Área parental y cierre de sesión (app).** Puerta parental extraída a componente
+      reutilizable `ParentalGate`. Zona de adultos (`ParentalScreen`) accesible desde Inicio, tras
+      la puerta parental, con **cambiar de perfil** (`clearProfile`) y **cerrar sesión** (`logout`).
+- [x] **Extra:** salida a registro desde Login para un adulto sin cuenta (enlace + acción en el
+      aviso), para no dejar sin salida el onboarding.
+- **DoD:** ✅ `pnpm check` verde (99 backend + 11 app) · ✅ bundle (`expo export`) · ✅ verificado
+  e2e contra PostgreSQL (alta → login por email recuperando sesión → selección de perfil → cerrar
+  sesión; `AuditLog login` persistido).
+- **Diferido a la Fase de mejoras:** modal propio en lugar de `Alert` del sistema; header con
+  botón "atrás"; indicador de **Autor (proveedor de IA: mock/local/cloud)** en cuentos y actividades.
 
 ---
 
@@ -297,10 +289,26 @@ se abra). Algunas parten de algo ya existente (se indica).
 - [ ] **Releer cuento desde el Historial.** Al tocar un cuento en el Historial, abrir una
       vista de lectura con su `título`+`cuerpo` (pantalla de detalle nueva) y marcarlo `leído`
       al abrirlo (US-07/08). Hoy el Historial solo lista y permite "marcar leído".
+- [ ] **Narrar cuento en voz alta** (US-22). Botón "▶ Leer cuento" + controles pausa/parar en el
+      Generador y en la vista de lectura del Historial, usando la síntesis de voz **nativa del
+      dispositivo** (`expo-speech`) en el idioma del perfil. **Solo app**, sin tocar el backend;
+      gratuita y **on-device**, no rompe el cumplimiento (no sale ningún dato; C-2/C-3/C-5).
 - [ ] **Botón "Realizado" en actividades.** Añadir un botón explícito para marcar una actividad
       como hecha, además de la valoración por estrellas (hoy se completa tocando directamente las
       estrellas). Flujo sugerido: "Realizado" → pide la valoración (1-3) → `complete`.
 
+**UX y navegación (diferido de la Fase 5.5):**
+
+- [ ] **Modal propio en vez de `Alert` del sistema.** Componente reutilizable (p. ej.
+      `DialogProvider`/`useDialog` con `alert()`/`confirm()`) que sustituya las alertas nativas en
+      toda la app (Consent, Login, Parental, Actividades, Generador…), con los tokens de tema.
+- [ ] **Header con botón "atrás".** Mostrar cabecera de navegación (hoy `headerShown: false`) para
+      poder volver entre pantallas del stack (onboarding, zona de adultos), conservando las tabs.
+- [ ] **Autor (proveedor de IA) en cuentos y actividades.** Propagar desde la capa de IA
+      (`FallbackProvider`/`HotSwap`) qué proveedor generó realmente el contenido —`mock`, `local`
+      o `cloud`, incluido el fallback— hasta `StoryOutput`/`ActivityOutput`; en la app, pintar
+      `Autor:` con un icono por proveedor al final del cuento y de cada actividad.
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
-  personalizados por perfil; releer desde Historial y botón "Realizado" operativos; `pnpm check`
-  verde + bundle + pruebas con el usuario.
+  personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
+  operativos; `pnpm check` verde + bundle + pruebas con el usuario.

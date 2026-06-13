@@ -58,6 +58,41 @@ describe('rutas de guardians', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('inicia sesión por email (200) y registra el login en el audit log', async () => {
+    await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/login',
+      payload: { email: altaValida.email },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().email).toBe(altaValida.email);
+
+    const login = handles.audit.items.find((a) => a.accion === 'login');
+    expect(login?.entidad).toBe('Guardian');
+    expect(login?.guardianId).toBe(res.json().id);
+  });
+
+  it('devuelve 404 al iniciar sesión con un email no registrado', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/login',
+      payload: { email: 'desconocido@example.com' },
+    });
+    expect(res.statusCode).toBe(404);
+    expect(res.json().error.tipo).toBe('NotFoundError');
+  });
+
+  it('rechaza un email con formato inválido al iniciar sesión (400, validación de esquema)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/login',
+      payload: { email: 'no-es-email' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
   it('lista los perfiles de un adulto', async () => {
     const guardian = await app.inject({
       method: 'POST',

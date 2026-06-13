@@ -23,6 +23,12 @@ export interface GuardianOutput {
   consentimientoDado: boolean;
 }
 
+// --- LoginGuardian ---
+export interface LoginGuardianInput {
+  /** Identificador del adulto. Login ligero por email (sin contraseña). */
+  email: string;
+}
+
 // --- CreateChildProfile ---
 export interface CreateChildProfileInput {
   guardianId: string;

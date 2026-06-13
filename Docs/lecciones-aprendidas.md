@@ -211,3 +211,29 @@ engine. Importar estáticamente la composición arrastraría Prisma al grafo del
   construir el provider. `createAIProvider` sigue siendo síncrono: solo envuelve el base con el
   hot-swap **cuando hay `settings`** (producción); sin `settings` (tests, mock puro) devuelve el
   base directo, preservando los tests existentes y evitando IO en la factoría.
+
+## Fase 5.5
+
+### El backend en Docker no recoge código nuevo con `restart`/`--force-recreate`
+
+- **Síntoma:** tras añadir la ruta `POST /guardians/login`, la app daba "no estás en la BD" al
+  iniciar sesión. `curl` al endpoint devolvía `Route POST:/guardians/login not found` (404).
+- **Causa:** el servicio `backend` se **construye desde un `Dockerfile`** (imagen compilada,
+  `NODE_ENV=production`). `docker compose restart` y `--force-recreate` reusan la **imagen
+  existente**; no recompilan. El contenedor seguía con el código anterior a la rama.
+- **Solución:** al cambiar **código del backend**, reconstruir la imagen:
+  `docker compose up -d --build backend`. (El app no necesita esto: corre por Expo con recarga.)
+  Una ruta inexistente devuelve 404, y la app lo interpretaba como "cuenta no encontrada" → confunde
+  el diagnóstico; conviene `curl` directo al endpoint para distinguir "ruta ausente" de "404 de negocio".
+
+### Ollama en Docker en Mac va por CPU: lento y al borde del timeout
+
+- **Síntoma:** generar un cuento tardaba ~110s (frío) / ~72s (caliente); a veces parecía que "no
+  generaba" o devolvía texto de mock.
+- **Causa:** el contenedor `ollama` (Linux) **no accede a la GPU Metal** del Mac → corre `gemma:2b`
+  en CPU. Con `AI_TIMEOUT_MS=120000`, una primera petición fría podía pasarse y caer al
+  `FallbackProvider` (mock), dando la impresión de fallo.
+- **Solución (entorno de pruebas):** subir `AI_TIMEOUT_MS` (p. ej. 180000) y **pre-cargar** el
+  modelo (`POST /api/generate` con `keep_alive`) para que la primera petición no pague la carga en
+  frío. Para velocidad real (~5-15s) haría falta **Ollama nativo** en el host (GPU) apuntando el
+  backend a `host.docker.internal`. El modo `mock` sigue siendo la vía sin GPU para evaluar.

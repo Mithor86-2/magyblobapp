@@ -19,6 +19,24 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.4.0] - 2026-06-12
+
+Fase 5.5 (US-19): inicio de sesión ligero del adulto por email.
+
+### Added
+
+- Caso de uso `LoginGuardian` y ruta `POST /guardians/login` (US-19): identificación del adulto
+  por email (login ligero, sin contraseña; la autenticación robusta queda fuera del alcance del
+  TFM). Devuelve la cuenta si el email existe y `NotFoundError`/404 si no; registra un `AuditLog`
+  con `accion=login` en la frontera HTTP. Reutiliza `GuardianRepository.findByEmail` (sin cambios
+  de esquema).
+
+### Changed
+
+- El email del adulto se **normaliza** (recorte + minúsculas) en la entidad `Guardian`, y el alta
+  y el login normalizan la clave de búsqueda antes de `findByEmail`. Así el login encuentra la
+  cuenta y la unicidad del alta se respeta aunque se teclee con mayúsculas o espacios.
+
 ## [0.3.0] - 2026-06-12
 
 Feature 14 (US-14): modo de IA `cloud` opt-in, conmutable en caliente desde BD.

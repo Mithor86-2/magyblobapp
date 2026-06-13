@@ -17,7 +17,7 @@ import type { RootScreenProps } from '../navigation';
 const EDADES = [2, 3, 4, 5, 6] as const;
 
 export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfile'>) {
-  const guardianId = useAppStore((s) => s.guardianId);
+  const guardianId = useAppStore((s) => s.guardian?.id ?? null);
   const setProfile = useAppStore((s) => s.setProfile);
 
   const [nombre, setNombre] = useState('');

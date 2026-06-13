@@ -19,6 +19,36 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.4.0] - 2026-06-12
+
+Fase 5.5 (US-19/US-02): sesión del guardián, login por email y multi-perfil.
+
+### Added
+
+- Sesión del guardián y multi-perfil (Fase 5.5, US-19/US-02): pantalla **Bienvenida** (crear cuenta
+  o iniciar sesión), pantalla **Iniciar sesión** (login ligero por email contra
+  `POST /guardians/login`) y pantalla **Seleccionar perfil** (lista los hijos del guardián vía
+  `GET /guardians/:id/profiles` y fija el perfil activo; invita a crear el primero si no hay).
+- Gateways `guardians.login` y `profiles.list` en el adaptador HTTP (con sus tests de contrato).
+- **Zona de personas adultas** accesible desde Inicio y protegida por la puerta parental, con
+  **cambiar de perfil** (vuelve a la selección) y **cerrar sesión** (vuelve al onboarding). La
+  puerta parental se extrae a un componente reutilizable `ParentalGate` (usado por el alta y la
+  zona de adultos).
+
+### Changed
+
+- El store persiste ahora la **sesión completa**: el `guardian` (antes solo `guardianId`) y el
+  `currentProfile` activo, además de la `consentVersion`. Un adulto que vuelve recupera su sesión
+  y su perfil; nuevas acciones `clearProfile` y `logout`. Migración de persistencia a v1 (el
+  estado anterior se descarta y el adulto se identifica una vez).
+- Onboarding por **stack** Bienvenida → (alta/login) → Seleccionar perfil → pestañas; el alta del
+  adulto lleva a la selección de perfil en lugar de directamente a crear perfil.
+
+### Fixed
+
+- En **Iniciar sesión**, un adulto sin cuenta ya no se queda sin salida: hay un enlace permanente
+  "¿No tienes cuenta? Crear una" y el aviso de email no encontrado ofrece ir directo al alta.
+
 ## [0.3.1] - 2026-06-12
 
 ### Changed

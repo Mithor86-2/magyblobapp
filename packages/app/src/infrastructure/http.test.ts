@@ -53,6 +53,32 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(JSON.parse(options.body)).toEqual(input);
   });
 
+  it('guardians.login hace POST /guardians/login con el email', async () => {
+    const guardian = { id: 'g1', email: 'ana@example.com', consentimientoDado: true };
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(guardian));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await api.guardians.login({ email: 'ana@example.com' });
+
+    expect(result).toEqual(guardian);
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/guardians/login`);
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body)).toEqual({ email: 'ana@example.com' });
+  });
+
+  it('profiles.list hace GET /guardians/:id/profiles', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse([{ id: 'p1', nombre: 'Leo' }]));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.profiles.list('g1');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/guardians/g1/profiles`);
+    expect(options.method).toBe('GET');
+    expect(out).toEqual([{ id: 'p1', nombre: 'Leo' }]);
+  });
+
   it('profiles.create hace POST /profiles', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 'p1' }));
     vi.stubGlobal('fetch', fetchMock);
