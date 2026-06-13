@@ -9,6 +9,22 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.5.0] - 2026-06-12
+
+Fase de mejoras — UX y navegación (US-23/US-24).
+
+### Added
+
 - Modal propio reutilizable para avisos y confirmaciones (US-23): `DialogProvider` + `useDialog()`
   (`alert()` / `confirm()`) con el estilo de la app (tokens de tema), en lugar de las `Alert.alert`
   nativas del sistema. Botón con nueva variante **danger** para acciones destructivas.
@@ -24,14 +40,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Bienvenida y las pestañas (zona infantil) se mantienen sin cabecera. Se eliminaron títulos
   duplicados (hero in-screen que coincidía con el título de cabecera) y el botón "Volver" de la
   zona de adultos (lo cubre el "atrás" de la cabecera).
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.4.0] - 2026-06-12
 

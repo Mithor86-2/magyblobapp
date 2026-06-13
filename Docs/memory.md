@@ -310,3 +310,18 @@ Añade sesión de adulto completa (login, selección de perfil, zona de adultos,
   ofrece cambiar de perfil (`clearProfile`) y cerrar sesión (`logout`).
 - **Diferido a la Fase de mejoras:** modal propio en vez de `Alert` del sistema; header con "atrás";
   indicador de Autor (proveedor de IA: mock/local/cloud) en cuentos y actividades.
+
+## Fase de mejoras — UX y navegación (2026-06-12 · app v0.5.0)
+
+Rama `feature/mejoras-ux-navegacion`; cubre US-23 y US-24. **Solo app.**
+
+- **Avisos/confirmaciones con modal propio (US-23).** `DialogProvider` monta **un único `<Modal>`**
+  en la raíz y expone `useDialog()` con API **imperativa** (`alert`/`confirm`). Se eligió imperativo
+  (no estado por pantalla) porque las alertas se lanzan desde handlers; evita duplicar el `<Modal>`.
+  Se añadió variante `danger` a `BubblyButton` para el confirmar destructivo. Cero `Alert.alert`.
+- **Header del stack con "atrás" (US-24).** Se activó la cabecera temática en el stack
+  (`stackScreenOptions`), **conservando las tabs sin cabecera** (`Main` y `Welcome` con
+  `headerShown:false`). Para no duplicar, se quitó el hero in-screen donde coincidía con el título de
+  cabecera (Login, Crear perfil, Zona de adultos) y el "Volver" del footer de la zona de adultos.
+- **Pendiente del bloque:** Autor (proveedor de IA) en cuentos y actividades — va en su propia rama
+  (toca backend + app).
