@@ -293,6 +293,10 @@ se abra). Algunas parten de algo ya existente (se indica).
       Generador y en la vista de lectura del Historial, usando la síntesis de voz **nativa del
       dispositivo** (`expo-speech`) en el idioma del perfil. **Solo app**, sin tocar el backend;
       gratuita y **on-device**, no rompe el cumplimiento (no sale ningún dato; C-2/C-3/C-5).
+      _Alternativa contemplada:_ voz premium en la nube (**ElevenLabs**) tras una interfaz
+      `TTSProvider`, **opt-in OFF por defecto** y tras puerta parental (patrón de US-14); de pago,
+      envía el cuento íntegro (con el nombre) a un tercero, rompe C-5 y exige backend-proxy para la
+      API key. No es el camino por defecto; el `DeviceTTS` nativo es el fallback. Detalle en US-22.
 - [ ] **Botón "Realizado" en actividades.** Añadir un botón explícito para marcar una actividad
       como hecha, además de la valoración por estrellas (hoy se completa tocando directamente las
       estrellas). Flujo sugerido: "Realizado" → pide la valoración (1-3) → `complete`.
