@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from './Screen';
 import { SelectableChip } from './SelectableChip';
+import { useDialog } from './DialogProvider';
 import { colors, spacing, typography } from '../theme/tokens';
 
 /**
@@ -16,6 +17,7 @@ import { colors, spacing, typography } from '../theme/tokens';
 export function ParentalGate({ children, intro }: { children: ReactNode; intro?: string }) {
   const [passed, setPassed] = useState(false);
   const [reto, setReto] = useState<RetoParental>(crearReto);
+  const dialog = useDialog();
 
   if (passed) return <>{children}</>;
 
@@ -39,7 +41,7 @@ export function ParentalGate({ children, intro }: { children: ReactNode; intro?:
               if (option === reto.respuesta) {
                 setPassed(true);
               } else {
-                Alert.alert('Casi', 'Esa no es. Prueba con otra operación.');
+                dialog.alert({ title: 'Casi', message: 'Esa no es. Prueba con otra operación.' });
                 setReto(crearReto());
               }
             }}

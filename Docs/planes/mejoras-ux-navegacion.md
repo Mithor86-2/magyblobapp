@@ -38,15 +38,16 @@ destructive,onConfirm})`. Las alertas son imperativas (se lanzan desde handlers)
 
 ## Tareas
 
-### F1 — Modal propio (US-23)
+### F1 — Modal propio (US-23) ✅
 
-- [ ] ❌ Componente `AppDialog` (presentación del `<Modal>` con tokens de tema: título, mensaje,
-      botones; variante destructiva).
-- [ ] ❌ `DialogProvider` + `useDialog()` (`alert`/`confirm`) en `presentation/`; montar el provider
-      en `App.tsx` por encima de la navegación.
-- [ ] ❌ Migrar las pantallas que usan `Alert.alert` → `useDialog()`: Consent, Login, Parental,
-      CreateProfile, Actividades, Generador de cuentos (y revisar Historial).
-- [ ] ❌ Verificar que **no queda** ningún `Alert.alert` del sistema (grep) en `src/`.
+- [x] ✅ `DialogProvider` + `useDialog()` (`alert`/`confirm`) con el `<Modal>` de tema integrado
+      (título, mensaje, botones `BubblyButton`; variante **danger** añadida al botón para destructivas).
+- [x] ✅ Provider montado en `App.tsx` por encima de la navegación.
+- [x] ✅ Migradas a `useDialog()` todas las pantallas/áreas con `Alert.alert`: Consent, Login
+      (aviso + confirm "Crear cuenta"), Parental (confirm destructivo de cerrar sesión),
+      CreateProfile, Actividades y el componente `ParentalGate`.
+- [x] ✅ Verificado: **cero `Alert.alert`** del sistema en `src/`. Gate (typecheck/lint/format) verde
+      y bundle (`expo export`) validado.
 
 ### F2 — Header con "atrás" (US-24)
 

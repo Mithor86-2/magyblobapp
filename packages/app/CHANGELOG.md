@@ -9,7 +9,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Modal propio reutilizable para avisos y confirmaciones (US-23): `DialogProvider` + `useDialog()`
+  (`alert()` / `confirm()`) con el estilo de la app (tokens de tema), en lugar de las `Alert.alert`
+  nativas del sistema. Botón con nueva variante **danger** para acciones destructivas.
+
 ### Changed
+
+- Todas las pantallas y la puerta parental usan el modal propio (`useDialog`) en lugar de
+  `Alert.alert`: Consent, Login (aviso + confirmación "Crear cuenta"), Zona de adultos (confirmación
+  destructiva de cerrar sesión), Crear perfil, Actividades y `ParentalGate`. Cero alertas del sistema.
 
 ### Deprecated
 

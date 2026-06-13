@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { ParentalGate } from '../components/ParentalGate';
+import { useDialog } from '../components/DialogProvider';
 import { PARENTESCOS } from '../../domain/types';
 import type { Parentesco } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -19,6 +20,7 @@ export const CONSENT_VERSION = '1.0';
 
 export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const setGuardian = useAppStore((s) => s.setGuardian);
+  const dialog = useDialog();
 
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
@@ -52,7 +54,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
     } catch (error) {
       const mensaje =
         error instanceof ApiError ? error.message : 'No se pudo completar el registro.';
-      Alert.alert('Ups', mensaje);
+      dialog.alert({ title: 'Ups', message: mensaje });
     } finally {
       setSubmitting(false);
     }

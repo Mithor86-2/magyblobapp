@@ -1,7 +1,8 @@
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { ParentalGate } from '../components/ParentalGate';
+import { useDialog } from '../components/DialogProvider';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
@@ -16,6 +17,7 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
   const guardian = useAppStore((s) => s.guardian);
   const clearProfile = useAppStore((s) => s.clearProfile);
   const logout = useAppStore((s) => s.logout);
+  const dialog = useDialog();
 
   function onCambiarPerfil() {
     clearProfile();
@@ -23,17 +25,16 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
   }
 
   function onCerrarSesion() {
-    Alert.alert('Cerrar sesión', '¿Seguro que quieres cerrar la sesión de esta cuenta?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Cerrar sesión',
-        style: 'destructive',
-        onPress: () => {
-          logout();
-          navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
-        },
+    dialog.confirm({
+      title: 'Cerrar sesión',
+      message: '¿Seguro que quieres cerrar la sesión de esta cuenta?',
+      confirmLabel: 'Cerrar sesión',
+      destructive: true,
+      onConfirm: () => {
+        logout();
+        navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
       },
-    ]);
+    });
   }
 
   return (

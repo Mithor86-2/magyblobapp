@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { TextField } from '../components/TextField';
+import { useDialog } from '../components/DialogProvider';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
@@ -17,6 +18,7 @@ import type { RootScreenProps } from '../navigation';
  */
 export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
   const setGuardian = useAppStore((s) => s.setGuardian);
+  const dialog = useDialog();
 
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -34,17 +36,16 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
         // Sin cuenta con ese email: ofrece ir directo al alta (no dejar sin salida).
-        Alert.alert(
-          'No encontramos esa cuenta',
-          'No hay ninguna cuenta con ese email. ¿Quieres crear una?',
-          [
-            { text: 'Reintentar', style: 'cancel' },
-            { text: 'Crear cuenta', onPress: irACrearCuenta },
-          ],
-        );
+        dialog.confirm({
+          title: 'No encontramos esa cuenta',
+          message: 'No hay ninguna cuenta con ese email. ¿Quieres crear una?',
+          confirmLabel: 'Crear cuenta',
+          cancelLabel: 'Reintentar',
+          onConfirm: irACrearCuenta,
+        });
       } else {
         const mensaje = error instanceof ApiError ? error.message : 'No se pudo iniciar sesión.';
-        Alert.alert('Ups', mensaje);
+        dialog.alert({ title: 'Ups', message: mensaje });
       }
     } finally {
       setSubmitting(false);

@@ -6,12 +6,19 @@ interface BubblyButtonProps {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'danger';
 }
+
+const VARIANT_BG = {
+  primary: colors.primary,
+  secondary: colors.secondary,
+  danger: colors.error,
+} as const;
 
 /**
  * Botón "squishy": píldora con borde inferior grueso (efecto 3D físico) que se
- * "hunde" al pulsar. Variante primaria coral, secundaria menta. Tap target ≥64px.
+ * "hunde" al pulsar. Variante primaria coral, secundaria menta, danger rojo (acciones
+ * destructivas como cerrar sesión). Tap target ≥64px.
  */
 export function BubblyButton({
   label,
@@ -20,7 +27,7 @@ export function BubblyButton({
   loading = false,
   variant = 'primary',
 }: BubblyButtonProps) {
-  const bg = variant === 'primary' ? colors.primary : colors.secondary;
+  const bg = VARIANT_BG[variant];
   const isDisabled = disabled || loading;
 
   return (
