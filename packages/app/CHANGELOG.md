@@ -9,6 +9,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- "Autor" del contenido (US-25): componente `AuthorBadge` que muestra qué proveedor de IA generó
+  realmente cada cuento y actividad (🎭 simulada · 🖥️ IA local · ☁️ IA en la nube), al final del
+  cuento (generador), en cada `ActivityCard` (Actividades) y en el Historial. Tipos espejo con el
+  campo `proveedor`.
+
 ### Changed
 
 ### Deprecated

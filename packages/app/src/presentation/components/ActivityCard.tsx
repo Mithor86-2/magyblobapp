@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { Activity, Categoria } from '../../domain/types';
 import { CATEGORIA_LABEL } from '../labels';
 import { StarRating } from './StarRating';
+import { AuthorBadge } from './AuthorBadge';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 
 /** Color y emoji por categoría (borde de tarjeta según el design system). */
@@ -49,6 +50,8 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
           <StarRating value={0} onChange={onComplete} />
         </View>
       ) : null}
+
+      <AuthorBadge proveedor={activity.proveedor} />
     </View>
   );
 }

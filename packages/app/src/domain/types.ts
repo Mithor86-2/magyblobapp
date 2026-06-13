@@ -27,6 +27,10 @@ export type CodigoIdioma = (typeof IDIOMAS)[number];
 
 export type EstadoStory = 'nuevo' | 'leido';
 
+/** Proveedor de IA que generó realmente el contenido (Autor, US-25). */
+export const PROVEEDORES_IA = ['mock', 'local', 'cloud'] as const;
+export type ProveedorIa = (typeof PROVEEDORES_IA)[number];
+
 // --- Guardian (adulto responsable) ---
 export interface RegisterGuardianInput {
   nombre: string;
@@ -88,6 +92,7 @@ export interface Story {
   cuerpo: string;
   idioma: CodigoIdioma;
   estado: EstadoStory;
+  proveedor: ProveedorIa;
 }
 
 // --- Activity ---
@@ -107,6 +112,7 @@ export interface Activity {
   nivel?: number;
   completadaEn?: string;
   valoracion?: number;
+  proveedor: ProveedorIa;
 }
 
 // --- Historial ---

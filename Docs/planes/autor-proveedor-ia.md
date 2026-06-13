@@ -54,12 +54,16 @@ los DTOs/tipos y la UI "Autor".
       fallback ⇒ `mock`), integración de `POST /stories` (cuerpo trae `proveedor`). `pnpm check`
       backend verde (100 tests).
 
-### F2 — App: mostrar el Autor
+### F2 — App: mostrar el Autor ✅
 
-- [ ] ❌ Tipos espejo (`domain/types.ts`): `proveedor` en `Story` y `Activity` + vocabulario.
-- [ ] ❌ Componente/badge "Autor:" con icono por proveedor (mock | local | cloud) + label.
-- [ ] ❌ Integrar en `StoryGeneratorScreen` (fin del cuento), `ActivityCard` e `HistoryScreen`.
-- [ ] ❌ Test del contrato de cable (el gateway mapea `proveedor`).
+- [x] ✅ Tipos espejo (`domain/types.ts`): `proveedor` en `Story` y `Activity` + vocabulario
+      `PROVEEDORES_IA`.
+- [x] ✅ Componente `AuthorBadge` ("Autor:" + icono por proveedor) + labels `PROVEEDOR_LABEL`/
+      `PROVEEDOR_ICONO` (🎭 mock · 🖥️ local · ☁️ cloud).
+- [x] ✅ Integrado en `StoryGeneratorScreen` (fin del cuento), `ActivityCard` (lo hereda Actividades
+      e Historial) e `HistoryScreen` (tarjeta de cuento).
+- [x] ✅ El gateway HTTP pasa `proveedor` tal cual (tipado por `Story`/`Activity`). `pnpm check`
+      verde (11 tests app) + bundle (`expo export`).
 
 ### Cierre
 
