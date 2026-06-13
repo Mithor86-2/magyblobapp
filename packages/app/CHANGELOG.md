@@ -12,12 +12,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Modal propio reutilizable para avisos y confirmaciones (US-23): `DialogProvider` + `useDialog()`
   (`alert()` / `confirm()`) con el estilo de la app (tokens de tema), en lugar de las `Alert.alert`
   nativas del sistema. Botón con nueva variante **danger** para acciones destructivas.
+- Cabecera de navegación con botón "atrás" en las pantallas del stack (US-24): Crear cuenta,
+  Iniciar sesión, Elegir perfil, Crear perfil y Zona de adultos. Estilada con los tokens de tema
+  (fondo crema, tinte coral, tipografía Quicksand).
 
 ### Changed
 
 - Todas las pantallas y la puerta parental usan el modal propio (`useDialog`) en lugar de
   `Alert.alert`: Consent, Login (aviso + confirmación "Crear cuenta"), Zona de adultos (confirmación
   destructiva de cerrar sesión), Crear perfil, Actividades y `ParentalGate`. Cero alertas del sistema.
+- Bienvenida y las pestañas (zona infantil) se mantienen sin cabecera. Se eliminaron títulos
+  duplicados (hero in-screen que coincidía con el título de cabecera) y el botón "Volver" de la
+  zona de adultos (lo cubre el "atrás" de la cabecera).
 
 ### Deprecated
 

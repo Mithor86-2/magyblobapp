@@ -76,8 +76,6 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
         />
       }
     >
-      <Text style={styles.title}>Crear perfil</Text>
-
       <TextField
         label="¿Cómo te llamas?"
         value={nombre}
@@ -129,10 +127,6 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
 }
 
 const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-  },
   fieldLabel: {
     ...typography.labelBold,
     color: colors.onSurfaceVariant,

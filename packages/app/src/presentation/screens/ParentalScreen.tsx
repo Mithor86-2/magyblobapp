@@ -39,13 +39,7 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
 
   return (
     <ParentalGate intro="Esta es la zona de personas adultas. Resuelve la operación para gestionar la cuenta.">
-      <Screen
-        footer={
-          <BubblyButton label="Volver" onPress={() => navigation.goBack()} variant="secondary" />
-        }
-      >
-        <Text style={styles.title}>Zona de adultos</Text>
-
+      <Screen>
         {guardian ? (
           <View style={styles.card}>
             <Text style={styles.cardLabel}>Cuenta</Text>
@@ -66,10 +60,6 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
 }
 
 const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-  },
   card: {
     gap: spacing.xs,
     backgroundColor: colors.secondaryContainer,

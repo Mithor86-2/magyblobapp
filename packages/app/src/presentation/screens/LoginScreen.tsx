@@ -63,7 +63,6 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
         />
       }
     >
-      <Text style={styles.title}>Iniciar sesión</Text>
       <Text style={styles.body}>
         Escribe el email con el que creaste tu cuenta. Te llevaremos a tus perfiles.
       </Text>
@@ -90,10 +89,6 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
 }
 
 const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-  },
   body: {
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,

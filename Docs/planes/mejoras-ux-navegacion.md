@@ -49,14 +49,15 @@ destructive,onConfirm})`. Las alertas son imperativas (se lanzan desde handlers)
 - [x] ✅ Verificado: **cero `Alert.alert`** del sistema en `src/`. Gate (typecheck/lint/format) verde
       y bundle (`expo export`) validado.
 
-### F2 — Header con "atrás" (US-24)
+### F2 — Header con "atrás" (US-24) ✅
 
-- [ ] ❌ Activar cabecera del stack en `App.tsx` (`headerShown: true` + `screenOptions` con tema:
-      color, tipografía Quicksand, tinte del back). Título por pantalla (`options.title`).
-- [ ] ❌ Tabs (`Main`) sin cabecera del stack (la pantalla `Main` oculta su header; las tabs ya van
-      `headerShown:false`). Bienvenida sin "atrás".
-- [ ] ❌ Repasar navegaciones `replace`/`reset` para que el "atrás" sea coherente (no volver a
-      pantallas ya superadas del onboarding).
+- [x] ✅ Cabecera del stack temática en `App.tsx` (`stackScreenOptions`: fondo `surface`, tinte
+      `primary`, título Quicksand, sin sombra, back "minimal", título centrado). Título por pantalla
+      (`options.title`): Crear cuenta · Iniciar sesión · Elegir perfil · Crear perfil · Zona de adultos.
+- [x] ✅ **Welcome** (inicial) y **Main** (tabs) con `headerShown:false` (la zona infantil no cambia).
+- [x] ✅ Sin títulos duplicados: se quitó el hero in-screen donde coincidía con el título de cabecera
+      (Login, Crear perfil, Zona de adultos) y el botón "Volver" del footer de la zona de adultos
+      (la cabecera ya da el "atrás"). Gate verde + bundle validado.
 
 ### Cierre
 
