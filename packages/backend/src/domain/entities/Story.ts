@@ -1,5 +1,13 @@
 import { DomainError } from '../errors.js';
-import { esEstilo, esTema, type Estilo, type EstadoStory, type Tema } from '../vocabulary.js';
+import {
+  esEstilo,
+  esProveedorIa,
+  esTema,
+  type Estilo,
+  type EstadoStory,
+  type ProveedorIa,
+  type Tema,
+} from '../vocabulary.js';
 import type { CodigoIdioma } from '../value-objects/Idioma.js';
 
 export interface StoryProps {
@@ -10,6 +18,8 @@ export interface StoryProps {
   titulo: string;
   cuerpo: string;
   idioma: CodigoIdioma;
+  /** Proveedor de IA que generó realmente el cuento (mock | local | cloud). */
+  proveedor: ProveedorIa;
   estado?: EstadoStory;
   creadoEn: Date;
 }
@@ -26,6 +36,7 @@ export class Story {
   readonly titulo: string;
   readonly cuerpo: string;
   readonly idioma: CodigoIdioma;
+  readonly proveedor: ProveedorIa;
   estado: EstadoStory;
   readonly creadoEn: Date;
 
@@ -34,6 +45,8 @@ export class Story {
     if (!esEstilo(props.estilo)) throw new DomainError(`Estilo inválido: "${props.estilo}".`);
     if (props.titulo.trim() === '') throw new DomainError('El cuento necesita un título.');
     if (props.cuerpo.trim() === '') throw new DomainError('El cuento no puede estar vacío.');
+    if (!esProveedorIa(props.proveedor))
+      throw new DomainError(`Proveedor de IA inválido: "${props.proveedor}".`);
 
     this.id = props.id;
     this.profileId = props.profileId;
@@ -42,6 +55,7 @@ export class Story {
     this.titulo = props.titulo;
     this.cuerpo = props.cuerpo;
     this.idioma = props.idioma;
+    this.proveedor = props.proveedor;
     this.estado = props.estado ?? 'nuevo';
     this.creadoEn = props.creadoEn;
   }

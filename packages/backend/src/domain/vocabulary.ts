@@ -32,6 +32,10 @@ export type AccionAudit = (typeof ACCIONES_AUDIT)[number];
 export const TIPOS_EVENTO = ['pantalla_vista', 'cuento_generado', 'actividad_completada'] as const;
 export type TipoEvento = (typeof TIPOS_EVENTO)[number];
 
+/** Proveedor de IA que generó realmente el contenido (el efectivo, incluido el fallback). */
+export const PROVEEDORES_IA = ['mock', 'local', 'cloud'] as const;
+export type ProveedorIa = (typeof PROVEEDORES_IA)[number];
+
 export function esTema(value: string): value is Tema {
   return (TEMAS as readonly string[]).includes(value);
 }
@@ -46,6 +50,10 @@ export function esParentesco(value: string): value is Parentesco {
 
 export function esAccionAudit(value: string): value is AccionAudit {
   return (ACCIONES_AUDIT as readonly string[]).includes(value);
+}
+
+export function esProveedorIa(value: string): value is ProveedorIa {
+  return (PROVEEDORES_IA as readonly string[]).includes(value);
 }
 
 export function esTipoEvento(value: string): value is TipoEvento {

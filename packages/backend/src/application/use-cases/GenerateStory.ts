@@ -6,6 +6,7 @@ import type { StoryRepository } from '../../domain/repositories/StoryRepository.
 import { esEstilo, esTema, type Estilo, type Tema } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { GenerateStoryRequest, StoryOutput } from '../dto.js';
+import { toStoryOutput } from '../mappers.js';
 
 export interface GenerateStoryDeps {
   profiles: ChildProfileRepository;
@@ -43,21 +44,13 @@ export class GenerateStory {
       titulo: generado.titulo,
       cuerpo: generado.cuerpo,
       idioma: perfil.idioma.value,
+      proveedor: generado.proveedor,
       estado: 'nuevo',
       creadoEn: this.deps.now(),
     });
 
     await this.deps.stories.save(story);
 
-    return {
-      id: story.id,
-      profileId: story.profileId,
-      tema: story.tema,
-      estilo: story.estilo,
-      titulo: story.titulo,
-      cuerpo: story.cuerpo,
-      idioma: story.idioma,
-      estado: story.estado,
-    };
+    return toStoryOutput(story);
   }
 }

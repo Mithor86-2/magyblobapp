@@ -68,6 +68,7 @@ describe('RecommendActivities', () => {
         categoria: 'arte',
         titulo: 'Actividad 1',
         descripcion: 'previa',
+        proveedor: 'mock',
       }),
     );
     const out = await useCase.execute({ profileId: 'p-1', cantidad: 2 });

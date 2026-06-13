@@ -38,20 +38,21 @@ los DTOs/tipos y la UI "Autor".
 
 ## Tareas
 
-### F1 — Backend: propagar y persistir el proveedor
+### F1 — Backend: propagar y persistir el proveedor ✅
 
-- [ ] ❌ Vocabulario `PROVEEDORES_IA` (`mock|local|cloud`) + guard en `vocabulary.ts`.
-- [ ] ❌ `AIProvider`: los métodos devuelven el `proveedor` efectivo (p. ej.
-      `{ ...resultado, proveedor }`). Implementar en Mock/Ollama/Cloud; `FallbackProvider` y
-      `HotSwap` devuelven el proveedor **realmente** usado (mock al caer).
-- [ ] ❌ Entidades `Story` y `Activity`: nuevo campo `proveedor` (validado por vocabulario).
-- [ ] ❌ Casos de uso `GenerateStory` y `RecommendActivities`: fijan `proveedor` desde el resultado
-      del provider.
-- [ ] ❌ Prisma: columna `proveedor` en `stories` y `activities` + **migración**; mappers de los
-      repos. Actualizar [../modelo-datos.md](../modelo-datos.md) (diagrama + parte conceptual).
-- [ ] ❌ DTOs `StoryOutput`/`ActivityOutput`: añadir `proveedor`; rutas lo devuelven (incl. history).
-- [ ] ❌ Tests: casos de uso (proveedor persistido; fallback ⇒ `mock`), dominio (vocabulario), e
-      integración de rutas (el cuerpo trae `proveedor`).
+- [x] ✅ Vocabulario `PROVEEDORES_IA` (`mock|local|cloud`) + `esProveedorIa` en `vocabulary.ts`.
+- [x] ✅ `AIProvider`: `GeneratedStory`/`GeneratedActivity` llevan `proveedor`; cada provider
+      concreto lo estampa (Mock=`mock`, Ollama=`local`, Cloud=`cloud`) vía `parseResponse`;
+      `FallbackProvider`/`HotSwap` lo pasan tal cual (proveedor efectivo, mock al caer).
+- [x] ✅ Entidades `Story` y `Activity`: campo `proveedor` validado por vocabulario.
+- [x] ✅ Casos de uso `GenerateStory` y `RecommendActivities` fijan `proveedor` desde el resultado;
+      salida vía mappers compartidos.
+- [x] ✅ Prisma: columna `proveedor` (default `mock`) en `stories`/`activities` + migración
+      `add_proveedor_to_story_activity`; mappers de los repos. `../modelo-datos.md` actualizado.
+- [x] ✅ DTOs `StoryOutput`/`ActivityOutput` con `proveedor`; lo devuelven las rutas (incl. history).
+- [x] ✅ Tests: caso de uso (proveedor persistido), `FallbackProvider` (primary=`local`,
+      fallback ⇒ `mock`), integración de `POST /stories` (cuerpo trae `proveedor`). `pnpm check`
+      backend verde (100 tests).
 
 ### F2 — App: mostrar el Autor
 

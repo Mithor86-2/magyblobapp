@@ -93,7 +93,7 @@ export class OllamaProvider implements AIProvider {
       prompt,
       ESQUEMA_CUENTO,
     );
-    return parseStory(data, 'Ollama');
+    return parseStory(data, 'Ollama', 'local');
   }
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
@@ -107,7 +107,7 @@ export class OllamaProvider implements AIProvider {
       prompt,
       ESQUEMA_ACTIVIDADES,
     );
-    return parseActivities(data, input.cantidad, 'Ollama');
+    return parseActivities(data, input.cantidad, 'Ollama', 'local');
   }
 
   /** Lee de AppSetting los textos de prompt; null/ausente => default en código. */

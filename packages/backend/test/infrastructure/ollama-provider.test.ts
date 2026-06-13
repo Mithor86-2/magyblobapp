@@ -39,7 +39,11 @@ describe('OllamaProvider', () => {
       tema: 'animales',
       estilo: 'aventura',
     });
-    expect(story).toEqual({ titulo: 'El bosque', cuerpo: 'Un cuento bonito.' });
+    expect(story).toEqual({
+      titulo: 'El bosque',
+      cuerpo: 'Un cuento bonito.',
+      proveedor: 'local',
+    });
   });
 
   it('llama a /api/generate con el modelo configurado y sin streaming', async () => {

@@ -68,6 +68,7 @@ describe('POST /stories (integración)', () => {
     expect(body.estado).toBe('nuevo');
     expect(body.titulo).toContain('Mateo');
     expect(body.cuerpo.length).toBeGreaterThan(0);
+    expect(body.proveedor).toBe('mock'); // el cuerpo HTTP incluye el proveedor (US-25)
 
     // Persistido en el repositorio de cuentos.
     const guardado = await handles.stories.findById(body.id as string);

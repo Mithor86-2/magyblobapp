@@ -82,7 +82,7 @@ describe('createAIProvider', () => {
       ),
     });
     const result = await ai.generateStory(story);
-    expect(result).toEqual({ titulo: 'Nube', cuerpo: 'Cuerpo.' });
+    expect(result).toEqual({ titulo: 'Nube', cuerpo: 'Cuerpo.', proveedor: 'cloud' });
     const [url] = fetchSpy.mock.calls[0];
     expect(url).toBe('https://api.groq.com/openai/v1/chat/completions');
   });

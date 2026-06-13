@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Proveedor de IA **efectivo** persistido en `Story` y `Activity` (US-25): cada provider
+  (`Mock`/`Ollama`/`Cloud`) estampa su identidad (`mock`/`local`/`cloud`) en el resultado y el
+  `FallbackProvider`/`HotSwap` propagan el que realmente sirvió (fallback ⇒ `mock`). Nuevo
+  vocabulario `PROVEEDORES_IA`; campo `proveedor` en las entidades, en el esquema Prisma (migración
+  `add_proveedor_to_story_activity`, default `mock`) y en `StoryOutput`/`ActivityOutput` (lo
+  devuelven `POST /stories`, `POST /activities/recommend` y `GET /profiles/:id/history`).
+
 ### Changed
 
 ### Deprecated

@@ -1,7 +1,7 @@
 import type { Activity as PrismaActivity } from '../../generated/prisma/index.js';
 import { Activity } from '../../domain/entities/Activity.js';
 import type { ActivityRepository } from '../../domain/repositories/ActivityRepository.js';
-import type { Categoria } from '../../domain/vocabulary.js';
+import type { Categoria, ProveedorIa } from '../../domain/vocabulary.js';
 import type { PrismaClient } from '../db/prismaClient.js';
 
 /** Repositorio de actividades sobre PostgreSQL (Prisma). */
@@ -19,6 +19,7 @@ export class PrismaActivityRepository implements ActivityRepository {
         descripcion: activity.descripcion,
         duracionMin: activity.duracionMin ?? null,
         nivel: activity.nivel ?? null,
+        proveedor: activity.proveedor,
         completadaEn: activity.completadaEn ?? null,
         valoracion: activity.valoracion ?? null,
       },
@@ -52,6 +53,7 @@ function toActivity(row: PrismaActivity): Activity {
     descripcion: row.descripcion,
     duracionMin: row.duracionMin ?? undefined,
     nivel: row.nivel ?? undefined,
+    proveedor: row.proveedor as ProveedorIa,
     completadaEn: row.completadaEn ?? undefined,
     valoracion: row.valoracion ?? undefined,
   });

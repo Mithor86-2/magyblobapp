@@ -1,5 +1,5 @@
 import type { ChildProfile } from '../entities/ChildProfile.js';
-import type { Categoria, Estilo, Tema } from '../vocabulary.js';
+import type { Categoria, Estilo, ProveedorIa, Tema } from '../vocabulary.js';
 
 export interface GenerateStoryInput {
   perfil: ChildProfile;
@@ -11,6 +11,8 @@ export interface GenerateStoryInput {
 export interface GeneratedStory {
   titulo: string;
   cuerpo: string;
+  /** Proveedor que generó realmente el contenido (lo estampa el provider concreto). */
+  proveedor: ProveedorIa;
 }
 
 export interface RecommendActivitiesInput {
@@ -26,6 +28,8 @@ export interface GeneratedActivity {
   descripcion: string;
   duracionMin?: number;
   nivel?: number;
+  /** Proveedor que generó realmente la actividad (lo estampa el provider concreto). */
+  proveedor: ProveedorIa;
 }
 
 /**

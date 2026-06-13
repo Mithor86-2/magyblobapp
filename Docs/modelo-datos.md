@@ -52,6 +52,7 @@ erDiagram
         text     cuerpo
         string   idioma    "heredado del perfil (es | en)"
         string   estado    "nuevo | leido"
+        string   proveedor "IA efectiva: mock | local | cloud"
         datetime creadoEn
     }
 
@@ -63,6 +64,7 @@ erDiagram
         string   descripcion
         int      duracionMin "opcional"
         int      nivel       "opcional"
+        string   proveedor   "IA efectiva: mock | local | cloud"
         datetime completadaEn "opcional — null = pendiente"
         int      valoracion  "opcional — 1..3 estrellas"
     }
@@ -149,6 +151,7 @@ Solo donde aportan (regla YAGNI del plan); el resto son escalares simples.
 | **Categoría**   | `arte · música · lógica`                           | `Activity.categoria`                     |
 | **EstadoStory** | `nuevo · leido`                                    | `Story.estado`                           |
 | **Idioma**      | `es · en`                                          | `ChildProfile.idioma`, `Story.idioma`    |
+| **ProveedorIa** | `mock · local · cloud`                             | `Story.proveedor`, `Activity.proveedor`  |
 | **Parentesco**  | `madre · padre · tutor_legal · abuelo_a · otro`    | `Guardian.parentesco`                    |
 | **AccionAudit** | `crear · editar · borrar · consentimiento · login` | `AuditLog.accion`                        |
 

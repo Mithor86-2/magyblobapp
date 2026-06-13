@@ -61,6 +61,7 @@ model Story {
   cuerpo    String
   idioma    String
   estado    String       @default("nuevo")
+  proveedor String       @default("mock")
   creadoEn  DateTime     @default(now())
 
   @@index([profileId])
@@ -77,6 +78,7 @@ model Activity {
   descripcion  String
   duracionMin  Int?
   nivel        Int?
+  proveedor    String       @default("mock")
   completadaEn DateTime?
   valoracion   Int?
   creadoEn     DateTime     @default(now())
