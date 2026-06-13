@@ -92,3 +92,49 @@ Como **padre/tutor** quiero un modo nocturno para descansar la vista.
 
 - Dado el ajuste de modo nocturno, Cuando lo activo, Entonces la app aplica el tema
   oscuro y persiste la preferencia.
+
+## US-23 — Avisos y confirmaciones dentro de la app · Should (Mejoras)
+
+Como **usuario de la app** quiero que los avisos y confirmaciones se muestren con el
+estilo de la propia app (no las alertas grises del sistema) para una experiencia coherente
+y más amable para una app infantil.
+
+**Contexto.** Hoy errores y confirmaciones usan `Alert.alert` nativo (look del SO, fuera del
+design system). Se sustituye por un **modal propio reutilizable** (`<Modal>` de React Native
+con los tokens de tema), expuesto vía un `DialogProvider` con un hook `useDialog()` (`alert()`
+para avisos y `confirm()` para confirmaciones con acción). **Solo app**, no toca el backend.
+
+**Criterios de aceptación**
+
+- Dado un aviso (p. ej. fallo de red o de validación), Cuando la app lo muestra, Entonces
+  aparece en un **modal con el estilo de la app** (tipografía Quicksand, paleta, bordes
+  redondeados), no en la alerta nativa del sistema.
+- Dada una acción que requiere confirmación (p. ej. cerrar sesión), Cuando se dispara,
+  Entonces el modal ofrece **confirmar o cancelar** y solo ejecuta la acción al confirmar.
+- Dado el modal abierto, Cuando se confirma o se cancela, Entonces se cierra y la app no
+  queda bloqueada; el botón de confirmación destructiva (p. ej. "Cerrar sesión") se distingue
+  visualmente.
+- Dado el conjunto de pantallas (Consent, Login, Seleccionar perfil, Zona de adultos,
+  Crear perfil, Actividades, Generador de cuentos, Historial), Cuando muestran avisos,
+  Entonces **ninguna** usa ya `Alert.alert` del sistema.
+
+## US-24 — Navegación con cabecera y "atrás" · Should (Mejoras)
+
+Como **usuario de la app** quiero una cabecera con botón "atrás" en las pantallas del flujo
+para poder volver al paso anterior sin quedarme sin salida.
+
+**Contexto.** El stack se montó con `headerShown: false`, así que pantallas como **Login** o
+**Crear perfil** no tienen forma de volver (hueco detectado en la Fase 5.5). Se habilita una
+**cabecera de navegación** con botón "atrás" en las pantallas del stack (onboarding y zona de
+adultos), **conservando las pestañas sin cabecera** (la zona infantil no cambia). **Solo app.**
+
+**Criterios de aceptación**
+
+- Dada una pantalla del stack que no es la inicial (p. ej. Login, Crear perfil), Cuando la
+  abro, Entonces hay un **botón "atrás"** que vuelve a la pantalla anterior.
+- Dada la pantalla inicial del onboarding (Bienvenida), Cuando se muestra, Entonces **no**
+  ofrece "atrás" (no hay paso previo).
+- Dadas las **pestañas** (Inicio · Actividades · Cuentos · Historial), Cuando se navega entre
+  ellas, Entonces **no** aparece la cabecera del stack (la zona infantil mantiene su diseño).
+- Dada la cabecera, Cuando se muestra, Entonces respeta los tokens de tema (color, tipografía
+  Quicksand) y un título legible por pantalla.

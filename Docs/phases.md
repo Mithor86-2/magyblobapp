@@ -303,11 +303,12 @@ se abra). Algunas parten de algo ya existente (se indica).
 
 **UX y navegación (diferido de la Fase 5.5):**
 
-- [ ] **Modal propio en vez de `Alert` del sistema.** Componente reutilizable (p. ej.
-      `DialogProvider`/`useDialog` con `alert()`/`confirm()`) que sustituya las alertas nativas en
-      toda la app (Consent, Login, Parental, Actividades, Generador…), con los tokens de tema.
-- [ ] **Header con botón "atrás".** Mostrar cabecera de navegación (hoy `headerShown: false`) para
-      poder volver entre pantallas del stack (onboarding, zona de adultos), conservando las tabs.
+- [x] ✅ **Modal propio en vez de `Alert` del sistema** (US-23, app v0.5.0, rama
+      `feature/mejoras-ux-navegacion`). `DialogProvider`/`useDialog` (`alert`/`confirm`) con `<Modal>`
+      temático; variante `danger` en `BubblyButton`. Cero `Alert.alert` del sistema en `src/`.
+- [x] ✅ **Header con botón "atrás"** (US-24, misma rama). Cabecera temática del stack con "atrás" en
+      Crear cuenta · Iniciar sesión · Elegir perfil · Crear perfil · Zona de adultos; Bienvenida y
+      las pestañas (zona infantil) sin cabecera; sin títulos duplicados.
 - [ ] **Autor (proveedor de IA) en cuentos y actividades.** Propagar desde la capa de IA
       (`FallbackProvider`/`HotSwap`) qué proveedor generó realmente el contenido —`mock`, `local`
       o `cloud`, incluido el fallback— hasta `StoryOutput`/`ActivityOutput`; en la app, pintar

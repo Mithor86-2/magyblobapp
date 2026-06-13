@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { AvatarPicker } from '../components/AvatarPicker';
+import { useDialog } from '../components/DialogProvider';
 import { IDIOMAS, TEMAS } from '../../domain/types';
 import type { CodigoIdioma, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -19,6 +20,7 @@ const EDADES = [2, 3, 4, 5, 6] as const;
 export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfile'>) {
   const guardianId = useAppStore((s) => s.guardian?.id ?? null);
   const setProfile = useAppStore((s) => s.setProfile);
+  const dialog = useDialog();
 
   const [nombre, setNombre] = useState('');
   const [edad, setEdad] = useState<number | null>(null);
@@ -57,7 +59,7 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
       navigation.navigate('Main');
     } catch (error) {
       const mensaje = error instanceof ApiError ? error.message : 'No se pudo crear el perfil.';
-      Alert.alert('Ups', mensaje);
+      dialog.alert({ title: 'Ups', message: mensaje });
     } finally {
       setSubmitting(false);
     }
@@ -74,8 +76,6 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
         />
       }
     >
-      <Text style={styles.title}>Crear perfil</Text>
-
       <TextField
         label="¿Cómo te llamas?"
         value={nombre}
@@ -127,10 +127,6 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
 }
 
 const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-  },
   fieldLabel: {
     ...typography.labelBold,
     color: colors.onSurfaceVariant,

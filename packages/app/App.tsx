@@ -16,12 +16,23 @@ import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorS
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
 import { HistoryScreen } from './src/presentation/screens/HistoryScreen';
+import { DialogProvider } from './src/presentation/components/DialogProvider';
 import { useAppStore } from './src/presentation/store/useAppStore';
 import type { MainTabParamList, RootStackParamList } from './src/presentation/navigation';
 import { colors, fonts, radius } from './src/presentation/theme/tokens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
+
+/** Cabecera del stack con el tema de la app (botón "atrás" incluido). US-24. */
+const stackScreenOptions = {
+  headerStyle: { backgroundColor: colors.surface },
+  headerTintColor: colors.primary,
+  headerTitleStyle: { fontFamily: fonts.bold },
+  headerShadowVisible: false,
+  headerBackButtonDisplayMode: 'minimal',
+  headerTitleAlign: 'center',
+} as const;
 
 /** Icono de pestaña: emoji dentro de un "blob" pastel cuando está activo. */
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
@@ -99,18 +110,45 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="dark" />
-        <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="Consent" component={ConsentScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="SelectProfile" component={SelectProfileScreen} />
-          <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
-          <Stack.Screen name="Main" component={MainTabs} />
-          <Stack.Screen name="Parental" component={ParentalScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <DialogProvider>
+        <NavigationContainer>
+          <StatusBar style="dark" />
+          <Stack.Navigator initialRouteName={initialRoute} screenOptions={stackScreenOptions}>
+            {/* Bienvenida (inicial) y las pestañas no llevan cabecera del stack. */}
+            <Stack.Screen
+              name="Welcome"
+              component={WelcomeScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Consent"
+              component={ConsentScreen}
+              options={{ title: 'Crear cuenta' }}
+            />
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ title: 'Iniciar sesión' }}
+            />
+            <Stack.Screen
+              name="SelectProfile"
+              component={SelectProfileScreen}
+              options={{ title: 'Elegir perfil' }}
+            />
+            <Stack.Screen
+              name="CreateProfile"
+              component={CreateProfileScreen}
+              options={{ title: 'Crear perfil' }}
+            />
+            <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="Parental"
+              component={ParentalScreen}
+              options={{ title: 'Zona de adultos' }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </DialogProvider>
     </SafeAreaProvider>
   );
 }

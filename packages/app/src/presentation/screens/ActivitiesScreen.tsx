@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
+import { useDialog } from '../components/DialogProvider';
 import { CATEGORIAS } from '../../domain/types';
 import type { Activity, Categoria } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -15,6 +16,7 @@ import type { TabScreenProps } from '../navigation';
 
 export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
   const profile = useAppStore((s) => s.currentProfile);
+  const dialog = useDialog();
 
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,7 +47,10 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
       const updated = await api.activities.complete(activityId, valoracion);
       setActivities((prev) => prev.map((a) => (a.id === activityId ? updated : a)));
     } catch (e) {
-      Alert.alert('Ups', e instanceof ApiError ? e.message : 'No se pudo guardar la valoración.');
+      dialog.alert({
+        title: 'Ups',
+        message: e instanceof ApiError ? e.message : 'No se pudo guardar la valoración.',
+      });
     }
   }
 
