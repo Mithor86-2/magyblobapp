@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { TextField } from '../components/TextField';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
-import { colors, typography } from '../theme/tokens';
+import { colors, spacing, typography } from '../theme/tokens';
 import { CONSENT_VERSION } from './ConsentScreen';
 import type { RootScreenProps } from '../navigation';
 
@@ -23,6 +23,8 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
 
   const canSubmit = email.trim() !== '' && !submitting;
 
+  const irACrearCuenta = () => navigation.replace('Consent');
+
   async function onSubmit() {
     setSubmitting(true);
     try {
@@ -30,13 +32,20 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
       setGuardian(guardian, CONSENT_VERSION);
       navigation.replace('SelectProfile');
     } catch (error) {
-      const mensaje =
-        error instanceof ApiError && error.status === 404
-          ? 'No encontramos ninguna cuenta con ese email. ¿Quieres crear una?'
-          : error instanceof ApiError
-            ? error.message
-            : 'No se pudo iniciar sesión.';
-      Alert.alert('Ups', mensaje);
+      if (error instanceof ApiError && error.status === 404) {
+        // Sin cuenta con ese email: ofrece ir directo al alta (no dejar sin salida).
+        Alert.alert(
+          'No encontramos esa cuenta',
+          'No hay ninguna cuenta con ese email. ¿Quieres crear una?',
+          [
+            { text: 'Reintentar', style: 'cancel' },
+            { text: 'Crear cuenta', onPress: irACrearCuenta },
+          ],
+        );
+      } else {
+        const mensaje = error instanceof ApiError ? error.message : 'No se pudo iniciar sesión.';
+        Alert.alert('Ups', mensaje);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -66,6 +75,15 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
         keyboardType="email-address"
         autoCapitalize="none"
       />
+
+      <Pressable
+        style={styles.link}
+        onPress={irACrearCuenta}
+        accessibilityRole="button"
+        accessibilityLabel="Crear una cuenta"
+      >
+        <Text style={styles.linkText}>¿No tienes cuenta? Crear una</Text>
+      </Pressable>
     </Screen>
   );
 }
@@ -78,5 +96,14 @@ const styles = StyleSheet.create({
   body: {
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,
+  },
+  link: {
+    marginTop: spacing.sm,
+    alignSelf: 'center',
+    paddingVertical: spacing.sm,
+  },
+  linkText: {
+    ...typography.labelBold,
+    color: colors.primary,
   },
 });

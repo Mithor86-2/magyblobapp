@@ -28,6 +28,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Onboarding por **stack** Bienvenida → (alta/login) → Seleccionar perfil → pestañas; el alta del
   adulto lleva a la selección de perfil en lugar de directamente a crear perfil.
 
+### Fixed
+
+- En **Iniciar sesión**, un adulto sin cuenta ya no se queda sin salida: hay un enlace permanente
+  "¿No tienes cuenta? Crear una" y el aviso de email no encontrado ofrece ir directo al alta.
+
 ### Deprecated
 
 ### Removed
