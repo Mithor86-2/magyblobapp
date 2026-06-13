@@ -285,3 +285,28 @@ reactivada), pero acotado para no romper la privacidad por diseño. Detalle en
   proveedores) y añade al prompt la forma JSON esperada. Fallback a mock vía el mismo `FallbackProvider`.
 - **Smoke `pnpm ai:smoke:cloud`** (`scripts/smoke-cloud.ts`): CloudProvider directo contra el
   proveedor real (key en env), verificado contra Groq `llama-3.3-70b-versatile`.
+
+## Sesión del guardián y multi-perfil (Fase 5.5 · 2026-06-12 · backend v0.4.0 / app v0.4.0)
+
+Añade sesión de adulto completa (login, selección de perfil, zona de adultos, logout). Plan en
+[planes/fase-5-5.md](planes/fase-5-5.md); cubre US-19 y US-02.
+
+- **Login ligero por email, sin contraseña.** Decisión consciente: la autenticación robusta (factor
+  de autenticación, tokens, verificación de edad) queda **fuera del alcance del TFM** y se declara
+  así en US-19 y phases.md. `LoginGuardian` reutiliza `GuardianRepository.findByEmail` (ya existía);
+  no se añadió entidad ni migración. Es coherente con cumplimiento-menores (la barrera real es la
+  puerta parental, no el login).
+- **Normalización de email en la entidad `Guardian`** (recorte + minúsculas), con alta y login
+  normalizando la clave antes de `findByEmail`. Sin esto, "Ana@…" registrado no casaría con
+  "ana@…" en el login. La ruta valida el email por **`pattern`** (misma regex que la entidad) porque
+  ajv-formats no está cableado en Fastify; `format: 'email'` se ignoraría.
+- **Sesión persistida = guardián completo + perfil activo.** El store pasa de guardar solo
+  `guardianId` a guardar el `guardian` entero y el `currentProfile` (antes transitorio). Migración
+  de persistencia a **v1**: el estado v0 no puede reconstruir el guardián desde solo el id, así que
+  se descarta (el adulto se identifica una vez). Onboarding por stack: Bienvenida → (alta/login) →
+  Seleccionar perfil → pestañas.
+- **Puerta parental extraída a componente `ParentalGate`** (antes inline en Consent), reutilizada
+  por el alta y por la zona de adultos. La zona de adultos vive en el stack raíz (sobre las tabs) y
+  ofrece cambiar de perfil (`clearProfile`) y cerrar sesión (`logout`).
+- **Diferido a la Fase de mejoras:** modal propio en vez de `Alert` del sistema; header con "atrás";
+  indicador de Autor (proveedor de IA: mock/local/cloud) en cuentos y actividades.

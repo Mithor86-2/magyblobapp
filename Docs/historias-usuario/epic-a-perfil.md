@@ -26,26 +26,32 @@ Ver [cumplimiento-menores.md](../cumplimiento-menores.md).
 - Dada la zona de gestión (configuración/perfiles), Cuando un niño la intenta abrir,
   Entonces queda tras una **puerta parental** (regla de tiendas Kids/Families).
 
-## US-19 — Inicio de sesión del adulto · Should
+## US-19 — Inicio de sesión del adulto · Should · ✅ Fase 5.5
 
 Como **padre/tutor** quiero iniciar sesión en mi cuenta para acceder a mis perfiles y a
-la zona de gestión desde cualquier dispositivo de forma segura.
+la zona de gestión, también si vuelvo o cambio de dispositivo.
 Ver [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+> **Alcance del TFM (decisión 2026-06-12):** el inicio de sesión es una **identificación
+> ligera por email, sin contraseña** ni verificación robusta de edad. La autenticación
+> fuerte (factor de autenticación, sesión con token) queda **fuera del alcance** y se
+> declara como mejora futura. Los criterios reflejan el login ligero implementado.
 
 **Criterios de aceptación**
 
-- Dado un `Guardian` registrado (US-16), Cuando inicio sesión con sus credenciales
-  (email como identificador + factor de autenticación), Entonces obtengo una sesión
-  válida y accedo a mis perfiles.
-- Dadas credenciales inválidas, Cuando intento iniciar sesión, Entonces se rechaza con
-  un mensaje claro y no se crea sesión.
+- Dado un `Guardian` registrado (US-16), Cuando inicio sesión indicando su **email**,
+  Entonces recupero mi cuenta y accedo a mis perfiles (`POST /guardians/login` → `200`).
+- Dado un email **no registrado**, Cuando intento iniciar sesión, Entonces se rechaza con
+  un mensaje claro y se me ofrece crear una cuenta (`NotFoundError` → `404`); un email con
+  **formato inválido** se rechaza por validación (`400`).
+- Dado el email, Cuando se busca la cuenta, Entonces se **normaliza** (recorte + minúsculas),
+  de modo que casa aunque se teclee con mayúsculas o espacios.
 - Dado un inicio de sesión correcto, Cuando ocurre, Entonces se registra un `AuditLog`
   con `accion=login` y el `guardianId` como actor.
-- Dada la zona de gestión (configuración / perfiles), Cuando se accede, Entonces
-  requiere una **sesión de adulto activa** (no basta con un `guardianId` guardado en el
-  cliente); refuerza la puerta parental de US-16.
-- Dado que cierro sesión, Cuando lo confirmo, Entonces se invalida la sesión y la zona
-  de gestión vuelve a exigir login.
+- Dada la zona de gestión (cuenta / perfiles), Cuando se accede, Entonces queda tras la
+  **puerta parental** (componente `ParentalGate`), separada de la zona infantil.
+- Dado que cierro sesión, Cuando lo confirmo, Entonces se borra la sesión persistida
+  (guardián + perfil activo) y la app vuelve al onboarding.
 
 ## US-20 — Editar datos de la cuenta del adulto · Should
 
@@ -109,7 +115,7 @@ intereses) para que los cuentos y actividades se personalicen.
   válido, Entonces devuelve el perfil creado sin tocar IO real (test con repositorio
   en memoria / mock).
 
-## US-02 — Listar y seleccionar perfiles · Must
+## US-02 — Listar y seleccionar perfiles · Must · ✅ (selección en Fase 5.5)
 
 Como **padre/tutor** quiero ver los perfiles existentes y elegir uno para saber para
 quién genero el cuento (soporte multi-niño).

@@ -9,6 +9,22 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.4.0] - 2026-06-12
+
+Fase 5.5 (US-19/US-02): sesión del guardián, login por email y multi-perfil.
+
+### Added
+
 - Sesión del guardián y multi-perfil (Fase 5.5, US-19/US-02): pantalla **Bienvenida** (crear cuenta
   o iniciar sesión), pantalla **Iniciar sesión** (login ligero por email contra
   `POST /guardians/login`) y pantalla **Seleccionar perfil** (lista los hijos del guardián vía
@@ -32,14 +48,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - En **Iniciar sesión**, un adulto sin cuenta ya no se queda sin salida: hay un enlace permanente
   "¿No tienes cuenta? Crear una" y el aviso de email no encontrado ofrece ir directo al alta.
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.3.1] - 2026-06-12
 
