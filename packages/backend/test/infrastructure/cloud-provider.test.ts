@@ -45,7 +45,11 @@ describe('CloudProvider', () => {
       tema: 'animales',
       estilo: 'aventura',
     });
-    expect(story).toEqual({ titulo: 'El bosque', cuerpo: 'Un cuento bonito.' });
+    expect(story).toEqual({
+      titulo: 'El bosque',
+      cuerpo: 'Un cuento bonito.',
+      proveedor: 'cloud',
+    });
   });
 
   it('llama a /chat/completions con Bearer, modelo y response_format json_object', async () => {

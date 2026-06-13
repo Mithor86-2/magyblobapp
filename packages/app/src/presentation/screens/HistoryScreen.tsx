@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { useFocusEffect } from '@react-navigation/native';
 import { Screen } from '../components/Screen';
 import { ActivityCard } from '../components/ActivityCard';
+import { AuthorBadge } from '../components/AuthorBadge';
 import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
@@ -89,6 +90,7 @@ export function HistoryScreen(_props: TabScreenProps<'Historial'>) {
                 {story.estado === 'leido' ? 'Leído ✓' : 'Marcar como leído'}
               </Text>
             </Pressable>
+            <AuthorBadge proveedor={story.proveedor} />
           </View>
         ))
       )}

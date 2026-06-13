@@ -1,5 +1,5 @@
 import { DomainError } from '../errors.js';
-import { CATEGORIAS, type Categoria } from '../vocabulary.js';
+import { CATEGORIAS, esProveedorIa, type Categoria, type ProveedorIa } from '../vocabulary.js';
 
 export interface ActivityProps {
   id: string;
@@ -9,6 +9,8 @@ export interface ActivityProps {
   descripcion: string;
   duracionMin?: number;
   nivel?: number;
+  /** Proveedor de IA que generó realmente la actividad (mock | local | cloud). */
+  proveedor: ProveedorIa;
   completadaEn?: Date;
   valoracion?: number;
 }
@@ -25,6 +27,7 @@ export class Activity {
   readonly descripcion: string;
   readonly duracionMin?: number;
   readonly nivel?: number;
+  readonly proveedor: ProveedorIa;
   completadaEn?: Date;
   valoracion?: number;
 
@@ -35,6 +38,8 @@ export class Activity {
     if (props.titulo.trim() === '') throw new DomainError('La actividad necesita un título.');
     if (props.descripcion.trim() === '')
       throw new DomainError('La actividad necesita una descripción.');
+    if (!esProveedorIa(props.proveedor))
+      throw new DomainError(`Proveedor de IA inválido: "${props.proveedor}".`);
 
     this.id = props.id;
     this.profileId = props.profileId;
@@ -43,6 +48,7 @@ export class Activity {
     this.descripcion = props.descripcion;
     this.duracionMin = props.duracionMin;
     this.nivel = props.nivel;
+    this.proveedor = props.proveedor;
     this.completadaEn = props.completadaEn;
     this.valoracion = props.valoracion;
   }

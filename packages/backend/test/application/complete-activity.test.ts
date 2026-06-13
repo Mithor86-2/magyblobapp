@@ -17,6 +17,7 @@ describe('CompleteActivity', () => {
         categoria: 'arte',
         titulo: 'Pintar un dragón',
         descripcion: '...',
+        proveedor: 'mock',
       }),
     );
     useCase = new CompleteActivity({ activities, now: relojFijo() });

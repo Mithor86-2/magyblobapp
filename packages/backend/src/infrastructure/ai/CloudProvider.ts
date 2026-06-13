@@ -71,7 +71,7 @@ export class CloudProvider implements AIProvider {
     const data = await this.chat<{ titulo?: unknown; cuerpo?: unknown }>(
       conInstruccionJson(partes, INSTRUCCION_JSON_CUENTO),
     );
-    return parseStory(data, 'CloudProvider');
+    return parseStory(data, 'CloudProvider', 'cloud');
   }
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
@@ -83,7 +83,7 @@ export class CloudProvider implements AIProvider {
     const data = await this.chat<{ actividades?: unknown }>(
       conInstruccionJson(partes, instruccionJsonActividades()),
     );
-    return parseActivities(data, input.cantidad, 'CloudProvider');
+    return parseActivities(data, input.cantidad, 'CloudProvider', 'cloud');
   }
 
   /** Lee de AppSetting los textos de prompt; null/ausente => default en código. */

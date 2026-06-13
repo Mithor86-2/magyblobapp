@@ -124,6 +124,7 @@ export class FakeAIProvider implements AIProvider {
     return {
       titulo: `Cuento de ${input.perfil.nombre} sobre ${input.tema}`,
       cuerpo: `Había una vez una historia ${input.estilo} en ${input.perfil.idioma.value}.`,
+      proveedor: 'mock' as const,
     };
   }
 
@@ -132,6 +133,7 @@ export class FakeAIProvider implements AIProvider {
       categoria: input.categoria ?? ('arte' as const),
       titulo: `Actividad ${i + 1}`,
       descripcion: `Para ${input.perfil.nombre}.`,
+      proveedor: 'mock' as const,
     }));
   }
 }

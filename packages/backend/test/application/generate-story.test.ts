@@ -57,6 +57,13 @@ describe('GenerateStory', () => {
     expect(guardado?.profileId).toBe('p-1');
   });
 
+  it('persiste y devuelve el proveedor efectivo del cuento (US-25)', async () => {
+    const out = await useCase.execute({ profileId: 'p-1', tema: 'animales', estilo: 'aventura' });
+    expect(out.proveedor).toBe('mock'); // FakeAIProvider estampa mock
+    const guardado = await stories.findById(out.id);
+    expect(guardado?.proveedor).toBe('mock');
+  });
+
   it('rechaza un tema fuera del vocabulario', async () => {
     await expect(
       useCase.execute({ profileId: 'p-1', tema: 'piratas', estilo: 'aventura' }),

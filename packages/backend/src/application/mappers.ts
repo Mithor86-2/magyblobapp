@@ -14,6 +14,7 @@ export function toStoryOutput(story: Story): StoryOutput {
     cuerpo: story.cuerpo,
     idioma: story.idioma,
     estado: story.estado,
+    proveedor: story.proveedor,
   };
 }
 
@@ -28,5 +29,6 @@ export function toActivityOutput(activity: Activity): ActivityOutput {
     nivel: activity.nivel,
     completadaEn: activity.completadaEn?.toISOString(),
     valoracion: activity.valoracion,
+    proveedor: activity.proveedor,
   };
 }

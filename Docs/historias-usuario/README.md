@@ -17,43 +17,44 @@ Should = HITO 2 · Could = si hay margen.
 
 ## Documentos por épica
 
-| Épica | Documento                                           | Historias                                       |
-| ----- | --------------------------------------------------- | ----------------------------------------------- |
-| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02        |
-| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22               |
-| C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                    |
-| D     | [Historial](epic-d-historial.md)                    | US-08                                           |
-| E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                             |
-| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24 |
+| Épica | Documento                                           | Historias                                              |
+| ----- | --------------------------------------------------- | ------------------------------------------------------ |
+| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02               |
+| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22                      |
+| C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                           |
+| D     | [Historial](epic-d-historial.md)                    | US-08                                                  |
+| E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                    |
+| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25 |
 
 ## Trazabilidad (historia → fase → pantalla)
 
-| ID    | Historia                            | Prioridad | Fase    | Pantalla                   | Épica                            |
-| ----- | ----------------------------------- | --------- | ------- | -------------------------- | -------------------------------- |
-| US-16 | Registro del adulto + consentim.    | Must      | 1→4     | Alta / parental gate       | [A](epic-a-perfil.md#us-16)      |
-| US-19 | Inicio de sesión del adulto         | Should    | 5.5     | Login / parental gate      | [A](epic-a-perfil.md#us-19)      |
-| US-20 | Editar cuenta del adulto            | Should    | 5       | Configuración              | [A](epic-a-perfil.md#us-20)      |
-| US-21 | Eliminar cuenta + todos los datos   | Should    | 5       | Configuración              | [A](epic-a-perfil.md#us-21)      |
-| US-01 | Crear perfil de niño                | Must      | 1→4     | Crear perfil               | [A](epic-a-perfil.md#us-01)      |
-| US-17 | Logs y tracking de primera parte    | Should    | 3→6     | —                          | [F](epic-f-plataforma.md#us-17)  |
-| US-18 | Configuración editable (prompts/IA) | Should    | 2→3     | —                          | [F](epic-f-plataforma.md#us-18)  |
-| US-02 | Listar y seleccionar perfiles       | Must      | 3→5.5   | Selección de perfil        | [A](epic-a-perfil.md#us-02)      |
-| US-03 | Generar cuento personalizado        | Must      | 2→4     | Generador                  | [B](epic-b-cuentos.md#us-03)     |
-| US-04 | Fallback automático a mock          | Must      | 2       | Generador                  | [B](epic-b-cuentos.md#us-04)     |
-| US-05 | Modo de IA configurable por env     | Must      | 2       | —                          | [B](epic-b-cuentos.md#us-05)     |
-| US-06 | Arranque reproducible               | Must      | 0       | —                          | [F](epic-f-plataforma.md#us-06)  |
-| US-07 | Guardar / marcar cuento             | Should    | 3→5     | Generador / Histor.        | [B](epic-b-cuentos.md#us-07)     |
-| US-08 | Ver historial de cuentos            | Should    | 5       | Historial                  | [D](epic-d-historial.md#us-08)   |
-| US-09 | Ver actividades recomendadas        | Should    | 5       | Actividades                | [C](epic-c-actividades.md#us-09) |
-| US-10 | Registrar actividad completada      | Should    | 5       | Actividades/Histor.        | [C](epic-c-actividades.md#us-10) |
-| US-11 | Editar perfil                       | Should    | 5       | Configuración              | [E](epic-e-config.md#us-11)      |
-| US-12 | Cambiar idioma (ES/EN)              | Should    | 5       | Configuración              | [E](epic-e-config.md#us-12)      |
-| US-13 | Eliminar perfil                     | Should    | 5       | Configuración              | [E](epic-e-config.md#us-13)      |
-| US-14 | Proveedor cloud opcional            | Could     | 14      | Config (zona padres)       | [F](epic-f-plataforma.md#us-14)  |
-| US-15 | Modo nocturno                       | Could     | 6       | Configuración              | [F](epic-f-plataforma.md#us-15)  |
-| US-22 | Narrar cuento en voz alta           | Could     | Mejoras | Generador / Historial      | [B](epic-b-cuentos.md#us-22)     |
-| US-23 | Avisos/confirmaciones (modal app)   | Should    | Mejoras | Toda la app                | [F](epic-f-plataforma.md#us-23)  |
-| US-24 | Navegación con cabecera y "atrás"   | Should    | Mejoras | Stack (onboarding/adultos) | [F](epic-f-plataforma.md#us-24)  |
+| ID    | Historia                              | Prioridad | Fase    | Pantalla                      | Épica                            |
+| ----- | ------------------------------------- | --------- | ------- | ----------------------------- | -------------------------------- |
+| US-16 | Registro del adulto + consentim.      | Must      | 1→4     | Alta / parental gate          | [A](epic-a-perfil.md#us-16)      |
+| US-19 | Inicio de sesión del adulto           | Should    | 5.5     | Login / parental gate         | [A](epic-a-perfil.md#us-19)      |
+| US-20 | Editar cuenta del adulto              | Should    | 5       | Configuración                 | [A](epic-a-perfil.md#us-20)      |
+| US-21 | Eliminar cuenta + todos los datos     | Should    | 5       | Configuración                 | [A](epic-a-perfil.md#us-21)      |
+| US-01 | Crear perfil de niño                  | Must      | 1→4     | Crear perfil                  | [A](epic-a-perfil.md#us-01)      |
+| US-17 | Logs y tracking de primera parte      | Should    | 3→6     | —                             | [F](epic-f-plataforma.md#us-17)  |
+| US-18 | Configuración editable (prompts/IA)   | Should    | 2→3     | —                             | [F](epic-f-plataforma.md#us-18)  |
+| US-02 | Listar y seleccionar perfiles         | Must      | 3→5.5   | Selección de perfil           | [A](epic-a-perfil.md#us-02)      |
+| US-03 | Generar cuento personalizado          | Must      | 2→4     | Generador                     | [B](epic-b-cuentos.md#us-03)     |
+| US-04 | Fallback automático a mock            | Must      | 2       | Generador                     | [B](epic-b-cuentos.md#us-04)     |
+| US-05 | Modo de IA configurable por env       | Must      | 2       | —                             | [B](epic-b-cuentos.md#us-05)     |
+| US-06 | Arranque reproducible                 | Must      | 0       | —                             | [F](epic-f-plataforma.md#us-06)  |
+| US-07 | Guardar / marcar cuento               | Should    | 3→5     | Generador / Histor.           | [B](epic-b-cuentos.md#us-07)     |
+| US-08 | Ver historial de cuentos              | Should    | 5       | Historial                     | [D](epic-d-historial.md#us-08)   |
+| US-09 | Ver actividades recomendadas          | Should    | 5       | Actividades                   | [C](epic-c-actividades.md#us-09) |
+| US-10 | Registrar actividad completada        | Should    | 5       | Actividades/Histor.           | [C](epic-c-actividades.md#us-10) |
+| US-11 | Editar perfil                         | Should    | 5       | Configuración                 | [E](epic-e-config.md#us-11)      |
+| US-12 | Cambiar idioma (ES/EN)                | Should    | 5       | Configuración                 | [E](epic-e-config.md#us-12)      |
+| US-13 | Eliminar perfil                       | Should    | 5       | Configuración                 | [E](epic-e-config.md#us-13)      |
+| US-14 | Proveedor cloud opcional              | Could     | 14      | Config (zona padres)          | [F](epic-f-plataforma.md#us-14)  |
+| US-15 | Modo nocturno                         | Could     | 6       | Configuración                 | [F](epic-f-plataforma.md#us-15)  |
+| US-22 | Narrar cuento en voz alta             | Could     | Mejoras | Generador / Historial         | [B](epic-b-cuentos.md#us-22)     |
+| US-23 | Avisos/confirmaciones (modal app)     | Should    | Mejoras | Toda la app                   | [F](epic-f-plataforma.md#us-23)  |
+| US-24 | Navegación con cabecera y "atrás"     | Should    | Mejoras | Stack (onboarding/adultos)    | [F](epic-f-plataforma.md#us-24)  |
+| US-25 | Autor (proveedor de IA) del contenido | Should    | Mejoras | Generador/Actividades/Histor. | [F](epic-f-plataforma.md#us-25)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

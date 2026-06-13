@@ -309,10 +309,12 @@ se abra). Algunas parten de algo ya existente (se indica).
 - [x] ✅ **Header con botón "atrás"** (US-24, misma rama). Cabecera temática del stack con "atrás" en
       Crear cuenta · Iniciar sesión · Elegir perfil · Crear perfil · Zona de adultos; Bienvenida y
       las pestañas (zona infantil) sin cabecera; sin títulos duplicados.
-- [ ] **Autor (proveedor de IA) en cuentos y actividades.** Propagar desde la capa de IA
-      (`FallbackProvider`/`HotSwap`) qué proveedor generó realmente el contenido —`mock`, `local`
-      o `cloud`, incluido el fallback— hasta `StoryOutput`/`ActivityOutput`; en la app, pintar
-      `Autor:` con un icono por proveedor al final del cuento y de cada actividad.
+- [x] ✅ **Autor (proveedor de IA) en cuentos y actividades** (US-25, backend v0.5.0 / app v0.6.0,
+      rama `feature/autor-proveedor-ia`). La capa de IA propaga el proveedor **efectivo** (`mock` |
+      `local` | `cloud`, incluido el fallback a mock) y se **persiste** en `Story`/`Activity`
+      (migración Prisma); el contrato HTTP lo devuelve. En la app, `AuthorBadge` ("Autor:" + icono
+      🎭/🖥️/☁️) en el generador, en cada `ActivityCard` y en el Historial. Verificado e2e:
+      timeout de Ollama ⇒ "Simulada"; modelo caliente ⇒ "IA local".
 
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"

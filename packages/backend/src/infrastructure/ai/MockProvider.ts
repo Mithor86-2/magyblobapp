@@ -33,6 +33,7 @@ export class MockProvider implements AIProvider {
           `Por el camino hizo nuevos amigos que le ayudaron a ser valiente. ` +
           `Juntos descubrieron que lo más bonito de ${tema} es compartirlo. ` +
           `Y ${nombre} volvió a casa feliz, listo para soñar otra aventura.`,
+        proveedor: 'mock',
       };
     }
     return {
@@ -43,6 +44,7 @@ export class MockProvider implements AIProvider {
         `Along the way they made new friends who helped them be brave. ` +
         `Together they discovered that the best part of ${tema} is sharing it. ` +
         `And ${nombre} came back home happy, ready to dream up another adventure.`,
+      proveedor: 'mock',
     };
   }
 
@@ -55,6 +57,7 @@ export class MockProvider implements AIProvider {
         ...PLANTILLAS_ACTIVIDAD[idioma](categoria, i + 1),
         duracionMin: 10 + (i % 3) * 5,
         nivel: (i % 3) + 1,
+        proveedor: 'mock',
       };
     });
   }

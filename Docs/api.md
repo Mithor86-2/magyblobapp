@@ -250,9 +250,13 @@ curl -X POST http://localhost:3000/stories \
   "titulo": "Mateo y la aventura de animales",
   "cuerpo": "Había una vez Mateo, que soñaba con animales. ...",
   "idioma": "es",
-  "estado": "nuevo"
+  "estado": "nuevo",
+  "proveedor": "local"
 }
 ```
+
+> `proveedor` es la IA que **realmente** generó el cuento (`mock` | `local` | `cloud`); ante un
+> fallo del proveedor activo se cae a `mock` y se persiste `mock`.
 
 **Errores:** `404` el perfil no existe · `400` tema o estilo fuera del vocabulario.
 
@@ -294,7 +298,8 @@ curl -X POST http://localhost:3000/activities/recommend \
     "titulo": "Actividad de arte nº 1",
     "descripcion": "Una propuesta sencilla de arte para jugar y aprender en casa.",
     "duracionMin": 10,
-    "nivel": 1
+    "nivel": 1,
+    "proveedor": "local"
   }
 ]
 ```

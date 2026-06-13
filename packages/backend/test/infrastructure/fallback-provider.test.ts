@@ -36,10 +36,17 @@ class BrokenProvider implements AIProvider {
 /** Proveedor que responde con contenido marcado, para detectar que se usó el primary. */
 class OkProvider implements AIProvider {
   async generateStory() {
-    return { titulo: 'PRIMARY', cuerpo: 'del primary' };
+    return { titulo: 'PRIMARY', cuerpo: 'del primary', proveedor: 'local' as const };
   }
   async recommendActivities() {
-    return [{ categoria: 'arte' as const, titulo: 'PRIMARY', descripcion: 'del primary' }];
+    return [
+      {
+        categoria: 'arte' as const,
+        titulo: 'PRIMARY',
+        descripcion: 'del primary',
+        proveedor: 'local' as const,
+      },
+    ];
   }
 }
 
@@ -52,6 +59,7 @@ describe('FallbackProvider', () => {
       estilo: 'aventura',
     });
     expect(story.titulo).toBe('PRIMARY');
+    expect(story.proveedor).toBe('local');
   });
 
   it('cae al mock cuando el primario falla y registra un warn', async () => {
@@ -63,6 +71,7 @@ describe('FallbackProvider', () => {
       estilo: 'aventura',
     });
     expect(story.titulo).toContain('Lola');
+    expect(story.proveedor).toBe('mock'); // el proveedor efectivo es mock (US-25)
     expect(logger.warn).toHaveBeenCalledOnce();
   });
 
@@ -70,5 +79,6 @@ describe('FallbackProvider', () => {
     const provider = new FallbackProvider(new BrokenProvider(), new MockProvider());
     const actividades = await provider.recommendActivities({ perfil: perfil(), cantidad: 2 });
     expect(actividades).toHaveLength(2);
+    expect(actividades.every((a) => a.proveedor === 'mock')).toBe(true);
   });
 });

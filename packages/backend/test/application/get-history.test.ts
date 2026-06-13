@@ -21,6 +21,7 @@ describe('GetHistory', () => {
         titulo: 'Mateo y los animales',
         cuerpo: '...',
         idioma: 'es',
+        proveedor: 'mock',
         estado: 'nuevo',
         creadoEn: new Date('2026-06-10T12:00:00.000Z'),
       }),
@@ -32,6 +33,7 @@ describe('GetHistory', () => {
         categoria: 'arte',
         titulo: 'Pintar un dragón',
         descripcion: '...',
+        proveedor: 'mock',
       }),
     );
   });

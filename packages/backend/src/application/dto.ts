@@ -1,4 +1,11 @@
-import type { Categoria, Parentesco, Tema, Estilo, EstadoStory } from '../domain/vocabulary.js';
+import type {
+  Categoria,
+  Parentesco,
+  Tema,
+  Estilo,
+  EstadoStory,
+  ProveedorIa,
+} from '../domain/vocabulary.js';
 import type { CodigoIdioma } from '../domain/value-objects/Idioma.js';
 
 // --- RegisterGuardian ---
@@ -70,6 +77,7 @@ export interface StoryOutput {
   cuerpo: string;
   idioma: CodigoIdioma;
   estado: EstadoStory;
+  proveedor: ProveedorIa;
 }
 
 // --- RecommendActivities ---
@@ -91,6 +99,7 @@ export interface ActivityOutput {
   nivel?: number;
   completadaEn?: string;
   valoracion?: number;
+  proveedor: ProveedorIa;
 }
 
 // --- GetHistory ---

@@ -19,6 +19,17 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.6.0] - 2026-06-12
+
+Autor del contenido (US-25): muestra el proveedor de IA que lo generó.
+
+### Added
+
+- "Autor" del contenido (US-25): componente `AuthorBadge` que muestra qué proveedor de IA generó
+  realmente cada cuento y actividad (🎭 simulada · 🖥️ IA local · ☁️ IA en la nube), al final del
+  cuento (generador), en cada `ActivityCard` (Actividades) y en el Historial. Tipos espejo con el
+  campo `proveedor`.
+
 ## [0.5.0] - 2026-06-12
 
 Fase de mejoras — UX y navegación (US-23/US-24).

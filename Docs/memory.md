@@ -325,3 +325,21 @@ Rama `feature/mejoras-ux-navegacion`; cubre US-23 y US-24. **Solo app.**
   cabecera (Login, Crear perfil, Zona de adultos) y el "Volver" del footer de la zona de adultos.
 - **Pendiente del bloque:** Autor (proveedor de IA) en cuentos y actividades — va en su propia rama
   (toca backend + app).
+
+## Autor — proveedor de IA efectivo (2026-06-12 · backend v0.5.0 / app v0.6.0)
+
+Rama `feature/autor-proveedor-ia`; cubre US-25. Backend + app.
+
+- **Proveedor efectivo, no el configurado.** Cada provider concreto **estampa su identidad**
+  (`Mock`=`mock`, `Ollama`=`local`, `Cloud`=`cloud`) en `GeneratedStory`/`GeneratedActivity`; los
+  envoltorios (`FallbackProvider`/`HotSwap`) lo **pasan tal cual**, así el proveedor que fluye es el
+  que realmente generó. Si Ollama/cloud fallan y se cae al mock, se persiste `mock` — el Autor lo
+  refleja con honestidad (no miente con el modo configurado).
+- **`proveedor` por fila, persistido.** Campo en `Story` y `Activity` (vocabulario cerrado
+  `PROVEEDORES_IA`), columna Prisma con default `mock` (migración `add_proveedor_to_story_activity`)
+  y en `StoryOutput`/`ActivityOutput`. Decisión del usuario: persistir (no solo en la respuesta del
+  momento) para que el **Historial** también muestre el Autor.
+- **Gotcha demostrado en vivo:** con `AI_PROVIDER=local` pero el modelo **descargado de memoria**,
+  la generación en frío en CPU superó el timeout (180s) → fallback a mock → "Autor: Simulada". No es
+  bug: es US-25 funcionando. Pre-cargar el modelo (`keep_alive`) devuelve "IA local". Ver
+  [lecciones-aprendidas.md](lecciones-aprendidas.md) (Ollama en Docker va por CPU).

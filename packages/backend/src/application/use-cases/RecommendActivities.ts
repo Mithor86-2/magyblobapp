@@ -6,6 +6,7 @@ import type { ChildProfileRepository } from '../../domain/repositories/ChildProf
 import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { ActivityOutput, RecommendActivitiesRequest } from '../dto.js';
+import { toActivityOutput } from '../mappers.js';
 
 export interface RecommendActivitiesDeps {
   profiles: ChildProfileRepository;
@@ -62,25 +63,12 @@ export class RecommendActivities {
         descripcion: g.descripcion,
         duracionMin: g.duracionMin,
         nivel: g.nivel,
+        proveedor: g.proveedor,
       });
       await this.deps.activities.save(activity);
       guardadas.push(activity);
     }
 
-    return guardadas.map(toOutput);
+    return guardadas.map(toActivityOutput);
   }
-}
-
-function toOutput(a: Activity): ActivityOutput {
-  return {
-    id: a.id,
-    profileId: a.profileId,
-    categoria: a.categoria,
-    titulo: a.titulo,
-    descripcion: a.descripcion,
-    duracionMin: a.duracionMin,
-    nivel: a.nivel,
-    completadaEn: a.completadaEn?.toISOString(),
-    valoracion: a.valoracion,
-  };
 }
