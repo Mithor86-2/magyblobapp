@@ -112,3 +112,24 @@ Criterios de aceptación de la alternativa (si se implementa):
   audio se sirve vía backend-proxy a ElevenLabs y el cambio queda en `AuditLog`.
 - Dado el modo premium activo y un fallo de red/timeout/clave ausente, Cuando narro, Entonces se
   degrada automáticamente al `DeviceTTS` sin error visible para el niño.
+
+## US-26 — Contenido más personalizado por niño · Should (Mejoras)
+
+Como **padre/tutor** quiero que los cuentos y actividades usen de forma explícita el **nombre**, la
+**edad** y los **intereses** de mi hijo/a para que se note que el contenido es para él/ella.
+
+**Contexto.** Los prompts (`prompts.ts` / `AppSetting`) ya reciben el perfil, pero conviene afinar:
+tono y dificultad según la **edad** (2-3 muy simple; 5-6 algo más rico) y temática según los
+**intereses**. Afecta a cuentos (épica B) y actividades (épica C); se verifica en `mock` y `local`.
+**Solo backend** (prompts); el contrato HTTP no cambia.
+
+**Criterios de aceptación**
+
+- Dado un perfil con nombre, edad e intereses, Cuando se genera un cuento, Entonces el prompt
+  incluye explícitamente esos datos para personalizar el contenido.
+- Dada la edad del perfil, Cuando se construye el prompt, Entonces ajusta el tono/longitud/dificultad
+  por tramo de edad (p. ej. frases más cortas para 2-3 años).
+- Dados los intereses del perfil, Cuando se recomiendan actividades sin categoría fija, Entonces el
+  prompt los tiene en cuenta para proponer algo afín.
+- (No funcional) Dado el cambio de prompts, Cuando se ejecuta el gate, Entonces los tests de
+  `mock`/`local` siguen en verde y la salida estructurada se mantiene parseable.

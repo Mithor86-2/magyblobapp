@@ -28,3 +28,6 @@ valoración para llevar seguimiento del progreso.
   Entonces el caso de uso `SaveProgress` la persiste con fecha.
 - Dado un registro de progreso, Cuando consulto el Historial, Entonces aparece en
   "Actividades hechas" con su fecha y valoración.
+- (Mejoras) Dada una actividad sin completar, Cuando pulso el botón **"Realizado"**, Entonces se me
+  pide la valoración (1-3 estrellas) y al elegirla se registra la actividad como completada
+  (`complete`); el botón es una entrada explícita además de tocar directamente las estrellas.
