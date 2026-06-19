@@ -3,6 +3,7 @@ import { StoryNarration } from '../../domain/entities/StoryNarration.js';
 import type { StoryRepository } from '../../domain/repositories/StoryRepository.js';
 import type { StoryNarrationRepository } from '../../domain/repositories/StoryNarrationRepository.js';
 import type { TTSProvider } from '../../domain/tts/TTSProvider.js';
+import { sanitizeForSpeech } from '../../domain/tts/sanitizeForSpeech.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { NarrateStoryRequest, NarrationResult } from '../dto.js';
 
@@ -41,8 +42,9 @@ export class NarrateStory {
       };
     }
 
+    // Se narra el cuerpo sin emojis (los motores TTS los leen de forma rara).
     const audio = await this.deps.tts.synthesize({
-      texto: story.cuerpo,
+      texto: sanitizeForSpeech(story.cuerpo),
       idioma: story.idioma,
     });
 

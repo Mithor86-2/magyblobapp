@@ -4,6 +4,7 @@ import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-au
 import { File, Paths } from 'expo-file-system';
 import * as Speech from 'expo-speech';
 import { api } from '../../composition';
+import { sanitizeForSpeech } from './sanitizeForSpeech';
 import type { Story } from '../../domain/types';
 
 export type EstadoNarracion = 'idle' | 'loading' | 'playing' | 'paused';
@@ -27,7 +28,7 @@ export function useNarration(story: Story) {
   const narrarConVozNativa = useCallback(() => {
     vozNativa.current = true;
     Speech.stop();
-    Speech.speak(story.cuerpo, {
+    Speech.speak(sanitizeForSpeech(story.cuerpo), {
       language: idioma,
       onDone: () => setEstado('idle'),
       onStopped: () => setEstado('idle'),

@@ -15,6 +15,7 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   dispositivo (`expo-speech`) si la síntesis falla, sin error visible para el niño. Hook
   `useNarration` (con limpieza del audio/voz al salir de la pantalla) y `NarrationControls`.
 - Gateway `stories.narrationUrl(storyId)` (URL del audio del cuento).
+- Saneo del texto en el fallback de voz nativa (`sanitizeForSpeech`): no narra emojis.
 
 ### Changed
 

@@ -19,6 +19,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Evento de uso `cuento_narrado` (`InteractionEvent`), registrado solo en la primera síntesis.
 - Configuración `tts` (env `ELEVENT_LABS_API`, `ELEVENLABS_MODEL`, `ELEVENLABS_VOICE_ID_ES/_EN`,
   `ELEVENLABS_TIMEOUT_MS`).
+- Saneo del texto antes de narrar (`sanitizeForSpeech`): quita emojis y pictogramas para que el
+  motor TTS no los lea en voz alta.
+- Trazas (pino) de la narración: proveedor, voz, modelo, idioma, texto enviado (tamaño + extracto)
+  y respuesta (estado, bytes, ms), más cache hit/miss en la ruta.
 
 ### Changed
 
