@@ -81,6 +81,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
         request<Story>(baseUrl, '/stories', { method: 'POST', body: req }),
       markRead: (storyId: string) =>
         request<Story>(baseUrl, `/stories/${storyId}/read`, { method: 'POST' }),
+      narrationUrl: (storyId: string) => `${baseUrl}/stories/${storyId}/narration`,
     },
     activities: {
       recommend: (req: RecommendActivitiesRequest) =>

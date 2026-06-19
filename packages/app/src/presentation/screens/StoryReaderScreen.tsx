@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { NarrationControls } from '../components/NarrationControls';
 import { api } from '../../composition';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
@@ -26,6 +27,7 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
       <View style={styles.card}>
         <Text style={styles.title}>{story.titulo}</Text>
         <Text style={styles.body}>{story.cuerpo}</Text>
+        <NarrationControls story={story} />
         <AuthorBadge proveedor={story.proveedor} />
       </View>
     </Screen>

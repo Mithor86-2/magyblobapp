@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Narración de cuentos en voz alta (US-22): botón "▶ Escuchar / ⏸ Pausar / ⏹" en el generador de
+  cuentos y en el lector del Historial. Reproduce el audio de ElevenLabs servido por el backend
+  (`expo-audio`, cacheado en disco con `expo-file-system`) y **degrada a la voz nativa** del
+  dispositivo (`expo-speech`) si la síntesis falla, sin error visible para el niño. Hook
+  `useNarration` (con limpieza del audio/voz al salir de la pantalla) y `NarrationControls`.
+- Gateway `stories.narrationUrl(storyId)` (URL del audio del cuento).
+
 ### Changed
 
 ### Deprecated
