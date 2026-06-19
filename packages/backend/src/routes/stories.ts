@@ -53,7 +53,19 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
   // actúa de proxy; si la síntesis falla, propaga el error y la app degrada a la
   // voz nativa del dispositivo. El audio se cachea: solo se sintetiza una vez.
   app.get<{ Params: { id: string } }>('/stories/:id/narration', async (request, reply) => {
+    request.log.info({ storyId: request.params.id }, 'Narración: petición de audio del cuento');
     const result = await narrateStory.execute({ storyId: request.params.id });
+
+    request.log.info(
+      {
+        storyId: request.params.id,
+        proveedor: 'elevenlabs',
+        origen: result.sintetizado ? 'sintetizado' : 'cache',
+        voiceId: result.voiceId,
+        bytes: result.mp3.length,
+      },
+      `Narración: audio servido (${result.sintetizado ? 'nuevo' : 'caché'})`,
+    );
 
     if (result.sintetizado) {
       await deps.events.save(

@@ -2,8 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Config } from '../config.js';
 import type { AppDeps } from '../dependencies.js';
 import { createAIProvider } from './ai/createAIProvider.js';
-import type { AILogger } from './ai/FallbackProvider.js';
-import { ElevenLabsProvider } from './tts/ElevenLabsProvider.js';
+import { ElevenLabsProvider, type TTSLogger } from './tts/ElevenLabsProvider.js';
 import { createPrismaClient } from './db/prismaClient.js';
 import { PrismaGuardianRepository } from './repositories/PrismaGuardianRepository.js';
 import { PrismaChildProfileRepository } from './repositories/PrismaChildProfileRepository.js';
@@ -20,7 +19,7 @@ import { PrismaSettingsRepository } from './repositories/PrismaSettingsRepositor
  * `buildServer` solo cuando no se inyectan dependencias, para que los tests con
  * dobles en memoria nunca carguen Prisma ni abran conexión a la DB.
  */
-export function buildProductionDeps(config: Config, logger?: AILogger): AppDeps {
+export function buildProductionDeps(config: Config, logger?: TTSLogger): AppDeps {
   const prisma = createPrismaClient();
   const settings = new PrismaSettingsRepository(prisma);
 
@@ -38,6 +37,7 @@ export function buildProductionDeps(config: Config, logger?: AILogger): AppDeps 
       model: config.tts.model,
       voiceIdByLang: config.tts.voiceIdByLang,
       timeoutMs: config.tts.timeoutMs,
+      logger,
     }),
     newId: () => randomUUID(),
     now: () => new Date(),
