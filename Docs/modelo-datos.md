@@ -128,7 +128,6 @@ código ni reconstruir la imagen.
 | key                        | Ejemplo de value                                                                           | Uso                                                            |
 | -------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
 | `ai.model.local`           | `gemma:2b`                                                                                 | Modelo Ollama por defecto                                      |
-| `prompt.story.system`      | "Eres un cuentacuentos infantil…"                                                          | System prompt de `generateStory`                               |
 | `prompt.story.template`    | "Crea un cuento para {nombre} ({edad}) sobre {tema}…"                                      | Plantilla del cuento                                           |
 | `prompt.activity.system`   | "Diseñas actividades educativas seguras…"                                                  | System prompt de `recommendActivities`                         |
 | `prompt.activity.template` | "Propón {n} actividades para {edad} de {categoria}…"                                       | Plantilla de actividades                                       |

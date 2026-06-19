@@ -11,16 +11,10 @@ import { PrismaClient } from '../src/generated/prisma/index.js';
  */
 const SETTINGS: { key: string; value: string; descripcion: string }[] = [
   { key: 'ai.model.local', value: 'gemma:2b', descripcion: 'Modelo Ollama por defecto.' },
-  {
-    key: 'prompt.story.system',
-    value:
-      'Eres un cuentacuentos para niños de 2 a 6 años. Lenguaje simple, frases cortas y ' +
-      'tono tierno. Usa onomatopeyas suaves (como "plin-plin", "boing-boing", "shhh"). Sin ' +
-      'miedo, violencia ni peligro real, ni temas para adultos; final feliz y tranquilo. ' +
-      'Cuando escribas un cuento o una fábula, sigue esta estructura: presenta al personaje, ' +
-      'una situación inicial, un amigo que ayuda, una resolución positiva y una enseñanza final.',
-    descripcion: 'System prompt de generateStory (reglas del prompt maestro, US-28).',
-  },
+  // OJO (US-28): el system prompt del cuento NO se siembra. Es **por idioma** y vive en el código
+  // (`INSTRUCCION_SEGURIDAD` de prompts.ts, ES/EN, con las reglas del prompt maestro). Si se
+  // sembrara aquí (un único texto en español) pisaría el system por idioma y los modelos escribirían
+  // en español aunque el perfil fuera `en`. La plantilla (`prompt.story.template`) sí es configurable.
   {
     key: 'prompt.story.template',
     value:

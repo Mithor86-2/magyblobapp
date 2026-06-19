@@ -394,21 +394,27 @@ Rama `feature/28-reglas-prompt-cuento` (desde `develop`). Amplía US-26.
   tranquilo, y estructura de 5 pasos: presentación, situación, amigo que ayuda, resolución y
   enseñanza final). Así aplican siempre y **no interfieren** con la personalización del template
   (US-26). La longitud sigue gobernada por `prompt.story.params`.
-- **Gotcha de precedencia (clave):** en `local`/`cloud`, `AppSetting.prompt.story.system`
-  **sobreescribe** el default de código. Por eso se cambió **a la vez** `INSTRUCCION_SEGURIDAD`
-  (código) **y** el seed (`prompt.story.system`); si solo se toca el código, una BD ya seedada no ve
-  el cambio. El `MockProvider` no usa prompts → sin efecto en `mock`.
+- **El system del cuento vive SOLO en código, no en el seed (decisión final).** `INSTRUCCION_SEGURIDAD`
+  es **por idioma** (ES/EN); el `prompt.story.system` del seed era un **único texto en español** que
+  pisaba esa selección y hacía que se escribiera en español aunque el perfil fuera `en`. Se **quitó
+  del seed** (y de la BD) → el system lo pone el código por idioma. La plantilla
+  (`prompt.story.template`) sigue siendo configurable. El `MockProvider` no usa prompts → sin efecto
+  en `mock`. (Precedencia: `AppSetting` pisa el default de código; por eso un override monolingüe es
+  peligroso en una app bilingüe.)
 - **Estructura condicionada por redacción:** "cuando escribas un cuento o una fábula…", para no
   forzarla en `poema`/`adivinanza`. Se retiró el "pequeño conflicto seguro" (decisión del usuario
   tras revisar 10 generaciones de prueba).
 - **Bug de idioma corregido:** el placeholder `{idioma}` de la plantilla configurable se sustituía
-  por el **código** (`en`/`es`) → "Escríbelo en en", y el modelo a veces escribía en el idioma
-  equivocado. Se añadió `{idiomaNombre}` (`español`/`inglés`) y se corrigió la plantilla del seed.
-  **Verificación:** 10 cuentos por Groq (cloud) mostraron buen cumplimiento de tono/seguridad/
-  onomatopeyas/final feliz; tras el fix, los perfiles `en` generan en inglés.
+  por el **código** (`en`/`es`) → "Escríbelo en en". Se añadió `{idiomaNombre}` (`español`/`inglés`).
+- **Local = español (decisión del usuario).** Verificado generando cuentos reales: en `cloud`
+  (Groq 70B) se cumplen las reglas y se respeta el idioma (EN correcto). En `local` con modelos
+  pequeños (`gemma:2b`, `llama3.2:3b`) el texto sale **en español aunque el perfil sea `en`** —
+  siguen el idioma dominante del prompt, no la instrucción. Se **asume**: el inglés y la calidad
+  plena son cosa de `cloud`; en local nos quedamos con español. (gemma:2b además es incoherente;
+  llama3.2:3b es coherente pero ignora el idioma y trunca.) Coherente con ADR 0003.
 - **Para que `cloud`/`local` reflejen cambios de prompt en código hay que reconstruir el contenedor
-  del backend** (`docker compose up -d --build backend`); el seed (DB) sí se aplica al reseedear,
-  pero el código del template lo ejecuta el contenedor.
+  del backend** (`docker compose up -d --build backend`); el seed (DB) se aplica al reseedear, pero
+  el código del prompt lo ejecuta el contenedor.
 
 ## Iconografía con lucide-react-native (Fase de mejoras · 2026-06-19 · US-29)
 

@@ -124,9 +124,14 @@ enseñanza y un final feliz, además de la personalización que ya existe.
 **Contexto.** Amplía [US-26](#us-26): además de personalizar con nombre/edad/intereses/estilo, el
 prompt del cuento incorpora **reglas generales de creación de texto** (el "prompt maestro"):
 estructura en pasos, onomatopeyas suaves, ausencia de miedo/violencia/peligro real y final feliz y
-tranquilo. **Solo backend** (`prompts.ts` + seed `AppSetting`); el contrato HTTP no cambia. Afecta a
-`local`/`cloud` (el `MockProvider` no usa prompts). La **longitud** sigue gobernada por
-`prompt.story.params` (US-26), no se fija en el prompt maestro.
+tranquilo. **Solo backend** (`prompts.ts`; el system vive en código **por idioma**, no en el seed);
+el contrato HTTP no cambia. Afecta a `local`/`cloud` (el `MockProvider` no usa prompts). La
+**longitud** sigue gobernada por `prompt.story.params` (US-26), no se fija en el prompt maestro.
+
+> **Limitación verificada (local):** las reglas y el idioma se cumplen plenamente en `cloud`
+> (Groq 70B). En `local` con modelos pequeños (`gemma:2b`, `llama3.2:3b`) el cuento sale **en
+> español** aunque el perfil sea `en` (no siguen bien la instrucción de idioma); se asume que el
+> inglés y la calidad plena son cosa de `cloud`.
 
 **Criterios de aceptación**
 
