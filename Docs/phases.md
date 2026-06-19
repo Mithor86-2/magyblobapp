@@ -289,7 +289,8 @@ se abra). Algunas parten de algo ya existente (se indica).
       (`cuento·fábula·poema·adivinanza`) para más dinámica. Solo backend; verificado en `mock`/`local`.
 - [x] ✅ **Releer cuento desde el Historial** (US-27, misma rama). Al tocar un cuento se abre la vista
       de lectura (`StoryReaderScreen`: título+cuerpo+Autor) y se marca `leído` al abrirla.
-- [x] ✅ **Narrar cuento en voz alta** (US-22, rama `feature/22-narracion-cuentos-elevenlabs`).
+- [x] ✅ **Narrar cuento en voz alta** (US-22, backend v0.7.0 / app v0.8.0, rama
+      `feature/22-narracion-cuentos-elevenlabs`).
       Botón "▶ Escuchar/⏸/⏹" en el Generador y en la vista de lectura del Historial. Motor principal
       **ElevenLabs** (`eleven_multilingual_v2`, voz por idioma) servido por el **backend como proxy**
       (`GET /stories/:id/narration` → `audio/mpeg`); el MP3 se **persiste/cachea** (`StoryNarration`,

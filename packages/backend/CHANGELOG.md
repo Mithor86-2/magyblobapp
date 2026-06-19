@@ -9,6 +9,22 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.7.0] - 2026-06-18
+
+Narración de cuentos con ElevenLabs (US-22): el backend como proxy de TTS.
+
+### Added
+
 - Narración de cuentos (US-22): puerto `TTSProvider` (dominio) y proveedor `ElevenLabsProvider`
   (`POST /v1/text-to-speech/{voice_id}`, modelo `eleven_multilingual_v2`, voz por idioma ES/EN). El
   backend actúa de **proxy** (la `xi-api-key` no sale del servidor). Nueva ruta
@@ -23,16 +39,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   motor TTS no los lea en voz alta.
 - Trazas (pino) de la narración: proveedor, voz, modelo, idioma, texto enviado (tamaño + extracto)
   y respuesta (estado, bytes, ms), más cache hit/miss en la ruta.
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.6.0] - 2026-06-18
 

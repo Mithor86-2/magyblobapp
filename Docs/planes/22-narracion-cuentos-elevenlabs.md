@@ -62,9 +62,9 @@ narración, y en la app el botón de escucha con fallback a voz nativa.
 
 ### Cierre
 
-- [x] ✅ Gate `pnpm check` verde (118 backend + 12 app) + bundle. Falta e2e con clave real (manual).
-- [ ] 🔄 Pruebas con el usuario + cierre con **cerrar-feature** (versión, CHANGELOG, merge tras
-      confirmación).
+- [x] ✅ Gate `pnpm check` verde (122 backend + 12 app) + bundle + e2e real (verificado por el usuario).
+- [x] ✅ Cierre con **cerrar-feature**: versiones (raíz 0.9.0 · backend 0.7.0 · app 0.8.0), CHANGELOG
+      fechado (2026-06-18) y docs. Pendiente solo el `git flow feature finish` tras confirmación.
 
 ## DoD
 
