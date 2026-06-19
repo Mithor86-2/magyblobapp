@@ -39,13 +39,16 @@ Qué falta (❌): afinar prompts por edad/intereses; vista de lectura de cuento 
 
 ## Tareas
 
-### F1 — Personalización por niño (backend, US-26)
+### F1 — Personalización por niño (backend, US-26) ✅
 
-- [ ] ❌ Afinar `prompts.ts`: usar explícitamente `nombre`/`edad`/`intereses`; ajustar
-      tono/longitud/dificultad por tramo de edad (2-3 / 4 / 5-6) en cuento y actividades.
-- [ ] ❌ Revisar que el `MockProvider` siga determinista y la salida estructurada parseable.
-- [ ] ❌ Tests: actualizar/añadir asserts de prompts (que incluyan los datos del perfil) sin tocar
-      el contrato; gate `mock` verde.
+- [x] ✅ `prompts.ts`: el cuento y las actividades usan los **intereses** del perfil y un ajuste de
+      **tono por tramo de edad** (`tonoPorEdad`: 2-3 / 4 / 5-6); `intereses`/`tono` también
+      disponibles para las plantillas de `AppSetting`. Actividades: intereses solo cuando la
+      categoría es libre.
+- [x] ✅ `MockProvider` intacto (determinista) y salida estructurada sin cambios; contrato HTTP
+      igual.
+- [x] ✅ Test `prompts.test.ts` (nombre/edad/intereses presentes; tono varía por edad; categoría
+      fija no lista afinidad). Gate backend verde (104 tests).
 
 ### F2 — Releer cuento desde el Historial (app, US-27)
 

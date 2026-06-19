@@ -11,6 +11,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Prompts de IA más personalizados por niño (US-26): `buildStoryPrompt`/`buildActivitiesPrompt` usan
+  ahora los **intereses** del perfil y ajustan el **tono/dificultad por tramo de edad** (2-3 / 4 /
+  5-6). Los nuevos valores (`intereses`, `tono`) también están disponibles para las plantillas
+  configurables de `AppSetting`. Sin cambios en el contrato HTTP ni en el modelo de datos.
+
 ### Deprecated
 
 ### Removed
