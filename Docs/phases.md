@@ -322,6 +322,14 @@ se abra). Algunas parten de algo ya existente (se indica).
       (migración Prisma); el contrato HTTP lo devuelve. En la app, `AuthorBadge` ("Autor:" + icono
       🎭/🖥️/☁️) en el generador, en cada `ActivityCard` y en el Historial. Verificado e2e:
       timeout de Ollama ⇒ "Simulada"; modelo caliente ⇒ "IA local".
+- [x] ✅ **Iconografía consistente con lucide-react-native** (US-29, app v0.9.0, rama
+      `feature/29-iconos-lucide` desde `develop`). Wrapper central `Icon` (nombres semánticos →
+      iconos SVG de Lucide, consume tokens de tema; tokens `iconSize`); `BubblyButton` admite icono y
+      botón solo-icono. Sustituidos los **emojis funcionales** (pestañas, narración play/pausa/stop,
+      estrellas, flecha "Leer cuento", zona de adultos, categorías de actividad y badges de "Autor").
+      Los **avatares de animales** (y el `✨` por defecto) siguen en emoji por calidez. Cumple las
+      reglas de menores (iconos empaquetados en build-time, sin red en runtime ni SDK de tercero).
+      Solo app; `pnpm check` verde (122 backend + 12 app).
 
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"

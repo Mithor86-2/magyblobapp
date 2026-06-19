@@ -56,6 +56,17 @@ export const radius = {
 export const tapTarget = 64;
 
 /**
+ * Tamaños de icono (lucide-react-native). Generosos para una app infantil; el
+ * wrapper `Icon` usa `md` por defecto. El contenedor pulsable sigue rigiéndose
+ * por `tapTarget` (≥64px), no por el tamaño del glifo.
+ */
+export const iconSize = {
+  sm: 20,
+  md: 28,
+  lg: 40,
+} as const;
+
+/**
  * Familias de Quicksand cargadas en App.tsx vía useFonts. Si las fuentes no
  * cargan, RN cae a la del sistema sin romper la UI.
  */

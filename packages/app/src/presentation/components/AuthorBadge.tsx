@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import type { ProveedorIa } from '../../domain/types';
-import { PROVEEDOR_ICONO, PROVEEDOR_LABEL } from '../labels';
+import { PROVEEDOR_LABEL } from '../labels';
+import { Icon } from './Icon';
 import { colors, spacing, typography } from '../theme/tokens';
 
 /**
@@ -11,7 +12,7 @@ import { colors, spacing, typography } from '../theme/tokens';
 export function AuthorBadge({ proveedor }: { proveedor: ProveedorIa }) {
   return (
     <View style={styles.row} accessibilityLabel={`Autor: ${PROVEEDOR_LABEL[proveedor]}`}>
-      <Text style={styles.icono}>{PROVEEDOR_ICONO[proveedor]}</Text>
+      <Icon name={`prov-${proveedor}`} size="sm" color={colors.onSurfaceVariant} />
       <Text style={styles.texto}>Autor: {PROVEEDOR_LABEL[proveedor]}</Text>
     </View>
   );
@@ -22,9 +23,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-  },
-  icono: {
-    fontSize: 18,
   },
   texto: {
     ...typography.labelBold,

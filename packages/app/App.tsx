@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -18,6 +18,7 @@ import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
 import { HistoryScreen } from './src/presentation/screens/HistoryScreen';
 import { DialogProvider } from './src/presentation/components/DialogProvider';
+import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
 import type { MainTabParamList, RootStackParamList } from './src/presentation/navigation';
 import { colors, fonts, radius } from './src/presentation/theme/tokens';
@@ -35,11 +36,11 @@ const stackScreenOptions = {
   headerTitleAlign: 'center',
 } as const;
 
-/** Icono de pestaña: emoji dentro de un "blob" pastel cuando está activo. */
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+/** Icono de pestaña: icono lucide dentro de un "blob" pastel cuando está activo. */
+function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
   return (
     <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
-      <Text style={styles.tabEmoji}>{emoji}</Text>
+      <Icon name={name} size={24} color={focused ? colors.primary : colors.onSurfaceVariant} />
     </View>
   );
 }
@@ -58,22 +59,22 @@ function MainTabs() {
       <Tab.Screen
         name="Inicio"
         component={HomeScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} /> }}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} /> }}
       />
       <Tab.Screen
         name="Actividades"
         component={ActivitiesScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🎨" focused={focused} /> }}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon name="activities" focused={focused} /> }}
       />
       <Tab.Screen
         name="Cuentos"
         component={StoryGeneratorScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📖" focused={focused} /> }}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon name="story" focused={focused} /> }}
       />
       <Tab.Screen
         name="Historial"
         component={HistoryScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📚" focused={focused} /> }}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon name="library" focused={focused} /> }}
       />
     </Tab.Navigator>
   );
@@ -175,8 +176,5 @@ const styles = StyleSheet.create({
   },
   tabIconActive: {
     backgroundColor: colors.secondaryContainer,
-  },
-  tabEmoji: {
-    fontSize: 22,
   },
 });

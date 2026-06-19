@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
-Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**. Volver al
-[índice](README.md).
+Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
+**US-25**, **US-29**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -164,3 +164,35 @@ con [US-04](epic-b-cuentos.md#us-04) (fallback) y [US-05](epic-b-cuentos.md#us-0
   muestra, Entonces aparece **"Autor:"** con un icono por proveedor (mock | local | cloud).
 - (Dominio) Dado un `proveedor` fuera del vocabulario, Cuando se construye la entidad, Entonces se
   rechaza (vocabulario cerrado, como el resto).
+
+## US-29 — Iconografía consistente con lucide-react-native · Should (Mejoras)
+
+Como **usuario de la app** quiero que los iconos funcionales (navegación, controles, valoración,
+acciones) se vean **consistentes y nítidos en cualquier dispositivo** para una experiencia más
+cuidada y coherente con el design system.
+
+**Contexto.** Hoy la app usa **emojis Unicode** como única iconografía (`<Text>{emoji}</Text>`), que
+cada sistema operativo dibuja a su manera y sin control de tamaño, color ni grosor de trazo. Se
+introduce [`lucide-react-native`](https://lucide.dev/) (iconos SVG vectoriales, empaquetados en el
+bundle en build-time: **sin red en runtime ni SDK de tercero activo**, compatible con
+[cumplimiento-menores.md](../cumplimiento-menores.md)) para los iconos **funcionales**, mediante un
+**wrapper `Icon` central** que mapea nombres semánticos a iconos Lucide y consume los tokens de tema.
+Se mantienen como **emoji** los **avatares de animales** (y el avatar por defecto `✨`) por la
+calidez que aportan a una app infantil (2-6 años). **Solo app.**
+
+**Criterios de aceptación**
+
+- Dada la iconografía funcional (pestañas Inicio/Actividades/Cuentos/Historial, controles de
+  narración play/pausa/stop, estrellas de valoración, flecha del Historial, acceso a la zona de
+  adultos), Cuando se muestra, Entonces usa iconos de `lucide-react-native` (SVG vectorial), no
+  emojis.
+- Dadas las categorías de actividad (arte, música, lógica) y los badges de proveedor de IA (mock,
+  local, cloud), Cuando se muestran, Entonces usan iconos de Lucide.
+- Dado un icono, Cuando se renderiza, Entonces toma tamaño y color de los **tokens de tema**
+  (`theme/tokens.ts`) y expone una etiqueta de accesibilidad.
+- Dado el wrapper `Icon`, Cuando una pantalla necesita un icono, Entonces lo pide por **nombre
+  semántico** (`<Icon name="play" />`) y queda desacoplada de la librería concreta.
+- Dados los **avatares de animales** y el avatar por defecto, Cuando se muestran, Entonces siguen
+  siendo **emoji** (decisión de calidez, fuera de alcance de la migración).
+- (No-funcional) Dada la regla de menores, Entonces la librería no añade llamadas de red en runtime
+  ni SDKs de terceros activos (iconos empaquetados en build-time).

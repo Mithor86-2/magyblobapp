@@ -409,3 +409,18 @@ Rama `feature/28-reglas-prompt-cuento` (desde `develop`). Amplía US-26.
 - **Para que `cloud`/`local` reflejen cambios de prompt en código hay que reconstruir el contenedor
   del backend** (`docker compose up -d --build backend`); el seed (DB) sí se aplica al reseedear,
   pero el código del template lo ejecuta el contenedor.
+
+## Iconografía con lucide-react-native (Fase de mejoras · 2026-06-19 · US-29)
+
+Rama `feature/29-iconos-lucide` (desde `develop`). Solo app.
+
+- **Decisión con el usuario — alcance parcial:** se migran a iconos SVG de Lucide solo los iconos
+  **funcionales** (navegación, controles, valoración, acciones, categorías, badges de "Autor"). Los
+  **avatares de animales** (`AvatarPicker`) y el `✨` por defecto se mantienen como **emoji** a
+  propósito: aportan color y calidez que los iconos de línea no igualan en una app de 2-6 años.
+- **Wrapper `Icon` central:** las pantallas piden el icono por **nombre semántico** del dominio de la
+  UI (`<Icon name="play" />`) y quedan desacopladas de la librería; el mapa nombre→componente vive
+  solo en `components/Icon.tsx`. Consume los tokens de tema (`iconSize`, `colors`).
+- **Cumplimiento:** Lucide empaqueta los datos SVG en el bundle en build-time → **no** añade red en
+  runtime ni SDK de tercero activo; compatible con `cumplimiento-menores.md`. Peer dep
+  `react-native-svg` instalada con `expo install` (fija la versión compatible con el SDK).

@@ -5,13 +5,14 @@ import { CATEGORIA_LABEL } from '../labels';
 import { StarRating } from './StarRating';
 import { AuthorBadge } from './AuthorBadge';
 import { BubblyButton } from './BubblyButton';
+import { Icon } from './Icon';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 
-/** Color y emoji por categoría (borde de tarjeta según el design system). */
-const CATEGORIA_STYLE: Record<Categoria, { color: string; emoji: string }> = {
-  arte: { color: colors.primary, emoji: '🎨' },
-  musica: { color: colors.secondary, emoji: '🎵' },
-  logica: { color: colors.tertiary, emoji: '🧩' },
+/** Color por categoría (borde de tarjeta e icono según el design system). */
+const CATEGORIA_COLOR: Record<Categoria, string> = {
+  arte: colors.primary,
+  musica: colors.secondary,
+  logica: colors.tertiary,
 };
 
 interface ActivityCardProps {
@@ -24,7 +25,7 @@ interface ActivityCardProps {
 export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
   // Flujo del botón "Realizado" (US-10 ampliada): pedir la valoración al pulsarlo.
   const [valorando, setValorando] = useState(false);
-  const estilo = CATEGORIA_STYLE[activity.categoria];
+  const color = CATEGORIA_COLOR[activity.categoria];
   const meta = [
     activity.duracionMin ? `${activity.duracionMin} min` : null,
     activity.nivel ? `Nivel ${activity.nivel}` : null,
@@ -32,10 +33,10 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
   const completada = activity.valoracion != null;
 
   return (
-    <View style={[styles.card, { borderBottomColor: estilo.color }]}>
+    <View style={[styles.card, { borderBottomColor: color }]}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>{estilo.emoji}</Text>
-        <View style={[styles.badge, { backgroundColor: estilo.color }]}>
+        <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
+        <View style={[styles.badge, { backgroundColor: color }]}>
           <Text style={styles.badgeText}>{CATEGORIA_LABEL[activity.categoria]}</Text>
         </View>
       </View>
@@ -77,9 +78,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  emoji: {
-    fontSize: 40,
   },
   badge: {
     borderRadius: radius.pill,
