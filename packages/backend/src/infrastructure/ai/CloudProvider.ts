@@ -15,6 +15,7 @@ import {
   type PromptOverrides,
   type PromptParts,
 } from './prompts.js';
+import { readStoryParams, resolveStoryParams, type ResolvedStoryParams } from './storyParams.js';
 
 export interface CloudProviderOptions {
   /** Base del endpoint compatible OpenAI (sin barra final), del preset del target. */
@@ -67,11 +68,19 @@ export class CloudProvider implements AIProvider {
       AI_SETTING_KEYS.storySystem,
       AI_SETTING_KEYS.storyTemplate,
     );
-    const partes = buildStoryPrompt(input, overrides);
+    const params = await this.leerStoryParams();
+    const partes = buildStoryPrompt(input, overrides, params);
     const data = await this.chat<{ titulo?: unknown; cuerpo?: unknown }>(
       conInstruccionJson(partes, INSTRUCCION_JSON_CUENTO),
     );
     return parseStory(data, 'CloudProvider', 'cloud');
+  }
+
+  /** Lee `prompt.story.params` y elige un formato al azar (variación por cuento). */
+  private async leerStoryParams(): Promise<ResolvedStoryParams | undefined> {
+    if (!this.settings) return undefined;
+    const params = await readStoryParams(this.settings);
+    return params ? resolveStoryParams(params) : undefined;
   }
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {

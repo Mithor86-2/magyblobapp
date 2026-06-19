@@ -50,3 +50,43 @@ describe('prompts — personalización por niño (US-26)', () => {
     expect(prompt).not.toContain('conecten con lo que le gusta');
   });
 });
+
+describe('prompts — parámetros configurables del cuento (formato/longitud/rima)', () => {
+  it('inyecta el formato elegido, los límites de palabras y la rima', () => {
+    const { prompt } = buildStoryPrompt(
+      { perfil: perfil(5), tema: 'magia', estilo: 'aventura' },
+      {},
+      {
+        palabrasMin: 80,
+        palabrasMax: 140,
+        rima: true,
+        formato: 'fabula',
+      },
+    );
+    expect(prompt).toContain('una fábula con una pequeña moraleja');
+    expect(prompt).toContain('entre 80 y 140 palabras');
+    expect(prompt).toContain('procura que rime');
+  });
+
+  it('sin rima no menciona rimar; el formato cambia la apertura', () => {
+    const { prompt } = buildStoryPrompt(
+      { perfil: perfil(4), tema: 'espacio', estilo: 'educativo' },
+      {},
+      {
+        palabrasMin: 40,
+        palabrasMax: 70,
+        rima: false,
+        formato: 'poema',
+      },
+    );
+    expect(prompt).toContain('Escribe un poema');
+    expect(prompt).not.toContain('rime');
+    expect(prompt).toContain('entre 40 y 70 palabras');
+  });
+
+  it('sin params mantiene el comportamiento legacy (cuento corto, 4 a 6 frases)', () => {
+    const { prompt } = buildStoryPrompt({ perfil: perfil(5), tema: 'magia', estilo: 'aventura' });
+    expect(prompt).toContain('Escribe un cuento');
+    expect(prompt).toContain('4 a 6 frases');
+  });
+});

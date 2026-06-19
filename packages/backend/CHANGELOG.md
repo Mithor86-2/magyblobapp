@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Parámetros configurables del cuento en `AppSetting` (`prompt.story.params`, US-26/US-18): JSON con
+  `palabrasMin`, `palabrasMax`, `rima` y `formatos` (lista de `cuento | fabula | poema | adivinanza`).
+  En cada generación se **elige un formato al azar** de la lista para dar dinámica, y se inyectan
+  longitud y rima en el prompt del cuento. Validado/saneado en `storyParams.ts`; leído por
+  `OllamaProvider` y `CloudProvider`; default sembrado. Si la clave falta o es inválida, el cuento
+  se genera con el comportamiento de siempre. Sin cambios en el contrato HTTP ni en el modelo de datos.
+
 ### Changed
 
 - Prompts de IA más personalizados por niño (US-26): `buildStoryPrompt`/`buildActivitiesPrompt` usan

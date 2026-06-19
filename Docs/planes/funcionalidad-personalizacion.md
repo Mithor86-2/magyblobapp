@@ -65,6 +65,16 @@ Qué falta (❌): afinar prompts por edad/intereses; vista de lectura de cuento 
       elegirla llama a `onComplete` (mismo flujo de `complete`).
 - [x] ✅ Bundle validado.
 
+### F4 — Parámetros configurables del cuento (backend, US-26/US-18) ✅
+
+- [x] ✅ `storyParams.ts`: clave `AppSetting` `prompt.story.params` (JSON) con `palabrasMin`,
+      `palabrasMax`, `rima`, `formatos` (`cuento|fabula|poema|adivinanza`); parseo/validación +
+      `resolveStoryParams` que **elige un formato al azar** (rng inyectable).
+- [x] ✅ `buildStoryPrompt` acepta los params resueltos e inyecta apertura por formato + longitud +
+      rima; sin params, comportamiento legacy. `OllamaProvider`/`CloudProvider` leen la clave.
+- [x] ✅ Seed del default; tests `story-params.test.ts` + ampliación de `prompts.test.ts`. Gate
+      backend verde (112 tests). Decisión con el usuario: **variación aleatoria** por generación.
+
 ### Cierre
 
 - [ ] ❌ Gate `pnpm check` verde + e2e (cuento personalizado en `local`; releer marca leído; botón
