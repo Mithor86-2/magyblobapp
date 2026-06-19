@@ -289,11 +289,12 @@ se abra). Algunas parten de algo ya existente (se indica).
       (`cuento·fábula·poema·adivinanza`) para más dinámica. Solo backend; verificado en `mock`/`local`.
 - [x] ✅ **Releer cuento desde el Historial** (US-27, misma rama). Al tocar un cuento se abre la vista
       de lectura (`StoryReaderScreen`: título+cuerpo+Autor) y se marca `leído` al abrirla.
-- [ ] **Reglas narrativas del cuento / prompt maestro** (US-28, rama
-      `feature/28-reglas-prompt-cuento`). El system prompt de `generateStory` (código + seed, ES/EN)
-      añade estructura (presentación · situación · conflicto seguro · amigo que ayuda · resolución ·
+- [x] ✅ **Reglas narrativas del cuento / prompt maestro** (US-28, backend v0.8.0, rama
+      `feature/28-reglas-prompt-cuento`). El system prompt de `generateStory` (en código, **por
+      idioma** ES/EN) añade estructura (presentación · situación · amigo que ayuda · resolución ·
       enseñanza final), tono tierno, onomatopeyas suaves y final feliz y tranquilo. Amplía US-26 sin
-      tocar el contrato HTTP; solo `local`/`cloud`.
+      tocar el contrato HTTP; solo `local`/`cloud`. Verificado con cuentos reales: en `cloud` (Groq
+      70B) cumple y respeta el idioma; en `local` (modelos 2-3B) sale en español (limitación asumida).
 - [x] ✅ **Narrar cuento en voz alta** (US-22, backend v0.7.0 / app v0.8.0, rama
       `feature/22-narracion-cuentos-elevenlabs`).
       Botón "▶ Escuchar/⏸/⏹" en el Generador y en la vista de lectura del Historial. Motor principal

@@ -40,13 +40,15 @@ Qué existe ya (✅):
       onomatopeyas suaves, sin miedo/violencia/peligro real, final feliz y tranquilo, y estructura
       (presentación · situación · conflicto seguro · amigo que ayuda · resolución · enseñanza final)
       condicionada a cuento/fábula.
-- [x] ✅ Seed `prisma/seed.ts`: `prompt.story.system` alineado con el mismo texto. Reseed idempotente
-      (`pnpm --filter @magyblob/backend prisma:seed`).
+- [x] ✅ Seed `prisma/seed.ts`: el system del cuento **se retira del seed** (vive en código, por
+      idioma); se quitó "conflicto seguro" y se corrigió el idioma (`{idiomaNombre}`).
 - [x] ✅ Tests (`test/infrastructure/prompts.test.ts`): el `system` incluye las reglas en ES y EN, el
-      override las reemplaza, y la personalización (US-26) sigue intacta. 125 tests verdes.
-- [x] ✅ Docs: CHANGELOG backend (Unreleased), phases.md, memory.md.
-- [ ] 🔄 Gate `pnpm check` verde + (opcional) smoke `local` + cierre con `cerrar-feature`
-      (versión, CHANGELOG, merge tras confirmación y pruebas).
+      override las reemplaza, idioma legible y personalización (US-26) intacta. 126 tests verdes.
+- [x] ✅ Docs: CHANGELOG backend, phases.md, memory.md, modelo-datos.md, lecciones.
+- [x] ✅ Verificación con cuentos reales: 10 por cloud (cumplen) + local (gemma:2b/llama3.2:3b). Fix
+      de idioma; en `local` se asume español (limitación de modelos 2-3B).
+- [x] ✅ Cierre `cerrar-feature`: versión backend 0.8.0 / raíz 0.11.0, CHANGELOG fechado (2026-06-19),
+      docs. Pendiente solo `git flow feature finish` tras confirmación.
 
 ## DoD
 
