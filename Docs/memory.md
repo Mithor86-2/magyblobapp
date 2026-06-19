@@ -343,3 +343,23 @@ Rama `feature/autor-proveedor-ia`; cubre US-25. Backend + app.
   la generación en frío en CPU superó el timeout (180s) → fallback a mock → "Autor: Simulada". No es
   bug: es US-25 funcionando. Pre-cargar el modelo (`keep_alive`) devuelve "IA local". Ver
   [lecciones-aprendidas.md](lecciones-aprendidas.md) (Ollama en Docker va por CPU).
+
+## Funcionalidad y personalización (Fase de mejoras · 2026-06-18 · backend v0.6.0 / app v0.7.0)
+
+Rama `feature/funcionalidad-personalizacion`; cubre US-26, US-27 y US-10 ampliada.
+
+- **Personalización por niño (US-26):** los prompts usan `nombre`/`edad`/`intereses` y afinan el
+  **tono por tramo de edad** (2-3 / 4 / 5-6). Solo prompts (no toca contrato ni datos).
+- **Parámetros configurables del cuento (US-26/US-18):** clave `AppSetting` `prompt.story.params`
+  (JSON `{palabrasMin,palabrasMax,rima,formatos}`), validada en `storyParams.ts`. Decisión con el
+  usuario: **variación aleatoria** — en cada generación se elige un **formato al azar** de la lista
+  (`cuento·fabula·poema·adivinanza`). El azar vive en el provider (`resolveStoryParams`, rng
+  inyectable para tests); `buildStoryPrompt` queda determinista dado el formato resuelto. El
+  `MockProvider` no usa prompts → la variación solo se ve en `local`/`cloud`. Default sembrado; si la
+  clave falta/ inválida, comportamiento legacy.
+- **Releer desde Historial (US-27):** pantalla `StoryReaderScreen` (stack raíz, navegada con
+  `getParent` desde la pestaña), marca `leído` al montar (`stories.markRead`).
+- **Botón "Realizado" (US-10 ampliada):** en `ActivityCard`, revela la valoración 1-3 y llama a
+  `complete`; conserva el atajo de tocar estrellas.
+- **Nota de proceso:** esta rama y la de narración (US-22) se desarrollaron en paralelo; al cerrar,
+  US-22 quedó en su propia rama/stash. Ninguna estaba mergeada a `develop` aún.

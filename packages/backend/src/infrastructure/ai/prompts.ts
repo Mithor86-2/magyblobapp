@@ -1,6 +1,7 @@
 import type { GenerateStoryInput, RecommendActivitiesInput } from '../../domain/ai/AIProvider.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';
 import { CATEGORIAS } from '../../domain/vocabulary.js';
+import type { FormatoCuento, ResolvedStoryParams } from './storyParams.js';
 
 /**
  * Plantillas de prompt de la capa de IA, con los valores por defecto en código.
@@ -22,6 +23,7 @@ import { CATEGORIAS } from '../../domain/vocabulary.js';
 export const AI_SETTING_KEYS = {
   storySystem: 'prompt.story.system',
   storyTemplate: 'prompt.story.template',
+  storyParams: 'prompt.story.params',
   activitySystem: 'prompt.activity.system',
   activityTemplate: 'prompt.activity.template',
   temperature: 'story.temperature',
@@ -51,6 +53,68 @@ const INSTRUCCION_SEGURIDAD: Record<CodigoIdioma, string> = {
     'or adult themes.',
 };
 
+/**
+ * Ajuste de tono/dificultad por tramo de edad (US-26): los más pequeños necesitan
+ * frases muy cortas; los mayores admiten algo más de riqueza. Se inyecta en el
+ * prompt para que la IA adapte el contenido al niño concreto.
+ */
+function tonoPorEdad(edad: number, idioma: CodigoIdioma): string {
+  if (idioma === 'es') {
+    if (edad <= 3) return 'Usa frases muy cortas y simples, palabras fáciles y mucha repetición.';
+    if (edad === 4) return 'Usa frases cortas y vocabulario sencillo.';
+    return 'Puedes usar algo más de detalle y vocabulario, manteniéndolo sencillo.';
+  }
+  if (edad <= 3) return 'Use very short, simple sentences, easy words and lots of repetition.';
+  if (edad === 4) return 'Use short sentences and simple vocabulary.';
+  return 'You may use a bit more detail and vocabulary, keeping it simple.';
+}
+
+/** Lista legible de intereses del perfil para enriquecer el prompt (US-26). */
+function listaIntereses(intereses: readonly string[], idioma: CodigoIdioma): string {
+  if (intereses.length === 0) return idioma === 'es' ? 'cosas variadas' : 'a variety of things';
+  return intereses.join(', ');
+}
+
+/** Etiqueta del formato narrativo en cada idioma. */
+const FORMATO_LABEL: Record<CodigoIdioma, Record<FormatoCuento, string>> = {
+  es: {
+    cuento: 'un cuento',
+    fabula: 'una fábula con una pequeña moraleja',
+    poema: 'un poema',
+    adivinanza: 'una adivinanza',
+  },
+  en: {
+    cuento: 'a story',
+    fabula: 'a fable with a small moral',
+    poema: 'a poem',
+    adivinanza: 'a riddle',
+  },
+};
+
+/**
+ * Bloque de formato/longitud/rima a partir de los parámetros configurables
+ * (`prompt.story.params`, US-26+). El `formato` ya viene resuelto (elegido al azar
+ * por el provider) para dar dinámica al cuento.
+ */
+function instruccionFormato(params: ResolvedStoryParams, idioma: CodigoIdioma): string {
+  if (idioma === 'es') {
+    const rima = params.rima ? ' y procura que rime' : '';
+    return ` Que tenga entre ${params.palabrasMin} y ${params.palabrasMax} palabras${rima}.`;
+  }
+  const rima = params.rima ? ' and try to make it rhyme' : '';
+  return ` Make it between ${params.palabrasMin} and ${params.palabrasMax} words${rima}.`;
+}
+
+/** Verbo + formato inicial del prompt: "Escribe un cuento" / "Write a story". */
+function aperturaFormato(params: ResolvedStoryParams | undefined, idioma: CodigoIdioma): string {
+  const label = params
+    ? FORMATO_LABEL[idioma][params.formato]
+    : idioma === 'es'
+      ? 'un cuento'
+      : 'a story';
+  return idioma === 'es' ? `Escribe ${label}` : `Write ${label}`;
+}
+
 /** Sustituye `{clave}` por su valor en una plantilla configurable. */
 function rellenar(template: string, valores: Record<string, string | number>): string {
   return template.replace(/\{(\w+)\}/g, (original, clave: string) =>
@@ -61,20 +125,42 @@ function rellenar(template: string, valores: Record<string, string | number>): s
 export function buildStoryPrompt(
   input: GenerateStoryInput,
   overrides: PromptOverrides = {},
+  params?: ResolvedStoryParams,
 ): PromptParts {
   const idioma = input.perfil.idioma.value;
-  const { nombre, edad } = input.perfil;
-  const valores = { nombre, edad: edad.value, tema: input.tema, estilo: input.estilo, idioma };
+  const { nombre, edad, intereses } = input.perfil;
+  const tono = tonoPorEdad(edad.value, idioma);
+  const gustos = listaIntereses(intereses, idioma);
+  const apertura = aperturaFormato(params, idioma);
+  // Longitud: la marcan los params si existen; si no, el "corto (4 a 6 frases)" de siempre.
+  const longitud = params
+    ? instruccionFormato(params, idioma)
+    : idioma === 'es'
+      ? ' Que sea corto, de 4 a 6 frases.'
+      : ' Keep it short, 4 to 6 sentences.';
+  const valores = {
+    nombre,
+    edad: edad.value,
+    tema: input.tema,
+    estilo: input.estilo,
+    idioma,
+    intereses: gustos,
+    tono,
+    formato: params?.formato ?? 'cuento',
+    palabrasMin: params?.palabrasMin ?? '',
+    palabrasMax: params?.palabrasMax ?? '',
+    rima: params?.rima ? (idioma === 'es' ? 'sí' : 'yes') : 'no',
+  };
 
   const prompt = overrides.template
     ? rellenar(overrides.template, valores)
     : idioma === 'es'
-      ? `Escribe un cuento corto (4 a 6 frases) para ${nombre}, de ${edad.value} años, ` +
-        `sobre "${input.tema}" con un estilo ${input.estilo}. ${nombre} es el protagonista. ` +
-        `Devuelve un título breve y el cuerpo del cuento.`
-      : `Write a short story (4 to 6 sentences) for ${nombre}, aged ${edad.value}, ` +
-        `about "${input.tema}" in a ${input.estilo} style. ${nombre} is the main character. ` +
-        `Return a short title and the body of the story.`;
+      ? `${apertura} para ${nombre}, de ${edad.value} años, sobre "${input.tema}" con un estilo ` +
+        `${input.estilo}. ${nombre} es protagonista y le gustan ${gustos}. ${tono}${longitud} ` +
+        `Devuelve un título breve y el cuerpo.`
+      : `${apertura} for ${nombre}, aged ${edad.value}, about "${input.tema}" in a ${input.estilo} ` +
+        `style. ${nombre} is the main character and likes ${gustos}. ${tono}${longitud} ` +
+        `Return a short title and the body.`;
 
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
 }
@@ -84,8 +170,17 @@ export function buildActivitiesPrompt(
   overrides: PromptOverrides = {},
 ): PromptParts {
   const idioma = input.perfil.idioma.value;
-  const { nombre, edad } = input.perfil;
+  const { nombre, edad, intereses } = input.perfil;
   const categorias = CATEGORIAS.join(', ');
+  const tono = tonoPorEdad(edad.value, idioma);
+  const gustos = listaIntereses(intereses, idioma);
+  // Solo se sugieren intereses cuando la categoría es libre (si está fija, manda la categoría).
+  const afinidad =
+    input.categoria !== undefined
+      ? ''
+      : idioma === 'es'
+        ? ` Procura que conecten con lo que le gusta: ${gustos}.`
+        : ` Try to connect them with what they like: ${gustos}.`;
   const acotacion =
     input.categoria !== undefined
       ? idioma === 'es'
@@ -102,14 +197,20 @@ export function buildActivitiesPrompt(
         n: input.cantidad,
         categoria: input.categoria ?? categorias,
         categorias,
+        intereses: gustos,
+        tono,
       })
     : idioma === 'es'
       ? `Propón ${input.cantidad} actividades sencillas para ${nombre}, de ${edad.value} años.` +
         acotacion +
+        afinidad +
+        ` ${tono}` +
         ` Cada actividad necesita una categoría (${categorias}), un título, una descripción ` +
         `breve, una duración en minutos y un nivel de dificultad de 1 a 3.`
       : `Suggest ${input.cantidad} simple activities for ${nombre}, aged ${edad.value}.` +
         acotacion +
+        afinidad +
+        ` ${tono}` +
         ` Each activity needs a category (${categorias}), a title, a short description, ` +
         `a duration in minutes and a difficulty level from 1 to 3.`;
 

@@ -12,6 +12,7 @@ import { LoginScreen } from './src/presentation/screens/LoginScreen';
 import { SelectProfileScreen } from './src/presentation/screens/SelectProfileScreen';
 import { ParentalScreen } from './src/presentation/screens/ParentalScreen';
 import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
+import { StoryReaderScreen } from './src/presentation/screens/StoryReaderScreen';
 import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
@@ -145,6 +146,11 @@ export default function App() {
               name="Parental"
               component={ParentalScreen}
               options={{ title: 'Zona de adultos' }}
+            />
+            <Stack.Screen
+              name="StoryReader"
+              component={StoryReaderScreen}
+              options={{ title: 'Cuento' }}
             />
           </Stack.Navigator>
         </NavigationContainer>

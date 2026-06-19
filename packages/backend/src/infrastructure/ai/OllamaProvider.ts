@@ -14,6 +14,7 @@ import {
   buildStoryPrompt,
   type PromptOverrides,
 } from './prompts.js';
+import { readStoryParams, resolveStoryParams, type ResolvedStoryParams } from './storyParams.js';
 
 export interface OllamaProviderOptions {
   baseUrl: string;
@@ -87,13 +88,21 @@ export class OllamaProvider implements AIProvider {
       AI_SETTING_KEYS.storySystem,
       AI_SETTING_KEYS.storyTemplate,
     );
-    const { system, prompt } = buildStoryPrompt(input, overrides);
+    const params = await this.leerStoryParams();
+    const { system, prompt } = buildStoryPrompt(input, overrides, params);
     const data = await this.generate<{ titulo?: unknown; cuerpo?: unknown }>(
       system,
       prompt,
       ESQUEMA_CUENTO,
     );
     return parseStory(data, 'Ollama', 'local');
+  }
+
+  /** Lee `prompt.story.params` y elige un formato al azar (variación por cuento). */
+  private async leerStoryParams(): Promise<ResolvedStoryParams | undefined> {
+    if (!this.settings) return undefined;
+    const params = await readStoryParams(this.settings);
+    return params ? resolveStoryParams(params) : undefined;
   }
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {

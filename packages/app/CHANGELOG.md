@@ -19,6 +19,22 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.7.0] - 2026-06-18
+
+Funcionalidad y personalización: releer cuento y botón "Realizado" (US-27/US-10).
+
+### Added
+
+- Releer un cuento desde el Historial (US-27): pantalla de lectura `StoryReader` (título + cuerpo +
+  Autor) a la que se llega tocando un cuento; al abrirla se marca como **leído**.
+- Botón **"Realizado"** en las actividades (US-10 ampliada): entrada explícita que pide la
+  valoración (1-3 estrellas) y registra la actividad como completada.
+
+### Changed
+
+- En el Historial, la tarjeta de cuento es pulsable y abre la vista de lectura ("Leer cuento →") en
+  lugar del botón "Marcar como leído".
+
 ## [0.6.0] - 2026-06-12
 
 Autor del contenido (US-25): muestra el proveedor de IA que lo generó.
