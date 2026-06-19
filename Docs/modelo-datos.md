@@ -107,17 +107,18 @@ código ni reconstruir la imagen.
 
 **Claves previstas (seed inicial):**
 
-| key                        | Ejemplo de value                                      | Uso                                    |
-| -------------------------- | ----------------------------------------------------- | -------------------------------------- |
-| `ai.model.local`           | `gemma:2b`                                            | Modelo Ollama por defecto              |
-| `prompt.story.system`      | "Eres un cuentacuentos infantil…"                     | System prompt de `generateStory`       |
-| `prompt.story.template`    | "Crea un cuento para {nombre} ({edad}) sobre {tema}…" | Plantilla del cuento                   |
-| `prompt.activity.system`   | "Diseñas actividades educativas seguras…"             | System prompt de `recommendActivities` |
-| `prompt.activity.template` | "Propón {n} actividades para {edad} de {categoria}…"  | Plantilla de actividades               |
-| `story.maxTokens`          | `800`                                                 | Límite de longitud del cuento          |
-| `story.temperature`        | `0.8`                                                 | Creatividad del LLM                    |
-| `activity.count`           | `3`                                                   | Nº de actividades a generar            |
-| `ai.cloud`                 | `{"activo":false,"target":"groq","model":"…"}`        | Modo cloud (opt-in, OFF por defecto)   |
+| key                        | Ejemplo de value                                                                           | Uso                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| `ai.model.local`           | `gemma:2b`                                                                                 | Modelo Ollama por defecto                                      |
+| `prompt.story.system`      | "Eres un cuentacuentos infantil…"                                                          | System prompt de `generateStory`                               |
+| `prompt.story.template`    | "Crea un cuento para {nombre} ({edad}) sobre {tema}…"                                      | Plantilla del cuento                                           |
+| `prompt.activity.system`   | "Diseñas actividades educativas seguras…"                                                  | System prompt de `recommendActivities`                         |
+| `prompt.activity.template` | "Propón {n} actividades para {edad} de {categoria}…"                                       | Plantilla de actividades                                       |
+| `story.maxTokens`          | `800`                                                                                      | Límite de longitud del cuento                                  |
+| `story.temperature`        | `0.8`                                                                                      | Creatividad del LLM                                            |
+| `prompt.story.params`      | `{"palabrasMin":50,"palabrasMax":120,"rima":false,"formatos":["cuento","fabula","poema"]}` | Longitud/rima/formatos del cuento (uno al azar por generación) |
+| `activity.count`           | `3`                                                                                        | Nº de actividades a generar                                    |
+| `ai.cloud`                 | `{"activo":false,"target":"groq","model":"…"}`                                             | Modo cloud (opt-in, OFF por defecto)                           |
 
 **Reglas (importante):**
 

@@ -55,6 +55,8 @@ Should = HITO 2 · Could = si hay margen.
 | US-23 | Avisos/confirmaciones (modal app)     | Should    | Mejoras | Toda la app                   | [F](epic-f-plataforma.md#us-23)  |
 | US-24 | Navegación con cabecera y "atrás"     | Should    | Mejoras | Stack (onboarding/adultos)    | [F](epic-f-plataforma.md#us-24)  |
 | US-25 | Autor (proveedor de IA) del contenido | Should    | Mejoras | Generador/Actividades/Histor. | [F](epic-f-plataforma.md#us-25)  |
+| US-26 | Contenido más personalizado por niño  | Should    | Mejoras | — (prompts backend)           | [B](epic-b-cuentos.md#us-26)     |
+| US-27 | Releer un cuento desde el Historial   | Should    | Mejoras | Lectura de cuento             | [D](epic-d-historial.md#us-27)   |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

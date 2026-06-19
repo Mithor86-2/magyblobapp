@@ -282,13 +282,13 @@ se abra). Algunas parten de algo ya existente (se indica).
 
 **Funcionalidad y personalización:**
 
-- [ ] **Personalización por niño en cuentos y actividades.** Reforzar los prompts para usar de
-      forma explícita `nombre`, `edad` e `intereses` del perfil (hoy el prompt ya recibe el
-      perfil, pero conviene afinar tono/dificultad por edad y temática por intereses). Afecta a
-      `prompts.ts` / `AppSetting`; verificar en `mock` y `local`.
-- [ ] **Releer cuento desde el Historial.** Al tocar un cuento en el Historial, abrir una
-      vista de lectura con su `título`+`cuerpo` (pantalla de detalle nueva) y marcarlo `leído`
-      al abrirlo (US-07/08). Hoy el Historial solo lista y permite "marcar leído".
+- [x] ✅ **Personalización por niño en cuentos y actividades** (US-26, rama
+      `feature/funcionalidad-personalizacion`). Los prompts usan `nombre`/`edad`/`intereses` y afinan
+      el **tono por tramo de edad**. Además, parámetros configurables en `AppSetting`
+      (`prompt.story.params`): longitud, rima y **formato elegido al azar** por cuento
+      (`cuento·fábula·poema·adivinanza`) para más dinámica. Solo backend; verificado en `mock`/`local`.
+- [x] ✅ **Releer cuento desde el Historial** (US-27, misma rama). Al tocar un cuento se abre la vista
+      de lectura (`StoryReaderScreen`: título+cuerpo+Autor) y se marca `leído` al abrirla.
 - [ ] **Narrar cuento en voz alta** (US-22). Botón "▶ Leer cuento" + controles pausa/parar en el
       Generador y en la vista de lectura del Historial, usando la síntesis de voz **nativa del
       dispositivo** (`expo-speech`) en el idioma del perfil. **Solo app**, sin tocar el backend;
@@ -297,9 +297,9 @@ se abra). Algunas parten de algo ya existente (se indica).
       `TTSProvider`, **opt-in OFF por defecto** y tras puerta parental (patrón de US-14); de pago,
       envía el cuento íntegro (con el nombre) a un tercero, rompe C-5 y exige backend-proxy para la
       API key. No es el camino por defecto; el `DeviceTTS` nativo es el fallback. Detalle en US-22.
-- [ ] **Botón "Realizado" en actividades.** Añadir un botón explícito para marcar una actividad
-      como hecha, además de la valoración por estrellas (hoy se completa tocando directamente las
-      estrellas). Flujo sugerido: "Realizado" → pide la valoración (1-3) → `complete`.
+- [x] ✅ **Botón "Realizado" en actividades** (US-10 ampliada, misma rama). En `ActivityCard`, botón
+      explícito que revela la valoración (1-3) y al elegirla llama a `complete`; el atajo de tocar
+      las estrellas se conserva.
 
 **UX y navegación (diferido de la Fase 5.5):**
 

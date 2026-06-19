@@ -42,6 +42,19 @@ const SETTINGS: { key: string; value: string; descripcion: string }[] = [
   },
   { key: 'story.maxTokens', value: '800', descripcion: 'Límite de longitud del cuento.' },
   { key: 'story.temperature', value: '0.8', descripcion: 'Creatividad del LLM (0-1).' },
+  {
+    // Parámetros configurables del cuento (US-26+): longitud, rima y lista de formatos
+    // de la que se elige uno AL AZAR en cada generación (variación dinámica). Si la
+    // clave falta o es inválida, se usa el comportamiento por defecto (sin bloque).
+    key: 'prompt.story.params',
+    value: JSON.stringify({
+      palabrasMin: 50,
+      palabrasMax: 120,
+      rima: false,
+      formatos: ['cuento', 'fabula', 'poema'],
+    }),
+    descripcion: 'Parámetros del cuento: longitud, rima y formatos (uno al azar por cuento).',
+  },
   { key: 'activity.count', value: '3', descripcion: 'Nº de actividades a generar.' },
   {
     // Selección del proveedor cloud (opt-in). Solo selectores NO secretos; la API

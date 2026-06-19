@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
@@ -9,10 +10,16 @@ import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
-import type { TabScreenProps } from '../navigation';
+import type { RootStackParamList, TabScreenProps } from '../navigation';
 
-export function HistoryScreen(_props: TabScreenProps<'Historial'>) {
+export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const profile = useAppStore((s) => s.currentProfile);
+
+  // El lector de cuentos vive en el stack raíz (sobre las pestañas).
+  const openReader = (story: Story) =>
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('StoryReader', {
+      story,
+    });
 
   const [history, setHistory] = useState<History>({ stories: [], activities: [] });
   const [loading, setLoading] = useState(false);
@@ -38,18 +45,6 @@ export function HistoryScreen(_props: TabScreenProps<'Historial'>) {
     }, [load]),
   );
 
-  async function onMarkRead(story: Story) {
-    try {
-      const updated = await api.stories.markRead(story.id);
-      setHistory((prev) => ({
-        ...prev,
-        stories: prev.stories.map((s) => (s.id === story.id ? updated : s)),
-      }));
-    } catch {
-      // si falla, el siguiente refresco de foco corrige el estado
-    }
-  }
-
   const hechas = history.activities.filter((a) => a.valoracion != null);
 
   return (
@@ -65,7 +60,13 @@ export function HistoryScreen(_props: TabScreenProps<'Historial'>) {
         <Text style={styles.vacio}>Aún no hay cuentos. ¡Crea el primero!</Text>
       ) : (
         history.stories.map((story) => (
-          <View key={story.id} style={styles.storyCard}>
+          <Pressable
+            key={story.id}
+            style={styles.storyCard}
+            onPress={() => openReader(story)}
+            accessibilityRole="button"
+            accessibilityLabel={`Leer el cuento ${story.titulo}`}
+          >
             <View style={styles.storyHeader}>
               <Text style={styles.storyTitle} numberOfLines={1}>
                 {story.titulo}
@@ -81,17 +82,9 @@ export function HistoryScreen(_props: TabScreenProps<'Historial'>) {
                 </Text>
               </View>
             </View>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => onMarkRead(story)}
-              disabled={story.estado === 'leido'}
-            >
-              <Text style={[styles.accion, story.estado === 'leido' && styles.accionDisabled]}>
-                {story.estado === 'leido' ? 'Leído ✓' : 'Marcar como leído'}
-              </Text>
-            </Pressable>
+            <Text style={styles.accion}>Leer cuento →</Text>
             <AuthorBadge proveedor={story.proveedor} />
-          </View>
+          </Pressable>
         ))
       )}
 
@@ -163,8 +156,5 @@ const styles = StyleSheet.create({
   accion: {
     ...typography.labelBold,
     color: colors.primary,
-  },
-  accionDisabled: {
-    color: colors.onSurfaceVariant,
   },
 });
