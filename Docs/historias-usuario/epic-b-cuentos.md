@@ -114,3 +114,36 @@ tono y dificultad según la **edad** (2-3 muy simple; 5-6 algo más rico) y tem�
   prompt los tiene en cuenta para proponer algo afín.
 - (No funcional) Dado el cambio de prompts, Cuando se ejecuta el gate, Entonces los tests de
   `mock`/`local` siguen en verde y la salida estructurada se mantiene parseable.
+
+## US-28 — Reglas narrativas del cuento (prompt maestro) · Should (Mejoras)
+
+Como **padre/tutor** quiero que los cuentos sigan una **estructura narrativa clara y un tono
+adecuado** para niños de 2 a 5 años, para que tengan principio-nudo-desenlace, una pequeña
+enseñanza y un final feliz, además de la personalización que ya existe.
+
+**Contexto.** Amplía [US-26](#us-26): además de personalizar con nombre/edad/intereses/estilo, el
+prompt del cuento incorpora **reglas generales de creación de texto** (el "prompt maestro"):
+estructura en pasos, onomatopeyas suaves, ausencia de miedo/violencia/peligro real y final feliz y
+tranquilo. **Solo backend** (`prompts.ts`; el system vive en código **por idioma**, no en el seed);
+el contrato HTTP no cambia. Afecta a `local`/`cloud` (el `MockProvider` no usa prompts). La
+**longitud** sigue gobernada por `prompt.story.params` (US-26), no se fija en el prompt maestro.
+
+> **Limitación verificada (local):** las reglas y el idioma se cumplen plenamente en `cloud`
+> (Groq 70B). En `local` con modelos pequeños (`gemma:2b`, `llama3.2:3b`) el cuento sale **en
+> español** aunque el perfil sea `en` (no siguen bien la instrucción de idioma); se asume que el
+> inglés y la calidad plena son cosa de `cloud`.
+
+**Criterios de aceptación**
+
+- Dado que se genera un cuento (formato `cuento`/`fábula`), Cuando se construye el prompt, Entonces
+  pide una **estructura**: presentación del personaje, situación inicial, un amigo que ayuda,
+  resolución positiva y una **enseñanza final**.
+- Dado el prompt del cuento, Cuando se construye, Entonces pide **tono tierno** y **onomatopeyas
+  suaves** y prohíbe miedo, violencia o peligro real, con **final feliz y tranquilo**.
+- Dado un perfil en inglés, Cuando se construye el prompt con plantilla configurable, Entonces el
+  idioma se expresa de forma legible (`{idiomaNombre}` → "inglés"/"español"), de modo que el cuento
+  se escribe en el idioma del perfil.
+- Dada la personalización de US-26, Cuando se aplica el prompt maestro, Entonces se **mantienen**
+  nombre, edad, intereses y estilo, y la longitud configurable (`palabrasMin/Max`).
+- (No funcional) Dado el cambio de prompts, Cuando se ejecuta el gate, Entonces los tests de
+  `mock`/`local` siguen en verde y la salida estructurada (`titulo`/`cuerpo`) se mantiene parseable.

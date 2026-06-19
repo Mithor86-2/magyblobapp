@@ -6,23 +6,20 @@ import { PrismaClient } from '../src/generated/prisma/index.js';
  * (las claves de API y el DATABASE_URL siguen en variables de entorno).
  *
  * Las plantillas usan placeholders `{clave}` que resuelve la capa de IA:
- * cuento → {nombre} {edad} {tema} {estilo} {idioma}; actividad → {n} {categoria} {nombre} {edad}.
+ * cuento → {nombre} {edad} {tema} {estilo} {idiomaNombre}; actividad → {n} {categoria} {nombre} {edad}.
  * Idempotente (upsert por `key`): se puede reejecutar sin duplicar.
  */
 const SETTINGS: { key: string; value: string; descripcion: string }[] = [
   { key: 'ai.model.local', value: 'gemma:2b', descripcion: 'Modelo Ollama por defecto.' },
-  {
-    key: 'prompt.story.system',
-    value:
-      'Eres un cuentacuentos para niños de 2 a 6 años. Lenguaje sencillo y tono ' +
-      'cálido; sin violencia, miedo ni temas para adultos.',
-    descripcion: 'System prompt de generateStory.',
-  },
+  // OJO (US-28): el system prompt del cuento NO se siembra. Es **por idioma** y vive en el código
+  // (`INSTRUCCION_SEGURIDAD` de prompts.ts, ES/EN, con las reglas del prompt maestro). Si se
+  // sembrara aquí (un único texto en español) pisaría el system por idioma y los modelos escribirían
+  // en español aunque el perfil fuera `en`. La plantilla (`prompt.story.template`) sí es configurable.
   {
     key: 'prompt.story.template',
     value:
       'Escribe un cuento corto (4 a 6 frases) para {nombre}, de {edad} años, sobre ' +
-      '"{tema}" con un estilo {estilo}. {nombre} es el protagonista. Escríbelo en {idioma}. ' +
+      '"{tema}" con un estilo {estilo}. {nombre} es el protagonista. Escríbelo en {idiomaNombre}. ' +
       'Devuelve un título breve y el cuerpo del cuento.',
     descripcion: 'Plantilla del cuento.',
   },

@@ -20,7 +20,7 @@ Should = HITO 2 · Could = si hay margen.
 | Épica | Documento                                           | Historias                                                     |
 | ----- | --------------------------------------------------- | ------------------------------------------------------------- |
 | A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02                      |
-| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22                             |
+| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28               |
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                  |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                         |
 | E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                           |
@@ -57,6 +57,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-25 | Autor (proveedor de IA) del contenido | Should    | Mejoras | Generador/Actividades/Histor. | [F](epic-f-plataforma.md#us-25)  |
 | US-26 | Contenido más personalizado por niño  | Should    | Mejoras | — (prompts backend)           | [B](epic-b-cuentos.md#us-26)     |
 | US-27 | Releer un cuento desde el Historial   | Should    | Mejoras | Lectura de cuento             | [D](epic-d-historial.md#us-27)   |
+| US-28 | Reglas narrativas del cuento (prompt) | Should    | Mejoras | — (prompts backend)           | [B](epic-b-cuentos.md#us-28)     |
 | US-29 | Iconografía consistente (lucide)      | Should    | Mejoras | Toda la app                   | [F](epic-f-plataforma.md#us-29)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)

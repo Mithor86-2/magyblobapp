@@ -272,3 +272,26 @@ engine. Importar estáticamente la composición arrastraría Prisma al grafo del
   cambio de rama, el working tree no). Al volver, `git checkout` a la rama correcta y `git merge
 develop` para integrar lo ya cerrado. Verificar `git branch --show-current` antes de editar si
   hay actividad paralela.
+
+## Fase de mejoras — Prompt del cuento (US-28)
+
+### Un override de `AppSetting` monolingüe rompe el bilingüe
+
+- **Síntoma:** con perfil `en`, el cuento salía **en español** en `local` (y a veces en `cloud`).
+- **Causa:** `prompt.story.system`/`template` del **seed** eran un único texto en **español**, y como
+  `AppSetting` **pisa** el default de código (que es **por idioma**), el modelo recibía un prompt
+  mayoritariamente en español → escribía en español. Además `{idioma}` se sustituía por el código
+  (`en`/`es`): "Escríbelo en en".
+- **Solución:** el system del cuento se **quita del seed** y vive solo en código (bilingüe,
+  `INSTRUCCION_SEGURIDAD`); se añade `{idiomaNombre}` (`español`/`inglés`) para las plantillas. Regla
+  general: en una app bilingüe, **no** metas en `AppSetting` un prompt monolingüe que pise el código.
+
+### `gemma:2b`/`llama3.2:3b` no respetan bien la instrucción de idioma
+
+- **Síntoma:** aun con el prompt corregido, los modelos locales pequeños siguen escribiendo en
+  español para perfiles `en`; `gemma:2b` además produce texto incoherente y `llama3.2:3b` trunca.
+- **Causa:** capacidad del modelo (2-3B) — siguen el idioma dominante del prompt, no la instrucción.
+- **Solución/decisión:** en `local` nos quedamos con **español** (asumido); el **inglés y la calidad
+  plena de las reglas del prompt maestro son cosa de `cloud`** (Groq 70B, verificado). Coherente con
+  ADR 0003 (gemma:2b es el default reproducible, no el de calidad). Verificar siempre `proveedor` en
+  la respuesta: si es `mock`, hubo fallback (timeout) y el prompt no se ejerció.
