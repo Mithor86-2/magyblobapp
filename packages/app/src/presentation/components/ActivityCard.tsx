@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { Activity, Categoria } from '../../domain/types';
 import { CATEGORIA_LABEL } from '../labels';
 import { StarRating } from './StarRating';
 import { AuthorBadge } from './AuthorBadge';
+import { BubblyButton } from './BubblyButton';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 
 /** Color y emoji por categoría (borde de tarjeta según el design system). */
@@ -20,6 +22,8 @@ interface ActivityCardProps {
 
 /** Tarjeta de actividad: emoji + categoría + título + descripción + progreso. */
 export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
+  // Flujo del botón "Realizado" (US-10 ampliada): pedir la valoración al pulsarlo.
+  const [valorando, setValorando] = useState(false);
   const estilo = CATEGORIA_STYLE[activity.categoria];
   const meta = [
     activity.duracionMin ? `${activity.duracionMin} min` : null,
@@ -45,10 +49,14 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
           <StarRating value={activity.valoracion ?? 0} />
         </View>
       ) : onComplete ? (
-        <View style={styles.progreso}>
-          <Text style={styles.meta}>¿Qué tal estuvo?</Text>
-          <StarRating value={0} onChange={onComplete} />
-        </View>
+        valorando ? (
+          <View style={styles.progreso}>
+            <Text style={styles.meta}>¿Qué tal estuvo?</Text>
+            <StarRating value={0} onChange={onComplete} />
+          </View>
+        ) : (
+          <BubblyButton label="Realizado" onPress={() => setValorando(true)} variant="secondary" />
+        )
       ) : null}
 
       <AuthorBadge proveedor={activity.proveedor} />

@@ -50,19 +50,20 @@ Qué falta (❌): afinar prompts por edad/intereses; vista de lectura de cuento 
 - [x] ✅ Test `prompts.test.ts` (nombre/edad/intereses presentes; tono varía por edad; categoría
       fija no lista afinidad). Gate backend verde (104 tests).
 
-### F2 — Releer cuento desde el Historial (app, US-27)
+### F2 — Releer cuento desde el Historial (app, US-27) ✅
 
-- [ ] ❌ Pantalla `StoryReaderScreen` (título + cuerpo + `AuthorBadge`) en el stack raíz; ruta
-      `StoryReader` en `navigation.ts` con `params: { story }`.
-- [ ] ❌ En `HistoryScreen`, tocar un cuento navega al lector (vía `getParent`); marcar `leído` al
-      abrir (`stories.markRead`) y refrescar al volver (ya usa `useFocusEffect`).
-- [ ] ❌ Verificar bundle (`expo export`).
+- [x] ✅ Pantalla `StoryReaderScreen` (título + cuerpo + `AuthorBadge`) registrada en el stack raíz
+      (`StoryReader`, `params: { story }`, cabecera "Cuento" con "atrás").
+- [x] ✅ En `HistoryScreen`, la tarjeta del cuento es pulsable y abre el lector (vía `getParent`);
+      el lector marca `leído` al montar (`stories.markRead`) y el Historial refresca al volver
+      (`useFocusEffect`). Sustituido "Marcar como leído" por "Leer cuento →".
+- [x] ✅ Bundle (`expo export`) validado.
 
-### F3 — Botón "Realizado" en actividades (app, US-10 ampliada)
+### F3 — Botón "Realizado" en actividades (app, US-10 ampliada) ✅
 
-- [ ] ❌ En `ActivityCard`, añadir botón "Realizado" que muestre la valoración (1-3) y al elegir
-      llame a `onComplete`; conservar el atajo de tocar las estrellas.
-- [ ] ❌ Verificar bundle.
+- [x] ✅ En `ActivityCard`, botón **"Realizado"** que revela la valoración (1-3 estrellas) y al
+      elegirla llama a `onComplete` (mismo flujo de `complete`).
+- [x] ✅ Bundle validado.
 
 ### Cierre
 

@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { Story } from '../domain/types';
 
 /**
  * Navegación en dos niveles:
@@ -15,6 +16,8 @@ export type RootStackParamList = {
   CreateProfile: undefined;
   Main: undefined;
   Parental: undefined;
+  /** Vista de lectura de un cuento abierto desde el Historial (US-27). */
+  StoryReader: { story: Story };
 };
 
 export type MainTabParamList = {
