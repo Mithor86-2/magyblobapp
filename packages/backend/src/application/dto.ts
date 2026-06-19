@@ -89,6 +89,8 @@ export interface NarrationResult {
   /** MP3 de la narración (bytes); la ruta lo sirve como `audio/mpeg`. */
   mp3: Uint8Array;
   voiceId: string;
+  /** Perfil dueño del cuento; la ruta lo usa para registrar el evento de uso. */
+  profileId: string;
   /** `true` si se sintetizó ahora (cache-miss); `false` si vino de caché. */
   sintetizado: boolean;
 }

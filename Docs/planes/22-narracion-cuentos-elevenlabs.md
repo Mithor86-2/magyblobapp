@@ -6,7 +6,7 @@
 ## Contexto
 
 El flujo de cuentos está completo (generar → leer → historial) pero **sin narración por voz**. La
-**US-22** ya estaba especificada como mejora *Could*, con TTS nativo por defecto y ElevenLabs como
+**US-22** ya estaba especificada como mejora _Could_, con TTS nativo por defecto y ElevenLabs como
 alternativa premium. El usuario decide implementarla **con ElevenLabs como motor principal**
 (`ELEVENT_LABS_API` ya está en `.env`).
 

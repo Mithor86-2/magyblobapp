@@ -33,7 +33,12 @@ export class NarrateStory {
 
     const cacheada = await this.deps.narrations.findByStory(story.id);
     if (cacheada) {
-      return { mp3: cacheada.mp3, voiceId: cacheada.voiceId, sintetizado: false };
+      return {
+        mp3: cacheada.mp3,
+        voiceId: cacheada.voiceId,
+        profileId: story.profileId,
+        sintetizado: false,
+      };
     }
 
     const audio = await this.deps.tts.synthesize({
@@ -51,6 +56,11 @@ export class NarrateStory {
     });
     await this.deps.narrations.save(narration);
 
-    return { mp3: narration.mp3, voiceId: narration.voiceId, sintetizado: true };
+    return {
+      mp3: narration.mp3,
+      voiceId: narration.voiceId,
+      profileId: story.profileId,
+      sintetizado: true,
+    };
   }
 }

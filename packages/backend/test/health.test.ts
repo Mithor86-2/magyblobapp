@@ -11,6 +11,16 @@ describe('GET /health', () => {
       port: 0,
       logLevel: 'silent',
       aiProvider: 'mock',
+      ollamaBaseUrl: 'http://localhost:11434',
+      ollamaModel: 'gemma:2b',
+      aiTimeoutMs: 1000,
+      cloudApiKeys: {},
+      tts: {
+        apiKey: undefined,
+        model: 'eleven_multilingual_v2',
+        voiceIdByLang: { es: 'voz-es', en: 'voz-en' },
+        timeoutMs: 1000,
+      },
     });
   });
 

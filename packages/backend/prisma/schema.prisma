@@ -63,9 +63,24 @@ model Story {
   estado    String       @default("nuevo")
   proveedor String       @default("mock")
   creadoEn  DateTime     @default(now())
+  narration StoryNarration?
 
   @@index([profileId])
   @@map("stories")
+}
+
+/// Narración (audio MP3) de un cuento. Caché 1-1: se sintetiza una vez con
+/// ElevenLabs y se reusa. Se borra en cascada con el cuento (y con el perfil).
+model StoryNarration {
+  id       String   @id @default(uuid())
+  storyId  String   @unique
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  mp3      Bytes
+  voiceId  String
+  idioma   String
+  creadoEn DateTime @default(now())
+
+  @@map("story_narrations")
 }
 
 /// Actividad generada por IA para un perfil (progreso como estado, sin entidad aparte).
