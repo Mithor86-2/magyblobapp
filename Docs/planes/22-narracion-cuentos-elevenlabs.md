@@ -47,22 +47,23 @@ narración, y en la app el botón de escucha con fallback a voz nativa.
 - [ ] ❌ Config/wiring: `config.tts`, `AppDeps` (`tts`, `narrations`), `composition`, doubles.
 - [ ] ❌ Ruta `GET /stories/:id/narration` (audio/mpeg) + test de integración + `.env.example`.
 
-### F2 — App: botón de narración + fallback nativo
+### F2 — App: botón de narración + fallback nativo ✅
 
-- [ ] ❌ Deps `expo-audio`, `expo-file-system`, `expo-speech`.
-- [ ] ❌ Gateway `narrationUrl(storyId)` + impl HTTP.
-- [ ] ❌ Hook `useNarration` (fetch → reproduce con expo-audio; fallback `Speech.speak`; limpieza).
-- [ ] ❌ Botón "▶ Escuchar/⏸/⏹" en `StoryGeneratorScreen` (reutiliza `BubblyButton`).
+- [x] ✅ Deps `expo-audio`, `expo-file-system`, `expo-speech` (vía `expo install`, SDK 56).
+- [x] ✅ Gateway `narrationUrl(storyId)` + impl HTTP (+ test).
+- [x] ✅ Hook `useNarration` (fetch → reproduce con expo-audio; fallback `Speech.speak`; limpieza).
+- [x] ✅ `NarrationControls` ("▶ Escuchar/⏸/⏹") en `StoryGeneratorScreen` y `StoryReaderScreen`.
+      App: 12 tests verdes, typecheck OK, bundle (`expo export`) OK.
 
-### F3 — Docs y cumplimiento
+### F3 — Docs y cumplimiento ✅
 
-- [ ] ❌ US-22 actualizada (variante implementada) + matriz de cumplimiento (desviación C-2/C-5).
-- [ ] ❌ `modelo-datos.md` (entidad `StoryNarration`), `phases.md`, `memory.md`, `lecciones`.
+- [x] ✅ US-22 actualizada (variante implementada) + matriz de cumplimiento (C-11, desviación C-2/C-5).
+- [x] ✅ `modelo-datos.md` (entidad `StoryNarration`), `phases.md`, `memory.md`, `lecciones`.
 
 ### Cierre
 
-- [ ] ❌ Gate `pnpm check` verde + e2e (audio servido y cacheado) + bundle.
-- [ ] ❌ Pruebas con el usuario + cierre con **cerrar-feature** (versión, CHANGELOG, merge tras
+- [x] ✅ Gate `pnpm check` verde (118 backend + 12 app) + bundle. Falta e2e con clave real (manual).
+- [ ] 🔄 Pruebas con el usuario + cierre con **cerrar-feature** (versión, CHANGELOG, merge tras
       confirmación).
 
 ## DoD

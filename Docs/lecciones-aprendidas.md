@@ -237,3 +237,38 @@ engine. Importar estáticamente la composición arrastraría Prisma al grafo del
   modelo (`POST /api/generate` con `keep_alive`) para que la primera petición no pague la carga en
   frío. Para velocidad real (~5-15s) haría falta **Ollama nativo** en el host (GPU) apuntando el
   backend a `host.docker.internal`. El modo `mock` sigue siendo la vía sin GPU para evaluar.
+
+## Fase de mejoras — Narración (US-22)
+
+### Servir audio binario por Fastify y la nueva API de `expo-file-system`
+
+- **Síntoma:** dudas al devolver un MP3 desde el caso de uso (que trabaja con `Uint8Array`) por la
+  ruta, y al guardarlo en el cliente para reproducirlo.
+- **Causa:** el dominio no debe conocer `Buffer` (es de Node) → la síntesis devuelve `Uint8Array`;
+  pero Fastify envía cómodamente un `Buffer`. Y en Expo SDK 56 la API de ficheros cambió: ya no es
+  `FileSystem.writeAsStringAsync(base64)`, sino la clase `File`/`Paths`.
+- **Solución:** en la ruta, `reply.header('content-type','audio/mpeg').send(Buffer.from(mp3))`. En
+  el repo Prisma, `Bytes` ↔ `Buffer.from(uint8)` / `new Uint8Array(row.mp3)`. En el app, descargar
+  con `fetch` de `expo/fetch` (`res.bytes()` → `Uint8Array`), escribir con
+  `new File(Paths.cache, name).write(bytes)` y reproducir el `file.uri` con `expo-audio`.
+
+### El fallback de narración es de cliente, no de servidor
+
+- **Síntoma:** se intentó pensar en un `FallbackProvider` de TTS en el backend (como el del LLM).
+- **Causa:** la red de seguridad de la narración es la **voz nativa del dispositivo** (`expo-speech`),
+  que **solo existe en el cliente**; el servidor no puede degradar a ella.
+- **Solución:** el backend **propaga el error** de ElevenLabs (5xx); el app lo captura (fetch `!ok` o
+  error de red) y narra con `Speech.speak`. Así se cumple "degrada sin error visible para el niño"
+  (US-22) sin un fallback de servidor.
+
+### Trabajar en paralelo en dos ramas: el working tree se revierte al cambiar
+
+- **Síntoma:** archivos recién creados/editados "desaparecían" o volvían a su versión original a
+  mitad de sesión.
+- **Causa:** se cerró otra feature en paralelo (`git flow feature finish` →
+  `checkout develop`/merge), lo que **cambió la rama del working tree** bajo los pies; los cambios
+  sin commitear de la rama de narración no viajaban con el checkout.
+- **Solución:** **commitear pronto y a menudo** en la rama de la feature (los commits sobreviven al
+  cambio de rama, el working tree no). Al volver, `git checkout` a la rama correcta y `git merge
+develop` para integrar lo ya cerrado. Verificar `git branch --show-current` antes de editar si
+  hay actividad paralela.
