@@ -29,7 +29,12 @@ export const ACCIONES_AUDIT = ['crear', 'editar', 'borrar', 'consentimiento', 'l
 export type AccionAudit = (typeof ACCIONES_AUDIT)[number];
 
 /** Tipo de evento de uso de primera parte (InteractionEvent). */
-export const TIPOS_EVENTO = ['pantalla_vista', 'cuento_generado', 'actividad_completada'] as const;
+export const TIPOS_EVENTO = [
+  'pantalla_vista',
+  'cuento_generado',
+  'cuento_narrado',
+  'actividad_completada',
+] as const;
 export type TipoEvento = (typeof TIPOS_EVENTO)[number];
 
 /** Proveedor de IA que generó realmente el contenido (el efectivo, incluido el fallback). */

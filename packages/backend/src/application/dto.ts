@@ -80,6 +80,19 @@ export interface StoryOutput {
   proveedor: ProveedorIa;
 }
 
+// --- NarrateStory ---
+export interface NarrateStoryRequest {
+  storyId: string;
+}
+
+export interface NarrationResult {
+  /** MP3 de la narración (bytes); la ruta lo sirve como `audio/mpeg`. */
+  mp3: Uint8Array;
+  voiceId: string;
+  /** `true` si se sintetizó ahora (cache-miss); `false` si vino de caché. */
+  sintetizado: boolean;
+}
+
 // --- RecommendActivities ---
 export interface RecommendActivitiesRequest {
   profileId: string;

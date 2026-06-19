@@ -6,16 +6,19 @@ import type {
 import type { ChildProfile } from '../../src/domain/entities/ChildProfile.js';
 import type { Guardian } from '../../src/domain/entities/Guardian.js';
 import type { Story } from '../../src/domain/entities/Story.js';
+import type { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import type { Activity } from '../../src/domain/entities/Activity.js';
 import type { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js';
 import type { AuditLog } from '../../src/domain/entities/AuditLog.js';
 import type { ChildProfileRepository } from '../../src/domain/repositories/ChildProfileRepository.js';
 import type { GuardianRepository } from '../../src/domain/repositories/GuardianRepository.js';
 import type { StoryRepository } from '../../src/domain/repositories/StoryRepository.js';
+import type { StoryNarrationRepository } from '../../src/domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from '../../src/domain/repositories/ActivityRepository.js';
 import type { InteractionEventRepository } from '../../src/domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from '../../src/domain/repositories/AuditLogRepository.js';
 import type { SettingsRepository } from '../../src/domain/repositories/SettingsRepository.js';
+import type { TTSProvider, SynthesizeInput } from '../../src/domain/tts/TTSProvider.js';
 import type { Clock, IdGenerator } from '../../src/application/ports.js';
 
 /** Repositorio de adultos en memoria para tests. */
@@ -71,6 +74,19 @@ export class InMemoryStoryRepository implements StoryRepository {
     return [...this.items.values()]
       .filter((s) => s.profileId === profileId)
       .sort((a, b) => b.creadoEn.getTime() - a.creadoEn.getTime());
+  }
+}
+
+/** Repositorio de narraciones en memoria para tests. */
+export class InMemoryStoryNarrationRepository implements StoryNarrationRepository {
+  readonly items = new Map<string, StoryNarration>();
+
+  async findByStory(storyId: string): Promise<StoryNarration | null> {
+    return this.items.get(storyId) ?? null;
+  }
+
+  async save(narration: StoryNarration): Promise<void> {
+    this.items.set(narration.storyId, narration);
   }
 }
 
@@ -135,6 +151,28 @@ export class FakeAIProvider implements AIProvider {
       descripcion: `Para ${input.perfil.nombre}.`,
       proveedor: 'mock' as const,
     }));
+  }
+}
+
+/** TTSProvider falso, determinista: no llama a ElevenLabs. Cuenta las síntesis. */
+export class FakeTTSProvider implements TTSProvider {
+  llamadas = 0;
+  constructor(private readonly voiceId = 'voz-fake') {}
+
+  async synthesize(input: SynthesizeInput) {
+    this.llamadas += 1;
+    // MP3 de juguete: bytes derivados del texto, suficientes para asertar no-vacío.
+    return {
+      mp3: new TextEncoder().encode(`mp3:${input.idioma}:${input.texto}`),
+      voiceId: this.voiceId,
+    };
+  }
+}
+
+/** TTSProvider que siempre falla; simula ElevenLabs caído / clave ausente. */
+export class FailingTTSProvider implements TTSProvider {
+  async synthesize(): Promise<never> {
+    throw new Error('ElevenLabs no disponible (test).');
   }
 }
 
