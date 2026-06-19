@@ -51,6 +51,47 @@ describe('prompts — personalización por niño (US-26)', () => {
   });
 });
 
+describe('prompts — reglas narrativas / prompt maestro (US-28)', () => {
+  it('el system del cuento trae las reglas: estructura, onomatopeyas, enseñanza y final feliz (ES)', () => {
+    const { system } = buildStoryPrompt({
+      perfil: perfil(5),
+      tema: 'animales',
+      estilo: 'aventura',
+    });
+    expect(system).toContain('onomatopeyas');
+    expect(system).toContain('conflicto seguro');
+    expect(system).toContain('amigo que ayuda');
+    expect(system).toContain('enseñanza final');
+    expect(system).toContain('final feliz y tranquilo');
+  });
+
+  it('las reglas también están en inglés', () => {
+    const perfilEn = new ChildProfile({
+      id: 'p-2',
+      guardianId: 'g-1',
+      nombre: 'Leo',
+      edad: Edad.create(5),
+      idioma: Idioma.create('en'),
+      avatar: 'a1',
+      intereses: ['animales'],
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    const { system } = buildStoryPrompt({ perfil: perfilEn, tema: 'animales', estilo: 'aventura' });
+    expect(system).toContain('onomatopoeia');
+    expect(system).toContain('a friend who helps');
+    expect(system).toContain('final lesson');
+    expect(system).toContain('happy, calm ending');
+  });
+
+  it('un override de system desde AppSetting reemplaza las reglas por defecto', () => {
+    const { system } = buildStoryPrompt(
+      { perfil: perfil(5), tema: 'animales', estilo: 'aventura' },
+      { system: 'system propio' },
+    );
+    expect(system).toBe('system propio');
+  });
+});
+
 describe('prompts — parámetros configurables del cuento (formato/longitud/rima)', () => {
   it('inyecta el formato elegido, los límites de palabras y la rima', () => {
     const { prompt } = buildStoryPrompt(

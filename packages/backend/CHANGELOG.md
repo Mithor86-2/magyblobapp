@@ -11,6 +11,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Reglas narrativas del cuento / prompt maestro (US-28): el system prompt de `generateStory` (en
+  código y en el seed `prompt.story.system`, ES/EN) incorpora estructura (presentación, situación,
+  conflicto seguro, amigo que ayuda, resolución y enseñanza final), tono tierno, onomatopeyas
+  suaves y final feliz y tranquilo. No cambia el contrato HTTP ni la personalización (US-26); solo
+  afecta a `local`/`cloud`.
+
 ### Deprecated
 
 ### Removed

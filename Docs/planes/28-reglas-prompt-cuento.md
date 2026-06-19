@@ -36,22 +36,20 @@ Qué existe ya (✅):
 
 ## Tareas
 
-- [ ] ❌ `prompts.ts`: enriquecer `INSTRUCCION_SEGURIDAD` (ES/EN) con las reglas: tono tierno, frases
-      cortas, onomatopeyas suaves, sin miedo/violencia/peligro real, final feliz y tranquilo, y
-      estructura (presentación · situación · conflicto seguro · amigo que ayuda · resolución ·
-      enseñanza final) condicionada a cuento/fábula.
-- [ ] ❌ Seed `prisma/seed.ts`: alinear `prompt.story.system` con el mismo texto (para `local`/`cloud`
-      con DB seedada). Reseed idempotente (`pnpm --filter @magyblob/backend prisma:seed`).
-- [ ] ❌ Tests (`test/infrastructure/prompts.test.ts`): el `system` de `buildStoryPrompt` incluye las
-      reglas (estructura, onomatopeya, enseñanza, final feliz) en ES y EN; la personalización
-      (US-26) del `prompt` sigue intacta y la salida `titulo`/`cuerpo` no cambia de contrato.
-- [ ] ❌ Docs: CHANGELOG backend (Unreleased), phases.md, memory.md.
-- [ ] ❌ Gate `pnpm check` verde + (opcional) smoke `local` + cierre con `cerrar-feature`
+- [x] ✅ `prompts.ts`: `INSTRUCCION_SEGURIDAD` (ES/EN) con las reglas: tono tierno, frases cortas,
+      onomatopeyas suaves, sin miedo/violencia/peligro real, final feliz y tranquilo, y estructura
+      (presentación · situación · conflicto seguro · amigo que ayuda · resolución · enseñanza final)
+      condicionada a cuento/fábula.
+- [x] ✅ Seed `prisma/seed.ts`: `prompt.story.system` alineado con el mismo texto. Reseed idempotente
+      (`pnpm --filter @magyblob/backend prisma:seed`).
+- [x] ✅ Tests (`test/infrastructure/prompts.test.ts`): el `system` incluye las reglas en ES y EN, el
+      override las reemplaza, y la personalización (US-26) sigue intacta. 125 tests verdes.
+- [x] ✅ Docs: CHANGELOG backend (Unreleased), phases.md, memory.md.
+- [ ] 🔄 Gate `pnpm check` verde + (opcional) smoke `local` + cierre con `cerrar-feature`
       (versión, CHANGELOG, merge tras confirmación y pruebas).
 
 ## DoD
 
-El system prompt del cuento incorpora las reglas del prompt maestro (estructura + tono + onomatopeyas
-
-- enseñanza + final feliz) en ES/EN, en código y en el seed, sin romper la personalización de US-26
-  ni el contrato HTTP. `pnpm check` verde + pruebas con el usuario.
+El system prompt del cuento incorpora las reglas del prompt maestro (estructura, tono, onomatopeyas,
+enseñanza y final feliz) en ES/EN, en código y en el seed, sin romper la personalización de US-26 ni
+el contrato HTTP. `pnpm check` verde y pruebas con el usuario.
