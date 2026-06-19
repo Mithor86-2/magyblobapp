@@ -391,11 +391,21 @@ Rama `feature/28-reglas-prompt-cuento` (desde `develop`). Amplía US-26.
 
 - **Las reglas van en el `system` prompt, no en la plantilla por petición.** Son "cómo contar"
   (tono tierno, frases cortas, onomatopeyas suaves, sin miedo/violencia/peligro real, final feliz y
-  tranquilo, y estructura de 6 pasos con enseñanza final). Así aplican siempre y **no interfieren**
-  con la personalización del template (US-26). La longitud sigue gobernada por `prompt.story.params`.
+  tranquilo, y estructura de 5 pasos: presentación, situación, amigo que ayuda, resolución y
+  enseñanza final). Así aplican siempre y **no interfieren** con la personalización del template
+  (US-26). La longitud sigue gobernada por `prompt.story.params`.
 - **Gotcha de precedencia (clave):** en `local`/`cloud`, `AppSetting.prompt.story.system`
   **sobreescribe** el default de código. Por eso se cambió **a la vez** `INSTRUCCION_SEGURIDAD`
   (código) **y** el seed (`prompt.story.system`); si solo se toca el código, una BD ya seedada no ve
   el cambio. El `MockProvider` no usa prompts → sin efecto en `mock`.
 - **Estructura condicionada por redacción:** "cuando escribas un cuento o una fábula…", para no
-  forzar la estructura de 6 pasos en `poema`/`adivinanza`.
+  forzarla en `poema`/`adivinanza`. Se retiró el "pequeño conflicto seguro" (decisión del usuario
+  tras revisar 10 generaciones de prueba).
+- **Bug de idioma corregido:** el placeholder `{idioma}` de la plantilla configurable se sustituía
+  por el **código** (`en`/`es`) → "Escríbelo en en", y el modelo a veces escribía en el idioma
+  equivocado. Se añadió `{idiomaNombre}` (`español`/`inglés`) y se corrigió la plantilla del seed.
+  **Verificación:** 10 cuentos por Groq (cloud) mostraron buen cumplimiento de tono/seguridad/
+  onomatopeyas/final feliz; tras el fix, los perfiles `en` generan en inglés.
+- **Para que `cloud`/`local` reflejen cambios de prompt en código hay que reconstruir el contenedor
+  del backend** (`docker compose up -d --build backend`); el seed (DB) sí se aplica al reseedear,
+  pero el código del template lo ejecuta el contenedor.

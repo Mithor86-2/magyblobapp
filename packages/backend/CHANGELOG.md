@@ -13,15 +13,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - Reglas narrativas del cuento / prompt maestro (US-28): el system prompt de `generateStory` (en
   código y en el seed `prompt.story.system`, ES/EN) incorpora estructura (presentación, situación,
-  conflicto seguro, amigo que ayuda, resolución y enseñanza final), tono tierno, onomatopeyas
-  suaves y final feliz y tranquilo. No cambia el contrato HTTP ni la personalización (US-26); solo
-  afecta a `local`/`cloud`.
+  amigo que ayuda, resolución y enseñanza final), tono tierno, onomatopeyas suaves y final feliz y
+  tranquilo. No cambia el contrato HTTP ni la personalización (US-26); solo afecta a `local`/`cloud`.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- Idioma del cuento en plantillas configurables (US-28): nuevo valor `{idiomaNombre}`
+  (`español`/`inglés`) y plantilla del seed corregida (antes `{idioma}` quedaba como "en"/"es", p.
+  ej. "Escríbelo en en", y el modelo a veces escribía en el idioma equivocado).
 
 ### Security
 

@@ -131,10 +131,13 @@ tranquilo. **Solo backend** (`prompts.ts` + seed `AppSetting`); el contrato HTTP
 **Criterios de aceptación**
 
 - Dado que se genera un cuento (formato `cuento`/`fábula`), Cuando se construye el prompt, Entonces
-  pide una **estructura**: presentación del personaje, situación inicial, pequeño conflicto seguro,
-  un amigo que ayuda, resolución positiva y una **enseñanza final**.
+  pide una **estructura**: presentación del personaje, situación inicial, un amigo que ayuda,
+  resolución positiva y una **enseñanza final**.
 - Dado el prompt del cuento, Cuando se construye, Entonces pide **tono tierno** y **onomatopeyas
   suaves** y prohíbe miedo, violencia o peligro real, con **final feliz y tranquilo**.
+- Dado un perfil en inglés, Cuando se construye el prompt con plantilla configurable, Entonces el
+  idioma se expresa de forma legible (`{idiomaNombre}` → "inglés"/"español"), de modo que el cuento
+  se escribe en el idioma del perfil.
 - Dada la personalización de US-26, Cuando se aplica el prompt maestro, Entonces se **mantienen**
   nombre, edad, intereses y estilo, y la longitud configurable (`palabrasMin/Max`).
 - (No funcional) Dado el cambio de prompts, Cuando se ejecuta el gate, Entonces los tests de

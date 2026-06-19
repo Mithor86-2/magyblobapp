@@ -6,7 +6,7 @@ import { PrismaClient } from '../src/generated/prisma/index.js';
  * (las claves de API y el DATABASE_URL siguen en variables de entorno).
  *
  * Las plantillas usan placeholders `{clave}` que resuelve la capa de IA:
- * cuento → {nombre} {edad} {tema} {estilo} {idioma}; actividad → {n} {categoria} {nombre} {edad}.
+ * cuento → {nombre} {edad} {tema} {estilo} {idiomaNombre}; actividad → {n} {categoria} {nombre} {edad}.
  * Idempotente (upsert por `key`): se puede reejecutar sin duplicar.
  */
 const SETTINGS: { key: string; value: string; descripcion: string }[] = [
@@ -18,15 +18,14 @@ const SETTINGS: { key: string; value: string; descripcion: string }[] = [
       'tono tierno. Usa onomatopeyas suaves (como "plin-plin", "boing-boing", "shhh"). Sin ' +
       'miedo, violencia ni peligro real, ni temas para adultos; final feliz y tranquilo. ' +
       'Cuando escribas un cuento o una fábula, sigue esta estructura: presenta al personaje, ' +
-      'una situación inicial, un pequeño conflicto seguro, un amigo que ayuda, una resolución ' +
-      'positiva y una enseñanza final.',
+      'una situación inicial, un amigo que ayuda, una resolución positiva y una enseñanza final.',
     descripcion: 'System prompt de generateStory (reglas del prompt maestro, US-28).',
   },
   {
     key: 'prompt.story.template',
     value:
       'Escribe un cuento corto (4 a 6 frases) para {nombre}, de {edad} años, sobre ' +
-      '"{tema}" con un estilo {estilo}. {nombre} es el protagonista. Escríbelo en {idioma}. ' +
+      '"{tema}" con un estilo {estilo}. {nombre} es el protagonista. Escríbelo en {idiomaNombre}. ' +
       'Devuelve un título breve y el cuerpo del cuento.',
     descripcion: 'Plantilla del cuento.',
   },

@@ -49,16 +49,15 @@ const INSTRUCCION_SEGURIDAD: Record<CodigoIdioma, string> = {
     '(como "plin-plin", "boing-boing", "shhh"). Nunca incluyas miedo, violencia ni ' +
     'peligro real, ni temas para adultos; termina siempre con un final feliz y ' +
     'tranquilo. Cuando escribas un cuento o una fábula, sigue esta estructura: ' +
-    'presenta al personaje, una situación inicial, un pequeño conflicto seguro, un ' +
-    'amigo que ayuda, una resolución positiva y una enseñanza final.',
+    'presenta al personaje, una situación inicial, un amigo que ayuda, una ' +
+    'resolución positiva y una enseñanza final.',
   en:
     'You are a storyteller for children aged 2 to 6. Always write in English, ' +
     'with simple language, short sentences and a tender tone. Use soft onomatopoeia ' +
     '(like "plink-plink", "boing-boing", "shhh"). Never include fear, violence or ' +
     'real danger, or adult themes; always end with a happy, calm ending. When you ' +
     'write a story or a fable, follow this structure: introduce the character, an ' +
-    'initial situation, a small safe conflict, a friend who helps, a positive ' +
-    'resolution and a final lesson.',
+    'initial situation, a friend who helps, a positive resolution and a final lesson.',
 };
 
 /**
@@ -152,6 +151,9 @@ export function buildStoryPrompt(
     tema: input.tema,
     estilo: input.estilo,
     idioma,
+    // Nombre legible del idioma para las plantillas configurables: evita que
+    // `{idioma}` quede como "en"/"es" en el prompt (p. ej. "Escríbelo en inglés").
+    idiomaNombre: idioma === 'es' ? 'español' : 'inglés',
     intereses: gustos,
     tono,
     formato: params?.formato ?? 'cuento',
