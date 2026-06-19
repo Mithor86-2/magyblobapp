@@ -45,15 +45,12 @@ export const CATEGORIA_LABEL: Record<Categoria, string> = {
   logica: 'Lógica',
 };
 
-/** Etiqueta e icono del proveedor de IA que generó el contenido (Autor, US-25). */
+/**
+ * Etiqueta del proveedor de IA que generó el contenido (Autor, US-25). El icono
+ * por proveedor lo resuelve el wrapper `Icon` (`prov-mock|prov-local|prov-cloud`).
+ */
 export const PROVEEDOR_LABEL: Record<ProveedorIa, string> = {
   mock: 'Simulada',
   local: 'IA local',
   cloud: 'IA en la nube',
-};
-
-export const PROVEEDOR_ICONO: Record<ProveedorIa, string> = {
-  mock: '🎭',
-  local: '🖥️',
-  cloud: '☁️',
 };

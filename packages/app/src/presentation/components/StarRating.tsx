@@ -1,4 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Icon } from './Icon';
+import { colors, iconSize } from '../theme/tokens';
 
 /**
  * Valoración en estrellas (1-3). En modo lectura solo muestra; si se pasa
@@ -17,9 +19,13 @@ export function StarRating({
       {estrellas.map((n) => {
         const lleno = n <= value;
         const star = (
-          <Text key={n} style={styles.star}>
-            {lleno ? '⭐' : '☆'}
-          </Text>
+          <Icon
+            key={n}
+            name="rating"
+            size={iconSize.md}
+            fill={lleno}
+            color={lleno ? colors.primary : colors.outline}
+          />
         );
         if (!onChange) return star;
         return (
@@ -48,8 +54,5 @@ const styles = StyleSheet.create({
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  star: {
-    fontSize: 28,
   },
 });

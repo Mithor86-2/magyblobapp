@@ -384,3 +384,18 @@ mergeada, integrada aquí por `git merge develop`).
   `StoryReaderScreen`. Voces por idioma configurables (`ELEVENLABS_VOICE_ID_ES/_EN`).
 - **Evento `cuento_narrado`** solo en cache-miss (primera síntesis), para no inflar el tracking con
   reescuchas.
+
+## Iconografía con lucide-react-native (Fase de mejoras · 2026-06-19 · US-29)
+
+Rama `feature/29-iconos-lucide` (desde `develop`). Solo app.
+
+- **Decisión con el usuario — alcance parcial:** se migran a iconos SVG de Lucide solo los iconos
+  **funcionales** (navegación, controles, valoración, acciones, categorías, badges de "Autor"). Los
+  **avatares de animales** (`AvatarPicker`) y el `✨` por defecto se mantienen como **emoji** a
+  propósito: aportan color y calidez que los iconos de línea no igualan en una app de 2-6 años.
+- **Wrapper `Icon` central:** las pantallas piden el icono por **nombre semántico** del dominio de la
+  UI (`<Icon name="play" />`) y quedan desacopladas de la librería; el mapa nombre→componente vive
+  solo en `components/Icon.tsx`. Consume los tokens de tema (`iconSize`, `colors`).
+- **Cumplimiento:** Lucide empaqueta los datos SVG en el bundle en build-time → **no** añade red en
+  runtime ni SDK de tercero activo; compatible con `cumplimiento-menores.md`. Peer dep
+  `react-native-svg` instalada con `expo install` (fija la versión compatible con el SDK).

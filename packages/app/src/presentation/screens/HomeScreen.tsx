@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
+import { Icon } from '../components/Icon';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
@@ -40,7 +41,8 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         accessibilityRole="button"
         accessibilityLabel="Zona de personas adultas"
       >
-        <Text style={styles.adultLinkText}>👤 Zona de personas adultas</Text>
+        <Icon name="adults" size="sm" color={colors.onSurfaceVariant} />
+        <Text style={styles.adultLinkText}>Zona de personas adultas</Text>
       </Pressable>
     </Screen>
   );
@@ -72,6 +74,9 @@ const styles = StyleSheet.create({
   adultLink: {
     marginTop: spacing.lg,
     alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     paddingVertical: spacing.sm,
   },
   adultLinkText: {

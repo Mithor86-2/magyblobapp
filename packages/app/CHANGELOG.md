@@ -19,6 +19,24 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.9.0] - 2026-06-19
+
+Iconografía funcional con lucide-react-native (US-29).
+
+### Added
+
+- Iconografía funcional con **lucide-react-native** (US-29): wrapper central `Icon` que mapea nombres
+  semánticos a iconos SVG vectoriales y consume los tokens de tema (tamaño/color); tokens `iconSize`
+  (`sm|md|lg`). Iconos empaquetados en build-time (sin red en runtime ni SDK de tercero activo).
+  `BubblyButton` admite ahora un icono opcional y botones solo-icono (con `accessibilityLabel`).
+
+### Changed
+
+- Sustituidos los **emojis funcionales** por iconos de Lucide: pestañas (Inicio/Actividades/Cuentos/
+  Historial), controles de narración (play/pausa/stop), valoración en estrellas, flecha "Leer cuento",
+  acceso a la zona de adultos, categorías de actividad (arte/música/lógica) y badges de "Autor"
+  (proveedor de IA). Los **avatares de animales** (y el avatar por defecto) siguen siendo emoji.
+
 ## [0.8.0] - 2026-06-18
 
 Narración de cuentos en voz alta (US-22) con ElevenLabs y fallback a voz nativa.

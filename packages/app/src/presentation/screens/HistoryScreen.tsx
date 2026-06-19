@@ -5,6 +5,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { Icon } from '../components/Icon';
 import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
@@ -82,7 +83,10 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
                 </Text>
               </View>
             </View>
-            <Text style={styles.accion}>Leer cuento →</Text>
+            <View style={styles.accionRow}>
+              <Text style={styles.accion}>Leer cuento</Text>
+              <Icon name="arrow-right" size="sm" color={colors.primary} />
+            </View>
             <AuthorBadge proveedor={story.proveedor} />
           </Pressable>
         ))
@@ -152,6 +156,11 @@ const styles = StyleSheet.create({
   estadoText: {
     ...typography.labelBold,
     color: colors.onSurface,
+  },
+  accionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   accion: {
     ...typography.labelBold,

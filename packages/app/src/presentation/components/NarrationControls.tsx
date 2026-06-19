@@ -5,10 +5,10 @@ import { spacing } from '../theme/tokens';
 import type { Story } from '../../domain/types';
 
 const LABEL = {
-  idle: '▶ Escuchar',
+  idle: 'Escuchar',
   loading: 'Preparando…',
-  playing: '⏸ Pausar',
-  paused: '▶ Reanudar',
+  playing: 'Pausar',
+  paused: 'Reanudar',
 } as const;
 
 /**
@@ -25,12 +25,15 @@ export function NarrationControls({ story }: { story: Story }) {
       <View style={styles.principal}>
         <BubblyButton
           label={LABEL[estado]}
+          icon={estado === 'playing' ? 'pause' : 'play'}
           variant="secondary"
           loading={estado === 'loading'}
           onPress={estado === 'playing' ? pausar : escuchar}
         />
       </View>
-      {sonando ? <BubblyButton label="⏹" variant="secondary" onPress={parar} /> : null}
+      {sonando ? (
+        <BubblyButton icon="stop" accessibilityLabel="Parar" variant="secondary" onPress={parar} />
+      ) : null}
     </View>
   );
 }

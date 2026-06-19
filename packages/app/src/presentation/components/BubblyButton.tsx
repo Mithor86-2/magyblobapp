@@ -1,8 +1,14 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Icon, type IconName } from './Icon';
 import { colors, radius, tapTarget, typography } from '../theme/tokens';
 
 interface BubblyButtonProps {
-  label: string;
+  /** Texto del botón. Opcional para botones solo-icono (usar `accessibilityLabel`). */
+  label?: string;
+  /** Icono opcional delante del texto (lucide, vía wrapper `Icon`). */
+  icon?: IconName;
+  /** Nombre accesible cuando no hay `label` visible (botón solo-icono). */
+  accessibilityLabel?: string;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
@@ -22,6 +28,8 @@ const VARIANT_BG = {
  */
 export function BubblyButton({
   label,
+  icon,
+  accessibilityLabel,
   onPress,
   disabled = false,
   loading = false,
@@ -33,6 +41,7 @@ export function BubblyButton({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       onPress={onPress}
       disabled={isDisabled}
@@ -44,10 +53,16 @@ export function BubblyButton({
       ]}
     >
       <View style={styles.inner}>
-        {loading ? <ActivityIndicator color={colors.onPrimary} /> : null}
-        <Text style={styles.label} numberOfLines={1}>
-          {label}
-        </Text>
+        {loading ? (
+          <ActivityIndicator color={colors.onPrimary} />
+        ) : icon ? (
+          <Icon name={icon} color={colors.onPrimary} size="md" />
+        ) : null}
+        {label ? (
+          <Text style={styles.label} numberOfLines={1}>
+            {label}
+          </Text>
+        ) : null}
       </View>
     </Pressable>
   );
