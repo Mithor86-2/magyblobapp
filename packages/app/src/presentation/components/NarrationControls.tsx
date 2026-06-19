@@ -1,0 +1,47 @@
+import { StyleSheet, View } from 'react-native';
+import { BubblyButton } from './BubblyButton';
+import { useNarration } from '../hooks/useNarration';
+import { spacing } from '../theme/tokens';
+import type { Story } from '../../domain/types';
+
+const LABEL = {
+  idle: '▶ Escuchar',
+  loading: 'Preparando…',
+  playing: '⏸ Pausar',
+  paused: '▶ Reanudar',
+} as const;
+
+/**
+ * Controles de narración de un cuento (US-22): un botón principal que alterna
+ * escuchar/pausar/reanudar y un botón de parar cuando suena. La lógica (audio de
+ * ElevenLabs + fallback a voz nativa + limpieza) vive en `useNarration`.
+ */
+export function NarrationControls({ story }: { story: Story }) {
+  const { estado, escuchar, pausar, parar } = useNarration(story);
+  const sonando = estado === 'playing' || estado === 'paused';
+
+  return (
+    <View style={styles.row}>
+      <View style={styles.principal}>
+        <BubblyButton
+          label={LABEL[estado]}
+          variant="secondary"
+          loading={estado === 'loading'}
+          onPress={estado === 'playing' ? pausar : escuchar}
+        />
+      </View>
+      {sonando ? <BubblyButton label="⏹" variant="secondary" onPress={parar} /> : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'stretch',
+  },
+  principal: {
+    flex: 1,
+  },
+});

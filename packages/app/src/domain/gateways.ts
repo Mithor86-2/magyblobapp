@@ -36,6 +36,8 @@ export interface StoryGateway {
   generate(request: GenerateStoryRequest): Promise<Story>;
   /** Marca un cuento como leído (US-07). */
   markRead(storyId: string): Promise<Story>;
+  /** URL del audio de narración del cuento (US-22). Constructor puro, sin red. */
+  narrationUrl(storyId: string): string;
 }
 
 export interface ActivityGateway {

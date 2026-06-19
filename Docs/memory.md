@@ -363,3 +363,24 @@ Rama `feature/funcionalidad-personalizacion`; cubre US-26, US-27 y US-10 ampliad
   `complete`; conserva el atajo de tocar estrellas.
 - **Nota de proceso:** esta rama y la de narración (US-22) se desarrollaron en paralelo; al cerrar,
   US-22 quedó en su propia rama/stash. Ninguna estaba mergeada a `develop` aún.
+
+## Narración de cuentos con ElevenLabs (Fase de mejoras · 2026-06-18 · US-22)
+
+Rama `feature/22-narracion-cuentos-elevenlabs` (desde `develop`; `funcionalidad-personalizacion` ya
+mergeada, integrada aquí por `git merge develop`).
+
+- **Decisión con el usuario:** ElevenLabs como **motor principal** (no el opt-in OFF que contemplaba
+  el plan original), con **fallback a voz nativa** (`expo-speech`) y **audio persistido**. Se asume
+  conscientemente la **desviación de cumplimiento** (C-2/C-5, Apple Kids): narrar envía el texto del
+  cuento —con el nombre del niño— a un tercero, y **no es minimizable**. Documentado en
+  `cumplimiento-menores.md` (C-11) y US-22; válido en el marco del TFM, no para producción real.
+- **Arquitectura (espejo del `AIProvider`):** puerto `TTSProvider` (dominio) + `ElevenLabsProvider`
+  (infra). El backend es **proxy** (la `xi-api-key` —env `ELEVENT_LABS_API`, con typo heredado— no
+  sale al cliente). Ruta `GET /stories/:id/narration` → `audio/mpeg`. **Caché** `StoryNarration`
+  (1-1 con `Story`, `Bytes`): se sintetiza una vez por cuento. El **fallback es de cliente** (la voz
+  nativa es del SO), a diferencia del `FallbackProvider` del LLM que es de servidor.
+- **App:** hook `useNarration` (fetch del audio → `expo-file-system` a caché → `expo-audio`; si
+  falla, `Speech.speak`; limpieza al desmontar) + `NarrationControls`, usado en el Generador y en
+  `StoryReaderScreen`. Voces por idioma configurables (`ELEVENLABS_VOICE_ID_ES/_EN`).
+- **Evento `cuento_narrado`** solo en cache-miss (primera síntesis), para no inflar el tracking con
+  reescuchas.

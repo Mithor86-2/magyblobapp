@@ -19,6 +19,27 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.7.0] - 2026-06-18
+
+Narración de cuentos con ElevenLabs (US-22): el backend como proxy de TTS.
+
+### Added
+
+- Narración de cuentos (US-22): puerto `TTSProvider` (dominio) y proveedor `ElevenLabsProvider`
+  (`POST /v1/text-to-speech/{voice_id}`, modelo `eleven_multilingual_v2`, voz por idioma ES/EN). El
+  backend actúa de **proxy** (la `xi-api-key` no sale del servidor). Nueva ruta
+  `GET /stories/:id/narration` que devuelve el MP3 como `audio/mpeg`.
+- Caché de narración: entidad `StoryNarration` + tabla `story_narrations` (1-1 con `stories`,
+  borrado en cascada) y migración `add_story_narration`. El audio se sintetiza una sola vez por
+  cuento y se reutiliza (sin gastar créditos en cada reproducción).
+- Evento de uso `cuento_narrado` (`InteractionEvent`), registrado solo en la primera síntesis.
+- Configuración `tts` (env `ELEVENT_LABS_API`, `ELEVENLABS_MODEL`, `ELEVENLABS_VOICE_ID_ES/_EN`,
+  `ELEVENLABS_TIMEOUT_MS`).
+- Saneo del texto antes de narrar (`sanitizeForSpeech`): quita emojis y pictogramas para que el
+  motor TTS no los lea en voz alta.
+- Trazas (pino) de la narración: proveedor, voz, modelo, idioma, texto enviado (tamaño + extracto)
+  y respuesta (estado, bytes, ms), más cache hit/miss en la ruta.
+
 ## [0.6.0] - 2026-06-18
 
 Funcionalidad y personalización: prompts personalizados y parámetros del cuento (US-26/US-18).

@@ -1,4 +1,5 @@
 import { CLOUD_PRESETS, type CloudTarget } from './infrastructure/ai/cloudPresets.js';
+import type { CodigoIdioma } from './domain/value-objects/Idioma.js';
 
 /**
  * Configuración derivada de variables de entorno, con valores por defecto
@@ -19,7 +20,24 @@ export interface Config {
    * pero la key del target elegido debe estar presente aquí para poder usarlo.
    */
   cloudApiKeys: Partial<Record<CloudTarget, string>>;
+  /** Síntesis de voz (ElevenLabs). La API key es secreta y se lee de env. */
+  tts: TtsConfig;
 }
+
+export interface TtsConfig {
+  /** `xi-api-key` de ElevenLabs (env `ELEVENT_LABS_API`); `undefined` ⇒ voz nativa. */
+  apiKey: string | undefined;
+  /** Modelo de síntesis (env `ELEVENLABS_MODEL`). */
+  model: string;
+  /** Voz por idioma (env `ELEVENLABS_VOICE_ID_ES` / `_EN`). */
+  voiceIdByLang: Record<CodigoIdioma, string>;
+  /** Timeout de la petición a ElevenLabs en ms (env `ELEVENLABS_TIMEOUT_MS`). */
+  timeoutMs: number;
+}
+
+/** Voces premade de ElevenLabs por defecto (multilingual_v2); sobreescribibles por env. */
+const VOZ_DEFECTO_ES = 'JBFqnCBsd6RMkjVDRZzb';
+const VOZ_DEFECTO_EN = '21m00Tcm4TlvDq8ikWAM';
 
 function parsePort(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
@@ -51,5 +69,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     ollamaModel: env.OLLAMA_MODEL ?? 'gemma:2b',
     aiTimeoutMs: parsePort(env.AI_TIMEOUT_MS, 60_000),
     cloudApiKeys: loadCloudApiKeys(env),
+    tts: loadTtsConfig(env),
+  };
+}
+
+function loadTtsConfig(env: NodeJS.ProcessEnv): TtsConfig {
+  const apiKey = env.ELEVENT_LABS_API?.trim();
+  return {
+    apiKey: apiKey === undefined || apiKey === '' ? undefined : apiKey,
+    model: env.ELEVENLABS_MODEL?.trim() || 'eleven_multilingual_v2',
+    voiceIdByLang: {
+      es: env.ELEVENLABS_VOICE_ID_ES?.trim() || VOZ_DEFECTO_ES,
+      en: env.ELEVENLABS_VOICE_ID_EN?.trim() || VOZ_DEFECTO_EN,
+    },
+    timeoutMs: parsePort(env.ELEVENLABS_TIMEOUT_MS, 30_000),
   };
 }

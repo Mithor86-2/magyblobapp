@@ -289,14 +289,16 @@ se abra). Algunas parten de algo ya existente (se indica).
       (`cuento·fábula·poema·adivinanza`) para más dinámica. Solo backend; verificado en `mock`/`local`.
 - [x] ✅ **Releer cuento desde el Historial** (US-27, misma rama). Al tocar un cuento se abre la vista
       de lectura (`StoryReaderScreen`: título+cuerpo+Autor) y se marca `leído` al abrirla.
-- [ ] **Narrar cuento en voz alta** (US-22). Botón "▶ Leer cuento" + controles pausa/parar en el
-      Generador y en la vista de lectura del Historial, usando la síntesis de voz **nativa del
-      dispositivo** (`expo-speech`) en el idioma del perfil. **Solo app**, sin tocar el backend;
-      gratuita y **on-device**, no rompe el cumplimiento (no sale ningún dato; C-2/C-3/C-5).
-      _Alternativa contemplada:_ voz premium en la nube (**ElevenLabs**) tras una interfaz
-      `TTSProvider`, **opt-in OFF por defecto** y tras puerta parental (patrón de US-14); de pago,
-      envía el cuento íntegro (con el nombre) a un tercero, rompe C-5 y exige backend-proxy para la
-      API key. No es el camino por defecto; el `DeviceTTS` nativo es el fallback. Detalle en US-22.
+- [x] ✅ **Narrar cuento en voz alta** (US-22, backend v0.7.0 / app v0.8.0, rama
+      `feature/22-narracion-cuentos-elevenlabs`).
+      Botón "▶ Escuchar/⏸/⏹" en el Generador y en la vista de lectura del Historial. Motor principal
+      **ElevenLabs** (`eleven_multilingual_v2`, voz por idioma) servido por el **backend como proxy**
+      (`GET /stories/:id/narration` → `audio/mpeg`); el MP3 se **persiste/cachea** (`StoryNarration`,
+      migración Prisma) y se sintetiza una sola vez por cuento. La app reproduce con `expo-audio` y
+      **degrada a la voz nativa** del dispositivo (`expo-speech`) si ElevenLabs falla, sin error
+      visible. **Desviación de cumplimiento asumida (TFM):** narrar envía el texto del cuento (con el
+      nombre del niño) a un tercero → rompe C-2/C-5 e incompatible con Apple Kids; documentado en
+      `cumplimiento-menores.md` (C-11) y US-22. `pnpm check` verde (118 backend + 12 app) + bundle.
 - [x] ✅ **Botón "Realizado" en actividades** (US-10 ampliada, misma rama). En `ActivityCard`, botón
       explícito que revela la valoración (1-3) y al elegirla llama a `complete`; el atajo de tocar
       las estrellas se conserva.

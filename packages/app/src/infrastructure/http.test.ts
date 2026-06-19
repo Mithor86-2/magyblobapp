@@ -139,6 +139,16 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(options.method).toBe('POST');
   });
 
+  it('stories.narrationUrl construye la URL del audio sin hacer red', () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const url = api.stories.narrationUrl('s1');
+
+    expect(url).toBe(`${BASE}/stories/s1/narration`);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('activities.complete hace POST /activities/:id/complete con la valoración', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 'a1', valoracion: 3 }));
     vi.stubGlobal('fetch', fetchMock);

@@ -49,6 +49,13 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      # Narración de cuentos (ElevenLabs, US-22). Secreto: la xi-api-key. Sin ella,
+      # la app degrada a la voz nativa del dispositivo.
+      ELEVENT_LABS_API: ${ELEVENT_LABS_API:-}
+      ELEVENLABS_MODEL: ${ELEVENLABS_MODEL:-eleven_multilingual_v2}
+      ELEVENLABS_VOICE_ID_ES: ${ELEVENLABS_VOICE_ID_ES:-}
+      ELEVENLABS_VOICE_ID_EN: ${ELEVENLABS_VOICE_ID_EN:-}
+      ELEVENLABS_TIMEOUT_MS: ${ELEVENLABS_TIMEOUT_MS:-30000}
     ports:
       - '3000:3000'
     healthcheck:

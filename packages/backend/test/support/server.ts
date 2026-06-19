@@ -3,11 +3,13 @@ import { buildServer } from '../../src/server.js';
 import type { AppDeps } from '../../src/dependencies.js';
 import { MockProvider } from '../../src/infrastructure/ai/MockProvider.js';
 import {
+  FakeTTSProvider,
   InMemoryActivityRepository,
   InMemoryAuditLogRepository,
   InMemoryChildProfileRepository,
   InMemoryGuardianRepository,
   InMemoryInteractionEventRepository,
+  InMemoryStoryNarrationRepository,
   InMemoryStoryRepository,
   relojFijo,
   secuencialIdGenerator,
@@ -21,6 +23,13 @@ const TEST_CONFIG = {
   ollamaBaseUrl: 'http://localhost:11434',
   ollamaModel: 'gemma:2b',
   aiTimeoutMs: 1000,
+  cloudApiKeys: {},
+  tts: {
+    apiKey: undefined,
+    model: 'eleven_multilingual_v2',
+    voiceIdByLang: { es: 'voz-es', en: 'voz-en' },
+    timeoutMs: 1000,
+  },
 } as const;
 
 /** Dependencias en memoria + handles a los repos para inspeccionarlos en los tests. */
@@ -28,23 +37,27 @@ export function makeInMemoryDeps() {
   const guardians = new InMemoryGuardianRepository();
   const profiles = new InMemoryChildProfileRepository();
   const stories = new InMemoryStoryRepository();
+  const narrations = new InMemoryStoryNarrationRepository();
   const activities = new InMemoryActivityRepository();
   const events = new InMemoryInteractionEventRepository();
   const audit = new InMemoryAuditLogRepository();
+  const tts = new FakeTTSProvider();
 
   const deps: AppDeps = {
     guardians,
     profiles,
     stories,
+    narrations,
     activities,
     events,
     audit,
     ai: new MockProvider(),
+    tts,
     newId: secuencialIdGenerator(),
     now: relojFijo(),
   };
 
-  return { deps, guardians, profiles, stories, activities, events, audit };
+  return { deps, guardians, profiles, stories, narrations, activities, events, audit, tts };
 }
 
 /** Construye el servidor con dobles en memoria (no toca Prisma ni la DB). */

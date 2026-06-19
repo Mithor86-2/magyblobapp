@@ -37,6 +37,7 @@ export async function buildServer(
   const resolved =
     deps ??
     (await import('./infrastructure/composition.js')).buildProductionDeps(config, {
+      info: (meta, msg) => app.log.info(meta, msg),
       warn: (meta, msg) => app.log.warn(meta, msg),
     });
 

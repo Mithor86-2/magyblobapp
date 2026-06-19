@@ -9,6 +9,7 @@ import { ApiError } from '../../domain/errors';
 import { ESTILO_LABEL, TEMA_LABEL } from '../labels';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { NarrationControls } from '../components/NarrationControls';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
@@ -98,6 +99,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
         <View style={styles.storyCard}>
           <Text style={styles.storyTitle}>{story.titulo}</Text>
           <Text style={styles.storyBody}>{story.cuerpo}</Text>
+          <NarrationControls story={story} />
           <AuthorBadge proveedor={story.proveedor} />
         </View>
       ) : null}

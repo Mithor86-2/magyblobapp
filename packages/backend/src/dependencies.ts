@@ -1,7 +1,9 @@
 import type { AIProvider } from './domain/ai/AIProvider.js';
+import type { TTSProvider } from './domain/tts/TTSProvider.js';
 import type { GuardianRepository } from './domain/repositories/GuardianRepository.js';
 import type { ChildProfileRepository } from './domain/repositories/ChildProfileRepository.js';
 import type { StoryRepository } from './domain/repositories/StoryRepository.js';
+import type { StoryNarrationRepository } from './domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from './domain/repositories/ActivityRepository.js';
 import type { InteractionEventRepository } from './domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from './domain/repositories/AuditLogRepository.js';
@@ -16,10 +18,12 @@ export interface AppDeps {
   guardians: GuardianRepository;
   profiles: ChildProfileRepository;
   stories: StoryRepository;
+  narrations: StoryNarrationRepository;
   activities: ActivityRepository;
   events: InteractionEventRepository;
   audit: AuditLogRepository;
   ai: AIProvider;
+  tts: TTSProvider;
   newId: IdGenerator;
   now: Clock;
 }

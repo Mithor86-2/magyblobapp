@@ -15,6 +15,7 @@ e `InteractionEvent` cubren trazabilidad y uso de **primera parte**. Ver
 erDiagram
     Guardian     ||--o{ ChildProfile : "tutela"
     ChildProfile ||--o{ Story : "genera"
+    Story        ||--o| StoryNarration : "narra"
     ChildProfile ||--o{ Activity : "realiza"
     ChildProfile ||--o{ InteractionEvent : "produce"
     Guardian     ||--o{ AuditLog : "actor de"
@@ -56,6 +57,15 @@ erDiagram
         datetime creadoEn
     }
 
+    StoryNarration {
+        uuid     id       PK
+        uuid     storyId  FK "-> Story.id (1-1, único)"
+        bytes    mp3      "audio MP3 de ElevenLabs (caché)"
+        string   voiceId  "voz usada"
+        string   idioma   "es | en"
+        datetime creadoEn
+    }
+
     Activity {
         uuid     id          PK
         uuid     profileId   FK "-> ChildProfile.id"
@@ -72,7 +82,7 @@ erDiagram
     InteractionEvent {
         uuid     id        PK
         uuid     profileId FK "-> ChildProfile.id (pseudónimo)"
-        string   tipo      "pantalla_vista | cuento_generado | actividad_completada | ..."
+        string   tipo      "pantalla_vista | cuento_generado | cuento_narrado | actividad_completada"
         json     payload   "datos del evento (sin PII)"
         datetime creadoEn
     }
@@ -95,6 +105,14 @@ erDiagram
         datetime actualizadoEn "opcional"
     }
 ```
+
+`StoryNarration` es la **caché de audio** de la narración de un cuento (US-22): relación 1-1 con
+`Story` (`storyId` único), borrado en cascada. Guarda el MP3 generado por ElevenLabs para no
+re-sintetizar (ni gastar créditos) en cada reproducción. El audio se genera bajo demanda
+(`GET /stories/:id/narration`); si ElevenLabs falla, la app narra con la voz nativa del dispositivo
+y no se persiste nada. **Aviso de privacidad:** narrar con ElevenLabs envía el `cuerpo` del cuento
+(con el nombre del niño) a un tercero — desviación de C-2/C-5 asumida para el TFM, ver
+[cumplimiento-menores.md](cumplimiento-menores.md).
 
 `AppSetting` es **global** (no se relaciona con otras entidades): es una tabla
 clave-valor para configuración de la app editable sin redeploy.
