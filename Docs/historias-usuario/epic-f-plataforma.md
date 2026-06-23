@@ -221,10 +221,13 @@ app.** Sin red ni SDKs de terceros en runtime (la dependencia es solo de desarro
 - Dada la puerta parental `ParentalGate`, Cuando se muestra el reto y se elige la **respuesta
   correcta**, Entonces se renderiza el contenido protegido (`children`); Cuando se elige una
   **incorrecta**, Entonces no se revela el contenido y se regenera el reto.
-- Dado el campo `TextField`, Cuando se escribe en él, Entonces es localizable por su **etiqueta** e
-  invoca `onChangeText`; Cuando tiene `error`, Entonces el mensaje de error es visible.
-- Dado el chip `SelectableChip`, Cuando se pulsa, Entonces invoca `onPress` y su estado
-  **seleccionado** es observable de forma accesible.
+- Dado el campo `TextField`, Cuando se renderiza, Entonces muestra su **etiqueta** visible y el campo
+  es localizable por su **rol** (`textbox`); Cuando se escribe en él, Entonces invoca `onChangeText`
+  con el texto y refleja el `value` actual (y el `placeholder` si se proporciona).
+- Dado el chip `SelectableChip`, Cuando se pulsa, Entonces invoca `onPress`, y tanto seleccionado
+  como no seleccionado sigue siendo localizable por su **rol** (`button`) y su **texto**. _(El estado
+  seleccionado se transmite con `accessibilityState={{ selected }}`, que el lector de pantalla anuncia
+  en iOS/Android; el adaptador web usado en los tests no lo proyecta a `aria-selected`.)_
 - (No-funcional) Dadas las pruebas, Cuando se ejecuta `pnpm test`, Entonces corren dentro del gate y
   usan queries por rol/etiqueta/texto (no por estructura ni estilos), reservando `testID` como
   último recurso.
