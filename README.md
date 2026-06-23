@@ -194,13 +194,31 @@ pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Androi
 
 ## Comandos del monorepo
 
-| Comando                             | Qué hace                                              |
-| ----------------------------------- | ----------------------------------------------------- |
-| `pnpm check`                        | typecheck + lint + formato + tests (todo el monorepo) |
-| `pnpm typecheck`                    | `tsc --noEmit` en cada paquete                        |
-| `pnpm lint` / `pnpm lint:fix`       | ESLint (+ SonarJS: bugs y code smells en el backend)  |
-| `pnpm format` / `pnpm format:check` | Prettier                                              |
-| `pnpm test`                         | Vitest en cada paquete                                |
+| Comando                             | Qué hace                                                  |
+| ----------------------------------- | --------------------------------------------------------- |
+| `pnpm check`                        | typecheck + lint + formato + tests (todo el monorepo)     |
+| `pnpm typecheck`                    | `tsc --noEmit` en cada paquete                            |
+| `pnpm lint` / `pnpm lint:fix`       | ESLint (+ SonarJS: bugs y code smells en el backend)      |
+| `pnpm format` / `pnpm format:check` | Prettier                                                  |
+| `pnpm test`                         | Vitest en cada paquete (unitarios + integración de rutas) |
+
+## Pruebas
+
+El proyecto tiene tres niveles (unitario · integración · E2E). El detalle —qué cubre cada uno, cómo
+se ejecutan y la guía de TDD— vive en [Docs/estrategia-pruebas.md](Docs/estrategia-pruebas.md).
+
+El gate diario (`pnpm check`) no necesita Docker. La **integración de persistencia** y los **E2E**
+sí (levantan un Postgres efímero con Testcontainers y, el E2E de app, Chromium):
+
+| Comando                                            | Qué hace                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| `pnpm --filter @magyblob/backend test:integration` | Repos Prisma contra Postgres real (Testcontainers)           |
+| `pnpm --filter @magyblob/backend test:e2e`         | Backend real por HTTP + Postgres real (modo mock)            |
+| `pnpm --filter @magyblob/app e2e:install`          | Descarga Chromium para Playwright (una vez)                  |
+| `pnpm --filter @magyblob/app test:e2e`             | E2E de la app (Expo web + Playwright) contra el backend mock |
+
+En CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) se ejecutan los tres niveles en cada
+push y pull request.
 
 ## Estructura
 

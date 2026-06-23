@@ -111,6 +111,11 @@ docker compose up     # whole stack comes up on a clean machine
 Single backend test: `pnpm --filter @magyblob/backend exec vitest run <file>`
 (or `vitest run -t "<test name>"`).
 
+**Niveles de prueba, suites con Docker (integración/E2E) y guía de TDD:** ver
+[Docs/estrategia-pruebas.md](Docs/estrategia-pruebas.md). El gate (`pnpm check`) cubre unitarios +
+integración de rutas; la integración de persistencia (`test:integration`) y los E2E (`test:e2e`,
+backend y app) corren aparte (requieren Docker) y siempre en CI.
+
 **Regla de seguridad (enforced): verifica el gate antes de pedir commit o cerrar la rama.** Al
 **terminar cualquier ajuste**, ejecuta la comprobación completa (`pnpm check` = typecheck + lint +
 format:check + test; o los comandos individuales cuando proceda) y **valida que todo pasa en verde

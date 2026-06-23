@@ -104,13 +104,16 @@ Estado: `❌` pendiente · `🔄` en curso · `✅` hecha.
 - [x] ✅ El workflow **falla** si cualquier job falla (hace cumplir el DoD). _Nota: la verificación
       real ocurre al hacer push; los comandos de cada job son los mismos ya validados en verde en local._
 
-### 6.5 — Documentación de la estrategia de pruebas + guía TDD
+### 6.5 — Documentación de la estrategia de pruebas + guía TDD ✅
 
-- [ ] ❌ `Docs/estrategia-pruebas.md`: la **pirámide** del proyecto (unitario / integración / E2E),
-      qué cubre cada nivel, **cómo ejecutar** cada uno en local y en CI, y el **mapa** test→capa.
-- [ ] ❌ Guía **TDD**: ciclo Red→Green→Refactor en casos de uso y rutas; **dónde aplica test-first
-      y dónde no** (tabla), con la justificación YAGNI. Enlazar desde `CLAUDE.md` y `phases.md`.
-- [ ] ❌ Actualizar `README` (raíz/paquetes) con la sección de pruebas y los nuevos scripts.
+- [x] ✅ [`Docs/estrategia-pruebas.md`](../estrategia-pruebas.md): la **pirámide** (unitario /
+      integración / E2E), qué cubre cada nivel, **cómo ejecutar** cada uno en local y en CI, y la tabla
+      nivel → qué prueba → dónde vive → runner.
+- [x] ✅ Guía **TDD**: ciclo Red→Green→Refactor y la tabla **dónde aplica test-first y dónde no** con
+      la justificación YAGNI. Enlazada desde [`CLAUDE.md`](../../CLAUDE.md) (sección DoD); el enlace en
+      `phases.md` se añade al cerrar (6.6).
+- [x] ✅ `README` raíz: sección **Pruebas** con los nuevos scripts (`test:integration`, `test:e2e`,
+      `e2e:install`) y enlace a la estrategia.
 
 ### 6.6 — Cierre (DoD)
 
