@@ -1,5 +1,6 @@
 import type { AIProvider } from './domain/ai/AIProvider.js';
 import type { TTSProvider } from './domain/tts/TTSProvider.js';
+import type { EventBus } from './domain/events/EventBus.js';
 import type { GuardianRepository } from './domain/repositories/GuardianRepository.js';
 import type { ChildProfileRepository } from './domain/repositories/ChildProfileRepository.js';
 import type { StoryRepository } from './domain/repositories/StoryRepository.js';
@@ -24,6 +25,8 @@ export interface AppDeps {
   audit: AuditLogRepository;
   ai: AIProvider;
   tts: TTSProvider;
+  /** Bus de eventos de dominio (Observer): las rutas publican, los suscriptores registran. */
+  bus: EventBus;
   newId: IdGenerator;
   now: Clock;
 }

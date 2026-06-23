@@ -2,6 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { buildServer } from '../../src/server.js';
 import type { AppDeps } from '../../src/dependencies.js';
 import { MockProvider } from '../../src/infrastructure/ai/MockProvider.js';
+import { InMemoryEventBus } from '../../src/infrastructure/events/InMemoryEventBus.js';
+import { wireDomainEvents } from '../../src/infrastructure/events/subscribers.js';
 import {
   FakeTTSProvider,
   InMemoryActivityRepository,
@@ -53,9 +55,13 @@ export function makeInMemoryDeps() {
     audit,
     ai: new MockProvider(),
     tts,
+    bus: new InMemoryEventBus(),
     newId: secuencialIdGenerator(),
     now: relojFijo(),
   };
+
+  // Mismos suscriptores que en producción, sobre los dobles en memoria.
+  wireDomainEvents(deps.bus, deps);
 
   return { deps, guardians, profiles, stories, narrations, activities, events, audit, tts };
 }
