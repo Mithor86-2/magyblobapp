@@ -19,6 +19,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.11.0] - 2026-06-23
+
+Modo cloud activado por defecto (decisión del proyecto; desviación de privacidad asumida).
+
+### Changed
+
+- El modo **cloud pasa a estar ACTIVO por defecto** (US-14): el AppSetting `ai.cloud` se siembra
+  `{activo:true, target:'groq', model:'llama-3.3-70b-versatile'}` y se **carga al arrancar** mediante
+  una migración de datos idempotente (no pisa cambios del adulto). Sigue siendo conmutable en caliente
+  y **sin la API key del target en env cae al modo base** (mock/local), preservando la reproducibilidad
+  sin keys. Implica una **desviación de privacidad** documentada en
+  [ADR 0002](../../Docs/ADR/0002-tres-modos-de-ia.md) y
+  [cumplimiento-menores.md](../../Docs/cumplimiento-menores.md) (C-5).
+
 ## [0.10.0] - 2026-06-23
 
 Pruebas de integración contra Postgres real y E2E del backend por HTTP (US-32, Fase 6).

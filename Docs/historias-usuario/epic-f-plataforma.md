@@ -55,9 +55,12 @@ cuentos y actividades. Ver `AppSetting` en [modelo-datos.md](../modelo-datos.md)
 ## US-14 — Proveedor cloud opcional · Could (reactivada)
 
 > **Historia.** _Retirada del alcance el 2026-06-12 y **reactivada**_ a petición del
-> usuario: se reintroduce el modo `cloud` como **opt-in, OFF por defecto**, conmutable en
-> caliente desde BD. El defecto del proyecto sigue siendo `mock`/`local` (privacidad por
-> diseño). Ver [ADR 0002](../ADR/0002-tres-modos-de-ia.md) y el plan
+> usuario: se reintroduce el modo `cloud` como opt-in, conmutable en caliente desde BD.
+> **Actualización (2026-06-23):** por decisión del proyecto el modo `cloud` pasa a estar
+> **ACTIVO por defecto** (target `groq`), cargado al arrancar por una migración; **sin la
+> API key del target cae al modo base** (`mock`/`local`). Es una **desviación de privacidad
+> asumida** (contexto TFM). Ver [ADR 0002](../ADR/0002-tres-modos-de-ia.md),
+> [cumplimiento-menores.md](../cumplimiento-menores.md) (C-5) y el plan
 > [14-proveedor-cloud](../planes/14-proveedor-cloud.md).
 
 Como **administrador** (zona de padres) quiero **activar y cambiar en caliente** un
@@ -81,7 +84,8 @@ y actividades, sin tocar código ni exponer secretos en la base de datos, y mant
   Entonces se registra un `AuditLog`.
 - (Cumplimiento) Dado el modo cloud, Entonces se documenta que salen **datos minimizados**
   del perfil (edad, intereses, idioma; nunca nombre ni identificadores) a un tercero, que
-  queda OFF por defecto y que los free tiers pueden entrenar con los datos
+  desde 2026-06-23 está **ON por defecto** (desviación asumida; **sin key cae a mock/local**) y
+  que los free tiers pueden entrenar con los datos
   ([cumplimiento-menores.md](../cumplimiento-menores.md)).
 
 ## US-15 — Modo nocturno · Could

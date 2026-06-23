@@ -54,13 +54,14 @@ const SETTINGS: { key: string; value: string; descripcion: string }[] = [
   },
   { key: 'activity.count', value: '3', descripcion: 'Nº de actividades a generar.' },
   {
-    // Selección del proveedor cloud (opt-in). Solo selectores NO secretos; la API
-    // key va en env (p. ej. GROQ_API_KEY). Por defecto DESACTIVADO: privacidad por
-    // diseño (los datos no salen de la máquina salvo que un adulto active el cloud).
+    // Selección del proveedor cloud. Solo selectores NO secretos; la API key va en
+    // env (p. ej. GROQ_API_KEY). Por decisión del proyecto, el modo cloud está
+    // ACTIVO por defecto (target groq); si falta la key del target, cae al modo
+    // base (mock/local) automáticamente. Ver ADR 0002 y cumplimiento-menores.md (C-5).
     key: 'ai.cloud',
-    value: JSON.stringify({ activo: false, target: 'groq', model: 'llama-3.3-70b-versatile' }),
+    value: JSON.stringify({ activo: true, target: 'groq', model: 'llama-3.3-70b-versatile' }),
     descripcion:
-      'Modo cloud (opt-in): {activo,target,model}. Key del target en env. OFF por defecto.',
+      'Modo cloud {activo,target,model}. Key del target en env. ON por defecto (cae a base sin key).',
   },
 ];
 

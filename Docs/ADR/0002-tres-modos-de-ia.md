@@ -13,6 +13,13 @@
   [US-14](../historias-usuario/epic-f-plataforma.md#us-14), el plan
   [14-proveedor-cloud](../planes/14-proveedor-cloud.md) y las salvedades de cumplimiento
   ([cumplimiento-menores.md](../cumplimiento-menores.md), C-5).
+- **Actualización (2026-06-23, cambia el defecto):** por decisión del proyecto, el modo `cloud`
+  pasa a estar **ACTIVO por defecto** (`ai.cloud.activo=true`, target `groq`), cargado al arrancar
+  por una **migración de datos** (idempotente, no pisa cambios del adulto). Sigue siendo conmutable
+  en caliente y, **sin la API key del target en env, cae automáticamente al modo base** (mock/local),
+  por lo que un evaluador sin keys ejecuta en mock igual que antes. **Asume conscientemente** el
+  coste de privacidad (C-5): con key presente, los datos minimizados del perfil salen a un tercero.
+  Las keys siguen en env, nunca en BD.
 - **Relacionada con:** [ADR 0001](0001-arquitectura-limpia-monorepo.md),
   [ADR 0003](0003-gemma-2b-llm-local-por-defecto.md)
 
@@ -49,12 +56,12 @@ implementaciones intercambiables** seleccionadas por la variable de entorno
   mapea en código a su `baseUrl` y a la variable de entorno con la API key. Cae a
   `MockProvider` ante fallo, igual que `local`.
 
-El valor por defecto es `mock`, de modo que clonar y arrancar funciona sin pasos
-adicionales. El modo `local` se selecciona por env (`AI_PROVIDER=local`); el modo `cloud`
-**no** se enciende por env sino por una decisión explícita del adulto en BD
-(`ai.cloud.activo=true` + key en env), de modo que **privacidad por diseño sigue siendo el
-comportamiento por defecto** y el cloud es una elección consciente y trazada
-([AuditLog](../cumplimiento-menores.md)).
+El **modo base** por defecto es `mock` (`AI_PROVIDER`), de modo que clonar y arrancar funciona sin
+pasos adicionales; `local` se selecciona por env (`AI_PROVIDER=local`). El modo `cloud` **no** se
+enciende por env, sino por el AppSetting `ai.cloud` en BD. > **Nota (2026-06-23):** ese AppSetting
+ahora se **siembra ACTIVO por defecto** (ver actualización arriba), así que el comportamiento por
+defecto pasa a ser cloud **cuando hay key**; sin key, cae al modo base (mock/local). Las keys siguen
+en env y la activación queda trazada ([AuditLog](../cumplimiento-menores.md)).
 
 ## Alternativas consideradas
 
