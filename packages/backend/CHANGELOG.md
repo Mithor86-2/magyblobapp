@@ -15,6 +15,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   historial real de migraciones, verificando el mapeo ORM↔entidad, las FK, las cascadas
   (`onDelete: Cascade`/`SetNull`), el upsert y los campos JSON/`Bytes`. Suite separada
   (`pnpm --filter @magyblob/backend test:integration`, requiere Docker), fuera del `pnpm test` diario.
+- Prueba **E2E del backend** (US-32): el servidor Fastify real (composición de producción) contra un
+  PostgreSQL real (Testcontainers) ejercitado por **HTTP real** en modo `mock`, recorriendo el flujo
+  del MVP (alta → login → perfil → cuento → historial → actividades) y verificando la persistencia y
+  el `AuditLog`. Suite separada (`pnpm --filter @magyblob/backend test:e2e`, requiere Docker).
 
 ### Changed
 

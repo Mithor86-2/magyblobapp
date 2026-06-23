@@ -60,15 +60,20 @@ Estado: `❌` pendiente · `🔄` en curso · `✅` hecha.
 - [x] ✅ Decisión: la integración **no** entra en el `pnpm check` local (no exige Docker en el día a
       día); se ejecuta aparte en local y **siempre en CI** (job dedicado en 6.4).
 
-### 6.2 — E2E de backend (stack real por HTTP)
+### 6.2 — E2E de backend (stack real por HTTP) ✅
 
-- [ ] ❌ Test E2E que levanta el stack en `mock` (reutilizar `docker compose` o
-      Testcontainers-compose) y golpea `http://localhost:3000` por HTTP real (`fetch`/`undici`).
-- [ ] ❌ Flujo del MVP encadenado: `POST /guardians` (alta+consentimiento) → login →
-      `POST /profiles` → `GET /profiles` → `POST /stories` → `GET /history` (el cuento aparece) →
-      `POST /activities/recommend` → narración. Aserciones de estado y persistencia entre llamadas.
-- [ ] ❌ Verificar efectos transversales: `AuditLog` con `consentimiento` y `login` persistidos.
-- [ ] ❌ Script `pnpm e2e:backend` y `README` de cómo correrlo (arranque/parada del stack).
+- [x] ✅ Test E2E [`test/e2e/flujo-mvp.e2e.test.ts`](../../packages/backend/test/e2e/flujo-mvp.e2e.test.ts):
+      servidor Fastify **real** (composición de producción, sin dobles) + Postgres real
+      (Testcontainers) ejercitado por **HTTP real** (`fetch` a un puerto efímero) en `AI_PROVIDER=mock`.
+- [x] ✅ Flujo del MVP encadenado: `POST /guardians` → `POST /guardians/login` → `POST /profiles` →
+      `GET /guardians/:id/profiles` → `POST /stories` → `GET /profiles/:id/history` (el cuento aparece)
+      → `POST /activities/recommend` → `POST /activities/:id/complete`. Aserciones de estado y
+      persistencia entre llamadas. **3 tests en verde** (+ `/health`).
+- [x] ✅ Verificado: `AuditLog` con `consentimiento` y `login` persistidos (leído de la BD real).
+- [x] ✅ **Narración** tratada como **límite**: ElevenLabs es externo (fuera del modo `mock` por
+      cumplimiento); el test verifica que sin clave la narración falla (no se sirve audio).
+- [x] ✅ Script `pnpm --filter @magyblob/backend test:e2e` (config `vitest.e2e.config.ts`); el `pnpm
+      test` del gate diario **excluye** `test/e2e`. Documentación de cómo correrlo en 6.5.
 
 ### 6.3 — E2E de app (Playwright sobre Expo web)
 
