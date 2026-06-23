@@ -20,6 +20,9 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    // El E2E de Playwright (`e2e/*.spec.ts`) usa su propio runner, no Vitest; y
+    // `dist/` es el export web. Ninguno entra en el `vitest run` de componentes.
+    exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
   },
   resolve: {
     alias: {

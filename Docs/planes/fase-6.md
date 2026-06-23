@@ -72,20 +72,25 @@ Estado: `❌` pendiente · `🔄` en curso · `✅` hecha.
 - [x] ✅ Verificado: `AuditLog` con `consentimiento` y `login` persistidos (leído de la BD real).
 - [x] ✅ **Narración** tratada como **límite**: ElevenLabs es externo (fuera del modo `mock` por
       cumplimiento); el test verifica que sin clave la narración falla (no se sirve audio).
-- [x] ✅ Script `pnpm --filter @magyblob/backend test:e2e` (config `vitest.e2e.config.ts`); el `pnpm
-      test` del gate diario **excluye** `test/e2e`. Documentación de cómo correrlo en 6.5.
+- [x] ✅ Script `pnpm --filter @magyblob/backend test:e2e` (config `vitest.e2e.config.ts`). El gate
+      diario (`pnpm test`) **excluye** `test/e2e`. Documentación de cómo correrlo en 6.5.
 
-### 6.3 — E2E de app (Playwright sobre Expo web)
+### 6.3 — E2E de app (Playwright sobre Expo web) ✅
 
-- [ ] ❌ Añadir Playwright (`@playwright/test`) como `devDependency` de `packages/app` + config
-      (`playwright.config.ts`): `webServer` que sirve la app en web (`expo start --web` o
-      `expo export` + estático) apuntando a un backend en `mock`.
-- [ ] ❌ Spec del flujo de onboarding: abrir app → crear perfil → generar cuento → ver el cuento,
-      localizando por **rol/etiqueta accesible** (coherente con US-30), no por estructura.
-- [ ] ❌ Decidir backend para el E2E de app: stack `mock` (compose) o mock de red en el navegador.
-      Propuesta: backend real en `mock` para que sea verdaderamente E2E.
-- [ ] ❌ Script `pnpm e2e:app` + manejo de artefactos (trace/screenshot en fallo). `.gitignore`
-      para `playwright-report/` y `test-results/`.
+- [x] ✅ Playwright (`@playwright/test`) como `devDependency` de `packages/app` + `playwright.config.ts`
+      con dos `webServer`: (1) el backend real (`scripts/e2e-serve.ts`: Fastify + Postgres efímero, mock)
+      en `:3100`, y (2) [`e2e/serve-web.mjs`](../../packages/app/e2e/serve-web.mjs), que sirve el export
+      web de Expo en `:4173` y **proxea** la API al backend (mismo origen → sin CORS).
+- [x] ✅ Spec [`e2e/onboarding.spec.ts`](../../packages/app/e2e/onboarding.spec.ts): bienvenida → puerta
+      parental (resuelve la suma) → alta del adulto → crear perfil → generar cuento, localizando por
+      **rol/nombre accesible** (coherente con US-30). **1 test en verde** sobre Chromium.
+- [x] ✅ Backend real en `mock` para que sea **verdaderamente E2E** (decisión confirmada).
+- [x] ✅ Scripts `pnpm --filter @magyblob/app test:e2e` (export `--clear` con
+      `EXPO_PUBLIC_API_URL=…:4173` + `playwright test`) y `e2e:install` (Chromium). `.gitignore` y
+      `.prettierignore` ignoran `playwright-report/` y `test-results/`.
+- [x] ✅ Gotcha resuelto: Metro cachea el bundle, así que el export usa `--clear` para reinlinar la
+      `EXPO_PUBLIC_API_URL`; el puerto del backend E2E es `3100` para no chocar con el stack de
+      `docker compose` (que ocupa el `3000`).
 
 ### 6.4 — CI (GitHub Actions)
 
