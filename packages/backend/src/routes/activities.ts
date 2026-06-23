@@ -2,7 +2,6 @@ import type { FastifyInstance } from 'fastify';
 import { RecommendActivities } from '../application/use-cases/RecommendActivities.js';
 import { CompleteActivity } from '../application/use-cases/CompleteActivity.js';
 import type { RecommendActivitiesRequest } from '../application/dto.js';
-import { InteractionEvent } from '../domain/entities/InteractionEvent.js';
 import { CATEGORIAS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
@@ -50,15 +49,12 @@ export function activityRoutes(app: FastifyInstance, deps: AppDeps): void {
         valoracion: request.body.valoracion,
       });
 
-      await deps.events.save(
-        new InteractionEvent({
-          id: deps.newId(),
-          profileId: activity.profileId,
-          tipo: 'actividad_completada',
-          payload: { activityId: activity.id, valoracion: activity.valoracion },
-          creadoEn: deps.now(),
-        }),
-      );
+      await deps.bus.publish({
+        tipo: 'actividad_completada',
+        profileId: activity.profileId,
+        activityId: activity.id,
+        valoracion: activity.valoracion,
+      });
 
       return activity;
     },

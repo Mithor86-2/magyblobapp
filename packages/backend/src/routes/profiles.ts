@@ -1,7 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { CreateChildProfile } from '../application/use-cases/CreateChildProfile.js';
 import type { CreateChildProfileInput } from '../application/dto.js';
-import { AuditLog } from '../domain/entities/AuditLog.js';
 import { TEMAS } from '../domain/vocabulary.js';
 import { Edad } from '../domain/value-objects/Edad.js';
 import { IDIOMAS } from '../domain/value-objects/Idioma.js';
@@ -31,16 +30,11 @@ export function profileRoutes(app: FastifyInstance, deps: AppDeps): void {
     async (request, reply) => {
       const profile = await createChildProfile.execute(request.body);
 
-      await deps.audit.save(
-        new AuditLog({
-          id: deps.newId(),
-          guardianId: profile.guardianId,
-          accion: 'crear',
-          entidad: 'ChildProfile',
-          entidadId: profile.id,
-          creadoEn: deps.now(),
-        }),
-      );
+      await deps.bus.publish({
+        tipo: 'perfil_creado',
+        guardianId: profile.guardianId,
+        profileId: profile.id,
+      });
 
       return reply.code(201).send(profile);
     },

@@ -3,7 +3,6 @@ import { GenerateStory } from '../application/use-cases/GenerateStory.js';
 import { MarkStoryRead } from '../application/use-cases/MarkStoryRead.js';
 import { NarrateStory } from '../application/use-cases/NarrateStory.js';
 import type { GenerateStoryRequest } from '../application/dto.js';
-import { InteractionEvent } from '../domain/entities/InteractionEvent.js';
 import { ESTILOS, TEMAS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
@@ -30,15 +29,13 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
     async (request, reply) => {
       const story = await generateStory.execute(request.body);
 
-      await deps.events.save(
-        new InteractionEvent({
-          id: deps.newId(),
-          profileId: story.profileId,
-          tipo: 'cuento_generado',
-          payload: { storyId: story.id, tema: story.tema, estilo: story.estilo },
-          creadoEn: deps.now(),
-        }),
-      );
+      await deps.bus.publish({
+        tipo: 'cuento_generado',
+        profileId: story.profileId,
+        storyId: story.id,
+        tema: story.tema,
+        estilo: story.estilo,
+      });
 
       return reply.code(201).send(story);
     },
@@ -68,15 +65,12 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
     );
 
     if (result.sintetizado) {
-      await deps.events.save(
-        new InteractionEvent({
-          id: deps.newId(),
-          profileId: result.profileId,
-          tipo: 'cuento_narrado',
-          payload: { storyId: request.params.id, voiceId: result.voiceId },
-          creadoEn: deps.now(),
-        }),
-      );
+      await deps.bus.publish({
+        tipo: 'cuento_narrado',
+        profileId: result.profileId,
+        storyId: request.params.id,
+        voiceId: result.voiceId,
+      });
     }
 
     return reply.header('content-type', 'audio/mpeg').send(Buffer.from(result.mp3));

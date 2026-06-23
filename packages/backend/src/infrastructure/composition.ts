@@ -3,6 +3,8 @@ import type { Config } from '../config.js';
 import type { AppDeps } from '../dependencies.js';
 import { createAIProvider } from './ai/createAIProvider.js';
 import { ElevenLabsProvider, type TTSLogger } from './tts/ElevenLabsProvider.js';
+import { InMemoryEventBus } from './events/InMemoryEventBus.js';
+import { wireDomainEvents } from './events/subscribers.js';
 import { createPrismaClient } from './db/prismaClient.js';
 import { PrismaGuardianRepository } from './repositories/PrismaGuardianRepository.js';
 import { PrismaChildProfileRepository } from './repositories/PrismaChildProfileRepository.js';
@@ -23,7 +25,7 @@ export function buildProductionDeps(config: Config, logger?: TTSLogger): AppDeps
   const prisma = createPrismaClient();
   const settings = new PrismaSettingsRepository(prisma);
 
-  return {
+  const deps: AppDeps = {
     guardians: new PrismaGuardianRepository(prisma),
     profiles: new PrismaChildProfileRepository(prisma),
     stories: new PrismaStoryRepository(prisma),
@@ -39,7 +41,12 @@ export function buildProductionDeps(config: Config, logger?: TTSLogger): AppDeps
       timeoutMs: config.tts.timeoutMs,
       logger,
     }),
+    bus: new InMemoryEventBus(),
     newId: () => randomUUID(),
     now: () => new Date(),
   };
+
+  // Suscriptores de telemetría y auditoría; añadir más oyentes no toca las rutas.
+  wireDomainEvents(deps.bus, deps);
+  return deps;
 }

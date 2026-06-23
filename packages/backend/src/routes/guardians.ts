@@ -3,7 +3,6 @@ import { RegisterGuardian } from '../application/use-cases/RegisterGuardian.js';
 import { ListProfiles } from '../application/use-cases/ListProfiles.js';
 import { LoginGuardian } from '../application/use-cases/LoginGuardian.js';
 import type { LoginGuardianInput, RegisterGuardianInput } from '../application/dto.js';
-import { AuditLog } from '../domain/entities/AuditLog.js';
 import { PARENTESCOS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
@@ -51,17 +50,11 @@ export function guardianRoutes(app: FastifyInstance, deps: AppDeps): void {
     async (request, reply) => {
       const guardian = await registerGuardian.execute(request.body);
 
-      await deps.audit.save(
-        new AuditLog({
-          id: deps.newId(),
-          guardianId: guardian.id,
-          accion: 'consentimiento',
-          entidad: 'Guardian',
-          entidadId: guardian.id,
-          metadatos: { version: request.body.consentimientoVersion },
-          creadoEn: deps.now(),
-        }),
-      );
+      await deps.bus.publish({
+        tipo: 'guardian_registrado',
+        guardianId: guardian.id,
+        consentimientoVersion: request.body.consentimientoVersion,
+      });
 
       return reply.code(201).send(guardian);
     },
@@ -73,16 +66,10 @@ export function guardianRoutes(app: FastifyInstance, deps: AppDeps): void {
     async (request, reply) => {
       const guardian = await loginGuardian.execute(request.body);
 
-      await deps.audit.save(
-        new AuditLog({
-          id: deps.newId(),
-          guardianId: guardian.id,
-          accion: 'login',
-          entidad: 'Guardian',
-          entidadId: guardian.id,
-          creadoEn: deps.now(),
-        }),
-      );
+      await deps.bus.publish({
+        tipo: 'guardian_login',
+        guardianId: guardian.id,
+      });
 
       return reply.code(200).send(guardian);
     },

@@ -31,3 +31,6 @@ packages/backend/src/generated/
 
 # Test / coverage
 coverage/
+
+# Worktrees integrados de Claude Code (trabajo en paralelo; no se versionan)
+.claude/worktrees/

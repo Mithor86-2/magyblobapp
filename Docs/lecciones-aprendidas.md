@@ -339,3 +339,18 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Aparte (tooling):** las herramientas de edición pueden reescribir escapes Unicode (`ó`) o
   caracteres acentuados; al tocar líneas con regex/escapes conviene verificar los bytes resultantes
   (`od -An -tx1`) en vez de fiarse del render.
+
+## Los worktrees paralelos contaminaban el gate de lint (Feature 33)
+
+- **Síntoma:** `pnpm check` (→ `eslint .`) fallaba con 5 errores en archivos bajo
+  `.claude/worktrees/integracion-e2e-ci/` — código de **otra** feature (`feature/34`), no de la rama
+  actual. ESLint recorre el filesystem y el worktree integrado de Claude Code vive físicamente dentro
+  del repo.
+- **Causa:** el `ignores` de [eslint.config.mjs](../eslint.config.mjs) tenía `packages/app/**` (no
+  ancla la ruta anidada del worktree) y nada para `.claude/`; backend dentro del worktree no se
+  ignoraba en absoluto. La regla de paralelismo del proyecto (un worktree por feature) garantiza que
+  esto ocurre siempre que dos features coexisten en disco.
+- **Solución:** añadir `.claude/**` a los `ignores` de ESLint y `.claude/worktrees/` a `.gitignore`.
+  Cada worktree corre su propio gate; no debe contaminar el de la rama actual. Lección general: al
+  seguir el flujo de worktrees, las herramientas que recorren el filesystem (lint, format, búsquedas)
+  deben excluir `.claude/worktrees/` explícitamente.
