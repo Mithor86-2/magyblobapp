@@ -111,6 +111,14 @@ docker compose up     # whole stack comes up on a clean machine
 Single backend test: `pnpm --filter @magyblob/backend exec vitest run <file>`
 (or `vitest run -t "<test name>"`).
 
+**Regla de seguridad (enforced): verifica el gate antes de pedir commit o cerrar la rama.** Al
+**terminar cualquier ajuste**, ejecuta la comprobación completa (`pnpm check` = typecheck + lint +
+format:check + test; o los comandos individuales cuando proceda) y **valida que todo pasa en verde
+(exit 0)** antes de solicitar el commit o de proponer cerrar la rama. Si algo falla, arréglalo y
+re-ejecuta hasta que pase; **no** pidas commit ni cierre con el gate en rojo o sin haberlo corrido.
+Esta regla aplica en **cada iteración**, no solo al cierre de fase, y antecede a las dos reglas de
+abajo (pruebas con el usuario → confirmación → `finish`).
+
 **Regla de seguridad (enforced): pruebas con el usuario como último paso.** Cuando la fase lo
 amerite, además del gate automático, el **último paso** antes de cerrarla es **solicitar las
 pruebas al usuario**: que las haga **manualmente** (dale pasos/comandos concretos) o que se le
