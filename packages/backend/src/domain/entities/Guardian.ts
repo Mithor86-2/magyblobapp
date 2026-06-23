@@ -66,6 +66,9 @@ export class Guardian {
   }
 
   private static emailValido(email: string): boolean {
+    // Patrón anclado (^…$) con un único `\.` literal: el backtracking es lineal en la
+    // práctica y el email se normaliza y tiene longitud acotada (no hay ReDoS catastrófico).
+    // eslint-disable-next-line sonarjs/super-linear-regex -- formato básico, sin riesgo real de ReDoS
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 }

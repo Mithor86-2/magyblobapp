@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**. Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**, **US-31**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -251,3 +251,35 @@ app.** Sin red ni SDKs de terceros en runtime (la dependencia es solo de desarro
 - (No-funcional) Dadas las pruebas, Cuando se ejecuta `pnpm test`, Entonces corren dentro del gate y
   usan queries por rol/etiqueta/texto (no por estructura ni estilos), reservando `testID` como
   último recurso.
+
+## US-31 — Análisis estático de calidad con SonarJS · Should (Mejoras)
+
+Como **desarrollador del proyecto** quiero que el linter detecte automáticamente _bugs_ y _code
+smells_ (complejidad cognitiva, código duplicado, expresiones idénticas, ramas colapsables…) además
+de los errores de estilo que ya cubre ESLint, para sostener la calidad del backend a medida que crece
+y que ese análisis forme parte del gate del DoD (`pnpm lint` → `pnpm check`).
+
+**Contexto.** Hoy ESLint usa solo `@eslint/js` + `typescript-eslint` (recomendadas) más las reglas de
+frontera de capas (`no-restricted-imports`). No hay análisis de calidad/complejidad. Se introduce
+[`eslint-plugin-sonarjs`](https://github.com/SonarSource/SonarJS) (las reglas JS/TS de SonarQube como
+plugin de ESLint), integrado en la **flat config** de ESLint 9 ya existente mediante su configuración
+`recommended`. Es una dependencia **solo de desarrollo**: no añade código de runtime, ni red, ni SDKs
+de terceros (compatible con [cumplimiento-menores.md](../cumplimiento-menores.md)). Alcance: el código
+del backend (`packages/backend/src` y `test`); `packages/app` sigue fuera del lint raíz (igual que hoy).
+
+**Criterios de aceptación**
+
+- Dado el plugin `eslint-plugin-sonarjs`, Cuando se configura ESLint, Entonces se habilita su
+  configuración `recommended` en la flat config y sus reglas (prefijo `sonarjs/`) se ejecutan junto a
+  las existentes en `pnpm lint`.
+- Dada la frontera de capas (invariante del proyecto), Cuando se añade SonarJS, Entonces las reglas
+  `no-restricted-imports` de `/domain` y de aplicación **siguen activas** y SonarJS no las relaja.
+- Dado un _code smell_ que SonarJS detecta (p. ej. complejidad cognitiva alta o expresiones
+  idénticas), Cuando se ejecuta el lint, Entonces se reporta como `error` y rompe el gate hasta
+  resolverlo o justificar su excepción.
+- Dado el estado actual del backend, Cuando se ejecuta `pnpm lint` con SonarJS activo, Entonces el
+  gate queda **verde**: las incidencias detectadas se corrigen, y cualquier supresión puntual se hace
+  con `// eslint-disable-next-line sonarjs/<regla>` acompañada de un motivo escrito (no se desactivan
+  reglas globalmente sin justificar).
+- (No-funcional) Dada la dependencia, Cuando se instala, Entonces es `devDependency` y no introduce
+  llamadas de red ni SDKs de terceros en runtime.
