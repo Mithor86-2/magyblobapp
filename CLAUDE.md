@@ -159,6 +159,21 @@ git flow feature start <id>-<descripcion-kebab-case>
 git flow feature finish <id>-<descripcion-kebab-case>
 ```
 
+**Regla de base (enforced): toda feature/worktree parte de `develop`.** Antes de abrir una feature o
+crear un worktree, sitúate en `develop` limpio — **nunca** ramifiques desde otra rama de feature
+(arrastra estado equivocado y provoca conflictos). `git flow feature start` ya ramifica de `develop`,
+pero el working tree no: parte limpio.
+
+**Regla de paralelismo (enforced): trabajo en paralelo → un worktree por feature.** Un repo tiene un
+solo working tree; varias tareas a la vez sobre el mismo directorio se pisan al hacer checkout (ver
+[Docs/lecciones-aprendidas.md](Docs/lecciones-aprendidas.md): "el working tree se revierte al
+cambiar"). Para trabajar en varias features a la vez, **un git worktree por feature**, creado desde
+`develop`: `git worktree add -b feature/<id>-<slug> develop .claude/worktrees/<slug>` (y subagentes
+en paralelo con `isolation: "worktree"`). **Siempre que al trabajar en paralelo aparezcan conflictos
+de rama por compartir el working tree, crea un worktree por rama** en vez de seguir en el mismo
+directorio. La config `.claude/settings.json` fija `worktree.baseRef: "head"` para que el worktree
+integrado de Claude Code salga del HEAD (develop) y no de `origin/main`.
+
 **Regla de seguridad (enforced): no finalizar una feature sin confirmación.** Nunca ejecutes
 `git flow feature finish` (ni mergees una rama de feature a `develop`/`main`) sin **confirmación
 explícita del usuario** en ese momento. Completa el resto del cierre (gate verde, versión,
