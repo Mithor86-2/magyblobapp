@@ -117,12 +117,13 @@ Estado: `❌` pendiente · `🔄` en curso · `✅` hecha.
 
 ### 6.6 — Cierre (DoD)
 
-- [ ] ❌ Gate verde local (`pnpm check`) + integración + E2E.
-- [ ] ❌ CHANGELOG por paquete (mover de `## [Unreleased]` a versión fechada) + SemVer.
-- [ ] ❌ Actualizar `phases.md` (marcar Fase 6) y tracking docs (`memory.md`,
-      `lecciones-aprendidas.md` con los gotchas de Testcontainers/Playwright/CI).
-- [ ] ❌ Pruebas con el usuario → confirmación explícita → `cerrar-feature` (no hacer `finish` sin
-      el "sí").
+- [x] ✅ Gate verde local (`pnpm check`) + integración (25/25) + E2E (backend 3/3, app 1/1).
+- [x] ✅ SemVer subido: raíz `0.14.0`, backend `0.10.0`, app `0.11.0`.
+- [x] ✅ CHANGELOG por paquete movido de `## [Unreleased]` a versión fechada (`2026-06-23`).
+- [x] ✅ `phases.md` (Fase 6 🟡 con US-32 hecho) y tracking docs actualizados (`memory.md` con las
+      decisiones, `lecciones-aprendidas.md` con los gotchas de Testcontainers/Playwright/Metro/puerto).
+- [ ] 🔄 Pruebas con el usuario → confirmación explícita → `git flow feature finish` (pendiente: **no**
+      se hace el `finish` sin el "sí" del usuario).
 
 ## Riesgos / notas
 

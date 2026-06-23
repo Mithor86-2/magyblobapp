@@ -9,6 +9,22 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.10.0] - 2026-06-23
+
+Pruebas de integración contra Postgres real y E2E del backend por HTTP (US-32, Fase 6).
+
+### Added
+
 - Pruebas de **integración de persistencia** contra un PostgreSQL real y efímero (US-32): los ocho
   `Prisma*Repository` (`Guardian`, `ChildProfile`, `Story`, `Activity`, `StoryNarration`,
   `InteractionEvent`, `AuditLog`, `Settings`) se ejercitan con **Testcontainers** aplicando el
@@ -19,16 +35,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   PostgreSQL real (Testcontainers) ejercitado por **HTTP real** en modo `mock`, recorriendo el flujo
   del MVP (alta → login → perfil → cuento → historial → actividades) y verificando la persistencia y
   el `AuditLog`. Suite separada (`pnpm --filter @magyblob/backend test:e2e`, requiere Docker).
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.9.0] - 2026-06-22
 

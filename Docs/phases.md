@@ -238,9 +238,16 @@ infantil. Plan en [planes/fase-5-5.md](planes/fase-5-5.md). Cubre **US-19** (log
 
 ---
 
-## FASE 6 — Calidad y robustez ★ HITO 2 ⬜
+## FASE 6 — Calidad y robustez ★ HITO 2 🟡 (en curso)
 
-- [ ] Test por cada caso de uso y cada endpoint (significativo).
+- [x] **Pruebas de integración, E2E y CI (US-32, rama `feature/34-integracion-e2e-ci`).** Integración
+      de los 8 `Prisma*Repository` contra **Postgres real** con Testcontainers (25 tests); **E2E de
+      backend** por HTTP real + Postgres real en mock (3 tests); **E2E de app** con Playwright sobre
+      Expo web contra el backend real en mock (1 test); **CI** en GitHub Actions (gate + integración +
+      E2E). Estrategia y guía TDD en [estrategia-pruebas.md](estrategia-pruebas.md). Verificado en
+      local: gate verde, integración 25/25 y E2E (backend 3/3, app 1/1).
+- [ ] Test por cada caso de uso y cada endpoint (significativo) — base cubierta; repaso de huecos
+      pendiente.
 - [ ] Estados de carga/error y timeouts de IA en la app.
 - [ ] Revisión de acoplamiento, nombres y separación de capas.
 - [ ] Repaso del checklist de cumplimiento para menores (parental gate, sin terceros,
