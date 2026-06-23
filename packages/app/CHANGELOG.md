@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Pruebas **user-centric** de componentes de UI (US-30): tests de `BubblyButton`, `ParentalGate`,
+  `TextField` y `SelectableChip` que los ejercitan como una persona usuaria (queries por rol/etiqueta/
+  texto y simulación de pulsaciones), siguiendo la _Query Priority_ de Testing Library. Se monta el
+  arnés de render bajo Vitest aliasando `react-native` a `react-native-web` junto con
+  `@testing-library/react` y `jsdom` (todo `devDependencies`: sin red ni SDK de tercero en runtime).
+  El entorno por defecto sigue siendo `node` (el test del adaptador HTTP no cambia); cada test de
+  componente declara `@vitest-environment jsdom`.
+
 ### Changed
 
 ### Deprecated
