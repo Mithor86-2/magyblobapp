@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Pruebas de **integración de persistencia** contra un PostgreSQL real y efímero (US-32): los ocho
+  `Prisma*Repository` (`Guardian`, `ChildProfile`, `Story`, `Activity`, `StoryNarration`,
+  `InteractionEvent`, `AuditLog`, `Settings`) se ejercitan con **Testcontainers** aplicando el
+  historial real de migraciones, verificando el mapeo ORM↔entidad, las FK, las cascadas
+  (`onDelete: Cascade`/`SetNull`), el upsert y los campos JSON/`Bytes`. Suite separada
+  (`pnpm --filter @magyblob/backend test:integration`, requiere Docker), fuera del `pnpm test` diario.
+
 ### Changed
 
 ### Deprecated
