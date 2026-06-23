@@ -430,3 +430,22 @@ Rama `feature/29-iconos-lucide` (desde `develop`). Solo app.
 - **Cumplimiento:** Lucide empaqueta los datos SVG en el bundle en build-time → **no** añade red en
   runtime ni SDK de tercero activo; compatible con `cumplimiento-menores.md`. Peer dep
   `react-native-svg` instalada con `expo install` (fija la versión compatible con el SDK).
+
+## Tests user-centric de componentes (Fase de mejoras · 2026-06-22 · US-30)
+
+Rama `feature/30-tests-componentes` (desde `develop`). Solo app.
+
+- **Decisión con el usuario — arnés RN-web en vez de RNTL "puro":** la vía idiomática
+  (`@testing-library/react-native` + `react-test-renderer`) bajo Vitest exige transformar el Flow de
+  `react-native` y mockear muchos módulos nativos → frágil de mantener verde en clon limpio. Se opta
+  por aliasar `react-native` → `react-native-web` y renderizar con `@testing-library/react` sobre
+  `jsdom` (todo `devDependencies`). RN-web traduce las props de accesibilidad a ARIA
+  (`accessibilityRole`→`role`, `accessibilityLabel`→`aria-label`...), que es justo lo que consultan
+  las queries de Testing Library y casa con un enfoque user-centric (rol → etiqueta → texto).
+- **Entorno mixto sin tocar lo existente:** `vitest.config.ts` deja el entorno por defecto en `node`
+  (para el test del adaptador HTTP) y cada test de componente declara `// @vitest-environment jsdom`.
+- **Cobertura:** 11 componentes / 41 tests. `Icon` se deja **fuera del arnés** a propósito
+  (`lucide-react-native` no importa bajo Vitest, ver lecciones-aprendidas); se mockea `./Icon` donde
+  hace falta. Su contrato ya lo cubre US-29.
+- **Sin impacto en runtime/cumplimiento:** las dependencias añadidas son solo de desarrollo; no se
+  añade red ni SDK de tercero al bundle de la app.

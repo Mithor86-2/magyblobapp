@@ -9,6 +9,22 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.10.0] - 2026-06-22
+
+Pruebas user-centric de componentes (US-30).
+
+### Added
+
 - Pruebas **user-centric** de componentes de UI (US-30): se ejercita cada componente como una persona
   usuaria (queries por rol/etiqueta/texto y simulación de pulsaciones), siguiendo la _Query Priority_
   de Testing Library. Cobertura de **11 componentes** (`BubblyButton`, `ParentalGate`, `TextField`,
@@ -19,16 +35,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   (el test del adaptador HTTP no cambia); cada test de componente declara `@vitest-environment jsdom`.
   El wrapper `Icon` no se prueba directamente (`lucide-react-native` no es importable bajo Vitest) y
   se sustituye por un doble donde hace falta.
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.9.0] - 2026-06-19
 
