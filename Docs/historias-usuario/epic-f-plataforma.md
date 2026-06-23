@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**, **US-32**. Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -339,3 +339,26 @@ en runtime.
 - (No-funcional) Dadas las nuevas dependencias y servicios de prueba, Cuando se ejecutan, Entonces son
   **solo de desarrollo/CI**, usan el modo `mock` por defecto (sin red ni IA externa ni SDKs de
   terceros en runtime) y no añaden pasos ocultos al arranque reproducible (US-06).
+
+## US-33 — Actualizar las GitHub Actions a la siguiente major (Node 24) · Could (Mantenimiento)
+
+Como **mantenedor del proyecto** quiero que las _actions_ del pipeline de CI usen versiones que no
+dependan de Node.js 20 (en retirada en los runners) para evitar avisos de deprecación y que el CI
+siga funcionando cuando GitHub deje de forzar Node 24 sobre las actions antiguas.
+
+**Contexto.** El workflow [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) (introducido en
+[US-32](#us-32)) usa `actions/checkout@v4`, `actions/setup-node@v4`, `actions/upload-artifact@v4` y
+`pnpm/action-setup@v4`. GitHub marca esas `@v4` como deprecadas porque apuntan a **Node.js 20**, que
+se está retirando de los runners (hoy se fuerzan a Node 24, pero es temporal). Es **deuda de
+mantenimiento**, no un fallo: el CI pasa en verde. Cuando estén disponibles las `@v5` (o equivalentes
+sobre Node 24) conviene actualizarlas.
+
+**Criterios de aceptación**
+
+- Dado el workflow de CI, Cuando se revisan las _actions_, Entonces `actions/checkout`,
+  `actions/setup-node`, `actions/upload-artifact` y `pnpm/action-setup` apuntan a una versión que se
+  ejecuta de forma nativa en Node 24 (p. ej. `@v5`), sin anotaciones de deprecación de Node 20.
+- Dado el pipeline actualizado, Cuando se hace push o pull request, Entonces los tres jobs (gate,
+  integración + E2E backend, E2E app) siguen pasando en verde.
+- (No-funcional) Dado que es mantenimiento, Entonces el cambio no altera el comportamiento del CI ni
+  del código de la app/backend (solo versiones de _actions_).
