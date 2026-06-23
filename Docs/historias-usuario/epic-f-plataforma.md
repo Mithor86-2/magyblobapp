@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**. Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -196,3 +196,58 @@ calidez que aportan a una app infantil (2-6 años). **Solo app.**
   siendo **emoji** (decisión de calidez, fuera de alcance de la migración).
 - (No-funcional) Dada la regla de menores, Entonces la librería no añade llamadas de red en runtime
   ni SDKs de terceros activos (iconos empaquetados en build-time).
+
+## US-30 — Pruebas user-centric de componentes de la app · Should (Mejoras)
+
+Como **desarrollador del proyecto** quiero que los componentes de UI de la app tengan **pruebas
+automáticas que los ejerciten como lo haría una persona usuaria** (buscando por rol accesible,
+etiqueta o texto, y simulando pulsaciones) para verificar comportamiento y accesibilidad, y que esas
+pruebas formen parte del gate del DoD (`pnpm test`).
+
+**Contexto.** Hasta ahora `packages/app` solo tenía un test de lógica pura (el adaptador HTTP) bajo
+Vitest en modo node, **sin entorno de render** ni librería de testing de UI. Los componentes ya
+exponen props de accesibilidad (`accessibilityRole`, `accessibilityLabel`, `accessibilityState`),
+pero nada las verificaba. Se introduce **React Native Testing Library** sobre **Vitest** siguiendo
+la _Query Priority_ de Testing Library (rol → etiqueta → texto → `testID` como último recurso), de
+modo que los tests documenten el contrato accesible y de interacción de cada componente. **Solo
+app.** Sin red ni SDKs de terceros en runtime (la dependencia es solo de desarrollo).
+
+**Criterios de aceptación**
+
+- Dado el botón `BubblyButton`, Cuando se renderiza con un `label`, Entonces es localizable por su
+  **rol `button`** y su nombre accesible, y al pulsarlo invoca `onPress`.
+- Dado un `BubblyButton` en estado `disabled` o `loading`, Cuando se intenta pulsar, Entonces **no**
+  invoca `onPress` y su estado accesible refleja `disabled`/`busy`.
+- Dada la puerta parental `ParentalGate`, Cuando se muestra el reto y se elige la **respuesta
+  correcta**, Entonces se renderiza el contenido protegido (`children`); Cuando se elige una
+  **incorrecta**, Entonces no se revela el contenido y se regenera el reto.
+- Dado el campo `TextField`, Cuando se renderiza, Entonces muestra su **etiqueta** visible y el campo
+  es localizable por su **rol** (`textbox`); Cuando se escribe en él, Entonces invoca `onChangeText`
+  con el texto y refleja el `value` actual (y el `placeholder` si se proporciona).
+- Dado el chip `SelectableChip`, Cuando se pulsa, Entonces invoca `onPress`, y tanto seleccionado
+  como no seleccionado sigue siendo localizable por su **rol** (`button`) y su **texto**. _(El estado
+  seleccionado se transmite con `accessibilityState={{ selected }}`, que el lector de pantalla anuncia
+  en iOS/Android; el adaptador web usado en los tests no lo proyecta a `aria-selected`.)_
+- Dada la valoración `StarRating`, Cuando se pasa `onChange`, Entonces cada estrella es un **botón**
+  con nombre accesible (`"N estrella(s)"`) y al pulsarla notifica el valor; en modo solo-lectura no
+  ofrece nada pulsable.
+- Dado el selector `AvatarPicker`, Cuando se muestra, Entonces cada avatar es un **botón** localizable
+  por su `id` (nombre accesible) y elegirlo notifica ese `id`.
+- Dado el badge `AuthorBadge`, Cuando se muestra, Entonces presenta el **proveedor** que generó el
+  contenido (etiqueta legible) y expone un nombre accesible (`"Autor: …"`).
+- Dada la tarjeta `ActivityCard`, Cuando se muestra, Entonces presenta título, descripción, categoría,
+  duración/nivel y autor; con `onComplete`, al pulsar **"Realizado"** pide la valoración y, al elegir
+  estrellas, la notifica; si ya está valorada muestra **"¡Hecha!"** y no ofrece marcarla.
+- Dados los controles `NarrationControls`, Cuando el estado es reposo, Entonces ofrece **"Escuchar"**;
+  cuando suena, ofrece **"Pausar"** y **"Parar"**, y cada botón dispara su acción (la lógica de audio
+  se sustituye por un doble en el test).
+- Dados los diálogos `DialogProvider`, Cuando un consumidor llama a `alert`/`confirm`, Entonces se
+  muestra el mensaje y los botones (`"Entendido"` / `"Aceptar"`+`"Cancelar"`); aceptar ejecuta
+  `onConfirm` y cierra, cancelar no lo ejecuta; usar `useDialog` fuera del provider lanza error.
+- Dado el lienzo `Screen`, Cuando se renderiza con `children` y `footer`, Entonces muestra ambos.
+- _Excepción:_ el wrapper `Icon` **no se prueba unitariamente** con este arnés porque
+  `lucide-react-native` no es importable bajo Vitest (módulo ESM incompatible); se ejercita de forma
+  indirecta (sustituido por un doble) en el resto de tests. Su contrato lo cubre [US-29](#us-29).
+- (No-funcional) Dadas las pruebas, Cuando se ejecuta `pnpm test`, Entonces corren dentro del gate y
+  usan queries por rol/etiqueta/texto (no por estructura ni estilos), reservando `testID` como
+  último recurso.

@@ -295,3 +295,32 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
   plena de las reglas del prompt maestro son cosa de `cloud`** (Groq 70B, verificado). Coherente con
   ADR 0003 (gemma:2b es el default reproducible, no el de calidad). Verificar siempre `proveedor` en
   la respuesta: si es `mock`, hubo fallback (timeout) y el prompt no se ejerció.
+
+## Fase de mejoras — Tests de componentes (US-30)
+
+### `lucide-react-native` no es importable bajo Vitest
+
+- **Síntoma:** al renderizar cualquier componente que use el wrapper `Icon`, Vitest aborta el fichero
+  con `SyntaxError: The requested module './context.mjs' does not provide an export named 'LucideProvider'`.
+- **Causa:** `lucide-react-native` se publica como ESM con un interop que Vitest/esbuild no resuelve.
+- **Solución:** mockear `./Icon` (`vi.mock('./Icon', () => ({ Icon: () => null }))`) en cada test que
+  lo arrastre (BubblyButton, StarRating, ActivityCard, AuthorBadge, NarrationControls, DialogProvider).
+  El propio `Icon` se deja sin test directo (documentado como excepción en US-30; su contrato lo cubre
+  US-29).
+
+### `react` y `react-dom` deben tener la **misma** versión exacta
+
+- **Síntoma:** `Error: Incompatible React versions` al montar el primer test (react 19.2.3 vs
+  react-dom 19.1.0).
+- **Causa:** el app fija `react` 19.2.3; al añadir `react-dom` con caret pnpm resolvió 19.1.0.
+- **Solución:** instalar `react-dom` con la **versión exacta** de `react` (`react-dom@19.2.3`).
+
+### RN-web no proyecta todo `accessibilityState` a ARIA
+
+- **Síntoma:** asserts sobre `aria-busy` (estado `loading`) y `aria-selected` (chip/avatar
+  seleccionado) fallaban con `null`.
+- **Causa:** `react-native-web` 0.21 no mapea `accessibilityState.busy`/`selected` a `aria-*` en un
+  `<button>`; el spinner de `ActivityIndicator` sí se expone como `role="progressbar"`.
+- **Solución:** para "ocupado" se asserta el `progressbar` (más user-centric); el estado
+  `selected` no se verifica vía ARIA en web (es correcto en nativo) y el test se centra en
+  rol+nombre+pulsación. Detalle en US-30.

@@ -40,7 +40,7 @@ src/composition.ts    composition root: api = createApiGateways() (tipado como d
 src/presentation/
   theme/tokens.ts     design system (paleta coral/menta, Quicksand, tap targets ≥64px)
   store/              estado Zustand (guardianId persistido; perfil de sesión)
-  components/         Screen, BubblyButton, SelectableChip, AvatarPicker, TextField
+  components/         Screen, BubblyButton, SelectableChip, AvatarPicker, TextField… (+ *.test.tsx co-locados)
   screens/            ConsentScreen, CreateProfileScreen, StoryGeneratorScreen
   labels.ts           presentación con acentos de los vocabularios
   navigation.ts       tipos del native-stack
@@ -50,8 +50,35 @@ src/presentation/
 
 ```bash
 pnpm --filter @magyblob/app typecheck   # tsc --noEmit
-pnpm --filter @magyblob/app test        # vitest (cliente HTTP)
+pnpm --filter @magyblob/app test        # vitest: cliente HTTP + componentes
 ```
 
 El `pnpm check` de la raíz cubre la app en typecheck, formato y tests. El ESLint
 raíz ignora `packages/app/**` (toolchain RN aparte).
+
+### Tests user-centric de componentes (US-30)
+
+Los componentes se prueban **como lo haría una persona usuaria**, siguiendo la _Query
+Priority_ de Testing Library: `getByRole` → `getByLabelText` → `getByText` (y `testID`
+solo como último recurso). Cada test localiza el elemento por su **rol accesible** o su
+**texto** y simula la interacción (`fireEvent`), nunca por estructura ni estilos. Hoy
+cubren 11 componentes (`BubblyButton`, `ParentalGate`, `TextField`, `SelectableChip`,
+`StarRating`, `AvatarPicker`, `AuthorBadge`, `ActivityCard`, `NarrationControls`,
+`Screen`, `DialogProvider`).
+
+**Arnés de render** (todo en `devDependencies`, sin impacto en runtime): se renderiza
+con `@testing-library/react` sobre `jsdom` aliasando `react-native` → `react-native-web`
+(ver [`vitest.config.ts`](vitest.config.ts)). RN-web traduce las props de accesibilidad
+a su equivalente ARIA (`accessibilityRole`→`role`, `accessibilityLabel`→`aria-label`,
+`accessibilityState`→`aria-*`), que es justo lo que consultan las queries. El entorno
+por defecto es `node` (para el test del cliente HTTP); cada test de componente declara
+`// @vitest-environment jsdom` en su cabecera. Los matchers de
+`@testing-library/jest-dom` se cargan en [`vitest.setup.ts`](vitest.setup.ts).
+
+**Convenciones y límites:**
+
+- Los tests viven co-locados (`Componente.test.tsx` junto al componente).
+- El wrapper `Icon` no se prueba directamente: `lucide-react-native` no es importable
+  bajo Vitest (módulo ESM incompatible), así que se sustituye por un doble
+  (`vi.mock('./Icon', …)`) en los tests que lo arrastran. Su contrato lo cubre US-29.
+- Las dependencias pesadas o de IO se mockean (p. ej. `useNarration`, `react-native-safe-area-context`).

@@ -331,6 +331,15 @@ se abra). Algunas parten de algo ya existente (se indica).
       Los **avatares de animales** (y el `✨` por defecto) siguen en emoji por calidez. Cumple las
       reglas de menores (iconos empaquetados en build-time, sin red en runtime ni SDK de tercero).
       Solo app; `pnpm check` verde (122 backend + 12 app).
+- [x] ✅ **Pruebas user-centric de componentes** (US-30, app v0.10.0, rama
+      `feature/30-tests-componentes` desde `develop`). Se introduce el arnés de render bajo Vitest
+      aliasando `react-native` → `react-native-web` (+ `@testing-library/react` + `jsdom`, todo
+      `devDependencies`) y se prueban **11 componentes** (`BubblyButton`, `ParentalGate`, `TextField`,
+      `SelectableChip`, `StarRating`, `AvatarPicker`, `AuthorBadge`, `ActivityCard`,
+      `NarrationControls`, `Screen`, `DialogProvider`) por rol/etiqueta/texto y simulación de
+      pulsaciones (Query Priority de Testing Library). `Icon` queda fuera (lucide-react-native no
+      importa bajo Vitest; se mockea). Entorno `node` por defecto (test de `http` intacto); cada test
+      de componente usa `@vitest-environment jsdom`. Solo app; `pnpm check` verde (126 backend + 41 app).
 
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
