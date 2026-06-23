@@ -228,6 +228,26 @@ app.** Sin red ni SDKs de terceros en runtime (la dependencia es solo de desarro
   como no seleccionado sigue siendo localizable por su **rol** (`button`) y su **texto**. _(El estado
   seleccionado se transmite con `accessibilityState={{ selected }}`, que el lector de pantalla anuncia
   en iOS/Android; el adaptador web usado en los tests no lo proyecta a `aria-selected`.)_
+- Dada la valoración `StarRating`, Cuando se pasa `onChange`, Entonces cada estrella es un **botón**
+  con nombre accesible (`"N estrella(s)"`) y al pulsarla notifica el valor; en modo solo-lectura no
+  ofrece nada pulsable.
+- Dado el selector `AvatarPicker`, Cuando se muestra, Entonces cada avatar es un **botón** localizable
+  por su `id` (nombre accesible) y elegirlo notifica ese `id`.
+- Dado el badge `AuthorBadge`, Cuando se muestra, Entonces presenta el **proveedor** que generó el
+  contenido (etiqueta legible) y expone un nombre accesible (`"Autor: …"`).
+- Dada la tarjeta `ActivityCard`, Cuando se muestra, Entonces presenta título, descripción, categoría,
+  duración/nivel y autor; con `onComplete`, al pulsar **"Realizado"** pide la valoración y, al elegir
+  estrellas, la notifica; si ya está valorada muestra **"¡Hecha!"** y no ofrece marcarla.
+- Dados los controles `NarrationControls`, Cuando el estado es reposo, Entonces ofrece **"Escuchar"**;
+  cuando suena, ofrece **"Pausar"** y **"Parar"**, y cada botón dispara su acción (la lógica de audio
+  se sustituye por un doble en el test).
+- Dados los diálogos `DialogProvider`, Cuando un consumidor llama a `alert`/`confirm`, Entonces se
+  muestra el mensaje y los botones (`"Entendido"` / `"Aceptar"`+`"Cancelar"`); aceptar ejecuta
+  `onConfirm` y cierra, cancelar no lo ejecuta; usar `useDialog` fuera del provider lanza error.
+- Dado el lienzo `Screen`, Cuando se renderiza con `children` y `footer`, Entonces muestra ambos.
+- _Excepción:_ el wrapper `Icon` **no se prueba unitariamente** con este arnés porque
+  `lucide-react-native` no es importable bajo Vitest (módulo ESM incompatible); se ejercita de forma
+  indirecta (sustituido por un doble) en el resto de tests. Su contrato lo cubre [US-29](#us-29).
 - (No-funcional) Dadas las pruebas, Cuando se ejecuta `pnpm test`, Entonces corren dentro del gate y
   usan queries por rol/etiqueta/texto (no por estructura ni estilos), reservando `testID` como
   último recurso.

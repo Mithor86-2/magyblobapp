@@ -42,5 +42,12 @@ compatible con [../cumplimiento-menores.md](../cumplimiento-menores.md)).
 - [x] ✅ Test `SelectableChip` — `onPress` y localizable por rol+texto en ambos estados. _(El estado
       `selected` no se proyecta a `aria-selected` en RN-web; se documenta como limitación del arnés
       web, el `accessibilityState` es correcto en nativo.)_
+- [x] ✅ **Cobertura ampliada a todos los componentes** (petición del usuario): `StarRating`,
+      `AvatarPicker`, `AuthorBadge`, `ActivityCard`, `NarrationControls` (con `useNarration` mockeado),
+      `Screen` (con `react-native-safe-area-context` mockeado) y `DialogProvider` (alert/confirm + el
+      error de `useDialog` fuera del provider). Total: **11 componentes, 41 tests** (12 ficheros).
+- [x] ✅ **`Icon` queda fuera del arnés:** `lucide-react-native` no es importable bajo Vitest (módulo
+      ESM incompatible), por eso se mockea `./Icon` en cada test que lo arrastra. Documentado como
+      excepción en US-30; su contrato lo cubre US-29.
 - [ ] 🔄 Gate verde (`pnpm check`) y CHANGELOG del app actualizado.
 - [ ] ❌ Pruebas con el usuario + confirmación → cierre con `cerrar-feature`.
