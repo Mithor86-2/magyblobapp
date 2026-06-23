@@ -341,6 +341,19 @@ se abra). Algunas parten de algo ya existente (se indica).
       importa bajo Vitest; se mockea). Entorno `node` por defecto (test de `http` intacto); cada test
       de componente usa `@vitest-environment jsdom`. Solo app; `pnpm check` verde (126 backend + 41 app).
 
+**Calidad y tooling:**
+
+- [x] ✅ **Análisis estático de calidad con SonarJS** (US-31, backend v0.9.0 / raíz v0.13.0, rama
+      `feature/31-sonarjs` desde `develop`). Se añade `eslint-plugin-sonarjs` (devDependency raíz) y se
+      habilita su config `recommended` en la flat config de ESLint → **268 reglas `sonarjs/*` activas**
+      (complejidad cognitiva, expresiones idénticas, ramas colapsables…) dentro del gate `pnpm lint`.
+      Sin _typed linting_ (`recommended` no lo exige; las reglas de tipos no aplican pero no rompen el
+      lint). 18 incidencias saneadas: refactors (regex de combinadores en `sanitizeForSpeech`,
+      `toHaveLength` en un test), una supresión en línea justificada (regex de email,
+      `super-linear-regex`) y tres reglas desactivadas con justificación escrita (`todo-tag`,
+      `void-use`, `no-nested-conditional`), más `no-clear-text-protocols` off solo en tests. Frontera
+      de capas intacta. Solo backend; `pnpm check` verde (126 backend + 41 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

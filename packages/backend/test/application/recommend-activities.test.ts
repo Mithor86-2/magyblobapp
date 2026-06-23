@@ -46,7 +46,7 @@ describe('RecommendActivities', () => {
     const out = await useCase.execute({ profileId: 'p-1', cantidad: 2 });
     expect(out).toHaveLength(2);
     expect(out[0]?.profileId).toBe('p-1');
-    expect((await activities.findByProfile('p-1')).length).toBe(2);
+    expect(await activities.findByProfile('p-1')).toHaveLength(2);
   });
 
   it('genera 3 actividades por defecto si no se indica cantidad', async () => {

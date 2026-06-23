@@ -19,6 +19,25 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.9.0] - 2026-06-22
+
+Análisis estático de calidad con SonarJS (US-31): reglas de bugs y code smells en el gate del lint.
+
+### Added
+
+- Análisis estático de calidad con `eslint-plugin-sonarjs` (US-31): se habilita su configuración
+  `recommended` en la flat config de ESLint para detectar bugs y _code smells_ (complejidad
+  cognitiva, expresiones idénticas, ramas colapsables…) en el backend, dentro del gate `pnpm lint`.
+  Dependencia solo de desarrollo (sin runtime, red ni SDKs de terceros).
+
+### Changed
+
+- Saneo de incidencias `sonarjs/*` en el backend: alternación de combinadores en `sanitizeForSpeech`
+  (con supresión justificada de `single-character-alternation`), aserción `toHaveLength` en el test de
+  actividades y supresión en línea de `super-linear-regex` en el email de `Guardian`. Reglas
+  `todo-tag`, `void-use` y `no-nested-conditional` desactivadas con justificación escrita;
+  `no-clear-text-protocols` off solo en tests.
+
 ## [0.8.0] - 2026-06-19
 
 Reglas narrativas del cuento (prompt maestro, US-28): estructura, tono y final feliz en el system.

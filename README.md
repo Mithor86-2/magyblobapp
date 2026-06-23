@@ -198,7 +198,7 @@ pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Androi
 | ----------------------------------- | ----------------------------------------------------- |
 | `pnpm check`                        | typecheck + lint + formato + tests (todo el monorepo) |
 | `pnpm typecheck`                    | `tsc --noEmit` en cada paquete                        |
-| `pnpm lint` / `pnpm lint:fix`       | ESLint                                                |
+| `pnpm lint` / `pnpm lint:fix`       | ESLint (+ SonarJS: bugs y code smells en el backend)  |
 | `pnpm format` / `pnpm format:check` | Prettier                                              |
 | `pnpm test`                         | Vitest en cada paquete                                |
 

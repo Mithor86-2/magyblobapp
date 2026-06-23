@@ -1,6 +1,7 @@
 // @ts-check
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import sonarjs from 'eslint-plugin-sonarjs';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
@@ -15,9 +16,33 @@ export default tseslint.config(
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
+  // Análisis estático de calidad SonarJS (bugs + code smells: complejidad cognitiva,
+  // expresiones idénticas, ramas colapsables…). El `ignores` de arriba ya acota el
+  // análisis al backend (app y *.config.* quedan fuera del lint raíz). Ver US-31.
+  sonarjs.configs.recommended,
   {
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Ajustes a SonarJS que chocan con idiomas deliberados del proyecto (US-31). Las
+      // reglas de seguridad/correctitud se mantienen; estas tres se relajan a conciencia:
+      // - todo-tag: los `// TODO` son marcadores de planificación intencionados (rastreados
+      //   en Docs/planes), no deuda a romper el gate.
+      'sonarjs/todo-tag': 'off',
+      // - void-use: `void promesa` es el patrón elegido para marcar una promesa flotante a
+      //   propósito (bootstrap del servidor, errorHandler de Fastify).
+      'sonarjs/void-use': 'off',
+      // - no-nested-conditional: el contenido bilingüe ES/EN se expresa como ternario
+      //   anidado (`cond ? (idioma === 'es' ? a : b) : …`) de forma consistente; aplanarlo
+      //   resta legibilidad y tocaría la lógica de prompts (fuera del alcance de US-31).
+      'sonarjs/no-nested-conditional': 'off',
+    },
+  },
+  {
+    // En tests usamos URLs http:// hacia servicios internos simulados (p. ej. el contenedor
+    // Ollama en la red de docker); no hay transporte en claro real que proteger.
+    files: ['packages/backend/test/**/*.ts'],
+    rules: {
+      'sonarjs/no-clear-text-protocols': 'off',
     },
   },
 

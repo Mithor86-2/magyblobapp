@@ -324,3 +324,18 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Solución:** para "ocupado" se asserta el `progressbar` (más user-centric); el estado
   `selected` no se verifica vía ARIA en web (es correcto en nativo) y el test se centra en
   rol+nombre+pulsación. Detalle en US-30.
+
+### SonarJS: dos reglas pueden contradecirse sobre la misma regex (US-31)
+
+- **Síntoma:** al aplicar `eslint-plugin-sonarjs`, `single-character-alternation` pedía cambiar
+  `/‍|︎|️/` por una clase `[…]`; al hacerlo, `no-misleading-character-class` (y la regla
+  core homónima) lo marcaban como error porque ZWJ y los selectores de variación son **combinadores**.
+- **Causa:** una clase de caracteres con combinadores es engañosa (pueden fusionarse con el carácter
+  previo); la alternación era correcta desde el principio.
+- **Solución:** mantener la **alternación** y suprimir esa línea con
+  `// eslint-disable-next-line sonarjs/single-character-alternation` + motivo. Lección general: ante
+  reglas que se contradicen, gana la de correctitud/seguridad y la otra se suprime en línea con
+  justificación, no al revés.
+- **Aparte (tooling):** las herramientas de edición pueden reescribir escapes Unicode (`ó`) o
+  caracteres acentuados; al tocar líneas con regex/escapes conviene verificar los bytes resultantes
+  (`od -An -tx1`) en vez de fiarse del render.

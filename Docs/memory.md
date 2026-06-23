@@ -449,3 +449,26 @@ Rama `feature/30-tests-componentes` (desde `develop`). Solo app.
   hace falta. Su contrato ya lo cubre US-29.
 - **Sin impacto en runtime/cumplimiento:** las dependencias añadidas son solo de desarrollo; no se
   añade red ni SDK de tercero al bundle de la app.
+
+## Análisis estático con SonarJS (Fase de mejoras · 2026-06-22 · US-31)
+
+Rama `feature/31-sonarjs` (desde `develop`). Solo backend (el lint raíz ya ignora `packages/app`).
+
+- **Decisión con el usuario — "SonarJS" = `eslint-plugin-sonarjs`, no SonarQube/SonarCloud:** se
+  integra como plugin de ESLint (config `recommended` en la flat config), sin servicio externo ni CI
+  nuevo. Privacidad/cumplimiento: es `devDependency`, sin runtime, red ni SDKs de terceros.
+- **Sin _typed linting_ (decisión deliberada):** la config `recommended` no exige
+  `parserOptions.project`; las ~50 reglas que requieren tipos simplemente no analizan (no lanzan
+  error) y quedan 268 reglas activas que cubren el grueso de bugs/code smells. Se evita acoplar el
+  lint al `tsconfig` y un segundo type-check en cada `pnpm lint` (YAGNI). Si en el futuro se quiere
+  más cobertura, el paso es añadir `parserOptions.project` al bloque del backend.
+- **Reglas relajadas a conciencia (con justificación en `eslint.config.mjs`):** `todo-tag` (los TODO
+  son marcadores de planificación rastreados en `Docs/planes`), `void-use` (`void promesa` es el
+  patrón elegido para promesa flotante: bootstrap y errorHandler de Fastify) y `no-nested-conditional`
+  (el contenido bilingüe ES/EN se expresa como ternario anidado de forma consistente; aplanarlo
+  tocaría la lógica de prompts, fuera de alcance de US-31). `no-clear-text-protocols` off **solo en
+  tests** (URLs `http://` a servicios internos simulados). El email de `Guardian` lleva supresión en
+  línea de `super-linear-regex` (regla de seguridad que se mantiene activa global): patrón anclado,
+  un único `\.`, longitud acotada → sin ReDoS real.
+- **Frontera de capas intacta:** SonarJS no relaja los `no-restricted-imports` de `/domain` y
+  aplicación (invariante del proyecto).
