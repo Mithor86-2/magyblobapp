@@ -19,6 +19,23 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.10.0] - 2026-06-23
+
+Patrón **Observer** para telemetría y auditoría (US-17): la emisión de eventos se desacopla del
+enrutado HTTP mediante un bus de eventos de dominio en proceso.
+
+### Added
+
+- Bus de eventos de dominio (patrón **Observer**): puerto `EventBus` + `DomainEvent` en `domain/events`,
+  implementación `InMemoryEventBus` y suscriptores de telemetría/auditoría (`wireDomainEvents`) en
+  `infrastructure/events`. Cableado en el composition root (Feature 33, US-17).
+
+### Changed
+
+- Las rutas publican un evento de dominio (`deps.bus.publish(...)`) en vez de construir y guardar
+  directamente `InteractionEvent`/`AuditLog`. Desacopla la telemetría/auditoría del enrutado HTTP y
+  elimina la duplicación en los 6 handlers; el comportamiento y los datos persistidos no cambian.
+
 ## [0.9.0] - 2026-06-22
 
 Análisis estático de calidad con SonarJS (US-31): reglas de bugs y code smells en el gate del lint.

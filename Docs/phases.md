@@ -354,6 +354,17 @@ se abra). Algunas parten de algo ya existente (se indica).
       `void-use`, `no-nested-conditional`), más `no-clear-text-protocols` off solo en tests. Frontera
       de capas intacta. Solo backend; `pnpm check` verde (126 backend + 41 app).
 
+- [x] ✅ **Observer para telemetría y auditoría** (US-17, backend v0.10.0 / raíz v0.14.0, rama
+      `feature/33-observer-event-bus` desde `develop`). Auditados los patrones del repo: Strategy,
+      Factory y Decorator (capa AI) ya estaban; Command está implícito en los casos de uso. Único
+      patrón que pagaba su coste → **Observer**: la emisión de `InteractionEvent`/`AuditLog` estaba
+      duplicada en 6 handlers HTTP. Se introduce un bus en proceso (`EventBus` + `DomainEvent` en
+      `domain/events`; `InMemoryEventBus` + `wireDomainEvents` en `infrastructure/events`) cableado en
+      el composition root; las rutas hacen `deps.bus.publish(...)`. Sin cambio de comportamiento ni de
+      esquema (mismos eventos persistidos); el bus notifica en serie y propaga errores. +9 tests (bus +
+      suscriptores). De paso, `.claude/**` a los ignores de ESLint y `.claude/worktrees/` a `.gitignore`
+      (los worktrees paralelos no contaminan el gate). `pnpm check` verde (144 backend + 41 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

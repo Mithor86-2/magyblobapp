@@ -472,3 +472,31 @@ Rama `feature/31-sonarjs` (desde `develop`). Solo backend (el lint raíz ya igno
   un único `\.`, longitud acotada → sin ReDoS real.
 - **Frontera de capas intacta:** SonarJS no relaja los `no-restricted-imports` de `/domain` y
   aplicación (invariante del proyecto).
+
+## Observer para telemetría y auditoría (Feature 33 · 2026-06-23 · US-17)
+
+Rama `feature/33-observer-event-bus` (desde `develop`). Petición: "optimizar aplicando patrones
+(Strategy/Factory/Observer/Command) donde sea necesario".
+
+- **Auditoría previa — la mayoría ya estaban:** Strategy (`AIProvider` + Mock/Ollama/Cloud), Factory
+  (`createAIProvider`, `createApiGateways`) y Decorator (`FallbackProvider`/`HotSwapAIProvider`) ya
+  implementados; Command está implícito en los casos de uso (`execute()`). **Decisión con el usuario:
+  enfoque pragmático**, no aplicar patrones "por completitud" (respeta el YAGNI del proyecto). Se
+  descartan por escrito: Command formal (sin undo/cola que lo justifique), Strategy/Template para el
+  dedup de `RecommendActivities` (un bucle, una variante) y cualquier patrón en la app (Zustand ya es
+  Observable; mapeos de 3-4 entradas → sobre-ingeniería).
+- **Único patrón que paga su coste → Observer.** La emisión de `InteractionEvent` (telemetría) y
+  `AuditLog` (auditoría) estaba **duplicada y mezclada en 6 handlers HTTP**. Se introduce un bus de
+  eventos en proceso: puerto `EventBus` + unión discriminada `DomainEvent` en `domain/events`;
+  `InMemoryEventBus` y `wireDomainEvents` (suscriptor de telemetría + suscriptor de auditoría) en
+  `infrastructure/events`. Las rutas hacen `deps.bus.publish({ tipo, … })`; los suscriptores,
+  registrados una vez en el composition root, construyen y persisten. Añadir métricas/cumplimiento
+  futuro = añadir un `bus.subscribe(...)`, sin tocar rutas.
+- **Sin cambio de comportamiento ni de esquema:** se persisten exactamente los mismos eventos. El bus
+  notifica **en serie y propaga errores** (un fallo de `save` sigue dando 500, como antes).
+- **`domain/events` no importa infraestructura** (invariante de capas intacto; `DomainEvent` reusa los
+  vocabularios cerrados de `domain/vocabulary`).
+- **Gotcha del gate (fuera de alcance, resuelto con el usuario):** `eslint .` escaneaba el worktree
+  paralelo `feature/34` dentro de `.claude/worktrees/` y lo marcaba en rojo. Se añade `.claude/**` a
+  los `ignores` de `eslint.config.mjs` y `.claude/worktrees/` a `.gitignore`: los worktrees integrados
+  (regla de paralelismo) tienen su propio gate y no deben contaminar el de la rama actual.
