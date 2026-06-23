@@ -500,3 +500,30 @@ Rama `feature/33-observer-event-bus` (desde `develop`). Petición: "optimizar ap
   paralelo `feature/34` dentro de `.claude/worktrees/` y lo marcaba en rojo. Se añade `.claude/**` a
   los `ignores` de `eslint.config.mjs` y `.claude/worktrees/` a `.gitignore`: los worktrees integrados
   (regla de paralelismo) tienen su propio gate y no deben contaminar el de la rama actual.
+
+## Integración, E2E y CI (Fase 6 · 2026-06-23 · backend v0.11.0 / app v0.11.0 · US-32)
+
+Rama `feature/34-integracion-e2e-ci` (worktree desde `develop`, en paralelo a
+`feature/33-observer-event-bus`). Cubre la parte de **testing/CI** de la Fase 6 (los otros puntos de
+la fase —estados de carga/error en la app, revisión de acoplamiento, repaso de cumplimiento— quedan
+pendientes).
+
+- **Integración = Prisma contra Postgres real, con Testcontainers (decisión con el usuario):** en vez
+  de solo formalizar los dobles in-memory, los 8 `Prisma*Repository` se ejercitan contra un
+  `postgres:16-alpine` efímero aplicando el **historial real de migraciones** (`migrate deploy`, no
+  `db push`) para validar el SQL real (defaults, cascadas, SetNull, JSON/Bytes). 25 tests.
+- **E2E backend = servidor real en proceso + Postgres real, por HTTP (no docker compose):** se levanta
+  `buildServer` (composición de producción, MockProvider) sobre una BD de Testcontainers y se golpea
+  por `fetch` a un puerto efímero. Más fiable y rápido que construir/arrancar la imagen Docker; el
+  `docker compose up` reproducible lo cubre US-06 + el job de CI.
+- **E2E app = Playwright sobre Expo web contra backend real en mock (decisión: "verdaderamente E2E"):**
+  se sirve el `expo export` web estático y se **proxean** las llamadas de API al backend (mismo origen
+  → sin CORS). Backend del E2E en el **3100** (el 3000 lo ocupa el compose). Export con `--clear` para
+  reinlinar `EXPO_PUBLIC_API_URL` (Metro cachea). Localización por rol/nombre accesible (US-30).
+- **Suites con Docker fuera del gate diario:** `test:integration` y `test:e2e` viven en configs Vitest
+  aparte; `pnpm test`/`pnpm check` no exigen Docker. En **CI** (GitHub Actions, 3 jobs: gate +
+  integración/E2E backend + E2E app) se ejecutan los tres niveles en cada push/PR.
+- **Cumplimiento:** todo en `AI_PROVIDER=mock` (sin red ni IA externa); Testcontainers y Playwright son
+  `devDependencies`. La narración (ElevenLabs) queda fuera del E2E mock (límite: sin clave no se sirve).
+- Detalle del cómo y gotchas: [planes/fase-6.md](planes/fase-6.md), [estrategia-pruebas.md](estrategia-pruebas.md),
+  [lecciones-aprendidas.md](lecciones-aprendidas.md).

@@ -354,3 +354,52 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
   Cada worktree corre su propio gate; no debe contaminar el de la rama actual. Lección general: al
   seguir el flujo de worktrees, las herramientas que recorren el filesystem (lint, format, búsquedas)
   deben excluir `.claude/worktrees/` explícitamente.
+
+## Fase 6 — Integración, E2E y CI (US-32)
+
+### pnpm 11 bloquea por los builds nativos de Testcontainers
+
+- **Síntoma:** tras `pnpm add -D @testcontainers/postgresql`, cualquier `pnpm <script>` fallaba con
+  `ERR_PNPM_IGNORED_BUILDS` (cpu-features, protobufjs, ssh2) y el `verify-deps-before-run` abortaba.
+- **Causa:** pnpm 11 exige decidir explícitamente sobre los build scripts; metió placeholders
+  literales `set this to true or false` en `allowBuilds` de `pnpm-workspace.yaml` (no en el
+  `package.json`).
+- **Solución:** poner esos tres a `false` en `pnpm-workspace.yaml` (`allowBuilds`). Son nativos para
+  conectar a un Docker remoto por SSH/gRPC; con Docker local no se usan.
+
+### SonarJS `no-os-command-from-path` al lanzar Prisma desde un test
+
+- **Síntoma:** `eslint` falla en `test/support/db.ts` por `execFileSync('pnpm', ['exec','prisma',…])`.
+- **Causa:** invocar un comando por nombre lo resuelve vía `PATH` (riesgo de hijacking).
+- **Solución:** invocar por **ruta absoluta**: `process.execPath` (node) + el CLI de Prisma resuelto
+  con `require.resolve('prisma/package.json')` y su campo `bin`. Sin `PATH`, regla satisfecha.
+
+### Metro cachea el bundle y no reinlina `EXPO_PUBLIC_*`
+
+- **Síntoma:** el E2E de app fallaba con "No se pudo conectar con el servidor"; el bundle exportado
+  seguía con `http://localhost:3000` pese a exportar con `EXPO_PUBLIC_API_URL=…:4173`.
+- **Causa:** Metro reusó el bundle cacheado (mismo hash) y no reinlineó la variable.
+- **Solución:** `expo export --platform web --clear` fuerza la recompilación con la env nueva.
+
+### El puerto 3000 lo ocupa el stack de `docker compose`
+
+- **Síntoma:** Playwright `webServer` abortaba: `http://127.0.0.1:3000/health` is already used.
+- **Causa:** el backend de `docker compose` (stack de desarrollo) ya escuchaba en el 3000.
+- **Solución:** el backend del E2E de app usa el **3100**; la app lo alcanza vía proxy de mismo
+  origen, así que el puerto interno es indiferente.
+
+### CORS entre la web (4173) y el backend: proxy de mismo origen
+
+- **Síntoma:** el navegador bloquearía `fetch` de `:4173` a un backend en otro puerto (sin CORS).
+- **Causa:** Fastify no emite cabeceras CORS y añadirlas sería un cambio de runtime fuera de alcance.
+- **Solución:** servir el export web y **proxear** las llamadas de API al backend desde el mismo
+  origen (`e2e/serve-web.mjs`); se exporta con `EXPO_PUBLIC_API_URL` apuntando a ese mismo origen.
+  La SPA no usa rutas por URL, así que "lo que no es fichero estático" se proxea sin ambigüedad.
+
+### Vitest recoge los `*.spec.ts` de Playwright
+
+- **Síntoma:** `pnpm test` de la app intentaba ejecutar `e2e/onboarding.spec.ts` como test de Vitest.
+- **Causa:** el `include` por defecto de Vitest captura `*.spec.ts`.
+- **Solución:** `exclude: ['e2e/**', '**/dist/**']` en `vitest.config.ts` de la app (y excluir `e2e`
+  del `tsconfig` para que el typecheck no arrastre `@playwright/test`). Suites con Docker
+  (`integration-db`, `e2e`) van en configs Vitest aparte y fuera del `pnpm test` del gate.

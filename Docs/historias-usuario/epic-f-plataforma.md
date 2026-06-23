@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**. Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -55,9 +55,12 @@ cuentos y actividades. Ver `AppSetting` en [modelo-datos.md](../modelo-datos.md)
 ## US-14 — Proveedor cloud opcional · Could (reactivada)
 
 > **Historia.** _Retirada del alcance el 2026-06-12 y **reactivada**_ a petición del
-> usuario: se reintroduce el modo `cloud` como **opt-in, OFF por defecto**, conmutable en
-> caliente desde BD. El defecto del proyecto sigue siendo `mock`/`local` (privacidad por
-> diseño). Ver [ADR 0002](../ADR/0002-tres-modos-de-ia.md) y el plan
+> usuario: se reintroduce el modo `cloud` como opt-in, conmutable en caliente desde BD.
+> **Actualización (2026-06-23):** por decisión del proyecto el modo `cloud` pasa a estar
+> **ACTIVO por defecto** (target `groq`), cargado al arrancar por una migración; **sin la
+> API key del target cae al modo base** (`mock`/`local`). Es una **desviación de privacidad
+> asumida** (contexto TFM). Ver [ADR 0002](../ADR/0002-tres-modos-de-ia.md),
+> [cumplimiento-menores.md](../cumplimiento-menores.md) (C-5) y el plan
 > [14-proveedor-cloud](../planes/14-proveedor-cloud.md).
 
 Como **administrador** (zona de padres) quiero **activar y cambiar en caliente** un
@@ -81,7 +84,8 @@ y actividades, sin tocar código ni exponer secretos en la base de datos, y mant
   Entonces se registra un `AuditLog`.
 - (Cumplimiento) Dado el modo cloud, Entonces se documenta que salen **datos minimizados**
   del perfil (edad, intereses, idioma; nunca nombre ni identificadores) a un tercero, que
-  queda OFF por defecto y que los free tiers pueden entrenar con los datos
+  desde 2026-06-23 está **ON por defecto** (desviación asumida; **sin key cae a mock/local**) y
+  que los free tiers pueden entrenar con los datos
   ([cumplimiento-menores.md](../cumplimiento-menores.md)).
 
 ## US-15 — Modo nocturno · Could
@@ -283,3 +287,55 @@ del backend (`packages/backend/src` y `test`); `packages/app` sigue fuera del li
   reglas globalmente sin justificar).
 - (No-funcional) Dada la dependencia, Cuando se instala, Entonces es `devDependency` y no introduce
   llamadas de red ni SDKs de terceros en runtime.
+
+## US-32 — Pruebas de integración con BD real, E2E y pipeline de CI · Should (Fase 6)
+
+Como **desarrollador/evaluador del proyecto** quiero que existan **pruebas de integración contra una
+base de datos real**, pruebas **end-to-end** del backend y de la app, y un **pipeline de integración
+continua** que ejecute el gate en cada cambio, para tener confianza de que el sistema funciona de
+punta a punta —no solo con dobles en memoria— y que la calidad se sostiene de forma automática.
+
+**Contexto.** Hasta ahora la suite cubre dominio/aplicación con dobles in-memory y las rutas con
+`app.inject()` + `makeInMemoryDeps()` (sin tocar PostgreSQL). Los repos `Prisma*` y el flujo real por
+HTTP solo se habían verificado **a mano** (ver [phases.md](../phases.md), "e2e contra PostgreSQL").
+Esta historia formaliza esa verificación en **tres niveles** nuevos, complementarios a los unitarios:
+
+1. **Integración de persistencia** — los `Prisma*Repository` contra un **PostgreSQL real efímero**
+   (Testcontainers), aplicando migraciones y aislando cada test. Cierra el hueco: hoy nada ejercita
+   el mapeo ORM↔entidad ni las cascadas/constraints reales.
+2. **E2E de backend** — el **stack real** (`docker compose`, `AI_PROVIDER=mock`) ejercitado por HTTP
+   recorriendo el flujo del MVP: alta de adulto → login → crear/seleccionar perfil → generar cuento →
+   recomendar actividades → narración → historial.
+3. **E2E de app** — la **app Expo en web** recorrida con **Playwright** (navegador real) en el flujo
+   de pantallas (onboarding → perfil → cuento), contra un backend en modo `mock`.
+
+Más un **pipeline de CI** (GitHub Actions) que ejecuta el gate (`pnpm check`) + integración + E2E en
+cada push/PR, y la **documentación de la estrategia de pruebas** (la pirámide del proyecto y la guía
+de **TDD**: dónde aplica test-first y dónde no). Todo respeta [cumplimiento-menores.md](../cumplimiento-menores.md):
+modo `mock` por defecto (sin red ni IA externa), dependencias solo de desarrollo, sin SDKs de terceros
+en runtime.
+
+**Criterios de aceptación**
+
+- Dada la capa de persistencia, Cuando se ejecutan las pruebas de integración, Entonces cada
+  `Prisma*Repository` (`Guardian`, `ChildProfile`, `Story`, `Activity`, `StoryNarration`,
+  `InteractionEvent`, `AuditLog`) se ejercita contra un **PostgreSQL real** efímero (Testcontainers),
+  con migraciones aplicadas y estado aislado entre tests (truncado/transacción), verificando el mapeo
+  ORM↔entidad y al menos una cascada/constraint real.
+- Dado el stack levantado en modo `mock` (`docker compose up`), Cuando la prueba E2E de backend
+  recorre el flujo por HTTP (alta → login → perfil → cuento → actividades → narración → historial),
+  Entonces cada paso responde con el estado esperado y el dato persiste entre llamadas (p. ej. el
+  cuento aparece luego en el historial; el `AuditLog` registra el consentimiento y el login).
+- Dada la app Expo servida en **web** con un backend en `mock`, Cuando Playwright recorre el flujo de
+  onboarding (crear perfil → generar cuento → verlo), Entonces las pantallas navegan y muestran el
+  contenido esperado, localizando elementos por **rol/etiqueta accesible** (no por estructura).
+- Dado un push o pull request, Cuando se ejecuta el pipeline de CI, Entonces corre el gate completo
+  (`pnpm check` = typecheck + lint + format:check + test) más la integración y el E2E, y **falla** si
+  cualquier nivel falla (hace cumplir el DoD automáticamente).
+- Dada la estrategia de pruebas, Cuando se consulta la documentación, Entonces existe un documento que
+  describe los **niveles** de prueba del proyecto (unitario / integración / E2E), **cómo ejecutar cada
+  uno** en local y en CI, y la **guía de TDD** (qué se hace test-first y qué no, con su justificación
+  YAGNI).
+- (No-funcional) Dadas las nuevas dependencias y servicios de prueba, Cuando se ejecutan, Entonces son
+  **solo de desarrollo/CI**, usan el modo `mock` por defecto (sin red ni IA externa ni SDKs de
+  terceros en runtime) y no añaden pasos ocultos al arranque reproducible (US-06).

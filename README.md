@@ -84,40 +84,41 @@ AI_PROVIDER=local docker compose up -d backend
 >   (el modelo ya queda cargado en memoria).
 > - El modelo se puede cambiar con `OLLAMA_MODEL` en `.env` (por defecto `gemma:2b`).
 
-## Modo cloud (opt-in, opcional)
+## Modo cloud (ON por defecto)
 
-Además de `mock`/`local`, existe un modo **`cloud`** que genera con un proveedor de IA en la nube
-**compatible con OpenAI** (Groq, Gemini, OpenRouter, Cerebras…). Está **apagado por defecto** y, por
-diseño de privacidad, **no se activa con `AI_PROVIDER`** sino desde la base de datos: así nadie lo
-enciende por accidente por una variable de entorno.
+El modo **`cloud`** genera con un proveedor de IA en la nube **compatible con OpenAI** (Groq, Gemini,
+OpenRouter, Cerebras…) y viene **activado por defecto** (target `groq`): el AppSetting `ai.cloud` se
+**siembra activo** mediante una migración que se aplica al arrancar. La activación **no** depende de
+`AI_PROVIDER` (que sigue fijando el modo base `mock`/`local` de _fallback_), sino de ese registro en
+la BD, conmutable en caliente.
 
-> ⚠️ El modo cloud **saca datos del perfil a un tercero** (rompe la privacidad por diseño). Solo se
-> envían datos minimizados (edad, intereses, idioma; nunca nombre ni identificadores), pero los
-> _free tiers_ pueden entrenar con ellos. Es una función de iteración/calidad, no el modo recomendado
-> para datos reales de menores. Ver [Docs/cumplimiento-menores.md](Docs/cumplimiento-menores.md).
+> ⚠️ **Desviación de privacidad asumida (TFM).** Con una API key presente, el modo cloud **saca datos
+> minimizados del perfil a un tercero** (edad, intereses, idioma; nunca nombre ni identificadores) y
+> rompe la privacidad por diseño; los _free tiers_ pueden entrenar con ellos. **Sin key, el backend
+> cae al modo base** (mock/local) y no sale nada. Ver
+> [Docs/cumplimiento-menores.md](Docs/cumplimiento-menores.md) (C-5) y
+> [ADR 0002](Docs/ADR/0002-tres-modos-de-ia.md).
 
-Activarlo (ejemplo con **Groq**):
+Para **usarlo** solo necesitas la API key del target por defecto (`groq`) en `.env`:
 
 ```bash
-# 1) Pon la API key del proveedor en .env (solo secretos; nunca van en la BD).
 echo 'GROQ_API_KEY=gsk_...' >> .env
 docker compose up -d backend          # recrea el backend para tomar la key
-
-# 2) Activa el proveedor en la BD (clave AppSetting `ai.cloud`). Conmutable en
-#    caliente: el cambio aplica en la siguiente generación, sin reiniciar.
-#    INSERT ... ON CONFLICT crea la fila si no existe (BD antigua) o la actualiza.
-docker exec magyblobapp-postgres-1 psql -U magyblob -d magyblob -c \
-  "INSERT INTO app_settings (id, key, value, descripcion, \"actualizadoEn\")
-   VALUES (gen_random_uuid(), 'ai.cloud', '{\"activo\":true,\"target\":\"groq\",\"model\":\"llama-3.3-70b-versatile\"}', 'Modo cloud (opt-in)', now())
-   ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, \"actualizadoEn\" = now();"
 ```
 
-> Alternativa: `pnpm prisma:seed` (idempotente) crea la fila `ai.cloud` desactivada; luego solo
-> tendrías que cambiar `"activo"` a `true`.
+El registro `ai.cloud` ya queda cargado en una BD nueva (`docker compose up`); en una BD previa se
+puede sembrar con `pnpm prisma:seed` (idempotente).
 
-Targets disponibles y su variable de entorno: `groq` (`GROQ_API_KEY`), `gemini` (`GEMINI_API_KEY`),
-`openrouter` (`OPENROUTER_API_KEY`), `cerebras` (`CEREBRAS_API_KEY`). Para desactivar, pon
-`"activo":false`. Si el proveedor falla o falta la key, el backend **cae al modo base** (mock/local).
+**Cambiar de target o desactivarlo** (conmutable en caliente, aplica en la siguiente generación):
+
+```bash
+docker exec magyblobapp-postgres-1 psql -U magyblob -d magyblob -c \
+  "UPDATE app_settings SET value = '{\"activo\":false,\"target\":\"groq\",\"model\":\"llama-3.3-70b-versatile\"}', \"actualizadoEn\" = now() WHERE key = 'ai.cloud';"
+```
+
+Targets y su variable de entorno: `groq` (`GROQ_API_KEY`), `gemini` (`GEMINI_API_KEY`), `openrouter`
+(`OPENROUTER_API_KEY`), `cerebras` (`CEREBRAS_API_KEY`). Si el proveedor falla o falta la key, el
+backend **cae al modo base** (mock/local).
 
 Smoke test directo contra el proveedor real (sin BD, lee la key de `.env`):
 
@@ -194,13 +195,31 @@ pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Androi
 
 ## Comandos del monorepo
 
-| Comando                             | Qué hace                                              |
-| ----------------------------------- | ----------------------------------------------------- |
-| `pnpm check`                        | typecheck + lint + formato + tests (todo el monorepo) |
-| `pnpm typecheck`                    | `tsc --noEmit` en cada paquete                        |
-| `pnpm lint` / `pnpm lint:fix`       | ESLint (+ SonarJS: bugs y code smells en el backend)  |
-| `pnpm format` / `pnpm format:check` | Prettier                                              |
-| `pnpm test`                         | Vitest en cada paquete                                |
+| Comando                             | Qué hace                                                  |
+| ----------------------------------- | --------------------------------------------------------- |
+| `pnpm check`                        | typecheck + lint + formato + tests (todo el monorepo)     |
+| `pnpm typecheck`                    | `tsc --noEmit` en cada paquete                            |
+| `pnpm lint` / `pnpm lint:fix`       | ESLint (+ SonarJS: bugs y code smells en el backend)      |
+| `pnpm format` / `pnpm format:check` | Prettier                                                  |
+| `pnpm test`                         | Vitest en cada paquete (unitarios + integración de rutas) |
+
+## Pruebas
+
+El proyecto tiene tres niveles (unitario · integración · E2E). El detalle —qué cubre cada uno, cómo
+se ejecutan y la guía de TDD— vive en [Docs/estrategia-pruebas.md](Docs/estrategia-pruebas.md).
+
+El gate diario (`pnpm check`) no necesita Docker. La **integración de persistencia** y los **E2E**
+sí (levantan un Postgres efímero con Testcontainers y, el E2E de app, Chromium):
+
+| Comando                                            | Qué hace                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| `pnpm --filter @magyblob/backend test:integration` | Repos Prisma contra Postgres real (Testcontainers)           |
+| `pnpm --filter @magyblob/backend test:e2e`         | Backend real por HTTP + Postgres real (modo mock)            |
+| `pnpm --filter @magyblob/app e2e:install`          | Descarga Chromium para Playwright (una vez)                  |
+| `pnpm --filter @magyblob/app test:e2e`             | E2E de la app (Expo web + Playwright) contra el backend mock |
+
+En CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) se ejecutan los tres niveles en cada
+push y pull request.
 
 ## Estructura
 

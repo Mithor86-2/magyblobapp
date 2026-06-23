@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+# Cancela ejecuciones anteriores en curso para la misma rama/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Gate del DoD: typecheck + lint + format:check + tests unitarios. No necesita
+  # Docker (las suites que lo requieren se excluyen del `pnpm test`).
+  gate:
+    name: Gate (typecheck + lint + format + unit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+
+  # Integración de persistencia (Prisma ↔ Postgres real) + E2E del backend por
+  # HTTP. Ambas usan Testcontainers; ubuntu-latest trae Docker disponible.
+  integration-e2e-backend:
+    name: Integración + E2E backend (Testcontainers)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @magyblob/backend test:integration
+      - run: pnpm --filter @magyblob/backend test:e2e
+
+  # E2E de la app sobre Expo web con Playwright (Chromium) contra el backend real
+  # en modo mock. Requiere navegador + Docker (Testcontainers).
+  e2e-app:
+    name: E2E app (Playwright / Expo web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @magyblob/app exec playwright install --with-deps chromium
+      - run: pnpm --filter @magyblob/app test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: packages/app/playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore

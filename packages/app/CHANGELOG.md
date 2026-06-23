@@ -19,6 +19,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.11.0] - 2026-06-23
+
+E2E de la app con Playwright sobre Expo web (US-32, Fase 6).
+
+### Added
+
+- Prueba **E2E de la app** con Playwright sobre Expo web (US-32): recorre el onboarding completo
+  (bienvenida → puerta parental → alta del adulto → crear perfil → generar cuento) en Chromium,
+  contra el **backend real en modo `mock`** (Fastify + Postgres efímero con Testcontainers) servido
+  a través de un proxy de mismo origen (sin CORS). Localiza por rol/nombre accesible (coherente con
+  US-30). Suite separada (`pnpm --filter @magyblob/app test:e2e`, requiere Docker y `e2e:install`).
+
 ## [0.10.0] - 2026-06-22
 
 Pruebas user-centric de componentes (US-30).
