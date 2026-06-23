@@ -92,11 +92,17 @@ Estado: `❌` pendiente · `🔄` en curso · `✅` hecha.
       `EXPO_PUBLIC_API_URL`; el puerto del backend E2E es `3100` para no chocar con el stack de
       `docker compose` (que ocupa el `3000`).
 
-### 6.4 — CI (GitHub Actions)
+### 6.4 — CI (GitHub Actions) ✅
 
-- [ ] ❌ `.github/workflows/ci.yml` disparado en `push` y `pull_request`. Jobs: 1. **gate**: `pnpm install` + `pnpm check` (typecheck + lint + format:check + test unit). 2. **integration**: Postgres (service o Testcontainers) + `test:integration`. 3. **e2e-backend**: `docker compose up` en `mock` + `e2e:backend`. 4. **e2e-app**: instalar navegadores Playwright + `e2e:app`.
-- [ ] ❌ Caché de pnpm/store y de navegadores Playwright. Subir reportes/trazas como artefactos.
-- [ ] ❌ El workflow **falla** si cualquier job falla (hace cumplir el DoD). Documentar el badge.
+- [x] ✅ [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) disparado en `push`
+      (`main`/`develop`) y `pull_request`, con `concurrency` para cancelar ejecuciones obsoletas.
+      Tres jobs: (1) **gate** (`pnpm check`: typecheck + lint + format:check + tests unitarios, sin
+      Docker), (2) **integración + E2E backend** (`test:integration` + `test:e2e` con Testcontainers),
+      (3) **E2E app** (Playwright/Chromium sobre Expo web).
+- [x] ✅ Caché de pnpm vía `actions/setup-node` (`cache: pnpm`); navegadores Playwright instalados con
+      `playwright install --with-deps chromium`. El reporte de Playwright se sube como artefacto.
+- [x] ✅ El workflow **falla** si cualquier job falla (hace cumplir el DoD). _Nota: la verificación
+      real ocurre al hacer push; los comandos de cada job son los mismos ya validados en verde en local._
 
 ### 6.5 — Documentación de la estrategia de pruebas + guía TDD
 
