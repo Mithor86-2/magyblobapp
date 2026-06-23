@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**. Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -196,3 +196,35 @@ calidez que aportan a una app infantil (2-6 años). **Solo app.**
   siendo **emoji** (decisión de calidez, fuera de alcance de la migración).
 - (No-funcional) Dada la regla de menores, Entonces la librería no añade llamadas de red en runtime
   ni SDKs de terceros activos (iconos empaquetados en build-time).
+
+## US-30 — Pruebas user-centric de componentes de la app · Should (Mejoras)
+
+Como **desarrollador del proyecto** quiero que los componentes de UI de la app tengan **pruebas
+automáticas que los ejerciten como lo haría una persona usuaria** (buscando por rol accesible,
+etiqueta o texto, y simulando pulsaciones) para verificar comportamiento y accesibilidad, y que esas
+pruebas formen parte del gate del DoD (`pnpm test`).
+
+**Contexto.** Hasta ahora `packages/app` solo tenía un test de lógica pura (el adaptador HTTP) bajo
+Vitest en modo node, **sin entorno de render** ni librería de testing de UI. Los componentes ya
+exponen props de accesibilidad (`accessibilityRole`, `accessibilityLabel`, `accessibilityState`),
+pero nada las verificaba. Se introduce **React Native Testing Library** sobre **Vitest** siguiendo
+la _Query Priority_ de Testing Library (rol → etiqueta → texto → `testID` como último recurso), de
+modo que los tests documenten el contrato accesible y de interacción de cada componente. **Solo
+app.** Sin red ni SDKs de terceros en runtime (la dependencia es solo de desarrollo).
+
+**Criterios de aceptación**
+
+- Dado el botón `BubblyButton`, Cuando se renderiza con un `label`, Entonces es localizable por su
+  **rol `button`** y su nombre accesible, y al pulsarlo invoca `onPress`.
+- Dado un `BubblyButton` en estado `disabled` o `loading`, Cuando se intenta pulsar, Entonces **no**
+  invoca `onPress` y su estado accesible refleja `disabled`/`busy`.
+- Dada la puerta parental `ParentalGate`, Cuando se muestra el reto y se elige la **respuesta
+  correcta**, Entonces se renderiza el contenido protegido (`children`); Cuando se elige una
+  **incorrecta**, Entonces no se revela el contenido y se regenera el reto.
+- Dado el campo `TextField`, Cuando se escribe en él, Entonces es localizable por su **etiqueta** e
+  invoca `onChangeText`; Cuando tiene `error`, Entonces el mensaje de error es visible.
+- Dado el chip `SelectableChip`, Cuando se pulsa, Entonces invoca `onPress` y su estado
+  **seleccionado** es observable de forma accesible.
+- (No-funcional) Dadas las pruebas, Cuando se ejecuta `pnpm test`, Entonces corren dentro del gate y
+  usan queries por rol/etiqueta/texto (no por estructura ni estilos), reservando `testID` como
+  último recurso.
