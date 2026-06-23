@@ -12,6 +12,9 @@ export default tseslint.config(
       '**/generated/**',
       '**/*.config.*',
       'packages/app/**',
+      // Worktrees integrados de Claude Code (regla de paralelismo): cada uno tiene su
+      // propio gate; no deben contaminar el lint de la rama actual.
+      '.claude/**',
     ],
   },
   eslint.configs.recommended,
