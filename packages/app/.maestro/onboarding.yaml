@@ -4,12 +4,14 @@
 #
 # Recorre el flujo de la app NATIVA sobre simulador/emulador:
 #   bienvenida -> puerta parental -> alta del adulto -> consentimiento ->
-#   crear perfil de niño -> generar cuento (modo mock) -> narrarlo (expo-speech).
+#   crear perfil de niño -> generar cuento (modo mock) -> narrarlo (expo-speech)
+#   -> actividades (US-09/US-10) -> historial (US-08).
 #
-# Complementa (no sustituye) al E2E web de Playwright (US-32/US-36): aquí se
-# ejercita lo que SOLO existe en nativo (lectura en voz alta / navegación
-# nativa). Localiza por id/texto accesible (coherente con US-30/US-32), no por
-# estructura ni estilos.
+# Complementa (no sustituye) al E2E web de Playwright (US-32/US-37/US-39): aquí
+# se ejercita lo que SOLO existe en nativo (lectura en voz alta / navegación
+# nativa). Localiza por id (testID) y texto accesible ES —coherente con el E2E
+# web (onboarding.spec.ts, actividades-historial.spec.ts)—, no por estructura ni
+# estilos.
 #
 # -----------------------------------------------------------------------------
 # REQUISITOS (no automatizables aquí; ver Docs/estrategia-pruebas.md)
@@ -26,13 +28,13 @@
 #      a él vía EXPO_PUBLIC_API_URL (sin red ni IA externa; cumplimiento menores).
 #
 # -----------------------------------------------------------------------------
-# appId
+# appId  (placeholder — CONFIRMAR en el dev build)
 # -----------------------------------------------------------------------------
 #   packages/app/app.json NO declara ios.bundleIdentifier ni android.package, así
 #   que Expo los deriva del slug al hacer el development build. Confirma el id real
 #   con `xcrun simctl listapps booted` (iOS) o `adb shell pm list packages | grep
 #   magyblob` (Android) y ajusta el valor de abajo si no coincide.
-# TODO: confirmar el appId real del development build (ver nota de arriba).
+# TODO(usuario): confirmar el appId real del development build (ver nota de arriba).
 # -----------------------------------------------------------------------------
 #
 # CÓMO EJECUTAR (con el simulador/emulador arrancado y la app dev instalada):
@@ -40,7 +42,7 @@
 #
 # =============================================================================
 
-appId: com.magyblob.app # TODO: confirmar id real del development build de Expo
+appId: com.magyblob.app # TODO(usuario): confirmar id real del development build de Expo
 ---
 # Arranca con estado limpio para que el onboarding empiece desde la bienvenida
 # (si quedara sesión de una corrida previa, se saltaría el alta).
@@ -52,36 +54,49 @@ appId: com.magyblob.app # TODO: confirmar id real del development build de Expo
 - tapOn: 'Crear cuenta'
 
 # --- Puerta parental (suma aleatoria a + b = ?) -----------------------------
-# El reto es aleatorio en cada apertura, así que no podemos fijar la respuesta
-# en el YAML. Se resuelve leyendo los operandos por regex y sumándolos con JS.
-# (runScript + evalScript es la vía soportada por Maestro para lógica dinámica.)
+# Punto delicado: el reto es ALEATORIO en cada apertura y la respuesta NO es un
+# campo de texto, sino tres CHIPS (la respuesta + dos distractores, barajados)
+# que muestran el número como texto (ver components/ParentalGate.tsx). No se
+# puede fijar la respuesta en el YAML, así que:
+#   1) Copiamos el texto de la pregunta por su testID ("parental-pregunta"),
+#      que se pinta como "a + b = ?".
+#   2) Con evalScript parseamos los dos operandos y calculamos la suma.
+#   3) Tocamos el CHIP cuyo texto visible es esa suma (tapOn por texto calculado).
+# Esta es la vía soportada por Maestro (copyTextFrom + evalScript + output);
+# es el mismo enfoque que el E2E web (onboarding.spec.ts) traducido a Maestro.
 - assertVisible: 'Zona de personas adultas'
-# TODO: confirmar testID de la pregunta de la puerta parental. Hoy el reto se
-# pinta como texto "a + b = ?" sin testID. Una opción robusta: añadir
-# testID="parental-question" al <Text> del reto en ParentalGate.tsx y leerlo:
-#   - copyTextFrom:
-#       id: "parental-question"
-#   - evalScript: ${ output.suma = String(...parse maestro.copiedText...) }
-#   - tapOn: ${output.suma}
-# Mientras no exista ese testID, este paso requiere intervención manual o
-# sustituir la puerta por una constante en el build de pruebas.
+- copyTextFrom:
+    id: 'parental-pregunta'
+# maestro.copiedText vale algo como "7 + 4 = ?". Extraemos los dígitos y sumamos.
+# El regex captura los dos primeros números del texto y output.suma queda como
+# cadena (p. ej. "11") para poder tocar el chip por su etiqueta.
+- evalScript: ${output.ops = maestro.copiedText.match(/\d+/g)}
+- evalScript: ${output.suma = String(Number(output.ops[0]) + Number(output.ops[1]))}
+# Toca el chip con el resultado. exact-ish: el chip muestra solo el número.
+- tapOn: ${output.suma}
 
 # --- Alta del adulto (3 campos: nombre, apellidos, email) -------------------
-# TODO: confirmar testIDs de los campos. Hoy no los tienen; se localizan por el
-# placeholder/etiqueta accesible. Lo robusto es añadir testID a cada TextField.
+# Localizados por testID (alta-nombre / alta-apellidos / alta-email), añadidos a
+# los TextField de ConsentScreen para un selector estable en nativo.
 - tapOn:
-    index: 0
-    below: 'Zona de personas adultas'
+    id: 'alta-nombre'
 - inputText: 'Ana'
-- tapOn: 'García'
+- tapOn:
+    id: 'alta-apellidos'
 - inputText: 'García'
-- tapOn: 'ana.app.e2e@example.com'
+- tapOn:
+    id: 'alta-email'
 - inputText: 'ana.app.e2e@example.com'
+- hideKeyboard
+# Parentesco (chip) + aceptar consentimiento (chip) + continuar.
 - tapOn: 'Madre'
 - tapOn: 'Acepto'
 - tapOn: 'Aceptar y continuar'
 
 # --- Selección de perfil (sin perfiles aún) -> crear el primero -------------
+# Nota: el backend persiste el alta. Si re-ejecutas el flow con el MISMO email,
+# el alta fallará por "email ya registrado"; cambia el email de arriba o limpia
+# la BD del backend (como en el E2E web, que usa email único por test).
 - assertVisible: 'Crear nuevo perfil'
 - tapOn: 'Crear nuevo perfil'
 
@@ -90,7 +105,7 @@ appId: com.magyblob.app # TODO: confirmar id real del development build de Expo
 - tapOn: 'Tu nombre' # placeholder del TextField de nombre
 - inputText: 'Mateo'
 - hideKeyboard
-- tapOn: '4' # edad (SelectableChip)
+- tapOn: '4' # edad (SelectableChip, texto = número)
 - tapOn: 'zorro' # avatar (accessibilityLabel = id del avatar)
 - tapOn: 'Animales' # interés (TEMA_LABEL.animales)
 - tapOn: '¡Listo!'
@@ -110,8 +125,9 @@ appId: com.magyblob.app # TODO: confirmar id real del development build de Expo
 
 # --- Narración (capacidad SOLO nativa: expo-speech) -------------------------
 # Efecto observable que el E2E web no cubre: al tocar "Escuchar", el botón
-# principal pasa a "Pausar" (estado playing) y aparece el botón "Parar".
-# NarrationControls usa expo-speech como fallback de voz nativa.
+# principal pasa a "Pausar" (estado playing) y aparece el botón "Parar"
+# (accessibilityLabel="Parar"). NarrationControls degrada a voz nativa
+# (expo-speech) cuando no hay audio de ElevenLabs.
 - assertVisible: 'Escuchar'
 - tapOn: 'Escuchar'
 - extendedWaitUntil:
@@ -120,3 +136,24 @@ appId: com.magyblob.app # TODO: confirmar id real del development build de Expo
 - assertVisible: 'Parar' # botón de detener (accessibilityLabel="Parar")
 - tapOn: 'Parar'
 - assertVisible: 'Escuchar' # vuelve a reposo
+
+# --- Actividades (US-09 generar / US-10 marcar realizada) -------------------
+# Opcional pero incluido: recorre el otro flujo de la zona infantil. Los textos
+# son los mismos que valida el E2E web (actividades-historial.spec.ts).
+- tapOn: 'Actividades'
+- assertVisible: 'Actividades para hoy'
+- tapOn: 'Generar actividades'
+- extendedWaitUntil:
+    visible: 'Realizado' # ya hay tarjetas de actividad del mock
+    timeout: 30000
+- tapOn: 'Realizado' # marca la primera actividad
+- tapOn: '3 estrellas' # valoración (StarRating, accessibilityLabel="N estrellas")
+- assertVisible: '¡Hecha!' # efecto observable: la tarjeta pasa a hecha
+
+# --- Historial (US-08): el cuento generado aparece -------------------------
+- tapOn: 'Historial'
+- assertVisible: 'Tu historial'
+- assertVisible: 'Cuentos mágicos'
+# El cuento del mock se titula "{nombre} y la aventura de {tema}"; basta con
+# comprobar que el nombre del niño aparece en el historial.
+- assertVisible: 'Mateo'

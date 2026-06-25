@@ -28,7 +28,7 @@ export function ParentalGate({ children, intro }: { children: ReactNode; intro?:
         {intro ??
           'Para continuar, resuelve esta operación. Así nos aseguramos de que hay una persona adulta.'}
       </Text>
-      <Text style={styles.question}>
+      <Text testID="parental-pregunta" style={styles.question}>
         {reto.a} + {reto.b} = ?
       </Text>
       <View style={styles.options}>

@@ -78,14 +78,22 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
           registrar tu consentimiento.
         </Text>
 
-        <TextField label="Nombre" value={nombre} onChangeText={setNombre} autoCapitalize="words" />
         <TextField
+          testID="alta-nombre"
+          label="Nombre"
+          value={nombre}
+          onChangeText={setNombre}
+          autoCapitalize="words"
+        />
+        <TextField
+          testID="alta-apellidos"
           label="Apellidos"
           value={apellidos}
           onChangeText={setApellidos}
           autoCapitalize="words"
         />
         <TextField
+          testID="alta-email"
           label="Email"
           value={email}
           onChangeText={setEmail}

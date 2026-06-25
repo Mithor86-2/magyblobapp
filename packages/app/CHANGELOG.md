@@ -9,13 +9,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- Andamiaje del **E2E nativo de la app** con **Maestro** (US-38), nivel complementario —no
-  sustituto— del E2E web de Playwright (US-32) para validar el flujo del MVP en las plataformas
-  nativas (incluyendo lo que solo existe en nativo: audio `expo-audio`, voz `expo-speech`, navegación
-  nativa). Incluye:
-  - **Flow** [`.maestro/onboarding.yaml`](.maestro/onboarding.yaml) del happy path (bienvenida →
-    puerta parental → alta → consentimiento → crear perfil → generar cuento mock → narración),
-    localizando por id/etiqueta accesible.
+- **E2E nativo de la app** con **Maestro** (US-38), nivel complementario —no sustituto— del E2E web
+  de Playwright (US-32/US-37/US-39) para validar el flujo del MVP en las plataformas nativas
+  (incluyendo lo que solo existe en nativo: audio `expo-audio`, voz `expo-speech`, navegación nativa).
+  Incluye:
+  - **Flow endurecido** [`.maestro/onboarding.yaml`](.maestro/onboarding.yaml) del happy path
+    (bienvenida → puerta parental → alta → consentimiento → crear perfil → generar cuento mock →
+    narración → actividades → historial), con selectores alineados con el E2E web. La **puerta
+    parental** (opción múltiple, suma aleatoria) se resuelve leyendo la pregunta por `testID`
+    (`copyTextFrom`), calculando la suma con `evalScript` y tocando el chip resultante.
+  - **`testID`** aditivos para selectores estables en nativo: `parental-pregunta` (reto de la puerta
+    parental) y `alta-nombre`/`alta-apellidos`/`alta-email` (campos del alta del adulto). No alteran
+    el render ni los textos visibles y no afectan a los E2E web (que van por rol/nombre accesible).
   - **ADR 0005** (Maestro vs Detox, decisión por YAGNI) y la sección «E2E web vs E2E nativo» en
     `Docs/estrategia-pruebas.md`.
   - **Esqueleto de CI** [`.github/workflows/e2e-native.yml`](../../.github/workflows/e2e-native.yml)

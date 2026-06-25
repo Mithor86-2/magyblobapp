@@ -1,5 +1,5 @@
 # =============================================================================
-# E2E NATIVO (Maestro) sobre simuladores — job SEPARADO (US-35, ADR 0005)
+# E2E NATIVO (Maestro) sobre simuladores — job SEPARADO (US-38, ADR 0005)
 # =============================================================================
 #
 # Este workflow NO corre en push/PR a propósito: levantar simuladores/emuladores
@@ -87,7 +87,7 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Android: puede correr en ubuntu con un emulador (p. ej.
-  # reactivecircus/android-emulator-runner). Paridad de plataformas (US-35).
+  # reactivecircus/android-emulator-runner). Paridad de plataformas (US-38).
   # ---------------------------------------------------------------------------
   e2e-android:
     name: E2E nativo Android (Maestro + Android Emulator)

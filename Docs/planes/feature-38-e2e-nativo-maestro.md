@@ -55,12 +55,23 @@ Decisiones tomadas con el usuario (2026-06-24):
       sin build de Expo. Los pasos quedan documentados (flow + estrategia-pruebas + esqueleto CI) para
       ejecutarlos en una máquina con simuladores.
 - [x] ✅ Escribir el **_flow_ YAML** del happy path: onboarding → crear perfil → generar cuento →
-      narración, localizando por identificador/etiqueta accesible.
+      narración (+ actividades e historial), localizando por identificador/etiqueta accesible.
       → [../../packages/app/.maestro/onboarding.yaml](../../packages/app/.maestro/onboarding.yaml).
-      Selectores por texto accesible ES (coherentes con el E2E web de Playwright); `# TODO`s donde
-      conviene añadir `testID` (puerta parental, campos del alta).
+      **Endurecido (2026-06-25)** tras leer las pantallas reales: selectores alineados con el E2E web
+      (`onboarding.spec.ts`, `actividades-historial.spec.ts`). Resueltos los `# TODO`:
+  - **Puerta parental:** NO es un campo de texto, son **tres chips** (respuesta + 2 distractores
+    barajados). Se resuelve con `copyTextFrom` del `testID` `parental-pregunta`, se parsean los
+    operandos con `evalScript` (`maestro.copiedText.match(/\d+/g)`), se suma y se toca el chip con
+    `tapOn: ${output.suma}` (mismo enfoque que el E2E web traducido a Maestro).
+  - **Campos del alta:** localizados por `testID` (`alta-nombre` / `alta-apellidos` / `alta-email`).
+  - Añadido el recorrido de **Actividades** (generar → "Realizado" → estrellas → "¡Hecha!") e
+    **Historial** ("Cuentos mágicos" + nombre del niño).
+- [x] ✅ Añadir **`testID`** aditivos y seguros (no cambian render ni textos visibles; los E2E web van
+      por rol/nombre accesible, no por testID): `parental-pregunta` en el reto de la puerta parental
+      (components/ParentalGate.tsx) y `alta-nombre`/`alta-apellidos`/`alta-email` en los TextField del
+      alta (screens/ConsentScreen.tsx, vía una prop `testID` opcional nueva en components/TextField.tsx).
 - [ ] 🔄 Ejecutar el _flow_ sobre el **iOS Simulator** y verificar el recorrido (incluida la capacidad
-      solo nativa con efecto observable).
+      solo nativa con efecto observable). **Pendiente del usuario (entorno sin simuladores).**
       _Pendiente de tu máquina_: requiere macOS + Xcode + development build. El flow ya ejercita el
       efecto observable de `expo-speech` («Escuchar» → «Pausar» + «Parar»).
 - [ ] 🔄 Ejecutar el _flow_ sobre el **Android Emulator** y verificar paridad de plataformas.
@@ -78,10 +89,12 @@ Decisiones tomadas con el usuario (2026-06-24):
       CHANGELOG de la app actualizado en `## [Unreleased]`; el versionado SemVer y el `finish` quedan
       para el cierre con el usuario.
 
-## Estado de la automatización (2026-06-24)
+## Estado de la automatización (2026-06-25)
 
 Implementado en este entorno (headless, sin simuladores ni build de Expo): **ADR 0005**, **flow
-Maestro**, **doc de estrategia** y **esqueleto de CI** (job separado). **No** se pudo automatizar la
+Maestro endurecido** (selectores reales, puerta parental resuelta por chips, actividades+historial),
+**`testID`** aditivos en la app, **doc de estrategia** y **esqueleto de CI** (job separado).
+Integrado `develop` (root 0.21.1, app 0.14.1; US-35/36/37/39). **No** se pudo automatizar la
 instalación de Maestro, el development build de Expo ni la ejecución real en iOS Simulator / Android
 Emulator (ni la validación de los efectos nativos): requieren una máquina con simuladores. Quedan como
 pasos para el usuario (ver el propio flow y `estrategia-pruebas.md`).
