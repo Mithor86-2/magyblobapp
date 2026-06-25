@@ -9,7 +9,7 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- Andamiaje del **E2E nativo de la app** con **Maestro** (US-35), nivel complementario —no
+- Andamiaje del **E2E nativo de la app** con **Maestro** (US-38), nivel complementario —no
   sustituto— del E2E web de Playwright (US-32) para validar el flujo del MVP en las plataformas
   nativas (incluyendo lo que solo existe en nativo: audio `expo-audio`, voz `expo-speech`, navegación
   nativa). Incluye:

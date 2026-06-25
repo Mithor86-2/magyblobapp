@@ -2,7 +2,7 @@
 
 - **Estado:** **Aceptada** (2026-06-24)
 - **Fecha:** 2026-06-24
-- **Relacionada con:** [ADR 0001](0001-arquitectura-limpia-monorepo.md) · US-35 ·
+- **Relacionada con:** [ADR 0001](0001-arquitectura-limpia-monorepo.md) · US-38 ·
   US-32/US-36 (E2E web con Playwright)
 
 ## Contexto

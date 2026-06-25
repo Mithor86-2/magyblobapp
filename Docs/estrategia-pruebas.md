@@ -76,7 +76,7 @@ Hay **dos niveles de E2E de la app**, complementarios. No se sustituyen: cada un
 otro no puede. La decisión de adoptar Maestro frente a Detox para el nativo está en el
 [ADR 0005](ADR/0005-e2e-nativo-maestro.md).
 
-| Aspecto           | **E2E web — Playwright** (US-32/US-36)                       | **E2E nativo — Maestro** (US-35)                                                 |
+| Aspecto           | **E2E web — Playwright** (US-32/US-36)                       | **E2E nativo — Maestro** (US-38)                                                 |
 | ----------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
 | Qué ejecuta       | El **export web** de Expo (`react-native-web`) en Chromium   | La **app nativa** (development build) en iOS Simulator / Android Emulator        |
 | Qué cubre bien    | Lógica de pantallas, navegación, formularios, flujo de datos | Lo **solo nativo**: audio (`expo-audio`), voz (`expo-speech`), navegación nativa |

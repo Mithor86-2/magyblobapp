@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**. Volver al
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-38**. Volver al
 [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -399,7 +399,7 @@ de longitud/rima/formato, temperatura, modelo, cantidad de actividades) y la res
 - (No-funcional) Dado el cambio, Entonces es **solo backend**, no añade dependencias ni red, y la
   generación sigue funcionando igual (el log es un efecto lateral, no altera el resultado).
 
-## US-35 — E2E nativo de la app en simuladores (iOS/Android) con Maestro · Could (Mejoras)
+## US-38 — E2E nativo de la app en simuladores (iOS/Android) con Maestro · Could (Mejoras)
 
 Como **desarrollador/evaluador del proyecto** quiero pruebas end-to-end de la app **nativa**
 ejecutadas sobre el **iOS Simulator** y el **Android Emulator**, para validar el flujo real del MVP

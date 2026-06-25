@@ -1,9 +1,9 @@
-# Plan — Feature 38: E2E nativo de la app en simuladores con Maestro (US-35)
+# Plan — Feature 38: E2E nativo de la app en simuladores con Maestro (US-38)
 
 > Alcance global en [../plan-ejecucion-master.md](../plan-ejecucion-master.md); estado por fase en
 > [../phases.md](../phases.md). Aquí va el **cómo** se trocea y ejecuta.
 >
-> Rama: `feature/38-e2e-nativo-maestro` (desde `develop`). Historia: **US-35**. Solo app/tests/CI.
+> Rama: `feature/38-e2e-nativo-maestro` (desde `develop`). Historia: **US-38**. Solo app/tests/CI.
 
 ## Contexto
 
@@ -40,8 +40,8 @@ Decisiones tomadas con el usuario (2026-06-24):
 
 ## Historias cubiertas
 
-- US-35 — E2E nativo de la app en simuladores (iOS/Android) con Maestro
-  ([épica F](../historias-usuario/epic-f-plataforma.md#us-35))
+- US-38 — E2E nativo de la app en simuladores (iOS/Android) con Maestro
+  ([épica F](../historias-usuario/epic-f-plataforma.md#us-38))
 
 ## Tareas
 

@@ -24,7 +24,7 @@ Should = HITO 2 · Could = si hay margen.
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                            |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                   |
 | E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                                                                     |
-| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35 |
+| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-38 |
 
 ## Trazabilidad (historia → fase → pantalla)
 
@@ -64,7 +64,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-32 | Integración con BD real, E2E y CI      | Should    | 6       | — (tests/CI)                  | [F](epic-f-plataforma.md#us-32)  |
 | US-33 | Actualizar GitHub Actions (Node 24)    | Could     | Mantto. | — (CI)                        | [F](epic-f-plataforma.md#us-33)  |
 | US-34 | Log de prompts de IA y configuración   | Should    | Mejoras | — (logs backend)              | [F](epic-f-plataforma.md#us-34)  |
-| US-35 | E2E nativo en simuladores (Maestro)    | Could     | Mejoras | — (tests/CI)                  | [F](epic-f-plataforma.md#us-35)  |
+| US-38 | E2E nativo en simuladores (Maestro)    | Could     | Mejoras | — (tests/CI)                  | [F](epic-f-plataforma.md#us-38)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 
