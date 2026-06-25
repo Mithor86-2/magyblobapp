@@ -70,10 +70,28 @@ Decisiones tomadas con el usuario (2026-06-24):
       por rol/nombre accesible, no por testID): `parental-pregunta` en el reto de la puerta parental
       (components/ParentalGate.tsx) y `alta-nombre`/`alta-apellidos`/`alta-email` en los TextField del
       alta (screens/ConsentScreen.tsx, vía una prop `testID` opcional nueva en components/TextField.tsx).
-- [ ] 🔄 Ejecutar el _flow_ sobre el **iOS Simulator** y verificar el recorrido (incluida la capacidad
-      solo nativa con efecto observable). **Pendiente del usuario (entorno sin simuladores).**
-      _Pendiente de tu máquina_: requiere macOS + Xcode + development build. El flow ya ejercita el
-      efecto observable de `expo-speech` («Escuchar» → «Pausar» + «Parar»).
+- [x] ✅ Ejecutar el _flow_ sobre el **iOS Simulator** y verificar el recorrido (incluida la capacidad
+      solo nativa con efecto observable). **Hecho el 2026-06-25** (iPhone 17 Pro, iOS 26.4, **Expo Go**,
+      Maestro 2.6.1): **pasada completa en verde** de bienvenida → historial, incluida la narración
+      nativa `expo-speech` («Escuchar» → «Pausar» + «Parar» → reposo). No hizo falta development build:
+      `expo-speech` degrada a la voz nativa y **Expo Go la incluye**. Verificar destapó **7 correcciones**
+      en el flow (aplicadas a `onboarding.yaml`) + 1 ajuste de entorno:
+  - **Puerta parental:** el `testID` de un `<Text>` **no** se expone como `id` en iOS →
+    `copyTextFrom` por **texto** (regex `\d+ \+ \d+ = \?`), no por `id: parental-pregunta`.
+  - **`hideKeyboard` falla en iOS** → cerrar teclado **tocando el título** (no interactivo;
+    `keyboardShouldPersistTaps="handled"`). Sin esto, el Email se concatena en el campo anterior.
+  - **Chips Parentesco/consentimiento e interés** quedan bajo el footer fijo / fuera de pantalla →
+    `scrollUntilVisible` + **`centerElement: true`** (si no, el tap lo intercepta el footer y el
+    elemento no se selecciona → botón deshabilitado).
+  - **Asserts tras navegación** → `extendedWaitUntil` (no `assertVisible`, de timeout corto).
+  - **Pestañas:** iOS las expone como `"Cuentos, tab, 3 of 4"` y Maestro hace **match completo** →
+    selector regex `'Cuentos, tab.*'` (ídem Actividades/Historial).
+  - **Asserts de subcadena** (nombre del niño) → regex `'.*Mateo.*'` (mismo motivo de match completo).
+  - **Sin `launchApp`/`clearState` en Expo Go:** `clearState` borra Expo Go y dispara su **dev menu**,
+    que tapa la UI; el flow arranca con sesión limpia. (En **dev build** `clearState` sí es fiable.)
+  - **Entorno (no es bug del flow):** pese a `AI_PROVIDER=mock`, por US-14 el HotSwap servía con
+    **Groq** (`ai.cloud` activa + `GROQ_API_KEY` en `.env`) → cuento no determinista. Para E2E
+    determinista, backend con **claves cloud vacías** (o `ai.cloud` desactivada).
 - [ ] 🔄 Ejecutar el _flow_ sobre el **Android Emulator** y verificar paridad de plataformas.
       _Pendiente de tu máquina_: requiere Android SDK + AVD + development build.
 - [x] ✅ Documentar en [../estrategia-pruebas.md](../estrategia-pruebas.md) **cuándo Maestro vs
@@ -94,10 +112,14 @@ Decisiones tomadas con el usuario (2026-06-24):
 Implementado en este entorno (headless, sin simuladores ni build de Expo): **ADR 0005**, **flow
 Maestro endurecido** (selectores reales, puerta parental resuelta por chips, actividades+historial),
 **`testID`** aditivos en la app, **doc de estrategia** y **esqueleto de CI** (job separado).
-Integrado `develop` (root 0.21.1, app 0.14.1; US-35/36/37/39). **No** se pudo automatizar la
-instalación de Maestro, el development build de Expo ni la ejecución real en iOS Simulator / Android
-Emulator (ni la validación de los efectos nativos): requieren una máquina con simuladores. Quedan como
-pasos para el usuario (ver el propio flow y `estrategia-pruebas.md`).
+Integrado `develop` (root 0.21.1, app 0.14.1; US-35/36/37/39).
+
+**Actualización 2026-06-25 (ejecución real en simulador):** el _flow_ se **ejecutó y pasó en verde**
+sobre el **iOS Simulator (iPhone 17 Pro, iOS 26.4) con Expo Go** (Maestro 2.6.1), recorrido completo
+incluida la narración nativa. La verificación destapó **7 correcciones de selectores/timing** (ya
+aplicadas a `onboarding.yaml`; detalle en la tarea de arriba y en `lecciones-aprendidas.md`) y un
+**ajuste de entorno** (backend en mock real con claves cloud vacías). Queda pendiente solo:
+**Android Emulator** (paridad de plataformas) y el **cierre** (versión + CHANGELOG + `finish`).
 
 ## Notas / riesgos
 
