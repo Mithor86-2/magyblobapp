@@ -508,8 +508,8 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Causa:** `components/ParentalGate.tsx` pinta el reto como `Text` "a + b = ?" y ofrece **tres
   `SelectableChip`** (la respuesta + dos distractores contiguos, **barajados**); el reto se regenera
   en cada apertura y tras cada fallo. La respuesta no se escribe: se **toca el chip** correcto.
-- **Solución (Maestro):** leer la pregunta por `testID` y tocar el chip calculado:
-  1. `copyTextFrom: { id: parental-pregunta }` (testID añadido al `Text` del reto).
+- **Solución (Maestro):** leer la pregunta por **texto** (regex) y tocar el chip calculado:
+  1. `copyTextFrom: { text: '\d+ \+ \d+ = \?' }` — **NO** por `testID` (ver corrección iOS abajo).
   2. `evalScript: ${output.ops = maestro.copiedText.match(/\d+/g)}` y
      `evalScript: ${output.suma = String(Number(output.ops[0]) + Number(output.ops[1]))}`.
   3. `tapOn: ${output.suma}` — el chip muestra el número como texto visible.
@@ -518,6 +518,101 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **`testID` aditivos:** se añadió una prop `testID` opcional a `TextField` y se etiquetaron los 3
   campos del alta (`alta-nombre`/`alta-apellidos`/`alta-email`) y el reto parental
   (`parental-pregunta`). Son **aditivos** y no rompen los E2E web (que van por rol/nombre accesible).
+  Aviso: en iOS los de **`TextInput` sí** se exponen como `id`, pero el del **`Text`**
+  (`parental-pregunta`) **no** (ver corrección iOS abajo) — por eso el reto se localiza por texto.
 - **Gotcha de re-ejecución:** el backend persiste el alta; re-correr el flow con el **mismo email**
   falla por "email ya registrado" (igual que el E2E web, Feature 41). Cambia el email del flow o
   limpia la BD entre corridas.
+
+### Ejecución real en iOS Simulator (Expo Go) el 2026-06-25: 7 correcciones del flow
+
+Al correr por fin el flow sobre el iPhone 17 Pro (iOS 26.4, **Expo Go**, Maestro 2.6.1) salió **verde
+de extremo a extremo** (incluida la narración nativa), pero solo tras 7 ajustes. Todos derivan de dos
+hechos de Maestro/iOS: **(a)** el `testID` de un `<Text>` RN **no** se expone como `id` en la jerarquía
+de iOS (sí los de `TextInput`/botones), y **(b)** Maestro hace **match COMPLETO** del texto de un
+elemento (no subcadena).
+
+1. **Puerta parental por texto, no por `testID`:** `copyTextFrom: { id: parental-pregunta }` falla
+   ("Element not found") → `copyTextFrom: { text: '\d+ \+ \d+ = \?' }`.
+2. **`hideKeyboard` falla en iOS** ("Couldn't hide the keyboard") → cerrar teclado **tocando el título**
+   (`tapOn: 'Crea tu cuenta'`); funciona porque el `ScrollView` usa `keyboardShouldPersistTaps="handled"`.
+   Sin cerrarlo, el campo Email (el más bajo) queda tapado y su texto se concatena en Apellidos.
+3. **Chips bajo el footer fijo:** Parentesco/consentimiento e interés quedan tras el footer o fuera de
+   pantalla; `tapOn` no hace scroll y el tap lo intercepta el footer → `scrollUntilVisible` con
+   **`centerElement: true`** (sin centrar, el elemento queda al borde y no se selecciona).
+4. **Asserts tras navegación:** `assertVisible` (timeout corto) falla por la transición + red →
+   `extendedWaitUntil` con `timeout` explícito en cada punto de navegación.
+5. **Pestañas por regex:** iOS expone la pestaña como `"Cuentos, tab, 3 of 4"`; con match completo,
+   `tapOn: 'Cuentos'` no casa → `tapOn: 'Cuentos, tab.*'` (ídem Actividades/Historial).
+6. **Asserts de subcadena por regex:** `assertVisible: 'Mateo'` no casa con "Mateo y la aventura…" ni con
+   "Había una vez Mateo…" (match completo) → `'.*Mateo.*'` / `'.*Había una vez.*'`.
+7. **Sin `clearState` en Expo Go:** `launchApp.clearState` borra los datos de Expo Go y dispara su
+   **dev menu**, que tapa la UI; el flow arranca con sesión limpia y **sin** `launchApp`. (En un
+   **development build** `clearState` sí es fiable y no hay dev menu.)
+
+Dos hallazgos más:
+
+- **Entorno mock ≠ `AI_PROVIDER=mock`:** por US-14 el `HotSwapAIProvider` sirve con **cloud** si la
+  `AppSetting ai.cloud` está activa y hay API key en env (mi `.env` tenía Groq), **aunque** se levante
+  con `up:mock`. El cuento dejaba de ser determinista y el flow fallaba. Para E2E determinista: backend
+  con **claves cloud vacías** (recreé el contenedor con `GROQ_API_KEY= … docker compose up -d backend`)
+  o `ai.cloud` desactivada. El `.env`/BD no se tocan; `pnpm up:mock` restaura el cloud.
+- **La narración nativa funciona en Expo Go:** `expo-speech` degrada a la voz nativa del dispositivo y
+  Expo Go la incluye, así que **no hace falta development build** para validar este flow (el comentario
+  original del flow que lo exigía era conservador).
+
+### Worktree con enlace git roto (ruta con espacio vs guion)
+
+- **Síntoma:** `git status`/commit dentro de `.claude/worktrees/e2e-nativo-maestro` falla con
+  `fatal: not a git repository`; `git worktree list` marca la entrada **`prunable`**.
+- **Causa:** el worktree se registró con la ruta `…/Master IA/…` (con **espacio**) mientras que la real
+  es `…/Master-IA/…` (con **guion**); ambas referencias (`.git` del worktree y `gitdir` del repo) apuntan
+  a la ruta inexistente.
+- **Solución:** desde el repo principal, `git worktree repair "<ruta-correcta-del-worktree>"` reescribe
+  ambas referencias. Tras reparar, el worktree vuelve a operar con git con normalidad.
+
+## Feature 42 — Sentry (monitorización de errores, US-40)
+
+### El wizard de Sentry falla la instalación en pnpm 11 (`ERR_PNPM_IGNORED_BUILDS`)
+
+- **Síntoma:** `npx @sentry/wizard -i reactNative` aborta con `Installation command pnpm add
+@sentry/react-native ... exited with code 1`; el log de error que deja está vacío.
+- **Causa:** `@sentry/cli` tiene un `postinstall` (descarga un binario) y pnpm 11 **bloquea los build
+  scripts no aprobados**, saliendo con código ≠ 0. El wizard intentó autorizarlo pero dejó un
+  **placeholder inválido** en `pnpm-workspace.yaml`: `'@sentry/cli': set this to true or false`.
+- **Solución:** poner `'@sentry/cli': true` en `allowBuilds` de `pnpm-workspace.yaml` y `pnpm install`.
+  El paquete en sí resuelve bien; el fallo era solo la puerta de build scripts.
+
+### `@sentry/react-native` no se puede importar bajo Vitest (arrastra react-native)
+
+- **Síntoma:** un test que importa un módulo que hace `import * as Sentry from '@sentry/react-native'`
+  peta al **cargar la suite** (`Cannot find module '.../promise/setimmediate/es6-extensions'` desde
+  `react-native/Libraries/Promise.js`).
+- **Causa:** el entorno `node` de Vitest no resuelve los módulos nativos/Flow de react-native (mismo
+  problema que `lucide-react-native` en US-30).
+- **Solución:** separar la **lógica pura** (gating por DSN, `buildSentryOptions`, `scrubEvent`) en
+  `infrastructure/sentry.ts` usando **solo `import type`** de `@sentry/react-native` (se borra en
+  runtime), y aislar el **efecto** (`Sentry.init`) en `infrastructure/sentry.bootstrap.ts`, que importa
+  el SDK en runtime y se **excluye** de la cobertura (bootstrap, como `composition.ts`). Así `sentry.ts`
+  se testea al 100% sin cargar el SDK.
+
+### `expo prebuild` falla en `EXConstants` en monorepo pnpm
+
+- **Síntoma:** tras el prebuild (que el wizard de Sentry dispara), `expo run:ios` falla con
+  `PhaseScriptExecution ... EXConstants ... Generate app.config for prebuilt Constants.manifest`.
+- **Causa:** fricción conocida de `expo-constants` con la estructura de `node_modules` simlinkada de
+  pnpm; **ajena a Sentry** (el pod `RNSentry` sí autolinkó correctamente).
+- **Solución (para US-40):** no se necesita build nativo — Sentry funciona a nivel JS en Expo Go y web.
+  Se **revirtió** el prebuild (`app.json`, scripts `expo run:*`, `expo-build-properties`) y se borraron
+  `ios/`/`.expo/` (carpetas nativas generadas, gitignored; el repo es CNG). El build nativo es otra rama.
+
+### El DSN de `.env` se cuela en el export web del E2E
+
+- **Síntoma (potencial):** con `EXPO_PUBLIC_SENTRY_DSN` en el `.env` local, `expo export` para el E2E
+  inlina el DSN en el bundle web → Sentry se inicializaría durante el E2E y enviaría una sesión de flujo
+  infantil a sentry.io (rompe el criterio "E2E inactivo" de US-40).
+- **Causa:** Expo carga `.env` en cualquier comando, incluido `expo export`. En CI no hay `.env`, pero
+  en local sí.
+- **Solución:** forzar el DSN vacío en el script: `EXPO_PUBLIC_SENTRY_DSN= ... expo export ...`. Una var
+  de entorno ya definida (aunque vacía) tiene **prioridad** sobre el `.env` de Expo (dotenv no la pisa),
+  y `getSentryDsn()` trata la cadena en blanco como ausente → Sentry desactivado en el E2E.

@@ -40,6 +40,25 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.15.0] - 2026-06-25
+
+Monitorización de errores y crashes con Sentry, como desviación de cumplimiento asumida (US-40, C-12).
+
+### Added
+
+- **Monitorización de errores y crashes con Sentry (US-40).** Integra `@sentry/react-native` con
+  **inicialización condicional al DSN** (`EXPO_PUBLIC_SENTRY_DSN`): sin DSN no se inicializa y no sale
+  nada a terceros (modo por defecto, desarrollo y E2E en `mock` conformes). `Sentry.wrap` en el
+  componente raíz. Nuevo `src/infrastructure/sentry.ts` con su test.
+
+### Security
+
+- **Minimización de datos hacia Sentry (US-40, C-12).** `sendDefaultPii: false` y un `beforeSend` que
+  elimina `user`, `request`, `server_name` y el nombre del dispositivo, y redacta correos en
+  mensajes/excepciones/breadcrumbs. Sin Session Replay ni `setUser`; sin performance tracing. Es una
+  **desviación de cumplimiento asumida (TFM)**, desactivable retirando el DSN; ver
+  `Docs/cumplimiento-menores.md` (C-12).
+
 ## [0.14.1] - 2026-06-24
 
 Corrige el E2E web al combinar multinavegador (US-37) con la cobertura de actividades/historial

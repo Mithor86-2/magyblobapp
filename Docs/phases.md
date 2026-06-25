@@ -413,6 +413,19 @@ se abra). Algunas parten de algo ya existente (se indica).
       raíz; activación vía `prepare`. Verificado: commit con error de lint se bloquea, `--no-verify`
       salta, pre-push ejecuta el gate. `pnpm check` verde (192 backend + 58 app).
 
+- [x] ✅ **Monitorización de errores/crashes con Sentry** (US-40, app v0.15.0 / raíz v0.22.0, rama
+      `feature/42-sentry-monitorizacion-errores` desde `develop`). Integra `@sentry/react-native` en la
+      app Expo como **desviación de cumplimiento asumida (TFM, C-12)**: Sentry envía a un tercero
+      (sentry.io), rompiendo C-2/C-5. Clave de la mitigación: **init condicional al DSN** —sin
+      `EXPO_PUBLIC_SENTRY_DSN` no se inicializa y no sale nada (modo por defecto, desarrollo y E2E
+      conformes)—, `sendDefaultPii: false`, un `beforeSend` que elimina `user`/`request`/`server_name`/
+      nombre de dispositivo y **redacta correos**, **sin Session Replay** ni `setUser`, y sin tracing.
+      Lógica pura testeable en `infrastructure/sentry.ts` (8 tests, 100% CORE); efecto aislado en
+      `sentry.bootstrap.ts` (no carga bajo Vitest). Se arregla el gate de pnpm (`'@sentry/cli': true` en
+      `allowBuilds`). El prebuild nativo que disparó el wizard (`ios/`, `expo run:*`,
+      `expo-build-properties`) falló en `EXConstants` (pnpm) y se **revirtió**: US-40 queda solo a nivel
+      JS (Expo Go/web). Solo app; `pnpm check` verde (192 backend + 66 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
