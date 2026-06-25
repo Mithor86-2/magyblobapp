@@ -11,7 +11,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "e2e:install": "playwright install chromium",
+    "e2e:install": "playwright install chromium webkit",
     "test:e2e": "EXPO_PUBLIC_API_URL=http://127.0.0.1:4173 expo export --platform web --clear && playwright test"
   },
   "dependencies": {

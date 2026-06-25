@@ -40,24 +40,25 @@ Estado de partida:
 
 ### Fase 1 — Multi-navegador
 
-- ❌ Añadir a `packages/app/playwright.config.ts` los proyectos `chromium`
+- ✅ Añadir a `packages/app/playwright.config.ts` los proyectos `chromium`
   (`devices['Desktop Chrome']`, baseline), `mobile-chrome` (`devices['Pixel 5']`, viewport móvil
   _portrait_) y `mobile-safari` (`devices['iPhone 13']`, motor WebKit). Conservar sin cambios
-  `webServer`, `baseURL` (`http://127.0.0.1:4173`), `testDir` (`./e2e`) y `workers: 1`.
+  `webServer`, `baseURL` (`http://127.0.0.1:4173`), `testDir` (`./e2e`) y `workers: 1`. _(Hecho:
+  se conservaron además `fullyParallel`, `timeout` y `expect`.)_
 
 ### Fase 2 — Reporting y depuración
 
-- ❌ Añadir reporters `html` (`outputFolder: 'playwright-report'`, `open: 'never'`),
+- ✅ Añadir reporters `html` (`outputFolder: 'playwright-report'`, `open: 'never'`),
   `json` (`outputFile: 'test-results/results.json'`) y `line`.
-- ❌ Configurar `use`: `screenshot: 'only-on-failure'`, `video: 'retain-on-failure'`,
-  `trace: 'retain-on-failure'`, y `retries: 1` **solo en CI** (con `workers: 1` y `retries: 0`,
-  `on-first-retry` no captura nada).
+- ✅ Configurar `use`: `screenshot: 'only-on-failure'`, `video: 'retain-on-failure'`,
+  `trace: 'retain-on-failure'`, y `retries: 1` **solo en CI** (`retries: process.env.CI ? 1 : 0`;
+  con `workers: 1` y `retries: 0`, `on-first-retry` no captura nada).
 
 ### Fase 3 — Scripts e ignore
 
-- ❌ Actualizar el script `e2e:install` de `packages/app/package.json` a
+- ✅ Actualizar el script `e2e:install` de `packages/app/package.json` a
   `playwright install chromium webkit`.
-- ❌ Actualizar `.gitignore` para ignorar `packages/app/playwright-report/` y
+- ✅ Actualizar `.gitignore` (raíz) para ignorar `packages/app/playwright-report/` y
   `packages/app/test-results/`.
 
 ### Fase 4 — Coste en CI (documentación)
@@ -65,11 +66,28 @@ Estado de partida:
 - ❌ Documentar la estrategia de coste (con `workers: 1`, ~3x navegadores en serie): dejar **solo
   `chromium`** en el gate de PR y `mobile-safari`/`mobile-chrome` en un job **nightly** filtrando por
   `--project`. Reflejarlo en [estrategia-pruebas.md](../estrategia-pruebas.md) y/o en el workflow de CI.
+  _(Pendiente: tarea de documentación/CI; se aborda en el cierre con el usuario.)_
 
 ### Fase 5 — Gate y cierre
 
-- ❌ Verificar el gate: `pnpm check` (typecheck + lint + format:check + test) en verde.
+- 🔄 Verificar el gate: `pnpm typecheck`, `pnpm lint`, `pnpm format:check` y los unitarios del app
+  (`pnpm --filter @magyblob/app test`) en verde. _(El `pnpm test` completo incluye el backend, que
+  no es parte de esta feature; los pasos individuales relevantes se corrieron en verde.)_
 - ❌ Verificar que el **E2E sigue verde** (al menos `chromium`; idealmente los tres proyectos con
-  Docker y `e2e:install`).
-- ❌ Actualizar docs (CHANGELOG de `@magyblob/app`, tracking docs) y cerrar con **cerrar-feature**
+  Docker y `e2e:install`). _(Requiere Docker/Testcontainers y binarios de navegador → verificación
+  del usuario; ver Riesgos.)_
+- 🔄 Actualizar docs (CHANGELOG de `@magyblob/app`, tracking docs) y cerrar con **cerrar-feature**
   (SemVer + CHANGELOG versionado + Git Flow, con confirmación explícita antes del `finish`).
+  _(CHANGELOG actualizado; SemVer/versionado y cierre quedan para `cerrar-feature`.)_
+
+## Riesgos / pendientes
+
+- **Verificación con navegadores reales (Docker).** El config compila y pasa lint/format/typecheck,
+  pero la ejecución real de los tres `projects` requiere Docker (Testcontainers) y los binarios de
+  Chromium + WebKit (`pnpm --filter @magyblob/app e2e:install`). No se ejecutó aquí; lo verifica el
+  usuario con `pnpm --filter @magyblob/app test:e2e`.
+- **Locators en viewport móvil.** `e2e/onboarding.spec.ts` localiza por rol/nombre accesible (no por
+  estructura ni estilo), lo que es robusto frente al viewport; pero el flujo no se ha ejercitado en
+  `mobile-chrome`/`mobile-safari`. Si algún paso quedara fuera de viewport o requiriese scroll en
+  _portrait_ (Pixel 5 / iPhone 13), podría fallar en esos proyectos. No se cambió el test (el cambio
+  no sería trivial); de surgir, se ajustará el spec tras la verificación con navegadores reales.
