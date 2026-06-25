@@ -63,7 +63,7 @@ rápido y sin dependencias de infraestructura. En **CI** sí se ejecutan siempre
 y `pull_request`, con tres jobs que reproducen exactamente los comandos de arriba:
 
 1. **gate** — `pnpm check` (sin Docker) **+ `pnpm coverage`** (hace cumplir los umbrales por tier;
-   ver más abajo).
+   ver más abajo). Sube el **informe HTML de cobertura** de ambos paquetes como artefacto (`coverage-report`).
 2. **integración + E2E backend** — `test:integration` y `test:e2e` (Testcontainers; Docker viene en
    el runner `ubuntu-latest`).
 3. **E2E app** — Playwright/Chromium sobre Expo web contra el backend real en mock.
