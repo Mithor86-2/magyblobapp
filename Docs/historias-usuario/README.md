@@ -17,14 +17,14 @@ Should = HITO 2 · Could = si hay margen.
 
 ## Documentos por épica
 
-| Épica | Documento                                           | Historias                                                                                                      |
-| ----- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02                                                                       |
-| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28                                                                |
-| C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                   |
-| D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                          |
-| E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                                                                            |
-| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-39 |
+| Épica | Documento                                           | Historias                                                                                                             |
+| ----- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02                                                                              |
+| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28                                                                       |
+| C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                          |
+| D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                                 |
+| E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                                                                                   |
+| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-37, US-39 |
 
 ## Trazabilidad (historia → fase → pantalla)
 
@@ -65,6 +65,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-33 | Actualizar GitHub Actions (Node 24)    | Could     | Mantto. | — (CI)                        | [F](epic-f-plataforma.md#us-33)  |
 | US-34 | Log de prompts de IA y configuración   | Should    | Mejoras | — (logs backend)              | [F](epic-f-plataforma.md#us-34)  |
 | US-35 | Cobertura estratégica (100/80/0)       | Should    | Mejoras | — (tests/CI)                  | [F](epic-f-plataforma.md#us-35)  |
+| US-37 | E2E web multinavegador (Playwright)    | Could     | Mejoras | — (tests/CI)                  | [F](epic-f-plataforma.md#us-37)  |
 | US-39 | E2E de actividades e historial         | Could     | Mejoras | — (tests/CI)                  | [F](epic-f-plataforma.md#us-39)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)

@@ -347,6 +347,27 @@ se abra). Algunas parten de algo ya existente (se indica).
       pulsaciones (Query Priority de Testing Library). `Icon` queda fuera (lucide-react-native no
       importa bajo Vitest; se mockea). Entorno `node` por defecto (test de `http` intacto); cada test
       de componente usa `@vitest-environment jsdom`. Solo app; `pnpm check` verde (126 backend + 41 app).
+- [x] ✅ **E2E web multinavegador y reporting** (US-37, app v0.13.0, rama
+      `feature/37-e2e-web-multinavegador` desde `develop`). Amplía el E2E de la app (Playwright sobre
+      el export web de Expo, US-32) a **tres `projects`**: `chromium` (baseline), `mobile-chrome`
+      (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y `mobile-safari` (iPhone 13, motor
+      **WebKit** = el de iOS). **Reporting rico**: HTML (`playwright-report`) + JSON
+      (`test-results/results.json`) + line, y ante fallo se conservan captura/vídeo/traza
+      (`*-on-failure`); `retries: 1` solo en CI. `e2e:install` instala `chromium webkit` y el
+      `.gitignore` ignora los artefactos. Suite aparte (no toca el arranque reproducible); solo app,
+      dependencias de desarrollo. Gate `pnpm check` verde (139 backend + 41 app); la ejecución real de
+      los tres proyectos requiere Docker + binarios y la verifica el usuario.
+- [x] ✅ **E2E web de actividades e historial** (US-39, app v0.14.0 / raíz v0.21.0, rama
+      `feature/40-e2e-actividades-historial` desde `develop`). Amplía la cobertura E2E de la app
+      (Playwright sobre el export web de Expo, US-32/US-37) más allá del onboarding: reutilizando el
+      helper que lleva a perfil + cuento generado, recorre la pestaña **Actividades** (generar
+      actividades recomendadas y marcar una como "Realizado" con valoración → "¡Hecha!", US-09/US-10) y
+      la pestaña **Historial** (el cuento generado aparece en "Cuentos mágicos", US-08). Contra el
+      backend real en modo `mock` (contenido determinista), localizando por rol/etiqueta accesible. Se
+      mantiene como **US aparte** de la multinavegador (US-37): aquella amplía _dónde_ corre el E2E
+      (motores/viewports), ésta amplía _qué_ flujos cubre. Suite aparte (no toca el arranque
+      reproducible); solo app, dependencias de desarrollo. Gate `pnpm check` verde; la ejecución real
+      (`test:e2e`) requiere Docker + binarios y la verifica el usuario.
 
 **Calidad y tooling:**
 

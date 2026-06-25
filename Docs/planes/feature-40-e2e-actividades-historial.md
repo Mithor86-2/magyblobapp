@@ -59,10 +59,12 @@ el arranque reproducible ([US-06](../historias-usuario/epic-f-plataforma.md#us-0
       aparece en "Cuentos mágicos" (por su título determinista con el nombre del niño).
 - [x] ✅ Localizadores por rol/etiqueta accesible; comentarios en español.
 
-### Fase C — Verificación y cierre parcial
+### Fase C — Verificación y cierre
 
 - [x] ✅ Gate sin Docker desde la raíz del worktree: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`.
 - [x] ✅ Commits con staging selectivo (Conventional Commits en español).
+- [x] ✅ Integrado `develop` en la rama (US-35 + US-37 + sus versiones/CHANGELOG) resolviendo los
+      conflictos de trazabilidad/épica/CHANGELOG conservando ambos lados.
+- [x] ✅ Cierre: versión SemVer (raíz `0.21.0`, app `0.14.0`) + `CHANGELOG.md` de la app fechado
+      (`## [0.14.0] - 2026-06-24`) + tracking docs (phases, memory, lecciones-aprendidas).
 - [ ] ❌ Ejecutar `pnpm --filter @magyblob/app test:e2e` con Docker (validación del usuario).
-- [ ] ❌ Cierre de feature (versión SemVer + CHANGELOG fechado + docs + `git flow feature finish`):
-      pendiente, requiere confirmación explícita del usuario.

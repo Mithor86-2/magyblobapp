@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-39**.
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-37**, **US-39**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -398,6 +398,54 @@ de longitud/rima/formato, temperatura, modelo, cantidad de actividades) y la res
   consumidores existentes (el `FallbackProvider` y sus tests con `{ warn }` no se rompen).
 - (No-funcional) Dado el cambio, Entonces es **solo backend**, no añade dependencias ni red, y la
   generación sigue funcionando igual (el log es un efecto lateral, no altera el resultado).
+
+## US-37 — E2E web multinavegador (Playwright) · Could (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero que la prueba **E2E web** de la app (Playwright
+sobre el **export web de Expo**) se ejecute en **varios navegadores** y produzca un **reporting rico**
+(informe HTML, JSON y trazas/vídeo/capturas ante fallo), para tener confianza de que el flujo funciona
+en los motores que importan (Chromium y WebKit/iOS) y poder diagnosticar un fallo sin reproducirlo a
+mano.
+
+**Contexto.** [US-32](#us-32) introdujo el E2E de la app con Playwright sobre el export web de Expo
+(`expo export --platform web`) servido por un proxy de mismo origen contra el backend real en `mock`,
+pero **solo en `chromium`** (Desktop Chrome) y con un reporter `list`. Esta historia **amplía** ese
+E2E: añade proyectos de Playwright para cubrir el **motor WebKit** (el de iOS/Safari) y un **viewport
+móvil** (la app es _portrait_), y configura el reporting de depuración. **Valida el EXPORT WEB de la
+app, no la app nativa** (iOS/Android): es la web servida la que se recorre con navegadores reales; no
+hay simuladores ni dispositivos nativos. **Solo afecta a la suite E2E de `packages/app`** (config y
+scripts de prueba); no toca runtime de la app ni el backend. Las dependencias siguen siendo solo de
+desarrollo. _(Nota: en el repo `mobile-chrome` usa el mismo motor Chromium que el baseline; aporta el
+viewport móvil, no un motor distinto. El motor adicional real lo aporta `mobile-safari` = WebKit.)_
+
+**Criterios de aceptación**
+
+- Dada la configuración de Playwright, Cuando se define la lista de `projects`, Entonces existen al
+  menos tres: `chromium` (`devices['Desktop Chrome']`, baseline existente de US-32), `mobile-chrome`
+  (`devices['Pixel 5']`, viewport móvil _portrait_) y `mobile-safari` (`devices['iPhone 13']`, motor
+  **WebKit** = el de iOS).
+- Dado el E2E ya existente (US-32), Cuando se añaden los nuevos proyectos, Entonces se **conservan sin
+  cambios** `webServer` (backend mock + servidor estático del export web), `baseURL`
+  (`http://127.0.0.1:4173`), `testDir` (`./e2e`) y `workers: 1` (no se rompe el E2E actual).
+- Dado el reporting, Cuando termina la ejecución, Entonces se generan un informe **HTML**
+  (`outputFolder: 'playwright-report'`, `open: 'never'`), un fichero **JSON**
+  (`test-results/results.json`) y la salida **`line`** en consola.
+- Dado un test que falla, Cuando se ejecuta, Entonces se conservan **captura** (`screenshot:
+'only-on-failure'`), **vídeo** (`video: 'retain-on-failure'`) y **traza** (`trace:
+'retain-on-failure'`) para diagnosticarlo. _(Se usa `retain-on-failure` y `retries: 1` **solo en
+  CI**, porque con `workers: 1` y `retries: 0` la opción `on-first-retry` no captura nada.)_
+- Dado el script de instalación de navegadores, Cuando se ejecuta `pnpm --filter @magyblob/app
+e2e:install`, Entonces instala los binarios de **chromium y webkit** (`playwright install chromium
+webkit`), no solo Chromium.
+- Dados los artefactos de prueba generados, Cuando se ejecuta el E2E, Entonces el `.gitignore` **ignora**
+  `packages/app/playwright-report/` y `packages/app/test-results/` (no se versionan).
+- Dado el coste (con `workers: 1` son ~**3x** navegadores en serie), Cuando se decide la estrategia de
+  CI, Entonces se documenta dejar **solo `chromium` en el gate de PR** y `mobile-safari`/`mobile-chrome`
+  en un job **nightly** (filtrando por `--project`), para no triplicar el tiempo de cada PR.
+- (No-funcional) Dada la regla de menores, Entonces el cambio respeta
+  [cumplimiento-menores.md](../cumplimiento-menores.md): modo `mock` por defecto (sin red ni IA
+  externa), dependencias **solo de desarrollo**, sin SDKs de terceros en runtime; y **no** añade pasos
+  ocultos al arranque reproducible ([US-06](#us-06)) — el E2E sigue siendo una suite aparte.
 
 ## US-35 — Cobertura estratégica por riesgo de negocio (100/80/0) · Should (Mejoras)
 

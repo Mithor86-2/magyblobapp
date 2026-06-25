@@ -424,3 +424,35 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Solución:** excluirlos del `coverage.exclude` (igual que el tier INFRASTRUCTURE), **documentando**
   la exclusión (no es truncado silencioso). El 100% se reserva a los _globs_ CORE; el resto cumple el
   80% de baseline. El umbral se hace cumplir en CI con `pnpm coverage`, no en el `pnpm check` local.
+
+## Feature 37 — E2E web multinavegador (US-37)
+
+### `trace: 'on-first-retry'` no captura nada sin reintentos
+
+- **Síntoma:** al configurar trazas/vídeo para depurar fallos del E2E, no se generaba ningún artefacto
+  pese a fallar un test en local.
+- **Causa:** `on-first-retry` solo captura **en el reintento**; con `workers: 1` y `retries: 0` (el
+  default en local, sin `CI`) no hay reintento, así que nunca se conserva nada.
+- **Solución:** usar `*-on-failure` (`screenshot: 'only-on-failure'`, `video`/`trace:
+'retain-on-failure'`), que conserva la evidencia del primer (y único) intento. `retries: 1` se
+  activa solo en CI (`retries: process.env.CI ? 1 : 0`).
+
+### `mobile-safari` no arranca sin el binario de WebKit
+
+- **Síntoma:** añadido el project `mobile-safari` (`iPhone 13`), Playwright fallaba al lanzarlo porque
+  no encontraba el ejecutable del navegador.
+- **Causa:** `e2e:install` instalaba solo `chromium`; `mobile-safari` corre sobre **WebKit**.
+- **Solución:** `playwright install chromium webkit` en el script `e2e:install`. (`mobile-chrome` no
+  añade binario: reusa el mismo Chromium; solo cambia el viewport.)
+
+## Feature 40 — E2E web de actividades e historial (US-39)
+
+### Cada test E2E rehace el onboarding con email/niño propios
+
+- **Síntoma:** un spec nuevo que daba por hecho un perfil ya creado (o que reusaba el email del spec
+  de onboarding) fallaba de forma intermitente o pisaba el estado del otro test.
+- **Causa:** cada test de Playwright arranca con un **contexto/página nuevos** (sin estado de la app),
+  y el **backend en modo `mock` persiste** entre tests; compartir email/niño entre specs cruza estado.
+- **Solución:** cada test rehace el onboarding completo dentro del propio test (helper local
+  `completarOnboarding(page)` que replica el patrón de `onboarding.spec.ts`) y el spec usa **su propio**
+  email (`marta.actividades.e2e@example.com`) y niño (`Lucia`) para no colisionar con otros specs.
