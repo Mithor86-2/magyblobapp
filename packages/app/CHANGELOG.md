@@ -9,11 +9,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- **Monitorización de errores y crashes con Sentry (US-40).** Integra `@sentry/react-native` con
-  **inicialización condicional al DSN** (`EXPO_PUBLIC_SENTRY_DSN`): sin DSN no se inicializa y no sale
-  nada a terceros (modo por defecto, desarrollo y E2E en `mock` conformes). `Sentry.wrap` en el
-  componente raíz. Nuevo `src/infrastructure/sentry.ts` con su test.
-
 ### Changed
 
 ### Deprecated
@@ -21,6 +16,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Removed
 
 ### Fixed
+
+### Security
+
+## [0.15.0] - 2026-06-25
+
+Monitorización de errores y crashes con Sentry, como desviación de cumplimiento asumida (US-40, C-12).
+
+### Added
+
+- **Monitorización de errores y crashes con Sentry (US-40).** Integra `@sentry/react-native` con
+  **inicialización condicional al DSN** (`EXPO_PUBLIC_SENTRY_DSN`): sin DSN no se inicializa y no sale
+  nada a terceros (modo por defecto, desarrollo y E2E en `mock` conformes). `Sentry.wrap` en el
+  componente raíz. Nuevo `src/infrastructure/sentry.ts` con su test.
 
 ### Security
 

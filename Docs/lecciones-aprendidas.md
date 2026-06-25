@@ -497,3 +497,49 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
   `actividades-historial.spec.ts`. Así las N tests × M navegadores no colisionan. Alternativa
   descartada por YAGNI: resetear/truncar la BD entre tests (endpoint de reset) — más superficie y
   acoplamiento que un email único.
+
+## Feature 42 — Sentry (monitorización de errores, US-40)
+
+### El wizard de Sentry falla la instalación en pnpm 11 (`ERR_PNPM_IGNORED_BUILDS`)
+
+- **Síntoma:** `npx @sentry/wizard -i reactNative` aborta con `Installation command pnpm add
+@sentry/react-native ... exited with code 1`; el log de error que deja está vacío.
+- **Causa:** `@sentry/cli` tiene un `postinstall` (descarga un binario) y pnpm 11 **bloquea los build
+  scripts no aprobados**, saliendo con código ≠ 0. El wizard intentó autorizarlo pero dejó un
+  **placeholder inválido** en `pnpm-workspace.yaml`: `'@sentry/cli': set this to true or false`.
+- **Solución:** poner `'@sentry/cli': true` en `allowBuilds` de `pnpm-workspace.yaml` y `pnpm install`.
+  El paquete en sí resuelve bien; el fallo era solo la puerta de build scripts.
+
+### `@sentry/react-native` no se puede importar bajo Vitest (arrastra react-native)
+
+- **Síntoma:** un test que importa un módulo que hace `import * as Sentry from '@sentry/react-native'`
+  peta al **cargar la suite** (`Cannot find module '.../promise/setimmediate/es6-extensions'` desde
+  `react-native/Libraries/Promise.js`).
+- **Causa:** el entorno `node` de Vitest no resuelve los módulos nativos/Flow de react-native (mismo
+  problema que `lucide-react-native` en US-30).
+- **Solución:** separar la **lógica pura** (gating por DSN, `buildSentryOptions`, `scrubEvent`) en
+  `infrastructure/sentry.ts` usando **solo `import type`** de `@sentry/react-native` (se borra en
+  runtime), y aislar el **efecto** (`Sentry.init`) en `infrastructure/sentry.bootstrap.ts`, que importa
+  el SDK en runtime y se **excluye** de la cobertura (bootstrap, como `composition.ts`). Así `sentry.ts`
+  se testea al 100% sin cargar el SDK.
+
+### `expo prebuild` falla en `EXConstants` en monorepo pnpm
+
+- **Síntoma:** tras el prebuild (que el wizard de Sentry dispara), `expo run:ios` falla con
+  `PhaseScriptExecution ... EXConstants ... Generate app.config for prebuilt Constants.manifest`.
+- **Causa:** fricción conocida de `expo-constants` con la estructura de `node_modules` simlinkada de
+  pnpm; **ajena a Sentry** (el pod `RNSentry` sí autolinkó correctamente).
+- **Solución (para US-40):** no se necesita build nativo — Sentry funciona a nivel JS en Expo Go y web.
+  Se **revirtió** el prebuild (`app.json`, scripts `expo run:*`, `expo-build-properties`) y se borraron
+  `ios/`/`.expo/` (carpetas nativas generadas, gitignored; el repo es CNG). El build nativo es otra rama.
+
+### El DSN de `.env` se cuela en el export web del E2E
+
+- **Síntoma (potencial):** con `EXPO_PUBLIC_SENTRY_DSN` en el `.env` local, `expo export` para el E2E
+  inlina el DSN en el bundle web → Sentry se inicializaría durante el E2E y enviaría una sesión de flujo
+  infantil a sentry.io (rompe el criterio "E2E inactivo" de US-40).
+- **Causa:** Expo carga `.env` en cualquier comando, incluido `expo export`. En CI no hay `.env`, pero
+  en local sí.
+- **Solución:** forzar el DSN vacío en el script: `EXPO_PUBLIC_SENTRY_DSN= ... expo export ...`. Una var
+  de entorno ya definida (aunque vacía) tiene **prioridad** sobre el `.env` de Expo (dotenv no la pisa),
+  y `getSentryDsn()` trata la cadena en blanco como ausente → Sentry desactivado en el E2E.
