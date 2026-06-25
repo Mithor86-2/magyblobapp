@@ -1,0 +1,6 @@
+echo "🚀 pre-push: gate completo (pnpm check)…"
+pnpm check || {
+  echo "❌ Gate en rojo. Arregla typecheck/lint/format/test antes de hacer push."
+  exit 1
+}
+echo "✅ Gate verde. Push permitido."
