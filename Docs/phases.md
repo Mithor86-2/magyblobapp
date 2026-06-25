@@ -439,6 +439,17 @@ se abra). Algunas parten de algo ya existente (se indica).
       Go) y un ajuste de entorno (backend en mock real, cloud off). Pendiente: Android (paridad). Solo
       app + docs; `pnpm check` verde (192 backend + 66 app).
 
+- [x] ✅ **Sentry: adaptaciones compatibles (extensión US-40)** (app v0.17.0 / raíz v0.24.0, rama
+      `feature/43-sentry-release-debug-test` desde `develop`). A raíz de revisar una lección de
+      referencia (PDF de `@sentry/react`+Vite) se adaptó lo compatible con la app de menores y se
+      descartó lo que rompe cumplimiento (Session Replay, `setUser` del niño, performance tracing,
+      feedback widget). Cambios: **política de PII revisada** —proteger al niño, permitir al adulto— el
+      `beforeSend` ahora **redacta el nombre del niño** del perfil activo (`[child]`, registrado desde el
+      store vía `setActiveChildName`) y **deja de redactar el email del adulto**; `release`
+      (`magyblob-app@<versión>` vía `expo-constants`, `app.json` alineado) y `debug` en desarrollo; y un
+      **disparador de prueba dev-only** en la zona parental (`__DEV__`). `sentry.ts` pasa a 12 tests
+      (100% CORE). Solo app; `pnpm check` verde (192 backend + 70 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

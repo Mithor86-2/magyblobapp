@@ -1,9 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { ParentalGate } from '../components/ParentalGate';
 import { useDialog } from '../components/DialogProvider';
 import { useAppStore } from '../store/useAppStore';
+import { isSentryEnabled } from '../../infrastructure/sentry';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
@@ -37,6 +39,20 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
     });
   }
 
+  // Disparador de prueba dev-only para verificar la tubería de Sentry de extremo a
+  // extremo (US-40). Solo bajo `__DEV__`: nunca se renderiza en builds de producción.
+  function onProbarSentry() {
+    Sentry.captureException(
+      new Error('Evento de prueba de Sentry (dev-only) desde ParentalScreen'),
+    );
+    dialog.alert({
+      title: 'Sentry',
+      message: isSentryEnabled()
+        ? 'Evento de prueba enviado. Revisa el dashboard de Sentry (Issues).'
+        : 'Sentry no está activo (sin DSN): el evento no se ha enviado.',
+    });
+  }
+
   return (
     <ParentalGate intro="Esta es la zona de personas adultas. Resuelve la operación para gestionar la cuenta.">
       <Screen>
@@ -53,6 +69,13 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
         <View style={styles.actions}>
           <BubblyButton label="Cambiar de perfil" onPress={onCambiarPerfil} />
           <BubblyButton label="Cerrar sesión" onPress={onCerrarSesion} variant="secondary" />
+          {__DEV__ ? (
+            <BubblyButton
+              label="Probar Sentry (dev)"
+              onPress={onProbarSentry}
+              variant="secondary"
+            />
+          ) : null}
         </View>
       </Screen>
     </ParentalGate>

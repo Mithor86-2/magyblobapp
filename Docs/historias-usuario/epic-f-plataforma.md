@@ -617,8 +617,11 @@ usuario.
 (Sentry SaaS) en la app. **Solo app**, no toca el backend. La inicialización es **condicional al DSN
 en variable de entorno**: sin DSN (modo por defecto, desarrollo y E2E en `mock`) Sentry **no se
 inicializa** y no sale nada a terceros; con DSN (builds de producción/preview) captura errores y
-crashes. El cliente se configura con `sendDefaultPii: false` y un `beforeSend` que **redacta la PII**
-(nombre del niño, email del adulto) antes de enviar el evento.
+crashes. El cliente se configura con `sendDefaultPii: false` y un `beforeSend` cuya política es
+**proteger al niño y permitir al adulto**: redacta el **nombre del niño** del perfil activo (el dato
+del menor nunca sale) y deja salir los datos del **adulto administrador** (su email). Se etiqueta
+`release` (versión del app) y `debug` en desarrollo, y hay un **disparador de prueba dev-only** para
+verificar la tubería.
 
 > **Desviación de cumplimiento asumida (TFM).** `@sentry/react-native` es un **SDK de terceros** que
 > transmite informes de error y metadatos del dispositivo a un tercero en la nube (sentry.io). **Rompe
@@ -627,7 +630,9 @@ crashes. El cliente se configura con `sendDefaultPii: false` y un `beforeSend` q
 > decisión consciente para el TFM, al estilo de C-5 (cloud) y C-11 (ElevenLabs); se documenta en
 > [cumplimiento-menores.md](../cumplimiento-menores.md) (**C-12**) con sus mitigaciones. El camino
 > conforme para producción real sería un reporte de errores _on-device_ o un proveedor con DPA y
-> garantía de no-entrenamiento. Ver el plan [42-sentry-monitorizacion-errores](../planes/42-sentry-monitorizacion-errores.md).
+> garantía de no-entrenamiento. Ver los planes [42-sentry-monitorizacion-errores](../planes/42-sentry-monitorizacion-errores.md)
+> y [43-sentry-release-debug-test](../planes/43-sentry-release-debug-test.md) (adaptaciones: política
+> de PII niño-sí/adulto-no, `release`, `debug` en dev y disparador de prueba).
 
 **Criterios de aceptación**
 
@@ -636,9 +641,16 @@ crashes. El cliente se configura con `sendDefaultPii: false` y un `beforeSend` q
 - Dado que **no hay DSN** configurado (modo por defecto, desarrollo y E2E en `mock`), Cuando la app
   arranca, Entonces Sentry **no se inicializa** y **no** se transmite nada a terceros (coherente con el
   modo base y con [US-06](#us-06)).
-- Dado un evento a punto de enviarse, Cuando pasa por `beforeSend`, Entonces se **redacta la PII** del
-  niño (nombre) y del adulto (email) antes de salir, y `sendDefaultPii` queda en **`false`** (no se
-  envían IP ni identificadores por defecto).
+- Dado un evento a punto de enviarse y un **perfil de niño activo**, Cuando pasa por `beforeSend`,
+  Entonces se **redacta el nombre del niño** (`[child]`) en mensaje, excepciones y breadcrumbs —el dato
+  del menor nunca sale—, mientras que el **email del adulto administrador sí puede salir** (decisión
+  consciente), y `sendDefaultPii` queda en **`false`** (no se envían IP ni identificadores por defecto).
+- Dado que la app está construida con una versión, Cuando se envía un evento, Entonces lleva la
+  **`release`** (`magyblob-app@<versión>`) para agrupar los errores por versión, y en **desarrollo**
+  Sentry corre con **`debug`** activo (logs de verificación en consola).
+- Dado un build de **desarrollo** (`__DEV__`), Cuando un adulto entra en la zona parental, Entonces
+  dispone de un **disparador de prueba** que envía un error a Sentry para verificar la tubería; en
+  **producción** ese disparador **no** se renderiza.
 - (Cumplimiento) Dado el SDK, Entonces queda documentado como **desviación asumida (C-12)** en
   [cumplimiento-menores.md](../cumplimiento-menores.md), con sus mitigaciones, y es **desactivable**
   retirando el DSN (sin DSN → comportamiento conforme, nada sale).

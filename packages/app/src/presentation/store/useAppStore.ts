@@ -10,6 +10,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { persistStorage } from '../../infrastructure/storage';
+import { setActiveChildName } from '../../infrastructure/sentry';
 import type { ChildProfile, Guardian } from '../../domain/types';
 
 interface AppState {
@@ -31,13 +32,27 @@ export const useAppStore = create<AppState>()(
       consentVersion: null,
       currentProfile: null,
       setGuardian: (guardian, consentVersion) => set({ guardian, consentVersion }),
-      setProfile: (profile) => set({ currentProfile: profile }),
-      clearProfile: () => set({ currentProfile: null }),
-      logout: () => set({ guardian: null, consentVersion: null, currentProfile: null }),
+      // Al cambiar el perfil activo, registra/limpia el nombre del niño en Sentry
+      // para redactarlo de los eventos antes de salir a terceros (US-40 / C-12).
+      setProfile: (profile) => {
+        setActiveChildName(profile.nombre);
+        set({ currentProfile: profile });
+      },
+      clearProfile: () => {
+        setActiveChildName(undefined);
+        set({ currentProfile: null });
+      },
+      logout: () => {
+        setActiveChildName(undefined);
+        set({ guardian: null, consentVersion: null, currentProfile: null });
+      },
     }),
     {
       name: 'magyblob-app',
       storage: persistStorage,
+      // Tras rehidratar la sesión persistida, re-registra el nombre del niño activo
+      // para que el scrubbing de Sentry siga protegiéndolo al reabrir la app.
+      onRehydrateStorage: () => (state) => setActiveChildName(state?.currentProfile?.nombre),
       // v1: la sesión pasa de `guardianId` (string) al `guardian` completo + perfil
       // activo. El estado v0 no puede reconstruir el guardián desde solo el id, así
       // que se descarta (el adulto vuelve a identificarse una vez).

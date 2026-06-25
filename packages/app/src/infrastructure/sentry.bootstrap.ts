@@ -6,7 +6,14 @@
  * (bootstrap), excluido de la medición de cobertura como `composition.ts`.
  */
 import * as Sentry from '@sentry/react-native';
+import Constants from 'expo-constants';
 import { buildSentryOptions, getSentryDsn } from './sentry';
+
+/** Release a partir de la versión del app (`app.json`); agrupa errores por versión. */
+function getRelease(): string | undefined {
+  const version = Constants.expoConfig?.version;
+  return version ? `magyblob-app@${version}` : undefined;
+}
 
 /**
  * Inicializa Sentry **solo si hay DSN**. Llamar lo antes posible (entrada de la app).
@@ -15,5 +22,5 @@ import { buildSentryOptions, getSentryDsn } from './sentry';
 export function initSentry(): void {
   const dsn = getSentryDsn();
   if (!dsn) return;
-  Sentry.init(buildSentryOptions(dsn));
+  Sentry.init(buildSentryOptions(dsn, getRelease()));
 }
