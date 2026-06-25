@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../domain/errors';
-import { createApiGateways } from './http';
+import { createApiGateways, getBaseUrl } from './http';
 
 /**
  * Tests del adaptador HTTP (implementación de los gateways de domain). Se mockea
@@ -23,6 +23,24 @@ function errorResponse(status: number, tipo: string, mensaje: string): Response 
     json: async () => ({ error: { tipo, mensaje } }),
   } as unknown as Response;
 }
+
+describe('getBaseUrl', () => {
+  const original = process.env.EXPO_PUBLIC_API_URL;
+  afterEach(() => {
+    if (original === undefined) delete process.env.EXPO_PUBLIC_API_URL;
+    else process.env.EXPO_PUBLIC_API_URL = original;
+  });
+
+  it('usa EXPO_PUBLIC_API_URL cuando está definida', () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://10.0.0.5:3000';
+    expect(getBaseUrl()).toBe('http://10.0.0.5:3000');
+  });
+
+  it('cae a localhost:3000 cuando no está definida', () => {
+    delete process.env.EXPO_PUBLIC_API_URL;
+    expect(getBaseUrl()).toBe('http://localhost:3000');
+  });
+});
 
 describe('createApiGateways (adaptador HTTP)', () => {
   afterEach(() => {
@@ -186,6 +204,40 @@ describe('createApiGateways (adaptador HTTP)', () => {
       status: 404,
       tipo: 'NotFoundError',
       message: 'Perfil no encontrado',
+    });
+  });
+
+  it('usa tipo y mensaje por defecto cuando el cuerpo de error no los trae', async () => {
+    // Respuesta de error sin el envoltorio `{ error: { tipo, mensaje } }`.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as Response),
+    );
+
+    await expect(api.history.get('p1')).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 500,
+      tipo: 'http',
+      message: 'Error 500',
+    });
+  });
+
+  it('tolera un cuerpo de error que no es JSON (json() rechaza)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 502,
+        json: async () => {
+          throw new SyntaxError('no es JSON');
+        },
+      } as unknown as Response),
+    );
+
+    await expect(api.history.get('p1')).rejects.toMatchObject({
+      status: 502,
+      tipo: 'http',
+      message: 'Error 502',
     });
   });
 
