@@ -362,3 +362,38 @@ sobre Node 24) conviene actualizarlas.
   integración + E2E backend, E2E app) siguen pasando en verde.
 - (No-funcional) Dado que es mantenimiento, Entonces el cambio no altera el comportamiento del CI ni
   del código de la app/backend (solo versiones de _actions_).
+
+## US-34 — Observabilidad: log de los prompts de IA y su configuración · Should (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero ver en los logs del backend **los prompts que
+se envían al LLM** (cuentos y actividades), **su configuración resuelta** y **la respuesta del
+modelo**, para depurar la calidad de la generación y entender qué plantilla/parámetros se están
+usando en cada petición.
+
+**Contexto.** Los prompts se construyen en `buildStoryPrompt`/`buildActivitiesPrompt`
+([prompts.ts](../../packages/backend/src/infrastructure/ai/prompts.ts)) y los envían `OllamaProvider`
+y `CloudProvider`; el `MockProvider` **no** construye prompts (contenido fijo), así que queda fuera.
+Hoy el `AILogger` solo expone `warn` y solo lo recibe el `FallbackProvider`. Se extiende `AILogger`
+con `info` y se inyecta el logger en ambos providers reales para registrar, **a nivel `info`** (vía
+pino, ya cableado), el prompt (system + user), la config (plantilla AppSetting vs. defecto, `params`
+de longitud/rima/formato, temperatura, modelo, cantidad de actividades) y la respuesta cruda.
+
+> **Desviación de cumplimiento asumida (TFM).** El prompt incluye el **nombre del niño** (PII), por lo
+> que loguearlo a `info` deja PII en los logs por defecto. Es una decisión consciente para depuración
+> (contexto TFM); se documenta en [cumplimiento-menores.md](../cumplimiento-menores.md) (C-5). En un
+> despliegue real se bajaría a `debug` o se redactaría el nombre.
+
+**Criterios de aceptación**
+
+- Dado `AI_PROVIDER=local` (Ollama) o el modo cloud activo, Cuando se genera un cuento, Entonces el
+  backend registra a `info` un log con el **system prompt**, el **user prompt**, la **config**
+  resuelta (plantilla por defecto o de `AppSetting`, `params`, temperatura, modelo) y la **respuesta**
+  del LLM.
+- Dado el mismo modo, Cuando se recomiendan actividades, Entonces se registra un log equivalente
+  (incluyendo la **cantidad** solicitada y, si aplica, la categoría) con prompt, config y respuesta.
+- Dado `AI_PROVIDER=mock` (sin prompts), Cuando se genera, Entonces **no** se emite log de prompt (no
+  hay prompt que registrar).
+- Dado el `AILogger`, Cuando se extiende con `info`, Entonces sigue siendo opcional para los
+  consumidores existentes (el `FallbackProvider` y sus tests con `{ warn }` no se rompen).
+- (No-funcional) Dado el cambio, Entonces es **solo backend**, no añade dependencias ni red, y la
+  generación sigue funcionando igual (el log es un efecto lateral, no altera el resultado).
