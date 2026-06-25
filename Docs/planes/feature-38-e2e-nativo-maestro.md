@@ -45,21 +45,46 @@ Decisiones tomadas con el usuario (2026-06-24):
 
 ## Tareas
 
-- [ ] ❌ Redactar **ADR 0005** con la decisión Maestro vs Detox (contexto, decisión, alternativas,
+- [x] ✅ Redactar **ADR 0005** con la decisión Maestro vs Detox (contexto, decisión, alternativas,
       consecuencias) y registrarlo en [../ADR/README.md](../ADR/README.md).
+      → [../ADR/0005-e2e-nativo-maestro.md](../ADR/0005-e2e-nativo-maestro.md). **0005** confirmado
+      como siguiente número libre (existían 0001–0004).
 - [ ] ❌ Instalar/configurar **Maestro** y el **build de desarrollo** de Expo (iOS/Android) necesario
       para ejecutar los _flows_ sobre simulador/emulador.
-- [ ] ❌ Escribir el **_flow_ YAML** del happy path: onboarding → crear perfil → generar cuento →
+      _No automatizable aquí_: el entorno es headless, sin Xcode iOS Simulator, sin Android Emulator y
+      sin build de Expo. Los pasos quedan documentados (flow + estrategia-pruebas + esqueleto CI) para
+      ejecutarlos en una máquina con simuladores.
+- [x] ✅ Escribir el **_flow_ YAML** del happy path: onboarding → crear perfil → generar cuento →
       narración, localizando por identificador/etiqueta accesible.
-- [ ] ❌ Ejecutar el _flow_ sobre el **iOS Simulator** y verificar el recorrido (incluida la capacidad
+      → [../../packages/app/.maestro/onboarding.yaml](../../packages/app/.maestro/onboarding.yaml).
+      Selectores por texto accesible ES (coherentes con el E2E web de Playwright); `# TODO`s donde
+      conviene añadir `testID` (puerta parental, campos del alta).
+- [ ] 🔄 Ejecutar el _flow_ sobre el **iOS Simulator** y verificar el recorrido (incluida la capacidad
       solo nativa con efecto observable).
-- [ ] ❌ Ejecutar el _flow_ sobre el **Android Emulator** y verificar paridad de plataformas.
-- [ ] ❌ Documentar en [../estrategia-pruebas.md](../estrategia-pruebas.md) **cuándo Maestro vs
+      _Pendiente de tu máquina_: requiere macOS + Xcode + development build. El flow ya ejercita el
+      efecto observable de `expo-speech` («Escuchar» → «Pausar» + «Parar»).
+- [ ] 🔄 Ejecutar el _flow_ sobre el **Android Emulator** y verificar paridad de plataformas.
+      _Pendiente de tu máquina_: requiere Android SDK + AVD + development build.
+- [x] ✅ Documentar en [../estrategia-pruebas.md](../estrategia-pruebas.md) **cuándo Maestro vs
       Playwright**, cómo ejecutarlo en local (simulador/emulador) y enlazar el ADR.
-- [ ] ❌ Job de **CI separado** (nightly/manual) para el E2E nativo, **fuera** del gate de cada PR, con
+      → nueva sección «E2E web (Playwright) vs E2E nativo (Maestro)» + fila en la pirámide.
+- [x] ✅ Job de **CI separado** (nightly/manual) para el E2E nativo, **fuera** del gate de cada PR, con
       la nota de su omisión deliberada en PR.
+      → [../../.github/workflows/e2e-native.yml](../../.github/workflows/e2e-native.yml)
+      (`workflow_dispatch` + `schedule`, **sin** push/PR). **Esqueleto**: los pasos de build dev +
+      arranque de simulador/emulador + `maestro test` quedan como `# TODO` a validar en runner real.
 - [ ] ❌ Docs + cierre con **`cerrar-feature`** (gate verde, versión SemVer, CHANGELOG por paquete,
       tracking docs) → pruebas con el usuario → confirmación → `finish`.
+      CHANGELOG de la app actualizado en `## [Unreleased]`; el versionado SemVer y el `finish` quedan
+      para el cierre con el usuario.
+
+## Estado de la automatización (2026-06-24)
+
+Implementado en este entorno (headless, sin simuladores ni build de Expo): **ADR 0005**, **flow
+Maestro**, **doc de estrategia** y **esqueleto de CI** (job separado). **No** se pudo automatizar la
+instalación de Maestro, el development build de Expo ni la ejecución real en iOS Simulator / Android
+Emulator (ni la validación de los efectos nativos): requieren una máquina con simuladores. Quedan como
+pasos para el usuario (ver el propio flow y `estrategia-pruebas.md`).
 
 ## Notas / riesgos
 

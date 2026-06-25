@@ -1,0 +1,122 @@
+# =============================================================================
+# E2E NATIVO (Maestro) — Happy path del MVP (US-35, ADR 0005)
+# =============================================================================
+#
+# Recorre el flujo de la app NATIVA sobre simulador/emulador:
+#   bienvenida -> puerta parental -> alta del adulto -> consentimiento ->
+#   crear perfil de niño -> generar cuento (modo mock) -> narrarlo (expo-speech).
+#
+# Complementa (no sustituye) al E2E web de Playwright (US-32/US-36): aquí se
+# ejercita lo que SOLO existe en nativo (lectura en voz alta / navegación
+# nativa). Localiza por id/texto accesible (coherente con US-30/US-32), no por
+# estructura ni estilos.
+#
+# -----------------------------------------------------------------------------
+# REQUISITOS (no automatizables aquí; ver Docs/estrategia-pruebas.md)
+# -----------------------------------------------------------------------------
+#   1. Maestro CLI instalado:
+#        curl -fsSL https://get.maestro.mobile.dev | bash
+#   2. Un DEVELOPMENT BUILD de Expo instalado en el simulador/emulador (NO Expo
+#      Go: la app usa módulos nativos —expo-audio, expo-speech— que Expo Go no
+#      incluye). Desde packages/app:
+#        npx expo run:ios          # build dev + instala en iOS Simulator
+#        npx expo run:android      # build dev + instala en Android Emulator
+#   3. Un simulador iOS o emulador Android ARRANCADO.
+#   4. El backend levantado en modo mock (AI_PROVIDER=mock), y la app apuntando
+#      a él vía EXPO_PUBLIC_API_URL (sin red ni IA externa; cumplimiento menores).
+#
+# -----------------------------------------------------------------------------
+# appId
+# -----------------------------------------------------------------------------
+#   packages/app/app.json NO declara ios.bundleIdentifier ni android.package, así
+#   que Expo los deriva del slug al hacer el development build. Confirma el id real
+#   con `xcrun simctl listapps booted` (iOS) o `adb shell pm list packages | grep
+#   magyblob` (Android) y ajusta el valor de abajo si no coincide.
+# TODO: confirmar el appId real del development build (ver nota de arriba).
+# -----------------------------------------------------------------------------
+#
+# CÓMO EJECUTAR (con el simulador/emulador arrancado y la app dev instalada):
+#   maestro test packages/app/.maestro/onboarding.yaml
+#
+# =============================================================================
+
+appId: com.magyblob.app # TODO: confirmar id real del development build de Expo
+---
+# Arranca con estado limpio para que el onboarding empiece desde la bienvenida
+# (si quedara sesión de una corrida previa, se saltaría el alta).
+- launchApp:
+    clearState: true
+
+# --- Bienvenida -------------------------------------------------------------
+- assertVisible: 'Aprendizaje Mágico'
+- tapOn: 'Crear cuenta'
+
+# --- Puerta parental (suma aleatoria a + b = ?) -----------------------------
+# El reto es aleatorio en cada apertura, así que no podemos fijar la respuesta
+# en el YAML. Se resuelve leyendo los operandos por regex y sumándolos con JS.
+# (runScript + evalScript es la vía soportada por Maestro para lógica dinámica.)
+- assertVisible: 'Zona de personas adultas'
+# TODO: confirmar testID de la pregunta de la puerta parental. Hoy el reto se
+# pinta como texto "a + b = ?" sin testID. Una opción robusta: añadir
+# testID="parental-question" al <Text> del reto en ParentalGate.tsx y leerlo:
+#   - copyTextFrom:
+#       id: "parental-question"
+#   - evalScript: ${ output.suma = String(...parse maestro.copiedText...) }
+#   - tapOn: ${output.suma}
+# Mientras no exista ese testID, este paso requiere intervención manual o
+# sustituir la puerta por una constante en el build de pruebas.
+
+# --- Alta del adulto (3 campos: nombre, apellidos, email) -------------------
+# TODO: confirmar testIDs de los campos. Hoy no los tienen; se localizan por el
+# placeholder/etiqueta accesible. Lo robusto es añadir testID a cada TextField.
+- tapOn:
+    index: 0
+    below: 'Zona de personas adultas'
+- inputText: 'Ana'
+- tapOn: 'García'
+- inputText: 'García'
+- tapOn: 'ana.app.e2e@example.com'
+- inputText: 'ana.app.e2e@example.com'
+- tapOn: 'Madre'
+- tapOn: 'Acepto'
+- tapOn: 'Aceptar y continuar'
+
+# --- Selección de perfil (sin perfiles aún) -> crear el primero -------------
+- assertVisible: 'Crear nuevo perfil'
+- tapOn: 'Crear nuevo perfil'
+
+# --- Crear perfil de niño ---------------------------------------------------
+- assertVisible: '¿Cómo te llamas?'
+- tapOn: 'Tu nombre' # placeholder del TextField de nombre
+- inputText: 'Mateo'
+- hideKeyboard
+- tapOn: '4' # edad (SelectableChip)
+- tapOn: 'zorro' # avatar (accessibilityLabel = id del avatar)
+- tapOn: 'Animales' # interés (TEMA_LABEL.animales)
+- tapOn: '¡Listo!'
+
+# --- Pestaña "Cuentos" -> generar cuento (mock determinista) ----------------
+- assertVisible: 'Cuentos'
+- tapOn: 'Cuentos'
+- assertVisible: 'Generar cuento'
+- tapOn: 'Generar cuento'
+
+# El cuento mock es determinista: empieza por "Había una vez" e incluye el
+# nombre del niño. Damos margen por si el backend tarda en responder.
+- extendedWaitUntil:
+    visible: 'Había una vez'
+    timeout: 30000
+- assertVisible: 'Mateo'
+
+# --- Narración (capacidad SOLO nativa: expo-speech) -------------------------
+# Efecto observable que el E2E web no cubre: al tocar "Escuchar", el botón
+# principal pasa a "Pausar" (estado playing) y aparece el botón "Parar".
+# NarrationControls usa expo-speech como fallback de voz nativa.
+- assertVisible: 'Escuchar'
+- tapOn: 'Escuchar'
+- extendedWaitUntil:
+    visible: 'Pausar' # el control cambió de estado: la voz está sonando
+    timeout: 10000
+- assertVisible: 'Parar' # botón de detener (accessibilityLabel="Parar")
+- tapOn: 'Parar'
+- assertVisible: 'Escuchar' # vuelve a reposo

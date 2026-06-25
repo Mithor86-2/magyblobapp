@@ -9,11 +9,21 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- Andamiaje del **E2E nativo de la app** con **Maestro** sobre iOS Simulator y Android Emulator
-  (US-35): nivel complementario al E2E web de Playwright (US-32) para validar el flujo del MVP en las
-  plataformas nativas, incluyendo lo que solo existe en nativo (audio `expo-audio`, voz `expo-speech`,
-  navegación nativa). Dependencias solo de desarrollo/CI, modo `mock` por defecto. Pendiente de
-  implementación.
+- Andamiaje del **E2E nativo de la app** con **Maestro** (US-35), nivel complementario —no
+  sustituto— del E2E web de Playwright (US-32) para validar el flujo del MVP en las plataformas
+  nativas (incluyendo lo que solo existe en nativo: audio `expo-audio`, voz `expo-speech`, navegación
+  nativa). Incluye:
+  - **Flow** [`.maestro/onboarding.yaml`](.maestro/onboarding.yaml) del happy path (bienvenida →
+    puerta parental → alta → consentimiento → crear perfil → generar cuento mock → narración),
+    localizando por id/etiqueta accesible.
+  - **ADR 0005** (Maestro vs Detox, decisión por YAGNI) y la sección «E2E web vs E2E nativo» en
+    `Docs/estrategia-pruebas.md`.
+  - **Esqueleto de CI** [`.github/workflows/e2e-native.yml`](../../.github/workflows/e2e-native.yml)
+    en job separado (`workflow_dispatch` + `schedule`), **fuera** del gate de PR por el coste de
+    simuladores.
+
+  Dependencias solo de desarrollo/CI, modo `mock` por defecto. **La ejecución nativa real (build dev
+  de Expo + iOS Simulator / Android Emulator) queda pendiente de un entorno con simuladores.**
 
 ### Changed
 
