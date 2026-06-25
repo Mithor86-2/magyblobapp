@@ -9,15 +9,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- E2E web **multinavegador** y **reporting rico** (US-36): el E2E de la app con Playwright sobre el
-  export web de Expo se ejecuta ahora en tres `projects` —`chromium` (baseline), `mobile-chrome`
-  (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y `mobile-safari` (iPhone 13, motor
-  WebKit = el de iOS)— con reporting HTML (`playwright-report`), JSON (`test-results/results.json`)
-  y line, y, ante fallo, captura/vídeo/traza (`screenshot/video/trace: *-on-failure`). `retries: 1`
-  solo en CI. El script `e2e:install` instala los binarios de **chromium y webkit**, y el
-  `.gitignore` ignora `playwright-report/` y `test-results/`. Valida el **export web**, no la app
-  nativa; dependencias solo de desarrollo y suite aparte (no toca el arranque reproducible).
-
 ### Changed
 
 ### Deprecated
@@ -27,6 +18,21 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+## [0.12.0] - 2026-06-24
+
+E2E web multinavegador y reporting rico con Playwright (US-36).
+
+### Added
+
+- E2E web **multinavegador** y **reporting rico** (US-36): el E2E de la app con Playwright sobre el
+  export web de Expo se ejecuta ahora en tres `projects` —`chromium` (baseline), `mobile-chrome`
+  (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y `mobile-safari` (iPhone 13, motor
+  WebKit = el de iOS)— con reporting HTML (`playwright-report`), JSON (`test-results/results.json`)
+  y line, y, ante fallo, captura/vídeo/traza (`screenshot/video/trace: *-on-failure`). `retries: 1`
+  solo en CI. El script `e2e:install` instala los binarios de **chromium y webkit**, y el
+  `.gitignore` ignora `playwright-report/` y `test-results/`. Valida el **export web**, no la app
+  nativa; dependencias solo de desarrollo y suite aparte (no toca el arranque reproducible).
 
 ## [0.11.0] - 2026-06-23
 
