@@ -42,6 +42,7 @@ export default defineConfig({
         'src/presentation/navigation.ts',
         'src/composition.ts',
         'src/infrastructure/storage.ts',
+        'src/infrastructure/sentry.bootstrap.ts', // bootstrap: importa @sentry/react-native (no carga bajo Vitest)
         // Cubierto por E2E / manual (no es hueco unitario):
         'src/presentation/screens/**', // composición visual → e2e/onboarding.spec.ts
         'src/presentation/hooks/useNarration.ts', // atado a expo-audio/file-system/speech
@@ -58,6 +59,9 @@ export default defineConfig({
         // contenido inadecuado a un niño.
         'src/infrastructure/http.ts': perfect(),
         'src/presentation/hooks/sanitizeForSpeech.ts': perfect(),
+        // CORE: el gating por DSN y el beforeSend protegen que NO salga PII de un
+        // menor a un tercero (Sentry, US-40/C-12).
+        'src/infrastructure/sentry.ts': perfect(),
       },
     },
   },

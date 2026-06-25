@@ -2,7 +2,7 @@
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
-**US-37**, **US-39**. Volver al [índice](README.md).
+**US-37**, **US-39**, **US-40**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -568,3 +568,42 @@ pruebas de la app** (no toca backend ni código de runtime).
 - (No-funcional) Dada la prueba, Cuando corre, Entonces usa el modo `mock` por defecto (sin red ni IA
   externa ni SDKs de terceros en runtime), es **solo de la app** (no toca backend) y no rompe el arranque
   reproducible ([US-06](#us-06)) ni el spec de onboarding existente.
+
+## US-40 — Monitorización de errores y crashes con Sentry · Could (Mejoras)
+
+Como **desarrollador/responsable del producto** quiero capturar en tiempo real los **errores no
+controlados y crashes** de la app Expo (con _stack trace_ y contexto del dispositivo) para
+diagnosticar fallos que no se reproducen en desarrollo, sin tener que pedir _logs_ manuales al
+usuario.
+
+**Contexto.** Se integra [`@sentry/react-native`](https://docs.sentry.io/platforms/react-native/)
+(Sentry SaaS) en la app. **Solo app**, no toca el backend. La inicialización es **condicional al DSN
+en variable de entorno**: sin DSN (modo por defecto, desarrollo y E2E en `mock`) Sentry **no se
+inicializa** y no sale nada a terceros; con DSN (builds de producción/preview) captura errores y
+crashes. El cliente se configura con `sendDefaultPii: false` y un `beforeSend` que **redacta la PII**
+(nombre del niño, email del adulto) antes de enviar el evento.
+
+> **Desviación de cumplimiento asumida (TFM).** `@sentry/react-native` es un **SDK de terceros** que
+> transmite informes de error y metadatos del dispositivo a un tercero en la nube (sentry.io). **Rompe
+> C-2** (cero SDKs de analítica/terceros) y **C-5** (los datos no salen del equipo), y es
+> **incompatible con la categoría Kids de Apple** (prohíbe transmitir datos a terceros). Es una
+> decisión consciente para el TFM, al estilo de C-5 (cloud) y C-11 (ElevenLabs); se documenta en
+> [cumplimiento-menores.md](../cumplimiento-menores.md) (**C-12**) con sus mitigaciones. El camino
+> conforme para producción real sería un reporte de errores _on-device_ o un proveedor con DPA y
+> garantía de no-entrenamiento. Ver el plan [42-sentry-monitorizacion-errores](../planes/42-sentry-monitorizacion-errores.md).
+
+**Criterios de aceptación**
+
+- Dado un **DSN de Sentry** en variable de entorno, Cuando la app arranca, Entonces Sentry se
+  inicializa y captura los **errores no controlados** y **crashes** con su _stack trace_.
+- Dado que **no hay DSN** configurado (modo por defecto, desarrollo y E2E en `mock`), Cuando la app
+  arranca, Entonces Sentry **no se inicializa** y **no** se transmite nada a terceros (coherente con el
+  modo base y con [US-06](#us-06)).
+- Dado un evento a punto de enviarse, Cuando pasa por `beforeSend`, Entonces se **redacta la PII** del
+  niño (nombre) y del adulto (email) antes de salir, y `sendDefaultPii` queda en **`false`** (no se
+  envían IP ni identificadores por defecto).
+- (Cumplimiento) Dado el SDK, Entonces queda documentado como **desviación asumida (C-12)** en
+  [cumplimiento-menores.md](../cumplimiento-menores.md), con sus mitigaciones, y es **desactivable**
+  retirando el DSN (sin DSN → comportamiento conforme, nada sale).
+- (No-funcional) Dado el modo `mock`/desarrollo, Cuando se ejecutan los E2E y el gate, Entonces Sentry
+  permanece inactivo (sin DSN) y no añade pasos ocultos al arranque reproducible ([US-06](#us-06)).
