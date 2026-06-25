@@ -11,6 +11,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.14.0] - 2026-06-23
+
+Parámetros del cuento por defecto: temperatura 0.7 y 150–200 palabras (US-18/US-28).
+
+### Changed
+
 - Parámetros del cuento por defecto (US-18/US-28): la **temperatura** baja a **0.7** (seed, migración y
   default de código en `Ollama`/`Cloud`) y la **longitud** sube a **150–200 palabras**
   (`prompt.story.params`, cargado por migración). Se **deja de sembrar** `prompt.story.template` (una

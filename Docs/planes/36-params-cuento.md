@@ -26,18 +26,15 @@ palabrasMax:200,rima:false,formatos:[cuento,fabula,poema]}`.
 
 ## Tareas
 
-- [ ] ❌ `seed.ts`: `story.temperature` 0.8→0.7; `prompt.story.params` 50/120 → 150/200; **eliminar**
-      la entrada `prompt.story.template`.
-- [ ] ❌ Default de código de temperatura 0.8→0.7 en `OllamaProvider` y `CloudProvider`.
-- [ ] ❌ Reforzar `instruccionFormato` (ES/EN) en `prompts.ts`: "al menos {min} palabras (entre {min}
-      y {max} palabras), en varios párrafos, sin quedarte corto".
-- [ ] ❌ Migración de datos: cargar `story.temperature` y `prompt.story.params` al arrancar
-      (`ON CONFLICT DO NOTHING`, como la de `ai.cloud`), para que un `docker compose up` en limpio
-      quede con los nuevos defaults sin correr el seed.
-- [ ] ❌ Tests: ajustar/añadir en `prompts.test.ts` (el refuerzo mantiene el substring esperado);
-      verificar gate.
-- [ ] ❌ Docs: CHANGELOG backend. Cierre con versión (backend minor) y `cerrar-feature`
-      (**detener antes del `finish`** para confirmación).
+- [x] ✅ `seed.ts`: `story.temperature` 0.8→0.7; `prompt.story.params` 50/120 → 150/200; eliminada la
+      entrada `prompt.story.template`.
+- [x] ✅ Default de código de temperatura 0.8→0.7 en `OllamaProvider` y `CloudProvider`.
+- [x] ✅ `instruccionFormato` (ES/EN) reforzada en `prompts.ts` ("al menos {min} palabras…").
+- [x] ✅ Migración `20260623010000_params_cuento_por_defecto` (`ON CONFLICT DO NOTHING`); verificada
+      con la integración (`migrate deploy`, 25/25).
+- [x] ✅ Tests verdes (`prompts.test.ts` mantiene el substring; gate completo en verde).
+- [x] ✅ CHANGELOG + versión (backend 0.14.0, raíz 0.18.0). **Pendiente**: confirmación del usuario →
+      `finish`.
 
 ## Notas
 
