@@ -31,7 +31,7 @@ export interface OllamaProviderOptions {
   logger?: AILogger;
 }
 
-const TEMPERATURA_DEFECTO = 0.8;
+const TEMPERATURA_DEFECTO = 0.7;
 
 /** Esquema de salida estructurada para el cuento (campo `format` de Ollama). */
 const ESQUEMA_CUENTO = {
