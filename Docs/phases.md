@@ -372,6 +372,18 @@ se abra). Algunas parten de algo ya existente (se indica).
       suscriptores). De paso, `.claude/**` a los ignores de ESLint y `.claude/worktrees/` a `.gitignore`
       (los worktrees paralelos no contaminan el gate). `pnpm check` verde (144 backend + 41 app).
 
+- [x] ✅ **Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0)** (US-35, rama
+      `feature/35-strategic-coverage` desde `develop`). La cobertura se gobierna por riesgo de negocio,
+      no por un % global: umbrales **por _glob_** en `vitest.config.ts` (provider `v8`) — **100%** en el
+      tier CORE (saneo de salida del LLM `parseResponse`, `FallbackProvider`/`createAIProvider`/
+      `MockProvider`, casos de uso, value-objects, entidades; app: `http`, `sanitizeForSpeech`,
+      `useAppStore`) y **80%** de baseline IMPORTANT; el tier INFRASTRUCTURE y lo cubierto por otras
+      suites (repos Prisma, ElevenLabs, `useNarration` nativo, pantallas → E2E) se **excluyen** de la
+      medición (documentado, no truncado silencioso). Se cierra el hueco CORE detectado (`parseResponse`
+      sin test) + invariantes de entidades + ramas sueltas. Nuevo `pnpm coverage`, que el job **gate**
+      del CI hace cumplir (el `pnpm check` local sigue rápido). `pnpm check` + `pnpm coverage` verdes
+      (192 backend + 58 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

@@ -1,7 +1,8 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**. Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**. Volver al
+[índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -397,3 +398,48 @@ de longitud/rima/formato, temperatura, modelo, cantidad de actividades) y la res
   consumidores existentes (el `FallbackProvider` y sus tests con `{ warn }` no se rompen).
 - (No-funcional) Dado el cambio, Entonces es **solo backend**, no añade dependencias ni red, y la
   generación sigue funcionando igual (el log es un efecto lateral, no altera el resultado).
+
+## US-35 — Cobertura estratégica por riesgo de negocio (100/80/0) · Should (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero que la cobertura de tests se gobierne por el
+**riesgo de negocio de cada módulo** (no por un porcentaje global), de modo que el código **crítico**
+—el que rompe el negocio o el cumplimiento de menores si falla— esté **100% cubierto** y el gate lo
+haga cumplir, mientras que el código que TypeScript ya valida no infle una métrica engañosa.
+
+**Contexto.** El gate (`pnpm check`) verifica que los tests pasan, pero **no mide qué cubren**: no hay
+configuración de coverage ni umbrales en ningún paquete. El riesgo no es el % global —«94% de
+cobertura es inútil si el 6% crítico falla»—, sino que código CORE quede sin red. La auditoría detectó
+un hueco CORE concreto: [`parseResponse.ts`](../../packages/backend/src/infrastructure/ai/parseResponse.ts)
+(saneo de la salida del LLM **antes de mostrarla a un niño**: descarta `nivel`/`duracionMin` fuera de
+rango, categorías inventadas y títulos/cuerpos vacíos) **no tenía test propio**. Se adopta el sistema
+**Strategic Coverage 100/80/0**, que clasifica el código en tres niveles y fija umbrales por _glob_ en
+Vitest (provider `v8`), haciéndolos cumplir en CI. Sin red ni SDKs de terceros (dependencias solo de
+desarrollo); ver [estrategia-pruebas.md](../estrategia-pruebas.md) y [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+- **CORE (100%)** — si falla → pérdida de usuario o incumplimiento: saneo de salida del LLM,
+  `FallbackProvider`/`createAIProvider`/`MockProvider`, casos de uso, value-objects e invariantes de
+  entidades del dominio; en la app, el adaptador HTTP, `sanitizeForSpeech` y el store de sesión/consentimiento.
+- **IMPORTANT (80%)** — si falla → usuario frustrado: componentes de UI, narración con degradación a
+  voz nativa, pantallas con validación, prompts, providers reales y contrato de rutas.
+- **INFRASTRUCTURE (0%)** — TypeScript valida: DTOs, interfaces de repositorio/gateway, vocabularios,
+  _labels_, tokens de tema, navegación, _bootstrap_; se **excluyen** de la medición (junto con lo
+  cubierto por otras suites: repos Prisma → integración, ElevenLabs → E2E/manual) para no ensuciar la señal.
+
+**Criterios de aceptación**
+
+- Dado el saneo de la salida del LLM (`parseResponse`), Cuando se ejecutan sus pruebas, Entonces se
+  verifica que descarta `nivel`/`duracionMin` fuera de rango, categorías inexistentes y títulos/cuerpos
+  vacíos, recorta a la cantidad pedida, estampa el `proveedor` y lanza error si no queda contenido válido.
+- Dado el nivel **CORE**, Cuando se ejecuta `pnpm coverage`, Entonces los _globs_ CORE
+  (`parseResponse`, casos de uso, value-objects, entidades de dominio; y en la app `http`,
+  `sanitizeForSpeech`, `useAppStore`) reportan **100%** y el resto del código medido cumple el **80%**.
+- Dado un descenso por debajo del umbral de un nivel, Cuando corre el coverage (local o en CI),
+  Entonces **falla** el comando (no pasa con _warning_), haciendo cumplir el DoD automáticamente.
+- Dado el nivel **INFRASTRUCTURE** y el código cubierto por otras suites (repos Prisma, ElevenLabs),
+  Cuando se mide el coverage del run unitario, Entonces están **excluidos** de la medición y no
+  cuentan como hueco.
+- Dado el gate diario, Cuando se ejecuta `pnpm check`, Entonces sigue siendo **rápido** (sin coverage,
+  sin Docker); el umbral por nivel lo hace cumplir el job de CI (`pnpm coverage`) y se documenta el
+  comando local.
+- (No-funcional) Dadas las dependencias añadidas (`@vitest/coverage-v8`), Cuando se instalan, Entonces
+  son **solo de desarrollo** y no introducen red ni SDKs de terceros en runtime.
