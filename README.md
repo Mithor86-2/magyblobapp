@@ -202,6 +202,7 @@ pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Androi
 | `pnpm lint` / `pnpm lint:fix`       | ESLint (+ SonarJS: bugs y code smells en el backend)      |
 | `pnpm format` / `pnpm format:check` | Prettier                                                  |
 | `pnpm test`                         | Vitest en cada paquete (unitarios + integración de rutas) |
+| `pnpm coverage`                     | Cobertura por tier (Strategic Coverage 100/80/0, US-35)   |
 
 ## Pruebas
 
@@ -218,8 +219,18 @@ sí (levantan un Postgres efímero con Testcontainers y, el E2E de app, Chromium
 | `pnpm --filter @magyblob/app e2e:install`          | Descarga Chromium para Playwright (una vez)                  |
 | `pnpm --filter @magyblob/app test:e2e`             | E2E de la app (Expo web + Playwright) contra el backend mock |
 
+La **cobertura se gobierna por riesgo de negocio** (Strategic Coverage 100/80/0): `pnpm coverage`
+exige **100%** en el código CORE y **80%** de baseline, con el tier INFRASTRUCTURE excluido. El
+`pnpm check` local no la corre (sigue rápido); el umbral lo hace cumplir el CI. Detalle en
+[Docs/estrategia-pruebas.md](Docs/estrategia-pruebas.md#strategic-coverage-100800-us-35).
+
 En CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) se ejecutan los tres niveles en cada
-push y pull request.
+push y pull request; el informe HTML de cobertura se sube como artefacto del job _gate_.
+
+**Git hooks (Husky).** El gate se ejecuta también en local: `pre-commit` pasa `lint-staged` (ESLint
+`--fix` + Prettier) sobre lo _staged_ y `pre-push` corre `pnpm check`. Se activan solos tras
+`pnpm install` (script `prepare`); en una emergencia se saltan con `--no-verify`. Detalle en
+[Docs/estrategia-pruebas.md](Docs/estrategia-pruebas.md#git-hooks-locales-husky).
 
 ## Estructura
 

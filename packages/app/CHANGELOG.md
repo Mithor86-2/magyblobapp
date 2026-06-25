@@ -35,6 +35,65 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.14.1] - 2026-06-24
+
+Corrige el E2E web al combinar multinavegador (US-37) con la cobertura de actividades/historial
+(US-39).
+
+### Fixed
+
+- **E2E web inestable con varios `projects`**: el backend E2E (Postgres efímero) persiste estado
+  durante toda la corrida, y los specs reutilizaban un email fijo para el alta del adulto; al
+  repetirse el alta entre tests y navegadores fallaba con "email ya registrado" y el onboarding no
+  avanzaba (timeout esperando "Crear nuevo perfil"). Ahora cada test se da de alta con un email único
+  derivado de `project` + título (`packages/app/e2e/_correo.ts`), de modo que las N tests × M
+  navegadores no colisionan (US-37, US-39).
+
+## [0.14.0] - 2026-06-24
+
+Cobertura E2E web de actividades e historial con Playwright (US-39).
+
+### Added
+
+- Cobertura **E2E web** de **actividades** e **historial** con Playwright sobre Expo web (US-39):
+  extiende el E2E de onboarding (US-32) reutilizando su patrón para llegar a perfil + cuento generado,
+  y luego recorre la pestaña **Actividades** (generar actividades recomendadas y marcar una como
+  "Realizado" con valoración → "¡Hecha!", US-09/US-10) y la pestaña **Historial** (el cuento generado
+  aparece en "Cuentos mágicos", US-08). Contra el backend real en modo `mock` (contenido
+  determinista), localizando por rol/etiqueta accesible. Suite separada
+  (`pnpm --filter @magyblob/app test:e2e`, requiere Docker y `e2e:install`).
+
+## [0.13.0] - 2026-06-24
+
+E2E web multinavegador y reporting rico con Playwright (US-37).
+
+### Added
+
+- E2E web **multinavegador** y **reporting rico** (US-37): el E2E de la app con Playwright sobre el
+  export web de Expo se ejecuta ahora en tres `projects` —`chromium` (baseline), `mobile-chrome`
+  (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y `mobile-safari` (iPhone 13, motor
+  WebKit = el de iOS)— con reporting HTML (`playwright-report`), JSON (`test-results/results.json`)
+  y line, y, ante fallo, captura/vídeo/traza (`screenshot/video/trace: *-on-failure`). `retries: 1`
+  solo en CI. El script `e2e:install` instala los binarios de **chromium y webkit**, y el
+  `.gitignore` ignora `playwright-report/` y `test-results/`. Valida el **export web**, no la app
+  nativa; dependencias solo de desarrollo y suite aparte (no toca el arranque reproducible).
+
+## [0.12.0] - 2026-06-24
+
+Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0, US-35).
+
+### Added
+
+- **Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0, US-35):** umbrales de
+  coverage **por _glob_** en [`vitest.config.ts`](vitest.config.ts) (provider `v8`) — **100%** en el
+  tier CORE (`infrastructure/http`, `hooks/sanitizeForSpeech`) y **80%** de baseline IMPORTANT
+  (componentes, store). El tier INFRASTRUCTURE (tipos, gateways, tokens, navegación) y lo cubierto
+  por E2E/manual (pantallas, `useNarration` atado a nativo, `Icon`) se **excluyen** de la medición.
+  Nuevo script `test:coverage`.
+- Tests del tier CORE que faltaban: `sanitizeForSpeech.test.ts` (saneo de texto para la voz nativa),
+  `useAppStore.test.ts` (sesión/consentimiento + migración v0→v1) y, en `http`, `getBaseUrl` y los
+  caminos de _fallback_ del mapeo de error del backend.
+
 ## [0.11.0] - 2026-06-23
 
 E2E de la app con Playwright sobre Expo web (US-32, Fase 6).

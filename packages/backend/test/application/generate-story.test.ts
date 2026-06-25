@@ -70,6 +70,12 @@ describe('GenerateStory', () => {
     ).rejects.toThrow(DomainError);
   });
 
+  it('rechaza un estilo fuera del vocabulario', async () => {
+    await expect(
+      useCase.execute({ profileId: 'p-1', tema: 'animales', estilo: 'terror' }),
+    ).rejects.toThrow(DomainError);
+  });
+
   it('rechaza si el perfil no existe', async () => {
     await expect(
       useCase.execute({ profileId: 'nope', tema: 'animales', estilo: 'aventura' }),

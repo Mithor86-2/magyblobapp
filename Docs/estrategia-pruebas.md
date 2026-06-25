@@ -24,7 +24,7 @@ los criterios del DoD) y del gate del [CLAUDE.md](../CLAUDE.md). Origen: US-32 (
 | **Integración (rutas)**        | Endpoints HTTP con dobles in-memory (`app.inject`)          | No (sin BD)                    | `packages/backend/test/routes/*.test.ts`                        | Vitest (`pnpm test`)                         |
 | **Integración (persistencia)** | Los `Prisma*Repository` contra **Postgres real**            | Sí (Postgres)                  | `packages/backend/test/integration-db/*.test.ts`                | Vitest + Testcontainers (`test:integration`) |
 | **E2E backend**                | Servidor real por **HTTP real** + Postgres real (modo mock) | Sí (Postgres, HTTP)            | `packages/backend/test/e2e/*.e2e.test.ts`                       | Vitest + Testcontainers (`test:e2e`)         |
-| **E2E app (web)**              | App Expo web en navegador contra el backend real (mock)     | Sí (navegador, HTTP, Postgres) | `packages/app/e2e/*.spec.ts`                                    | Playwright + Chromium (`test:e2e`)           |
+| **E2E app (web)**              | App Expo web en navegador contra el backend real (mock)     | Sí (navegador, HTTP, Postgres) | `packages/app/e2e/*.spec.ts`                                    | Playwright, 3 navegadores (`test:e2e`)       |
 | **E2E app (nativo)**           | App nativa en simulador/emulador (audio, voz, nav. nativa)  | Sí (simulador, HTTP)           | `packages/app/.maestro/*.yaml`                                  | Maestro (`maestro test`) — job de CI aparte  |
 
 **Principio de cumplimiento.** Todas las pruebas corren con `AI_PROVIDER=mock`: sin red, sin IA
@@ -48,10 +48,17 @@ pnpm --filter @magyblob/backend test:integration
 # E2E de backend (servidor real por HTTP + Postgres real, mock) — requiere Docker
 pnpm --filter @magyblob/backend test:e2e
 
-# E2E de app (Playwright sobre Expo web contra backend real mock) — requiere Docker + navegador
-pnpm --filter @magyblob/app e2e:install   # una vez: descarga Chromium
+# E2E de app (Playwright sobre Expo web contra backend real mock) — requiere Docker + navegadores
+pnpm --filter @magyblob/app e2e:install   # una vez: descarga Chromium y WebKit
 pnpm --filter @magyblob/app test:e2e
 ```
+
+**Multinavegador (US-37).** El E2E de app recorre el mismo flujo en **tres `projects`** de Playwright:
+`chromium` (baseline), `mobile-chrome` (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y
+`mobile-safari` (iPhone 13, motor **WebKit** = el de iOS). **Reporting rico**: HTML
+(`playwright-report/`), JSON (`test-results/results.json`) y line; ante fallo se conservan
+captura/vídeo/traza (`*-on-failure`). `retries: 1` solo en CI. Filtrar un navegador concreto:
+`test:e2e -- --project=chromium`.
 
 **Por qué la integración y el E2E van aparte del `pnpm test`.** Necesitan Docker (Testcontainers
 levanta `postgres:16-alpine`), así que se aíslan en sus propias configuraciones de Vitest
@@ -63,7 +70,8 @@ rápido y sin dependencias de infraestructura. En **CI** sí se ejecutan siempre
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) corre en cada `push` (a `main`/`develop`)
 y `pull_request`, con tres jobs que reproducen exactamente los comandos de arriba:
 
-1. **gate** — `pnpm check` (sin Docker).
+1. **gate** — `pnpm check` (sin Docker) **+ `pnpm coverage`** (hace cumplir los umbrales por tier;
+   ver más abajo). Sube el **informe HTML de cobertura** de ambos paquetes como artefacto (`coverage-report`).
 2. **integración + E2E backend** — `test:integration` y `test:e2e` (Testcontainers; Docker viene en
    el runner `ubuntu-latest`).
 3. **E2E app** — Playwright/Chromium sobre Expo web contra el backend real en mock.
@@ -130,6 +138,51 @@ Pendiente de un **runner con simulador** (macOS para iOS). El esqueleto vive en
 (`workflow_dispatch`) y/o nocturno (`schedule`)**, **nunca** en push/PR. Es un esqueleto con pasos
 `# TODO` a completar (build dev de Expo + arranque de simulador + `maestro test`), no una integración
 terminada.
+
+### Git hooks locales (Husky)
+
+[Husky](https://typicode.github.io/husky/) ejecuta el gate de calidad **automáticamente** en los Git
+hooks, con la regla "rápido en commit / completo en push" (origen: US-36). Se instalan solos tras
+`pnpm install` (script `prepare`); los hooks viven en `.husky/` (versionados).
+
+| Hook         | Qué corre                                                                | Velocidad | Por qué ahí                                               |
+| ------------ | ------------------------------------------------------------------------ | --------- | --------------------------------------------------------- |
+| `pre-commit` | `lint-staged`: ESLint `--fix` (backend) + Prettier sobre **lo _staged_** | segundos  | arregla y formatea solo lo tocado; no recorre el monorepo |
+| `pre-push`   | `pnpm check` (typecheck + lint + format:check + test)                    | ~10-15 s  | el gate completo del DoD antes de que el código salga     |
+
+- **Integración y E2E no van en hooks**: requieren Docker y se quedan en CI (ver tabla de arriba).
+- Saltar puntualmente (uso excepcional): `git commit --no-verify` / `git push --no-verify`.
+- `lint-staged` acota ESLint a `packages/backend/**/*.ts` (el lint raíz ignora la app) y pasa Prettier
+  al resto; su configuración vive en el `package.json` raíz. `husky` y `lint-staged` son
+  `devDependencies` (sin runtime ni red; coherente con [cumplimiento-menores.md](cumplimiento-menores.md)).
+
+## Strategic Coverage 100/80/0 (US-35)
+
+La cobertura se gobierna por **riesgo de negocio**, no por un porcentaje global: «el 94% de
+cobertura es inútil si el 6% crítico falla». Cada módulo se clasifica por la pregunta _"¿qué pasa si
+esto falla?"_ y el umbral se fija **por _glob_** en `vitest.config.ts` (provider `v8`):
+
+| Tier                  | Umbral | Significado                                 | Ejemplos                                                                                                                                                         |
+| --------------------- | ------ | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 **CORE**           | 100%   | si falla → pérdida de usuario / incumplim.  | `parseResponse`, `FallbackProvider`, `createAIProvider`, `MockProvider`, casos de uso, value-objects, entidades; app: `http`, `sanitizeForSpeech`, `useAppStore` |
+| 🟡 **IMPORTANT**      | 80%    | si falla → usuario frustrado                | componentes UI, prompts, providers reales (con `fetch` mockeado), contrato de rutas                                                                              |
+| ⚪ **INFRASTRUCTURE** | 0%     | TypeScript valida → **se excluye** de medir | DTOs, interfaces de repo/gateway, vocabularios, _labels_, tokens de tema, navegación, _bootstrap_                                                                |
+
+**Qué se excluye de la medición (y por qué no es un hueco):** además del tier 0%, se excluye lo que
+cubre **otra suite** —repos Prisma (→ `test:integration`), `ElevenLabsProvider` y la app `useNarration`
+(atado a `expo-audio`/`file-system`/`speech`), pantallas (composición visual → E2E de onboarding),
+`Icon` (lucide no carga bajo Vitest, US-30)—. Es una decisión **deliberada y documentada** (no un
+truncado silencioso): coincide con la guía de TDD de abajo.
+
+```bash
+pnpm coverage                                  # ambos paquetes; falla si un tier baja del umbral
+pnpm --filter @magyblob/backend test:coverage  # solo backend
+pnpm --filter @magyblob/app test:coverage      # solo app
+```
+
+El **gate diario `pnpm check` sigue rápido** (sin coverage); el umbral lo hace cumplir el job de CI
+con `pnpm coverage`. Para comprobar que el umbral "muerde", comenta un test CORE (p. ej. el de
+`parseResponse`) y `pnpm coverage` debe **fallar** por umbral, no pasar.
 
 ## Guía de TDD
 

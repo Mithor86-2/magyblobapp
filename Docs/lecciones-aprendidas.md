@@ -403,3 +403,97 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Solución:** `exclude: ['e2e/**', '**/dist/**']` en `vitest.config.ts` de la app (y excluir `e2e`
   del `tsconfig` para que el typecheck no arrastre `@playwright/test`). Suites con Docker
   (`integration-db`, `e2e`) van en configs Vitest aparte y fuera del `pnpm test` del gate.
+
+### Husky v9.1+: los hooks ya no llevan shebang ni `chmod`
+
+- **Síntoma:** muchos tutoriales (y prompts generados) crean `.husky/pre-commit` con
+  `#!/usr/bin/env sh` + `. "$(dirname …)/_/husky.sh"` y un `chmod +x`.
+- **Causa:** eso es de Husky ≤ v9.0. En **v9.1+** el _runner_ inyecta el entorno; incluir el shebang o
+  el _sourcing_ emite un _deprecation warning_, y `husky init` ya deja los hooks operativos
+  (`core.hooksPath=.husky/_`).
+- **Solución:** el hook contiene **solo los comandos**. Nada de shebang ni `chmod`.
+
+### `pnpm add` en la raíz del workspace exige `-w`
+
+- **Síntoma:** `pnpm add -D husky` en la raíz aborta ("Running this command will add the dependency to
+  the workspace root…").
+- **Solución:** `pnpm add -D -w husky lint-staged` (la raíz es un workspace `private`).
+
+### lint-staged + ESLint flat config: un fichero ignorado rompe el hook
+
+- **Síntoma:** ESLint 9 falla con "File ignored…" si lint-staged le pasa un fichero que su `ignores`
+  excluye (la app, generados, configs), abortando el commit por un falso positivo.
+- **Solución:** acotar ESLint a `packages/backend/**/*.ts` en la config de `lint-staged` y añadir
+  `--no-warn-ignored`; Prettier se encarga del resto de extensiones. El lockfile no se toca porque
+  `pnpm-lock.yaml` está en `.prettierignore`.
+
+### Coverage v8: el agregado de un directorio puede fallar aunque cada fichero esté al 100%
+
+- **Síntoma:** con umbral 100% en `src/domain/entities/**`, el coverage fallaba (branches 97.14%)
+  mientras la tabla mostraba `Guardian/Story/Activity/...` todos al 100% en ramas.
+- **Causa:** el _glob_ del umbral agrega **todos** los ficheros del patrón; un fichero olvidado en la
+  vista filtrada (`AuditLog.ts`, branches 50%) arrastraba el agregado. El filtro del `grep` con el que
+  miraba la tabla escondía justo ese fichero.
+- **Solución:** mirar el bloque completo del directorio (sin filtrar) para encontrar el fichero que
+  baja la media, no fiarse del agregado ni de una vista filtrada. Lección general: con umbrales por
+  _glob_, el número que importa es el **agregado del patrón**, no el de cada fichero.
+
+### Strategic Coverage: excluir lo cubierto por otra suite, o el número miente
+
+- **Síntoma:** al medir el coverage del `vitest run` unitario, los repos Prisma y los hooks atados a
+  Expo (`useNarration`) salían a 0% y hundían el global, aunque sí están cubiertos (por
+  `test:integration` / E2E).
+- **Causa:** ese código no lo ejercita la suite unitaria; medirlo ahí es medir la suite equivocada.
+- **Solución:** excluirlos del `coverage.exclude` (igual que el tier INFRASTRUCTURE), **documentando**
+  la exclusión (no es truncado silencioso). El 100% se reserva a los _globs_ CORE; el resto cumple el
+  80% de baseline. El umbral se hace cumplir en CI con `pnpm coverage`, no en el `pnpm check` local.
+
+## Feature 37 — E2E web multinavegador (US-37)
+
+### `trace: 'on-first-retry'` no captura nada sin reintentos
+
+- **Síntoma:** al configurar trazas/vídeo para depurar fallos del E2E, no se generaba ningún artefacto
+  pese a fallar un test en local.
+- **Causa:** `on-first-retry` solo captura **en el reintento**; con `workers: 1` y `retries: 0` (el
+  default en local, sin `CI`) no hay reintento, así que nunca se conserva nada.
+- **Solución:** usar `*-on-failure` (`screenshot: 'only-on-failure'`, `video`/`trace:
+'retain-on-failure'`), que conserva la evidencia del primer (y único) intento. `retries: 1` se
+  activa solo en CI (`retries: process.env.CI ? 1 : 0`).
+
+### `mobile-safari` no arranca sin el binario de WebKit
+
+- **Síntoma:** añadido el project `mobile-safari` (`iPhone 13`), Playwright fallaba al lanzarlo porque
+  no encontraba el ejecutable del navegador.
+- **Causa:** `e2e:install` instalaba solo `chromium`; `mobile-safari` corre sobre **WebKit**.
+- **Solución:** `playwright install chromium webkit` en el script `e2e:install`. (`mobile-chrome` no
+  añade binario: reusa el mismo Chromium; solo cambia el viewport.)
+
+## Feature 40 — E2E web de actividades e historial (US-39)
+
+### Cada test E2E rehace el onboarding con email/niño propios
+
+- **Síntoma:** un spec nuevo que daba por hecho un perfil ya creado (o que reusaba el email del spec
+  de onboarding) fallaba de forma intermitente o pisaba el estado del otro test.
+- **Causa:** cada test de Playwright arranca con un **contexto/página nuevos** (sin estado de la app),
+  y el **backend en modo `mock` persiste** entre tests; compartir email/niño entre specs cruza estado.
+- **Solución:** cada test rehace el onboarding completo dentro del propio test (helper local
+  `completarOnboarding(page)` que replica el patrón de `onboarding.spec.ts`). **Ojo:** un email fijo
+  por spec **no basta** en cuanto hay varios `projects` (ver Feature 41); el email debe ser único por
+  **test**, no por spec.
+
+## Feature 41 — fix E2E web: email único por test (US-37 + US-39)
+
+### Un email fijo por spec choca al correr el E2E en varios navegadores
+
+- **Síntoma:** tras juntar el E2E multinavegador (US-37, 3 `projects`) con los specs de actividades e
+  historial (US-39), los tests fallaban con timeout esperando "Crear nuevo perfil" (el onboarding no
+  avanzaba). En local con un solo navegador no se veía.
+- **Causa:** el backend E2E usa un **Postgres efímero que persiste toda la corrida** (no se resetea
+  entre tests ni entre `projects`). Cada test rehace el alta del adulto, y al usar un **email fijo** el
+  segundo alta en adelante (otro test, u otro navegador) fallaba con "email ya registrado", dejando la
+  app parada antes de la selección de perfil.
+- **Solución:** email **único por test**, derivado de `project` + título del test
+  (`packages/app/e2e/_correo.ts`, `correoUnico(testInfo)`), usado en `onboarding.spec.ts` y
+  `actividades-historial.spec.ts`. Así las N tests × M navegadores no colisionan. Alternativa
+  descartada por YAGNI: resetear/truncar la BD entre tests (endpoint de reset) — más superficie y
+  acoplamiento que un email único.

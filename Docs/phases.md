@@ -347,6 +347,27 @@ se abra). Algunas parten de algo ya existente (se indica).
       pulsaciones (Query Priority de Testing Library). `Icon` queda fuera (lucide-react-native no
       importa bajo Vitest; se mockea). Entorno `node` por defecto (test de `http` intacto); cada test
       de componente usa `@vitest-environment jsdom`. Solo app; `pnpm check` verde (126 backend + 41 app).
+- [x] ✅ **E2E web multinavegador y reporting** (US-37, app v0.13.0, rama
+      `feature/37-e2e-web-multinavegador` desde `develop`). Amplía el E2E de la app (Playwright sobre
+      el export web de Expo, US-32) a **tres `projects`**: `chromium` (baseline), `mobile-chrome`
+      (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y `mobile-safari` (iPhone 13, motor
+      **WebKit** = el de iOS). **Reporting rico**: HTML (`playwright-report`) + JSON
+      (`test-results/results.json`) + line, y ante fallo se conservan captura/vídeo/traza
+      (`*-on-failure`); `retries: 1` solo en CI. `e2e:install` instala `chromium webkit` y el
+      `.gitignore` ignora los artefactos. Suite aparte (no toca el arranque reproducible); solo app,
+      dependencias de desarrollo. Gate `pnpm check` verde (139 backend + 41 app); la ejecución real de
+      los tres proyectos requiere Docker + binarios y la verifica el usuario.
+- [x] ✅ **E2E web de actividades e historial** (US-39, app v0.14.0 / raíz v0.21.0, rama
+      `feature/40-e2e-actividades-historial` desde `develop`). Amplía la cobertura E2E de la app
+      (Playwright sobre el export web de Expo, US-32/US-37) más allá del onboarding: reutilizando el
+      helper que lleva a perfil + cuento generado, recorre la pestaña **Actividades** (generar
+      actividades recomendadas y marcar una como "Realizado" con valoración → "¡Hecha!", US-09/US-10) y
+      la pestaña **Historial** (el cuento generado aparece en "Cuentos mágicos", US-08). Contra el
+      backend real en modo `mock` (contenido determinista), localizando por rol/etiqueta accesible. Se
+      mantiene como **US aparte** de la multinavegador (US-37): aquella amplía _dónde_ corre el E2E
+      (motores/viewports), ésta amplía _qué_ flujos cubre. Suite aparte (no toca el arranque
+      reproducible); solo app, dependencias de desarrollo. Gate `pnpm check` verde; la ejecución real
+      (`test:e2e`) requiere Docker + binarios y la verifica el usuario.
 
 **Calidad y tooling:**
 
@@ -371,6 +392,26 @@ se abra). Algunas parten de algo ya existente (se indica).
       esquema (mismos eventos persistidos); el bus notifica en serie y propaga errores. +9 tests (bus +
       suscriptores). De paso, `.claude/**` a los ignores de ESLint y `.claude/worktrees/` a `.gitignore`
       (los worktrees paralelos no contaminan el gate). `pnpm check` verde (144 backend + 41 app).
+
+- [x] ✅ **Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0)** (US-35, rama
+      `feature/35-strategic-coverage` desde `develop`). La cobertura se gobierna por riesgo de negocio,
+      no por un % global: umbrales **por _glob_** en `vitest.config.ts` (provider `v8`) — **100%** en el
+      tier CORE (saneo de salida del LLM `parseResponse`, `FallbackProvider`/`createAIProvider`/
+      `MockProvider`, casos de uso, value-objects, entidades; app: `http`, `sanitizeForSpeech`,
+      `useAppStore`) y **80%** de baseline IMPORTANT; el tier INFRASTRUCTURE y lo cubierto por otras
+      suites (repos Prisma, ElevenLabs, `useNarration` nativo, pantallas → E2E) se **excluyen** de la
+      medición (documentado, no truncado silencioso). Se cierra el hueco CORE detectado (`parseResponse`
+      sin test) + invariantes de entidades + ramas sueltas. Nuevo `pnpm coverage`, que el job **gate**
+      del CI hace cumplir (el `pnpm check` local sigue rápido). `pnpm check` + `pnpm coverage` verdes
+      (192 backend + 58 app).
+
+- [x] ✅ **Git hooks de calidad con Husky + lint-staged** (US-36, backend v0.16.0 / raíz v0.20.0, rama
+      `feature/39-husky-git-hooks` desde `develop`, worktree). Se automatiza el gate en local:
+      `pre-commit` corre `lint-staged` (ESLint `--fix --no-warn-ignored` en backend + Prettier sobre lo
+      _staged_) y `pre-push` corre `pnpm check`. Integración/E2E **no** van en hooks (Docker → CI).
+      Husky v9 sin shebang ni `chmod` (eliminados en v9.1). `husky`/`lint-staged` como devDependency
+      raíz; activación vía `prepare`. Verificado: commit con error de lint se bloquea, `--no-verify`
+      salta, pre-push ejecuta el gate. `pnpm check` verde (192 backend + 58 app).
 
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"

@@ -1,8 +1,8 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-38**. Volver al
-[índice](README.md).
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
+**US-37**, **US-38**, **US-39**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -399,6 +399,136 @@ de longitud/rima/formato, temperatura, modelo, cantidad de actividades) y la res
 - (No-funcional) Dado el cambio, Entonces es **solo backend**, no añade dependencias ni red, y la
   generación sigue funcionando igual (el log es un efecto lateral, no altera el resultado).
 
+## US-37 — E2E web multinavegador (Playwright) · Could (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero que la prueba **E2E web** de la app (Playwright
+sobre el **export web de Expo**) se ejecute en **varios navegadores** y produzca un **reporting rico**
+(informe HTML, JSON y trazas/vídeo/capturas ante fallo), para tener confianza de que el flujo funciona
+en los motores que importan (Chromium y WebKit/iOS) y poder diagnosticar un fallo sin reproducirlo a
+mano.
+
+**Contexto.** [US-32](#us-32) introdujo el E2E de la app con Playwright sobre el export web de Expo
+(`expo export --platform web`) servido por un proxy de mismo origen contra el backend real en `mock`,
+pero **solo en `chromium`** (Desktop Chrome) y con un reporter `list`. Esta historia **amplía** ese
+E2E: añade proyectos de Playwright para cubrir el **motor WebKit** (el de iOS/Safari) y un **viewport
+móvil** (la app es _portrait_), y configura el reporting de depuración. **Valida el EXPORT WEB de la
+app, no la app nativa** (iOS/Android): es la web servida la que se recorre con navegadores reales; no
+hay simuladores ni dispositivos nativos. **Solo afecta a la suite E2E de `packages/app`** (config y
+scripts de prueba); no toca runtime de la app ni el backend. Las dependencias siguen siendo solo de
+desarrollo. _(Nota: en el repo `mobile-chrome` usa el mismo motor Chromium que el baseline; aporta el
+viewport móvil, no un motor distinto. El motor adicional real lo aporta `mobile-safari` = WebKit.)_
+
+**Criterios de aceptación**
+
+- Dada la configuración de Playwright, Cuando se define la lista de `projects`, Entonces existen al
+  menos tres: `chromium` (`devices['Desktop Chrome']`, baseline existente de US-32), `mobile-chrome`
+  (`devices['Pixel 5']`, viewport móvil _portrait_) y `mobile-safari` (`devices['iPhone 13']`, motor
+  **WebKit** = el de iOS).
+- Dado el E2E ya existente (US-32), Cuando se añaden los nuevos proyectos, Entonces se **conservan sin
+  cambios** `webServer` (backend mock + servidor estático del export web), `baseURL`
+  (`http://127.0.0.1:4173`), `testDir` (`./e2e`) y `workers: 1` (no se rompe el E2E actual).
+- Dado el reporting, Cuando termina la ejecución, Entonces se generan un informe **HTML**
+  (`outputFolder: 'playwright-report'`, `open: 'never'`), un fichero **JSON**
+  (`test-results/results.json`) y la salida **`line`** en consola.
+- Dado un test que falla, Cuando se ejecuta, Entonces se conservan **captura** (`screenshot:
+'only-on-failure'`), **vídeo** (`video: 'retain-on-failure'`) y **traza** (`trace:
+'retain-on-failure'`) para diagnosticarlo. _(Se usa `retain-on-failure` y `retries: 1` **solo en
+  CI**, porque con `workers: 1` y `retries: 0` la opción `on-first-retry` no captura nada.)_
+- Dado el script de instalación de navegadores, Cuando se ejecuta `pnpm --filter @magyblob/app
+e2e:install`, Entonces instala los binarios de **chromium y webkit** (`playwright install chromium
+webkit`), no solo Chromium.
+- Dados los artefactos de prueba generados, Cuando se ejecuta el E2E, Entonces el `.gitignore` **ignora**
+  `packages/app/playwright-report/` y `packages/app/test-results/` (no se versionan).
+- Dado el coste (con `workers: 1` son ~**3x** navegadores en serie), Cuando se decide la estrategia de
+  CI, Entonces se documenta dejar **solo `chromium` en el gate de PR** y `mobile-safari`/`mobile-chrome`
+  en un job **nightly** (filtrando por `--project`), para no triplicar el tiempo de cada PR.
+- (No-funcional) Dada la regla de menores, Entonces el cambio respeta
+  [cumplimiento-menores.md](../cumplimiento-menores.md): modo `mock` por defecto (sin red ni IA
+  externa), dependencias **solo de desarrollo**, sin SDKs de terceros en runtime; y **no** añade pasos
+  ocultos al arranque reproducible ([US-06](#us-06)) — el E2E sigue siendo una suite aparte.
+
+## US-36 — Git hooks de calidad con Husky + lint-staged · Should (Mejoras)
+
+Como **desarrollador del proyecto** quiero que el gate de calidad se ejecute **automáticamente** en
+los Git hooks (no solo por disciplina manual) para que sea imposible commitear código mal formateado
+o pushear con el gate (`pnpm check`) en rojo, manteniendo el commit rápido y el push completo.
+
+**Contexto.** Hoy la regla "verifica el gate antes de pedir commit o cerrar la rama" es **manual**:
+nada impide un commit con lint/formato roto ni un push con el gate en rojo. Se introduce
+[Husky](https://typicode.github.io/husky/) v9 + [lint-staged](https://github.com/lint-staged/lint-staged)
+con una arquitectura de gates **rápido en commit / completo en push**: `pre-commit` corre `lint-staged`
+sobre los archivos _staged_ (autofix de ESLint en el backend + Prettier), y `pre-push` corre el gate
+canónico `pnpm check` (typecheck + lint + format:check + test). La **integración** (`test:integration`)
+y los **E2E** (`test:e2e`) **no** entran en los hooks: requieren Docker y se quedan en CI (coherente
+con [US-32](#us-32) y [estrategia-pruebas.md](../estrategia-pruebas.md)). Ambas dependencias son
+**solo de desarrollo**: sin runtime, red ni SDKs de terceros (compatible con
+[cumplimiento-menores.md](../cumplimiento-menores.md), igual que SonarJS/coverage). Ver el plan
+[39-husky-git-hooks](../planes/39-husky-git-hooks.md).
+
+**Criterios de aceptación**
+
+- Dado un commit con cambios _staged_, Cuando se ejecuta `git commit`, Entonces el hook `pre-commit`
+  corre `lint-staged` y aplica ESLint (autofix, acotado al backend) y Prettier **solo** a los archivos
+  _staged_, terminando en segundos.
+- Dado un archivo _staged_ que ESLint no puede arreglar (p. ej. import que viola la frontera de capas),
+  Cuando se intenta commitear, Entonces el hook **falla** (`exit ≠ 0`) y el commit se aborta.
+- Dado un `git push`, Cuando se ejecuta, Entonces el hook `pre-push` corre `pnpm check` (typecheck +
+  lint + format:check + test) y, si cualquier paso falla, **aborta el push**.
+- Dado que integración y E2E requieren Docker, Cuando se hace commit o push, Entonces **no** se
+  ejecutan en los hooks (siguen ejecutándose en CI).
+- Dada una situación excepcional, Cuando se necesita saltar los hooks, Entonces `git commit/push
+--no-verify` lo permite (uso puntual, no por defecto).
+- Dado un `pnpm install` en una clonación nueva, Cuando termina, Entonces el script `prepare` deja los
+  hooks activos sin pasos manuales (se comparten vía el repo).
+- (No-funcional) Dadas las dependencias `husky` y `lint-staged`, Cuando se instalan, Entonces son
+  `devDependencies`, no añaden red ni SDKs de terceros en runtime, y Husky v9 no emite avisos de
+  deprecación (hooks sin shebang ni `chmod`).
+
+## US-35 — Cobertura estratégica por riesgo de negocio (100/80/0) · Should (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero que la cobertura de tests se gobierne por el
+**riesgo de negocio de cada módulo** (no por un porcentaje global), de modo que el código **crítico**
+—el que rompe el negocio o el cumplimiento de menores si falla— esté **100% cubierto** y el gate lo
+haga cumplir, mientras que el código que TypeScript ya valida no infle una métrica engañosa.
+
+**Contexto.** El gate (`pnpm check`) verifica que los tests pasan, pero **no mide qué cubren**: no hay
+configuración de coverage ni umbrales en ningún paquete. El riesgo no es el % global —«94% de
+cobertura es inútil si el 6% crítico falla»—, sino que código CORE quede sin red. La auditoría detectó
+un hueco CORE concreto: [`parseResponse.ts`](../../packages/backend/src/infrastructure/ai/parseResponse.ts)
+(saneo de la salida del LLM **antes de mostrarla a un niño**: descarta `nivel`/`duracionMin` fuera de
+rango, categorías inventadas y títulos/cuerpos vacíos) **no tenía test propio**. Se adopta el sistema
+**Strategic Coverage 100/80/0**, que clasifica el código en tres niveles y fija umbrales por _glob_ en
+Vitest (provider `v8`), haciéndolos cumplir en CI. Sin red ni SDKs de terceros (dependencias solo de
+desarrollo); ver [estrategia-pruebas.md](../estrategia-pruebas.md) y [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+- **CORE (100%)** — si falla → pérdida de usuario o incumplimiento: saneo de salida del LLM,
+  `FallbackProvider`/`createAIProvider`/`MockProvider`, casos de uso, value-objects e invariantes de
+  entidades del dominio; en la app, el adaptador HTTP, `sanitizeForSpeech` y el store de sesión/consentimiento.
+- **IMPORTANT (80%)** — si falla → usuario frustrado: componentes de UI, narración con degradación a
+  voz nativa, pantallas con validación, prompts, providers reales y contrato de rutas.
+- **INFRASTRUCTURE (0%)** — TypeScript valida: DTOs, interfaces de repositorio/gateway, vocabularios,
+  _labels_, tokens de tema, navegación, _bootstrap_; se **excluyen** de la medición (junto con lo
+  cubierto por otras suites: repos Prisma → integración, ElevenLabs → E2E/manual) para no ensuciar la señal.
+
+**Criterios de aceptación**
+
+- Dado el saneo de la salida del LLM (`parseResponse`), Cuando se ejecutan sus pruebas, Entonces se
+  verifica que descarta `nivel`/`duracionMin` fuera de rango, categorías inexistentes y títulos/cuerpos
+  vacíos, recorta a la cantidad pedida, estampa el `proveedor` y lanza error si no queda contenido válido.
+- Dado el nivel **CORE**, Cuando se ejecuta `pnpm coverage`, Entonces los _globs_ CORE
+  (`parseResponse`, casos de uso, value-objects, entidades de dominio; y en la app `http`,
+  `sanitizeForSpeech`, `useAppStore`) reportan **100%** y el resto del código medido cumple el **80%**.
+- Dado un descenso por debajo del umbral de un nivel, Cuando corre el coverage (local o en CI),
+  Entonces **falla** el comando (no pasa con _warning_), haciendo cumplir el DoD automáticamente.
+- Dado el nivel **INFRASTRUCTURE** y el código cubierto por otras suites (repos Prisma, ElevenLabs),
+  Cuando se mide el coverage del run unitario, Entonces están **excluidos** de la medición y no
+  cuentan como hueco.
+- Dado el gate diario, Cuando se ejecuta `pnpm check`, Entonces sigue siendo **rápido** (sin coverage,
+  sin Docker); el umbral por nivel lo hace cumplir el job de CI (`pnpm coverage`) y se documenta el
+  comando local.
+- (No-funcional) Dadas las dependencias añadidas (`@vitest/coverage-v8`), Cuando se instalan, Entonces
+  son **solo de desarrollo** y no introducen red ni SDKs de terceros en runtime.
+
 ## US-38 — E2E nativo de la app en simuladores (iOS/Android) con Maestro · Could (Mejoras)
 
 Como **desarrollador/evaluador del proyecto** quiero pruebas end-to-end de la app **nativa**
@@ -435,3 +565,43 @@ descarta por mayor coste de configuración. Se justifica en un **ADR**.
 - (No-funcional) Dadas las nuevas dependencias, Cuando se ejecutan, Entonces son **solo de
   desarrollo/CI**, modo `mock` por defecto (sin red ni IA externa ni SDKs de terceros en runtime) y
   **no** alteran el arranque reproducible ([US-06](#us-06)).
+
+## US-39 — E2E de actividades e historial (Playwright) · Could (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero que el E2E web de la app (introducido en
+[US-32](#us-32)) cubra también el recorrido de **actividades recomendadas** y del **historial de
+cuentos**, para tener confianza de que esos dos flujos clave de la zona infantil funcionan de punta a
+punta en un navegador real —no solo con tests de componente—.
+
+**Contexto.** El E2E de la app con Playwright (US-32, [`onboarding.spec.ts`](../../packages/app/e2e/onboarding.spec.ts))
+recorre el onboarding completo (bienvenida → puerta parental → alta del adulto → crear perfil →
+generar cuento) sobre Expo web contra el backend real en modo `mock`. Pero las **actividades**
+(US-09/US-10) y el **historial** (US-08) hoy solo tienen pruebas **unitarias/de componente** (US-30),
+sin un recorrido end-to-end en navegador. Esta historia **extiende** la cobertura E2E web a esos dos
+flujos, reutilizando el mismo patrón de onboarding para llegar al estado con perfil + cuento generado.
+Valida el **export web** de la app (no la app nativa); el recorrido nativo queda fuera de alcance.
+Localiza por **rol/etiqueta accesible** (coherente con US-30/US-32), corre en modo `mock` (contenido
+determinista del [`MockProvider`](../../packages/backend/src/infrastructure/ai/MockProvider.ts)),
+respeta [cumplimiento-menores.md](../cumplimiento-menores.md) (sin red ni IA externa ni SDKs de
+terceros en runtime) y no añade pasos ocultos al arranque reproducible ([US-06](#us-06)). **Solo
+pruebas de la app** (no toca backend ni código de runtime).
+
+**Criterios de aceptación**
+
+- Dada la app Expo servida en **web** con un backend en `mock`, Cuando el E2E recorre el onboarding y
+  llega al estado con **perfil creado + cuento generado**, Entonces puede continuar hacia los flujos de
+  actividades e historial (reutiliza el patrón de [US-32](#us-32)).
+- Dado el estado con perfil, Cuando el E2E navega a la pestaña **Actividades** y genera actividades,
+  Entonces aparecen **actividades recomendadas** (tarjetas con su título/categoría del mock), localizadas
+  por rol/etiqueta accesible (US-09).
+- Dada una actividad sin completar, Cuando el E2E pulsa **"Realizado"** y elige una valoración en
+  estrellas, Entonces la tarjeta refleja el estado **"¡Hecha!"** (efecto observable de US-10).
+- Dado el cuento generado en el onboarding, Cuando el E2E navega a la pestaña **Historial**, Entonces el
+  cuento aparece en la sección **"Cuentos mágicos"** (p. ej. por su título determinista con el nombre del
+  niño), localizado por rol/etiqueta accesible (US-08).
+- Dado el recorrido E2E, Cuando se ejecuta, Entonces valida el **export web** de la app (Chromium), no la
+  app nativa, y todos los localizadores van por **rol/etiqueta/texto accesible** (no por estructura ni
+  estilos).
+- (No-funcional) Dada la prueba, Cuando corre, Entonces usa el modo `mock` por defecto (sin red ni IA
+  externa ni SDKs de terceros en runtime), es **solo de la app** (no toca backend) y no rompe el arranque
+  reproducible ([US-06](#us-06)) ni el spec de onboarding existente.

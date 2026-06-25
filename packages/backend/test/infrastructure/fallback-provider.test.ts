@@ -81,4 +81,24 @@ describe('FallbackProvider', () => {
     expect(actividades).toHaveLength(2);
     expect(actividades.every((a) => a.proveedor === 'mock')).toBe(true);
   });
+
+  it('describe en el warn los fallos que no son Error (p. ej. un string)', async () => {
+    const logger: AILogger = { warn: vi.fn() };
+    // Proveedor que lanza un valor que no es Error: se debe describir con String(error).
+    const lanzaString: AIProvider = {
+      generateStory: async () => Promise.reject('explotó sin Error'),
+      recommendActivities: async () => Promise.reject('explotó sin Error'),
+    };
+    const provider = new FallbackProvider(lanzaString, new MockProvider(), logger);
+    const story = await provider.generateStory({
+      perfil: perfil(),
+      tema: 'animales',
+      estilo: 'aventura',
+    });
+    expect(story.proveedor).toBe('mock');
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ error: 'explotó sin Error' }),
+      expect.any(String),
+    );
+  });
 });

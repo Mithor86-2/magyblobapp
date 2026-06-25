@@ -527,3 +527,96 @@ pendientes).
   `devDependencies`. La narración (ElevenLabs) queda fuera del E2E mock (límite: sin clave no se sirve).
 - Detalle del cómo y gotchas: [planes/fase-6.md](planes/fase-6.md), [estrategia-pruebas.md](estrategia-pruebas.md),
   [lecciones-aprendidas.md](lecciones-aprendidas.md).
+
+---
+
+## Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0 · 2026-06-24 · US-35)
+
+Rama `feature/35-strategic-coverage` (desde `develop`). El gate verificaba que los tests pasan pero
+no **qué cubrían**; no había coverage configurado. La auditoría halló un hueco CORE real:
+`parseResponse` (saneo de la salida del LLM antes de mostrarla a un niño) **sin test propio**.
+
+- **Por qué tiers y no un % global (decisión con el usuario):** un % global premia código trivial y
+  esconde el crítico —«94% de cobertura es inútil si el 6% crítico falla»—. Se clasifica por _"¿qué
+  pasa si esto falla?"_: **CORE 100%** (pérdida de usuario/incumplimiento), **IMPORTANT 80%**
+  (usuario frustrado), **INFRASTRUCTURE 0%** (TypeScript ya valida → se excluye de medir).
+- **Umbrales por _glob_ en `vitest.config.ts` (provider `v8`):** el 100% se aplica solo a los _globs_
+  CORE; el resto cumple el 80% de baseline. Vitest 2.x soporta thresholds por patrón en el mismo config.
+- **Qué se excluye de la medición (y por qué no es hueco):** además del tier 0%, lo cubierto por
+  **otra suite** —repos Prisma (`test:integration`), ElevenLabs/`useNarration` (atado a nativo Expo,
+  E2E/manual), pantallas (composición visual → E2E onboarding), `Icon` (lucide no carga en Vitest)—.
+  Decisión **deliberada y documentada** (no truncado silencioso), coherente con la guía de TDD.
+- **El umbral lo hace cumplir el CI, no el gate local:** `pnpm check` sigue rápido (sin coverage); el
+  job **gate** de `ci.yml` añade `pnpm coverage`. Mismo criterio que integración/E2E (CI-enforced).
+- Detalle: [planes/35-strategic-coverage.md](planes/35-strategic-coverage.md),
+  [estrategia-pruebas.md](estrategia-pruebas.md) (sección "Strategic Coverage 100/80/0").
+
+## E2E web multinavegador y reporting (Feature 37 · 2026-06-24 · app v0.13.0 · US-37)
+
+Rama `feature/37-e2e-web-multinavegador` (worktree desde `develop`). Amplía el E2E de la app (US-32)
+sin tocar runtime: solo la config y los scripts de la suite Playwright de `packages/app`.
+
+- **Tres `projects` Playwright (no dos motores nuevos):** `chromium` (`Desktop Chrome`, baseline),
+  `mobile-chrome` (`Pixel 5`) y `mobile-safari` (`iPhone 13`). `mobile-safari` aporta el motor
+  **WebKit** = el de iOS (el valor real de cobertura). `mobile-chrome` **no es un motor nuevo**:
+  reusa el mismo Blink/Chromium; aporta **viewport móvil _portrait_** (que el flujo no se rompa en
+  pantallas estrechas), no un segundo navegador.
+- **Reporting rico (HTML + JSON + line):** `html` → `playwright-report/`, `json` →
+  `test-results/results.json`, más `line` en consola. Permite revisar el fallo fuera de la consola
+  (CI) y consumir el JSON desde otra herramienta.
+- **Captura/vídeo/traza `retain-on-failure`, no `on-first-retry`:** con `workers: 1` y `retries: 0`
+  (local), `on-first-retry` **no captura nada** porque no hay reintento; `*-on-failure` sí conserva
+  la evidencia del primer (y único) intento. `retries: 1` se activa **solo en CI**
+  (`process.env.CI ? 1 : 0`).
+- **`e2e:install` instala `chromium webkit`:** `mobile-safari` necesita el binario de WebKit; sin él
+  ese project no arranca. Los artefactos (`playwright-report/`, `test-results/`) se ignoran en
+  `.gitignore`.
+- **Cumplimiento intacto:** suite aparte (no entra en `pnpm check` ni en el arranque reproducible),
+  modo `mock`, dependencias solo de desarrollo. La ejecución real de los tres proyectos requiere
+  Docker + binarios y la verifica el usuario (`pnpm --filter @magyblob/app test:e2e`).
+- **Pendiente (cierre con el usuario):** estrategia de coste en CI (solo `chromium` en el gate de PR,
+  `mobile-*` en nightly por `--project`) — documentación/CI, no implementada aún.
+
+---
+
+## Git hooks de calidad con Husky (US-36 · 2026-06-24)
+
+- **Arquitectura "rápido en commit / completo en push":** `pre-commit` = `lint-staged` (solo lo
+  _staged_, segundos); `pre-push` = `pnpm check` (gate completo). Razón: el commit no debe penalizar
+  con todo el monorepo, y el push es el último punto antes de que el código salga del equipo.
+- **Qué NO va en hooks:** integración (`test:integration`) y E2E (`test:e2e`) necesitan Docker → se
+  quedan en CI. Meterlos en un hook lo haría lento y frágil (coherente con "suites con Docker fuera
+  del gate diario").
+- **Por qué no `build` en pre-commit (vs. la propuesta inicial revisada):** el gate valida tipos con
+  `tsc --noEmit` (`typecheck`), no con `build` (que solo aplica al backend, escribe `dist/` y copia
+  Prisma). El pre-push usa el gate canónico `pnpm check`, no comandos ad hoc.
+- **CHANGELOG/versión:** es tooling de repo sin CHANGELOG raíz; se registra en el del **backend** y se
+  bumpea backend+raíz (mismo criterio que SonarJS, US-31).
+
+---
+
+## E2E web de actividades e historial (Feature 40 · 2026-06-24 · app v0.14.0 · US-39)
+
+Rama `feature/40-e2e-actividades-historial` (worktree desde `develop`). Amplía la cobertura E2E de la
+app (Playwright sobre el export web de Expo, US-32/US-37) **en flujos**, no en motores: un spec nuevo
+`packages/app/e2e/actividades-historial.spec.ts`, sin tocar runtime.
+
+- **US aparte de la multinavegador (US-37):** son ejes ortogonales. US-37 amplía **dónde** corre el
+  E2E (tres `projects`: Chromium baseline, viewport móvil, motor WebKit); US-39 amplía **qué** flujos
+  se ejercitan (Actividades + Historial, antes solo cubiertos por tests de componente). Separarlas
+  mantiene cada cierre acotado y su trazabilidad limpia.
+- **Onboarding reutilizado como helper, no compartido entre tests:** cada test de Playwright arranca
+  con contexto/página nuevos, así que el recorrido bienvenida → puerta parental → alta → crear perfil
+  → generar cuento se rehace dentro de cada test vía un `completarOnboarding(page)` local que replica
+  el patrón de `onboarding.spec.ts` (no lo importa ni lo modifica).
+- **Email/nombre propios del spec para no chocar con estado persistido:** el backend (mock) persiste
+  entre tests; este spec usa su propio email (`marta.actividades.e2e@example.com`) y niño (`Lucia`)
+  para no colisionar con los de `onboarding.spec.ts`.
+- **Localización por rol/etiqueta accesible y mock determinista:** se afirma sobre contenido estable
+  del `MockProvider` (cuento «{nombre} y la aventura de {tema}», actividades «Actividad de {categoria}
+  nº {n}») y se navega por rol/nombre accesible (coherente con US-30): generar actividades (US-09) →
+  "Realizado" + 3 estrellas → "¡Hecha!" (US-10); y en Historial el cuento bajo "Cuentos mágicos"
+  (US-08).
+- **Cumplimiento intacto:** suite aparte (no entra en `pnpm check` ni en el arranque reproducible),
+  modo `mock`, dependencias solo de desarrollo. La ejecución real requiere Docker + binarios y la
+  verifica el usuario (`pnpm --filter @magyblob/app test:e2e`).
