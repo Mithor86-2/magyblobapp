@@ -19,7 +19,7 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
-## [0.15.0] - 2026-06-24
+## [0.16.0] - 2026-06-24
 
 Git hooks de calidad con Husky + lint-staged (US-36).
 
@@ -28,6 +28,23 @@ Git hooks de calidad con Husky + lint-staged (US-36).
 - Git hooks de calidad con Husky + lint-staged (US-36): `pre-commit` corre `lint-staged` (ESLint
   `--fix` en el backend + Prettier sobre lo _staged_) y `pre-push` corre el gate completo
   `pnpm check`. Integración y E2E siguen solo en CI. Dependencias solo de desarrollo.
+
+## [0.15.0] - 2026-06-24
+
+Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0, US-35).
+
+### Added
+
+- **Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0, US-35):** umbrales de
+  coverage **por _glob_** en [`vitest.config.ts`](vitest.config.ts) (provider `v8`) — **100%** en el
+  tier CORE (`parseResponse`, `FallbackProvider`, `createAIProvider`, `MockProvider`, casos de uso,
+  value-objects, entidades de dominio) y **80%** de baseline IMPORTANT. El tier INFRASTRUCTURE
+  (interfaces, DTOs, vocabularios) y lo cubierto por otras suites (repos Prisma, ElevenLabs) se
+  **excluyen** de la medición. Nuevo script `test:coverage`.
+- Tests del tier CORE que faltaban: `parse-response.test.ts` (saneo de la salida del LLM) y
+  `entities.test.ts` (invariantes de `Guardian`, `Story`, `Activity`, `InteractionEvent`,
+  `StoryNarration`, `AuditLog`); y ramas restantes en value-objects (`equals`), `MockProvider` (es/en),
+  `createAIProvider` (hot-swap de actividades), `FallbackProvider` (fallo no-`Error`) y casos de uso.
 
 ## [0.14.0] - 2026-06-23
 

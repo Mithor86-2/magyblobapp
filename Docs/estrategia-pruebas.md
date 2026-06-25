@@ -62,7 +62,8 @@ rápido y sin dependencias de infraestructura. En **CI** sí se ejecutan siempre
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) corre en cada `push` (a `main`/`develop`)
 y `pull_request`, con tres jobs que reproducen exactamente los comandos de arriba:
 
-1. **gate** — `pnpm check` (sin Docker).
+1. **gate** — `pnpm check` (sin Docker) **+ `pnpm coverage`** (hace cumplir los umbrales por tier;
+   ver más abajo). Sube el **informe HTML de cobertura** de ambos paquetes como artefacto (`coverage-report`).
 2. **integración + E2E backend** — `test:integration` y `test:e2e` (Testcontainers; Docker viene en
    el runner `ubuntu-latest`).
 3. **E2E app** — Playwright/Chromium sobre Expo web contra el backend real en mock.
@@ -85,6 +86,34 @@ hooks, con la regla "rápido en commit / completo en push" (origen: US-36). Se i
 - `lint-staged` acota ESLint a `packages/backend/**/*.ts` (el lint raíz ignora la app) y pasa Prettier
   al resto; su configuración vive en el `package.json` raíz. `husky` y `lint-staged` son
   `devDependencies` (sin runtime ni red; coherente con [cumplimiento-menores.md](cumplimiento-menores.md)).
+
+## Strategic Coverage 100/80/0 (US-35)
+
+La cobertura se gobierna por **riesgo de negocio**, no por un porcentaje global: «el 94% de
+cobertura es inútil si el 6% crítico falla». Cada módulo se clasifica por la pregunta _"¿qué pasa si
+esto falla?"_ y el umbral se fija **por _glob_** en `vitest.config.ts` (provider `v8`):
+
+| Tier                  | Umbral | Significado                                 | Ejemplos                                                                                                                                                         |
+| --------------------- | ------ | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 **CORE**           | 100%   | si falla → pérdida de usuario / incumplim.  | `parseResponse`, `FallbackProvider`, `createAIProvider`, `MockProvider`, casos de uso, value-objects, entidades; app: `http`, `sanitizeForSpeech`, `useAppStore` |
+| 🟡 **IMPORTANT**      | 80%    | si falla → usuario frustrado                | componentes UI, prompts, providers reales (con `fetch` mockeado), contrato de rutas                                                                              |
+| ⚪ **INFRASTRUCTURE** | 0%     | TypeScript valida → **se excluye** de medir | DTOs, interfaces de repo/gateway, vocabularios, _labels_, tokens de tema, navegación, _bootstrap_                                                                |
+
+**Qué se excluye de la medición (y por qué no es un hueco):** además del tier 0%, se excluye lo que
+cubre **otra suite** —repos Prisma (→ `test:integration`), `ElevenLabsProvider` y la app `useNarration`
+(atado a `expo-audio`/`file-system`/`speech`), pantallas (composición visual → E2E de onboarding),
+`Icon` (lucide no carga bajo Vitest, US-30)—. Es una decisión **deliberada y documentada** (no un
+truncado silencioso): coincide con la guía de TDD de abajo.
+
+```bash
+pnpm coverage                                  # ambos paquetes; falla si un tier baja del umbral
+pnpm --filter @magyblob/backend test:coverage  # solo backend
+pnpm --filter @magyblob/app test:coverage      # solo app
+```
+
+El **gate diario `pnpm check` sigue rápido** (sin coverage); el umbral lo hace cumplir el job de CI
+con `pnpm coverage`. Para comprobar que el umbral "muerde", comenta un test CORE (p. ej. el de
+`parseResponse`) y `pnpm coverage` debe **fallar** por umbral, no pasar.
 
 ## Guía de TDD
 

@@ -1,6 +1,6 @@
 {
   "name": "magyblobapp",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "private": true,
   "type": "module",
   "description": "App infantil bilingüe que crea perfiles y genera cuentos con IA local (TFM Máster)",
@@ -13,6 +13,7 @@
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
+    "coverage": "pnpm -r --if-present test:coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
