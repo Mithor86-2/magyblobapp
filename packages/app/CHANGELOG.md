@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Cobertura **E2E web** de **actividades** e **historial** con Playwright sobre Expo web (US-39):
+  extiende el E2E de onboarding (US-32) reutilizando su patrón para llegar a perfil + cuento generado,
+  y luego recorre la pestaña **Actividades** (generar actividades recomendadas y marcar una como
+  "Realizado" con valoración → "¡Hecha!", US-09/US-10) y la pestaña **Historial** (el cuento generado
+  aparece en "Cuentos mágicos", US-08). Contra el backend real en modo `mock` (contenido
+  determinista), localizando por rol/etiqueta accesible. Suite separada
+  (`pnpm --filter @magyblob/app test:e2e`, requiere Docker y `e2e:install`).
+
 ### Changed
 
 ### Deprecated
