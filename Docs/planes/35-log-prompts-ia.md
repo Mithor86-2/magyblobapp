@@ -32,21 +32,18 @@ Decisiones tomadas con el usuario (2026-06-23):
 
 ## Tareas
 
-- [ ] ❌ Extender `AILogger` (`FallbackProvider.ts`) con `info(meta, msg)` **opcional** (no rompe a
-      `FallbackProvider` ni a sus tests con `{ warn }`). Añadir `info` al `NO_OP_LOGGER`.
-- [ ] ❌ Inyectar `logger?: AILogger` en `OllamaProvider` y `CloudProvider` (opciones del constructor);
-      pasarlo desde `createAIProvider`/`buildBase` (Ollama) y `HotSwapAIProvider.resolver` (Cloud).
-- [ ] ❌ Loguear a `info` en el punto único de cada provider (`generate`/`chat`), que tiene system +
-      prompt + temperatura + modelo + respuesta: un log con el **prompt** (system, user) y la **config**
-      (op, plantilla `appsetting`/`defecto`, params, temperatura, modelo, cantidad) y otro con la
-      **respuesta** cruda. Pasar el `op`/config como parámetro desde `generateStory`/`recommendActivities`.
-- [ ] ❌ Tests (`test/infrastructure/`): verificar que con `local`/cloud y un `AILogger` con
-      `info: vi.fn()` se registra el prompt + config + respuesta en cuento y actividades; y que `mock`
-      no loguea prompt.
-- [ ] ❌ Docs: nota de desviación PII en `cumplimiento-menores.md` (C-5); entrada en
-      `packages/backend/CHANGELOG.md` (`## [Unreleased]`).
-- [ ] ❌ Gate verde (`pnpm check`) y cierre con `cerrar-feature` (versión + CHANGELOG fechado + docs;
-      **detener antes del `finish`** para confirmación del usuario).
+- [x] ✅ `AILogger` extendido con `info(meta, msg)` **opcional** (no rompe a `FallbackProvider` ni a
+      sus tests con `{ warn }`).
+- [x] ✅ `logger?: AILogger` inyectado en `OllamaProvider` y `CloudProvider`; pasado desde
+      `createAIProvider`/`buildBase` (Ollama) y `HotSwapAIProvider.resolver` (Cloud).
+- [x] ✅ Log a `info` en el punto único de cada provider (`generate`/`chat`): prompt (system+user) +
+      config (op, plantilla `appsetting`/`defecto`, params, temperatura, modelo, cantidad/categoría) y
+      respuesta cruda. Helper compartido `aiLog.ts` (DRY).
+- [x] ✅ Tests `test/infrastructure/ai-logging.test.ts` (4 casos): prompt+config+respuesta en cuento
+      (Ollama y Cloud), cantidad en actividades, y compatibilidad con `AILogger` sin `info`.
+- [x] ✅ Docs: nota de desviación PII en `cumplimiento-menores.md` (C-5) y entrada en el CHANGELOG.
+- [x] ✅ Gate verde (`pnpm check`). Cierre: versión (backend 0.13.0, raíz 0.17.0) + CHANGELOG fechado;
+      **pendiente** pruebas con el usuario → confirmación → `finish`.
 
 ## Notas / riesgos
 
