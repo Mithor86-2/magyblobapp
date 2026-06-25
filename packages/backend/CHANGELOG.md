@@ -11,6 +11,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Parámetros del cuento por defecto (US-18/US-28): la **temperatura** baja a **0.7** (seed, migración y
+  default de código en `Ollama`/`Cloud`) y la **longitud** sube a **150–200 palabras**
+  (`prompt.story.params`, cargado por migración). Se **deja de sembrar** `prompt.story.template` (una
+  plantilla fija que hardcodeaba "4 a 6 frases" e **ignoraba** los params): ahora se usa la plantilla
+  por defecto de código, que sí respeta longitud, intereses, tono y formato (sigue siendo configurable
+  por `AppSetting`). Además se **refuerza la instrucción de longitud** del prompt ("al menos N
+  palabras, en varios párrafos") para mejorar el cumplimiento del LLM.
+
 ### Deprecated
 
 ### Removed

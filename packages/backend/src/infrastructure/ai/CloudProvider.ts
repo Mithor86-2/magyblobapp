@@ -36,7 +36,7 @@ export interface CloudProviderOptions {
   logger?: AILogger;
 }
 
-const TEMPERATURA_DEFECTO = 0.8;
+const TEMPERATURA_DEFECTO = 0.7;
 
 /**
  * Proveedor de IA contra cualquier API **compatible con OpenAI** (Groq, Gemini,

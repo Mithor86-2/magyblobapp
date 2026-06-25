@@ -105,11 +105,19 @@ const FORMATO_LABEL: Record<CodigoIdioma, Record<FormatoCuento, string>> = {
  */
 function instruccionFormato(params: ResolvedStoryParams, idioma: CodigoIdioma): string {
   if (idioma === 'es') {
-    const rima = params.rima ? ' y procura que rime' : '';
-    return ` Que tenga entre ${params.palabrasMin} y ${params.palabrasMax} palabras${rima}.`;
+    const rima = params.rima ? ', y procura que rime' : '';
+    return (
+      ` Extiéndete: escribe al menos ${params.palabrasMin} palabras ` +
+      `(entre ${params.palabrasMin} y ${params.palabrasMax} palabras), en varios párrafos${rima}. ` +
+      `No te quedes corto.`
+    );
   }
-  const rima = params.rima ? ' and try to make it rhyme' : '';
-  return ` Make it between ${params.palabrasMin} and ${params.palabrasMax} words${rima}.`;
+  const rima = params.rima ? ', and try to make it rhyme' : '';
+  return (
+    ` Make it long: at least ${params.palabrasMin} words ` +
+    `(between ${params.palabrasMin} and ${params.palabrasMax} words), in several paragraphs${rima}. ` +
+    `Don't fall short.`
+  );
 }
 
 /** Verbo + formato inicial del prompt: "Escribe un cuento" / "Write a story". */

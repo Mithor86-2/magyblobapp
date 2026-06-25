@@ -11,18 +11,13 @@ import { PrismaClient } from '../src/generated/prisma/index.js';
  */
 const SETTINGS: { key: string; value: string; descripcion: string }[] = [
   { key: 'ai.model.local', value: 'gemma:2b', descripcion: 'Modelo Ollama por defecto.' },
-  // OJO (US-28): el system prompt del cuento NO se siembra. Es **por idioma** y vive en el código
-  // (`INSTRUCCION_SEGURIDAD` de prompts.ts, ES/EN, con las reglas del prompt maestro). Si se
-  // sembrara aquí (un único texto en español) pisaría el system por idioma y los modelos escribirían
-  // en español aunque el perfil fuera `en`. La plantilla (`prompt.story.template`) sí es configurable.
-  {
-    key: 'prompt.story.template',
-    value:
-      'Escribe un cuento corto (4 a 6 frases) para {nombre}, de {edad} años, sobre ' +
-      '"{tema}" con un estilo {estilo}. {nombre} es el protagonista. Escríbelo en {idiomaNombre}. ' +
-      'Devuelve un título breve y el cuerpo del cuento.',
-    descripcion: 'Plantilla del cuento.',
-  },
+  // OJO (US-28): ni el system prompt ni la plantilla del cuento se siembran. El system es **por
+  // idioma** y vive en el código (`INSTRUCCION_SEGURIDAD` de prompts.ts, ES/EN, con las reglas del
+  // prompt maestro). La plantilla por defecto también vive en código (`buildStoryPrompt`), que SÍ
+  // respeta `prompt.story.params` (longitud), intereses, tono y formato. Ambos siguen siendo
+  // configurables vía `AppSetting` (`prompt.story.system`/`prompt.story.template`) si un adulto los
+  // define, pero NO se siembra un default: un `prompt.story.template` fijo pisaba la longitud
+  // (hardcodeaba "4 a 6 frases") e ignoraba los params (US-18/US-36).
   {
     key: 'prompt.activity.system',
     value:
@@ -38,15 +33,15 @@ const SETTINGS: { key: string; value: string; descripcion: string }[] = [
     descripcion: 'Plantilla de actividades.',
   },
   { key: 'story.maxTokens', value: '800', descripcion: 'Límite de longitud del cuento.' },
-  { key: 'story.temperature', value: '0.8', descripcion: 'Creatividad del LLM (0-1).' },
+  { key: 'story.temperature', value: '0.7', descripcion: 'Creatividad del LLM (0-1).' },
   {
     // Parámetros configurables del cuento (US-26+): longitud, rima y lista de formatos
     // de la que se elige uno AL AZAR en cada generación (variación dinámica). Si la
     // clave falta o es inválida, se usa el comportamiento por defecto (sin bloque).
     key: 'prompt.story.params',
     value: JSON.stringify({
-      palabrasMin: 50,
-      palabrasMax: 120,
+      palabrasMin: 150,
+      palabrasMax: 200,
       rima: false,
       formatos: ['cuento', 'fabula', 'poema'],
     }),
