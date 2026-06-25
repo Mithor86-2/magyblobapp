@@ -527,3 +527,19 @@ pendientes).
   `devDependencies`. La narración (ElevenLabs) queda fuera del E2E mock (límite: sin clave no se sirve).
 - Detalle del cómo y gotchas: [planes/fase-6.md](planes/fase-6.md), [estrategia-pruebas.md](estrategia-pruebas.md),
   [lecciones-aprendidas.md](lecciones-aprendidas.md).
+
+---
+
+## Git hooks de calidad con Husky (US-36 · 2026-06-24)
+
+- **Arquitectura "rápido en commit / completo en push":** `pre-commit` = `lint-staged` (solo lo
+  _staged_, segundos); `pre-push` = `pnpm check` (gate completo). Razón: el commit no debe penalizar
+  con todo el monorepo, y el push es el último punto antes de que el código salga del equipo.
+- **Qué NO va en hooks:** integración (`test:integration`) y E2E (`test:e2e`) necesitan Docker → se
+  quedan en CI. Meterlos en un hook lo haría lento y frágil (coherente con "suites con Docker fuera
+  del gate diario").
+- **Por qué no `build` en pre-commit (vs. la propuesta inicial revisada):** el gate valida tipos con
+  `tsc --noEmit` (`typecheck`), no con `build` (que solo aplica al backend, escribe `dist/` y copia
+  Prisma). El pre-push usa el gate canónico `pnpm check`, no comandos ad hoc.
+- **CHANGELOG/versión:** es tooling de repo sin CHANGELOG raíz; se registra en el del **backend** y se
+  bumpea backend+raíz (mismo criterio que SonarJS, US-31).
