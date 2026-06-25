@@ -616,3 +616,12 @@ Dos hallazgos más:
 - **Solución:** forzar el DSN vacío en el script: `EXPO_PUBLIC_SENTRY_DSN= ... expo export ...`. Una var
   de entorno ya definida (aunque vacía) tiene **prioridad** sobre el `.env` de Expo (dotenv no la pisa),
   y `getSentryDsn()` trata la cadena en blanco como ausente → Sentry desactivado en el E2E.
+
+### La `release` de Sentry sale de `app.json`, no de `package.json`
+
+- **Síntoma:** el `release` que etiqueta los eventos (`Constants.expoConfig?.version`) leía `0.0.0`
+  porque `app.json` tenía esa versión, aunque `packages/app/package.json` iba por `0.16.0`.
+- **Causa:** `expo-constants` expone la versión de **`app.json`** (`expo.version`), que es independiente
+  del `version` del `package.json`. El gate (SemVer + CHANGELOG) solo tocaba `package.json`.
+- **Solución:** mantener **ambos en sync** (`app.json` `expo.version` = `package.json` `version`) y
+  subir los dos en cada cierre de feature del app. Si no, la release del dashboard queda desfasada.

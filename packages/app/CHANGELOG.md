@@ -19,6 +19,26 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.17.0] - 2026-06-25
+
+### Added
+
+- **Sentry: `release` y `debug` (extensión US-40).** Los eventos se etiquetan con la versión del app
+  (`magyblob-app@<versión>`, vía `expo-constants`) para agruparlos por release, y en desarrollo Sentry
+  arranca con `debug` activo (logs de verificación). Se añade `expo-constants` y se alinea la `version`
+  de `app.json` con la del paquete.
+- **Disparador de prueba dev-only de Sentry.** Botón en la zona parental, visible solo bajo `__DEV__`,
+  que envía un error de prueba para verificar la tubería de extremo a extremo (no se renderiza en
+  producción).
+
+### Changed
+
+- **Sentry: política de PII «proteger al niño, permitir al adulto» (US-40).** El `beforeSend` ahora
+  **redacta el nombre del niño** del perfil activo (`[child]`) en mensajes, excepciones y breadcrumbs
+  —el dato del menor nunca sale, incluido el que pueda venir dentro de un cuento generado—, y **deja de
+  redactar los correos** del adulto administrador (puede salir como dato de diagnóstico). El store
+  registra el nombre del perfil activo en Sentry al elegir/cambiar/cerrar perfil y al rehidratar.
+
 ## [0.16.0] - 2026-06-25
 
 ### Added
