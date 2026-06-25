@@ -67,4 +67,11 @@ describe('MockProvider', () => {
     });
     expect(actividades.every((a) => a.categoria === 'musica')).toBe(true);
   });
+
+  it('genera las actividades en inglés cuando el perfil es en', async () => {
+    const actividades = await provider.recommendActivities({ perfil: perfil('en'), cantidad: 2 });
+    expect(actividades).toHaveLength(2);
+    expect(actividades[0]!.titulo).toContain('activity #');
+    expect(actividades[0]!.descripcion).toContain('play and learn at home');
+  });
 });
