@@ -52,7 +52,7 @@ pnpm --filter @magyblob/app e2e:install   # una vez: descarga Chromium y WebKit
 pnpm --filter @magyblob/app test:e2e
 ```
 
-**Multinavegador (US-36).** El E2E de app recorre el mismo flujo en **tres `projects`** de Playwright:
+**Multinavegador (US-37).** El E2E de app recorre el mismo flujo en **tres `projects`** de Playwright:
 `chromium` (baseline), `mobile-chrome` (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y
 `mobile-safari` (iPhone 13, motor **WebKit** = el de iOS). **Reporting rico**: HTML
 (`playwright-report/`), JSON (`test-results/results.json`) y line; ante fallo se conservan

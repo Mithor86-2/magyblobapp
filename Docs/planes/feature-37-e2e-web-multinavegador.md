@@ -34,7 +34,7 @@ Estado de partida:
 
 ## Historias cubiertas
 
-- [US-36 — E2E web multinavegador (Playwright)](../historias-usuario/epic-f-plataforma.md#us-36) · Could (Mejoras).
+- [US-37 — E2E web multinavegador (Playwright)](../historias-usuario/epic-f-plataforma.md#us-37) · Could (Mejoras).
 
 ## Tareas
 

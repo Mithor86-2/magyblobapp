@@ -528,7 +528,7 @@ pendientes).
 - Detalle del cómo y gotchas: [planes/fase-6.md](planes/fase-6.md), [estrategia-pruebas.md](estrategia-pruebas.md),
   [lecciones-aprendidas.md](lecciones-aprendidas.md).
 
-## E2E web multinavegador y reporting (Feature 37 · 2026-06-24 · app v0.12.0 · US-36)
+## E2E web multinavegador y reporting (Feature 37 · 2026-06-24 · app v0.12.0 · US-37)
 
 Rama `feature/37-e2e-web-multinavegador` (worktree desde `develop`). Amplía el E2E de la app (US-32)
 sin tocar runtime: solo la config y los scripts de la suite Playwright de `packages/app`.

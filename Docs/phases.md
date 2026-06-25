@@ -347,7 +347,7 @@ se abra). Algunas parten de algo ya existente (se indica).
       pulsaciones (Query Priority de Testing Library). `Icon` queda fuera (lucide-react-native no
       importa bajo Vitest; se mockea). Entorno `node` por defecto (test de `http` intacto); cada test
       de componente usa `@vitest-environment jsdom`. Solo app; `pnpm check` verde (126 backend + 41 app).
-- [x] ✅ **E2E web multinavegador y reporting** (US-36, app v0.12.0, rama
+- [x] ✅ **E2E web multinavegador y reporting** (US-37, app v0.12.0, rama
       `feature/37-e2e-web-multinavegador` desde `develop`). Amplía el E2E de la app (Playwright sobre
       el export web de Expo, US-32) a **tres `projects`**: `chromium` (baseline), `mobile-chrome`
       (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y `mobile-safari` (iPhone 13, motor

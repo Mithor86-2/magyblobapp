@@ -21,11 +21,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [0.12.0] - 2026-06-24
 
-E2E web multinavegador y reporting rico con Playwright (US-36).
+E2E web multinavegador y reporting rico con Playwright (US-37).
 
 ### Added
 
-- E2E web **multinavegador** y **reporting rico** (US-36): el E2E de la app con Playwright sobre el
+- E2E web **multinavegador** y **reporting rico** (US-37): el E2E de la app con Playwright sobre el
   export web de Expo se ejecuta ahora en tres `projects` —`chromium` (baseline), `mobile-chrome`
   (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y `mobile-safari` (iPhone 13, motor
   WebKit = el de iOS)— con reporting HTML (`playwright-report`), JSON (`test-results/results.json`)

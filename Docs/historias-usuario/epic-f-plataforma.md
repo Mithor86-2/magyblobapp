@@ -1,7 +1,7 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-36**. Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-37**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -398,7 +398,7 @@ de longitud/rima/formato, temperatura, modelo, cantidad de actividades) y la res
 - (No-funcional) Dado el cambio, Entonces es **solo backend**, no añade dependencias ni red, y la
   generación sigue funcionando igual (el log es un efecto lateral, no altera el resultado).
 
-## US-36 — E2E web multinavegador (Playwright) · Could (Mejoras)
+## US-37 — E2E web multinavegador (Playwright) · Could (Mejoras)
 
 Como **desarrollador/evaluador del proyecto** quiero que la prueba **E2E web** de la app (Playwright
 sobre el **export web de Expo**) se ejecute en **varios navegadores** y produzca un **reporting rico**

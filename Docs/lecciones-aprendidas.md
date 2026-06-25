@@ -404,7 +404,7 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
   del `tsconfig` para que el typecheck no arrastre `@playwright/test`). Suites con Docker
   (`integration-db`, `e2e`) van en configs Vitest aparte y fuera del `pnpm test` del gate.
 
-## Feature 37 — E2E web multinavegador (US-36)
+## Feature 37 — E2E web multinavegador (US-37)
 
 ### `trace: 'on-first-retry'` no captura nada sin reintentos
 
