@@ -5,6 +5,7 @@ packages:
 allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
+  '@sentry/cli': true
   # Dependencias nativas transitivas de @testcontainers/postgresql para conexión
   # SSH/gRPC a un Docker remoto; con Docker local no se usan, así que no se compilan.
   cpu-features: false

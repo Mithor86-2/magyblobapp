@@ -620,3 +620,27 @@ app (Playwright sobre el export web de Expo, US-32/US-37) **en flujos**, no en m
 - **Cumplimiento intacto:** suite aparte (no entra en `pnpm check` ni en el arranque reproducible),
   modo `mock`, dependencias solo de desarrollo. La ejecución real requiere Docker + binarios y la
   verifica el usuario (`pnpm --filter @magyblob/app test:e2e`).
+
+## Monitorización de errores/crashes con Sentry (Feature 42 · 2026-06-25 · app v0.15.0 · US-40)
+
+Rama `feature/42-sentry-monitorizacion-errores` desde `develop`. Integra `@sentry/react-native` en la
+app Expo. Partió de un `npx @sentry/wizard` que falló en la instalación.
+
+- **Desviación de cumplimiento consciente (C-12), no camino conforme:** Sentry transmite informes de
+  error/crash a un tercero (sentry.io), rompiendo C-2 (cero SDKs de terceros) y C-5 (datos no salen) e
+  incompatible con Apple Kids. Se asume para el TFM, al estilo de C-5 (cloud) y C-11 (ElevenLabs).
+- **Activación condicional al DSN como mitigación central:** sin `EXPO_PUBLIC_SENTRY_DSN` no se llama a
+  `Sentry.init`, así que el modo por defecto, el desarrollo y los E2E **no envían nada** (siguen
+  conformes y reproducibles, US-06). El DSN es una **clave pública de ingesta** (no secreto), por eso
+  puede ir en `EXPO_PUBLIC_*`; vive en `.env` local (gitignored), no en `.env.example`.
+- **Minimización por diseño:** `sendDefaultPii: false`; un `beforeSend` puro elimina `user`, `request`,
+  `server_name` y el **nombre del dispositivo** (suele incluir el nombre de la persona) y **redacta
+  correos**; **sin Session Replay** (no se graba la sesión de un niño) ni `setUser`; sin performance
+  tracing. Se descartó la recomendación de "session replay" del material de referencia por incompatible
+  con una app infantil.
+- **Sin ADR propio:** se sigue el precedente de C-11 (US + fila de cumplimiento); la decisión marco de
+  privacidad ya vive en ADR 0002.
+- **Solo a nivel JS (no nativo):** el prebuild que disparó el wizard (`expo prebuild` → `ios/`,
+  `expo-build-properties`, scripts `expo run:*`) falló en `EXConstants` (fricción `expo-constants` +
+  monorepo pnpm, ajena a Sentry) y se **revirtió**; el repo es CNG (`/ios` gitignored). Sentry funciona
+  en Expo Go y web sin build nativo. Capturar crashes nativos con symbolication queda para otra rama.
