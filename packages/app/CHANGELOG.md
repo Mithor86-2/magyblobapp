@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Andamiaje del **E2E nativo de la app** con **Maestro** sobre iOS Simulator y Android Emulator
+  (US-35): nivel complementario al E2E web de Playwright (US-32) para validar el flujo del MVP en las
+  plataformas nativas, incluyendo lo que solo existe en nativo (audio `expo-audio`, voz `expo-speech`,
+  navegación nativa). Dependencias solo de desarrollo/CI, modo `mock` por defecto. Pendiente de
+  implementación.
+
 ### Changed
 
 ### Deprecated
