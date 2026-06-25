@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { correoUnico } from './_correo';
 
 /**
  * E2E de onboarding sobre Expo web contra el backend real (mock): la persona
@@ -6,7 +7,7 @@ import { expect, test } from '@playwright/test';
  * genera un cuento. Se localiza por rol/nombre accesible (coherente con US-30),
  * no por estructura ni estilos.
  */
-test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ page }) => {
+test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ page }, testInfo) => {
   await page.goto('/');
 
   // Bienvenida
@@ -27,7 +28,7 @@ test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ pa
   await expect(campos).toHaveCount(3);
   await campos.nth(0).fill('Ana');
   await campos.nth(1).fill('García');
-  await campos.nth(2).fill('ana.app.e2e@example.com');
+  await campos.nth(2).fill(correoUnico(testInfo));
   await page.getByRole('button', { name: 'Madre' }).click();
   await page.getByRole('button', { name: 'Acepto', exact: true }).click();
   await page.getByRole('button', { name: 'Aceptar y continuar' }).click();

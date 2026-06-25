@@ -19,6 +19,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.14.1] - 2026-06-24
+
+Corrige el E2E web al combinar multinavegador (US-37) con la cobertura de actividades/historial
+(US-39).
+
+### Fixed
+
+- **E2E web inestable con varios `projects`**: el backend E2E (Postgres efímero) persiste estado
+  durante toda la corrida, y los specs reutilizaban un email fijo para el alta del adulto; al
+  repetirse el alta entre tests y navegadores fallaba con "email ya registrado" y el onboarding no
+  avanzaba (timeout esperando "Crear nuevo perfil"). Ahora cada test se da de alta con un email único
+  derivado de `project` + título (`packages/app/e2e/_correo.ts`), de modo que las N tests × M
+  navegadores no colisionan (US-37, US-39).
+
 ## [0.14.0] - 2026-06-24
 
 Cobertura E2E web de actividades e historial con Playwright (US-39).

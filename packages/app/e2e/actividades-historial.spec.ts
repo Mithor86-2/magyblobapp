@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { correoUnico } from './_correo';
 
 /**
  * E2E de **actividades** e **historial** sobre Expo web contra el backend real
@@ -15,7 +16,9 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Cada test de Playwright arranca con un contexto/página nuevos, así que el
  * onboarding se rehace dentro del propio test (el helper de abajo). El backend
- * persiste estado entre tests, por eso se usa un email/nombre propios de este spec.
+ * persiste estado entre tests y navegadores, por eso cada test se da de alta con un
+ * email único (`correoUnico`, ver `_correo.ts`) y así no choca con "email ya
+ * registrado".
  */
 
 /** Nombre del niño usado en este spec; aparece en el título del cuento del mock. */
@@ -28,7 +31,7 @@ const TITULO_CUENTO = new RegExp(`${NOMBRE_NINO} y la aventura de animales`);
  * perfil → generar cuento) hasta dejar la app con perfil activo y un cuento ya
  * generado. Reutiliza el mismo patrón que `onboarding.spec.ts` sin tocarlo.
  */
-async function completarOnboarding(page: Page): Promise<void> {
+async function completarOnboarding(page: Page, correo: string): Promise<void> {
   await page.goto('/');
 
   // Bienvenida
@@ -49,8 +52,9 @@ async function completarOnboarding(page: Page): Promise<void> {
   await expect(campos).toHaveCount(3);
   await campos.nth(0).fill('Marta');
   await campos.nth(1).fill('López');
-  // Email propio de este spec para no chocar con el de onboarding.spec.ts.
-  await campos.nth(2).fill('marta.actividades.e2e@example.com');
+  // Email único por test (ver `_correo.ts`): el backend persiste entre tests y
+  // navegadores, así que un email fijo chocaría con "email ya registrado".
+  await campos.nth(2).fill(correo);
   await page.getByRole('button', { name: 'Madre' }).click();
   await page.getByRole('button', { name: 'Acepto', exact: true }).click();
   await page.getByRole('button', { name: 'Aceptar y continuar' }).click();
@@ -75,8 +79,10 @@ async function completarOnboarding(page: Page): Promise<void> {
   await expect(page.getByText(new RegExp(NOMBRE_NINO)).first()).toBeVisible();
 }
 
-test('actividades: generar recomendadas y marcar una como realizada', async ({ page }) => {
-  await completarOnboarding(page);
+test('actividades: generar recomendadas y marcar una como realizada', async ({
+  page,
+}, testInfo) => {
+  await completarOnboarding(page, correoUnico(testInfo));
 
   // Ir a la pestaña "Actividades"
   await page.getByText('Actividades', { exact: true }).first().click();
@@ -100,8 +106,8 @@ test('actividades: generar recomendadas y marcar una como realizada', async ({ p
   await expect(page.getByText('¡Hecha!').first()).toBeVisible();
 });
 
-test('historial: el cuento generado aparece en "Cuentos mágicos"', async ({ page }) => {
-  await completarOnboarding(page);
+test('historial: el cuento generado aparece en "Cuentos mágicos"', async ({ page }, testInfo) => {
+  await completarOnboarding(page, correoUnico(testInfo));
 
   // Ir a la pestaña "Historial"
   await page.getByText('Historial', { exact: true }).first().click();
