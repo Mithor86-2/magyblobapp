@@ -28,6 +28,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm coverage
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: coverage-report
+          path: |
+            packages/backend/coverage/
+            packages/app/coverage/
+          retention-days: 7
+          if-no-files-found: ignore
 
   # Integración de persistencia (Prisma ↔ Postgres real) + E2E del backend por
   # HTTP. Ambas usan Testcontainers; ubuntu-latest trae Docker disponible.
