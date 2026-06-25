@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- E2E web **multinavegador** y **reporting rico** (US-36): el E2E de la app con Playwright sobre el
+  export web de Expo se ejecutará en `chromium` (baseline), `mobile-chrome` (Pixel 5, viewport móvil
+  _portrait_) y `mobile-safari` (iPhone 13, motor WebKit = el de iOS), con informe HTML + JSON + line
+  y, ante fallo, captura/vídeo/traza. Valida el **export web**, no la app nativa. _(Andamiaje de
+  seguimiento; implementación pendiente — ver [plan](../../Docs/planes/feature-37-e2e-web-multinavegador.md).)_
+
 ### Changed
 
 ### Deprecated
