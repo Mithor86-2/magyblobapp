@@ -426,6 +426,19 @@ se abra). Algunas parten de algo ya existente (se indica).
       `expo-build-properties`) falló en `EXConstants` (pnpm) y se **revirtió**: US-40 queda solo a nivel
       JS (Expo Go/web). Solo app; `pnpm check` verde (192 backend + 66 app).
 
+- [x] ✅ **E2E nativo de la app con Maestro, ejecutado en simulador** (US-38, app v0.16.0 / raíz v0.23.0,
+      rama `feature/38-e2e-nativo-maestro` desde `develop`, worktree). Complementa (no sustituye) al E2E
+      web de Playwright: añade el flow nativo del happy path (`packages/app/.maestro/onboarding.yaml`,
+      bienvenida → puerta parental → alta → perfil → cuento → **narración nativa** → actividades →
+      historial) + `testID` aditivos + ADR 0005 (Maestro vs Detox) + esqueleto de CI en job separado
+      (`e2e-native.yml`, fuera del gate de PR). **Ejecutado y verde en iOS Simulator** (iPhone 17 Pro,
+      iOS 26.4, **Expo Go**, Maestro 2.6.1), incluida la narración (`expo-speech`, no requiere dev
+      build). Verificarlo destapó **7 correcciones** del flow (puerta parental por texto —el `testID` de
+      un `<Text>` no se expone en iOS—, cierre de teclado por toque, `scrollUntilVisible`+`centerElement`,
+      `extendedWaitUntil`, pestañas por regex, asserts de subcadena por regex, sin `clearState` en Expo
+      Go) y un ajuste de entorno (backend en mock real, cloud off). Pendiente: Android (paridad). Solo
+      app + docs; `pnpm check` verde (192 backend + 66 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
