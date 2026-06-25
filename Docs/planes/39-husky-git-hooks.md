@@ -59,20 +59,23 @@ SonarJS/coverage).
 
 ## Tareas
 
-- [ ] ❌ **T1 · Instalar dependencias.** `husky` y `lint-staged` como `devDependency` raíz
-      (`pnpm add -D -w husky lint-staged`); `pnpm exec husky init`.
-- [ ] ❌ **T2 · Configurar `prepare`.** Verificar/ajustar `"prepare": "husky"` en
-      [../../package.json](../../package.json) raíz.
-- [ ] ❌ **T3 · Hook `pre-commit`.** `.husky/pre-commit` → `pnpm exec lint-staged` (sin shebang).
-- [ ] ❌ **T4 · Config `lint-staged`.** Bloque en el `package.json` raíz con ESLint acotado al backend
-      y Prettier a todo (ver nota técnica).
-- [ ] ❌ **T5 · Hook `pre-push`.** `.husky/pre-push` → `pnpm check` con mensaje claro y `exit 1` si falla.
-- [ ] ❌ **T6 · Verificar.** Commit de prueba (lint-staged corre y autofixea) y push de prueba (gate);
-      forzar un fallo (lint roto / test roto) y comprobar que **aborta**; confirmar que `--no-verify`
-      salta. Sin warnings de deprecación de Husky.
-- [ ] ❌ **T7 · Docs.** Documentar qué corre cada hook en [../estrategia-pruebas.md](../estrategia-pruebas.md)
-      (y, si aplica, una entrada en [../lecciones-aprendidas.md](../lecciones-aprendidas.md)). Anotar
-      `## [Unreleased]` (tooling de desarrollo) y cierre con la skill **cerrar-feature**.
+- [x] ✅ **T1 · Instalar dependencias.** `husky@^9.1.7` y `lint-staged@^17` como `devDependency` raíz
+      (`pnpm add -D -w`); `pnpm exec husky init` (crea `.husky/`, `core.hooksPath=.husky/_` y `prepare`).
+- [x] ✅ **T2 · Configurar `prepare`.** `"prepare": "husky"` presente en
+      [../../package.json](../../package.json) raíz (lo añadió `husky init`).
+- [x] ✅ **T3 · Hook `pre-commit`.** `.husky/pre-commit` → `pnpm exec lint-staged` (sin shebang).
+- [x] ✅ **T4 · Config `lint-staged`.** Bloque en el `package.json` raíz: `eslint --fix --no-warn-ignored` + Prettier en `packages/backend/**/*.ts`, Prettier en `packages/app/**/*.{ts,tsx}` y en
+      `*.{js,mjs,cjs,json,md,yml,yaml}`. El `--no-warn-ignored` evita que un fichero ignorado por ESLint
+      rompa el hook.
+- [x] ✅ **T5 · Hook `pre-push`.** `.husky/pre-push` → `pnpm check` con mensaje y `exit 1` si falla.
+- [x] ✅ **T6 · Verificar.** Commit limpio → `lint-staged` corre y pasa. Fichero con error de lint
+      (`no-unused-vars`) → el commit **se bloquea** (`pre-commit script failed code 1`); `--no-verify`
+      lo salta. `pre-push` ejecuta `pnpm check` → **verde** (backend 139 + app 41 tests). Sin warnings
+      de deprecación de Husky.
+- [x] ✅ **T7 · Docs.** Sección "Git hooks locales (Husky)" en
+      [../estrategia-pruebas.md](../estrategia-pruebas.md) y entrada `## [Unreleased] → Added` en
+      [../../packages/backend/CHANGELOG.md](../../packages/backend/CHANGELOG.md). Pendiente: cierre con
+      la skill **cerrar-feature** (versión SemVer, changelog fechado, pruebas al usuario, Git Flow finish).
 
 ## Verificación / DoD
 

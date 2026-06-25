@@ -9,6 +9,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Git hooks de calidad con Husky + lint-staged (US-36): `pre-commit` corre `lint-staged` (ESLint
+  `--fix` en el backend + Prettier sobre lo _staged_) y `pre-push` corre el gate completo
+  `pnpm check`. Integración y E2E siguen solo en CI. Dependencias solo de desarrollo.
+
 ### Changed
 
 ### Deprecated
