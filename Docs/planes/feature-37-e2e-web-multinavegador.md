@@ -70,15 +70,17 @@ Estado de partida:
 
 ### Fase 5 — Gate y cierre
 
-- 🔄 Verificar el gate: `pnpm typecheck`, `pnpm lint`, `pnpm format:check` y los unitarios del app
-  (`pnpm --filter @magyblob/app test`) en verde. _(El `pnpm test` completo incluye el backend, que
-  no es parte de esta feature; los pasos individuales relevantes se corrieron en verde.)_
+- ✅ Verificar el gate: `pnpm check` (typecheck + lint + format:check + test) en verde, exit 0
+  (139 backend + 41 app). _(El E2E con Docker queda fuera del gate, como `test:e2e`; se verifica aparte.)_
 - ❌ Verificar que el **E2E sigue verde** (al menos `chromium`; idealmente los tres proyectos con
   Docker y `e2e:install`). _(Requiere Docker/Testcontainers y binarios de navegador → verificación
   del usuario; ver Riesgos.)_
-- 🔄 Actualizar docs (CHANGELOG de `@magyblob/app`, tracking docs) y cerrar con **cerrar-feature**
-  (SemVer + CHANGELOG versionado + Git Flow, con confirmación explícita antes del `finish`).
-  _(CHANGELOG actualizado; SemVer/versionado y cierre quedan para `cerrar-feature`.)_
+- ✅ Actualizar docs (CHANGELOG de `@magyblob/app`, `phases.md`, `memory.md`,
+  `lecciones-aprendidas.md`, `estrategia-pruebas.md`, este plan).
+- ✅ Versionado SemVer (minor): app `0.11.0 → 0.12.0`, raíz `0.18.0 → 0.19.0`; CHANGELOG de
+  `@magyblob/app` movido a `## [0.12.0] - 2026-06-24` con `## [Unreleased]` vacío.
+- ❌ Cierre con Git Flow (`git flow feature finish`): **pendiente de confirmación explícita del
+  usuario** tras sus pruebas con Docker/navegadores.
 
 ## Riesgos / pendientes
 

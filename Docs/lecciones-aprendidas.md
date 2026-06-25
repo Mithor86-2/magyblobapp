@@ -403,3 +403,23 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Solución:** `exclude: ['e2e/**', '**/dist/**']` en `vitest.config.ts` de la app (y excluir `e2e`
   del `tsconfig` para que el typecheck no arrastre `@playwright/test`). Suites con Docker
   (`integration-db`, `e2e`) van en configs Vitest aparte y fuera del `pnpm test` del gate.
+
+## Feature 37 — E2E web multinavegador (US-36)
+
+### `trace: 'on-first-retry'` no captura nada sin reintentos
+
+- **Síntoma:** al configurar trazas/vídeo para depurar fallos del E2E, no se generaba ningún artefacto
+  pese a fallar un test en local.
+- **Causa:** `on-first-retry` solo captura **en el reintento**; con `workers: 1` y `retries: 0` (el
+  default en local, sin `CI`) no hay reintento, así que nunca se conserva nada.
+- **Solución:** usar `*-on-failure` (`screenshot: 'only-on-failure'`, `video`/`trace:
+'retain-on-failure'`), que conserva la evidencia del primer (y único) intento. `retries: 1` se
+  activa solo en CI (`retries: process.env.CI ? 1 : 0`).
+
+### `mobile-safari` no arranca sin el binario de WebKit
+
+- **Síntoma:** añadido el project `mobile-safari` (`iPhone 13`), Playwright fallaba al lanzarlo porque
+  no encontraba el ejecutable del navegador.
+- **Causa:** `e2e:install` instalaba solo `chromium`; `mobile-safari` corre sobre **WebKit**.
+- **Solución:** `playwright install chromium webkit` en el script `e2e:install`. (`mobile-chrome` no
+  añade binario: reusa el mismo Chromium; solo cambia el viewport.)
