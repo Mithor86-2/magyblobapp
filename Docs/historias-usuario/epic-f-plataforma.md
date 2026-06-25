@@ -2,7 +2,7 @@
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
-**US-37**. Volver al [índice](README.md).
+**US-37**, **US-39**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -528,3 +528,43 @@ desarrollo); ver [estrategia-pruebas.md](../estrategia-pruebas.md) y [cumplimien
   comando local.
 - (No-funcional) Dadas las dependencias añadidas (`@vitest/coverage-v8`), Cuando se instalan, Entonces
   son **solo de desarrollo** y no introducen red ni SDKs de terceros en runtime.
+
+## US-39 — E2E de actividades e historial (Playwright) · Could (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero que el E2E web de la app (introducido en
+[US-32](#us-32)) cubra también el recorrido de **actividades recomendadas** y del **historial de
+cuentos**, para tener confianza de que esos dos flujos clave de la zona infantil funcionan de punta a
+punta en un navegador real —no solo con tests de componente—.
+
+**Contexto.** El E2E de la app con Playwright (US-32, [`onboarding.spec.ts`](../../packages/app/e2e/onboarding.spec.ts))
+recorre el onboarding completo (bienvenida → puerta parental → alta del adulto → crear perfil →
+generar cuento) sobre Expo web contra el backend real en modo `mock`. Pero las **actividades**
+(US-09/US-10) y el **historial** (US-08) hoy solo tienen pruebas **unitarias/de componente** (US-30),
+sin un recorrido end-to-end en navegador. Esta historia **extiende** la cobertura E2E web a esos dos
+flujos, reutilizando el mismo patrón de onboarding para llegar al estado con perfil + cuento generado.
+Valida el **export web** de la app (no la app nativa); el recorrido nativo queda fuera de alcance.
+Localiza por **rol/etiqueta accesible** (coherente con US-30/US-32), corre en modo `mock` (contenido
+determinista del [`MockProvider`](../../packages/backend/src/infrastructure/ai/MockProvider.ts)),
+respeta [cumplimiento-menores.md](../cumplimiento-menores.md) (sin red ni IA externa ni SDKs de
+terceros en runtime) y no añade pasos ocultos al arranque reproducible ([US-06](#us-06)). **Solo
+pruebas de la app** (no toca backend ni código de runtime).
+
+**Criterios de aceptación**
+
+- Dada la app Expo servida en **web** con un backend en `mock`, Cuando el E2E recorre el onboarding y
+  llega al estado con **perfil creado + cuento generado**, Entonces puede continuar hacia los flujos de
+  actividades e historial (reutiliza el patrón de [US-32](#us-32)).
+- Dado el estado con perfil, Cuando el E2E navega a la pestaña **Actividades** y genera actividades,
+  Entonces aparecen **actividades recomendadas** (tarjetas con su título/categoría del mock), localizadas
+  por rol/etiqueta accesible (US-09).
+- Dada una actividad sin completar, Cuando el E2E pulsa **"Realizado"** y elige una valoración en
+  estrellas, Entonces la tarjeta refleja el estado **"¡Hecha!"** (efecto observable de US-10).
+- Dado el cuento generado en el onboarding, Cuando el E2E navega a la pestaña **Historial**, Entonces el
+  cuento aparece en la sección **"Cuentos mágicos"** (p. ej. por su título determinista con el nombre del
+  niño), localizado por rol/etiqueta accesible (US-08).
+- Dado el recorrido E2E, Cuando se ejecuta, Entonces valida el **export web** de la app (Chromium), no la
+  app nativa, y todos los localizadores van por **rol/etiqueta/texto accesible** (no por estructura ni
+  estilos).
+- (No-funcional) Dada la prueba, Cuando corre, Entonces usa el modo `mock` por defecto (sin red ni IA
+  externa ni SDKs de terceros en runtime), es **solo de la app** (no toca backend) y no rompe el arranque
+  reproducible ([US-06](#us-06)) ni el spec de onboarding existente.

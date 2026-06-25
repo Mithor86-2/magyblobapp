@@ -467,3 +467,15 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Causa:** `e2e:install` instalaba solo `chromium`; `mobile-safari` corre sobre **WebKit**.
 - **Solución:** `playwright install chromium webkit` en el script `e2e:install`. (`mobile-chrome` no
   añade binario: reusa el mismo Chromium; solo cambia el viewport.)
+
+## Feature 40 — E2E web de actividades e historial (US-39)
+
+### Cada test E2E rehace el onboarding con email/niño propios
+
+- **Síntoma:** un spec nuevo que daba por hecho un perfil ya creado (o que reusaba el email del spec
+  de onboarding) fallaba de forma intermitente o pisaba el estado del otro test.
+- **Causa:** cada test de Playwright arranca con un **contexto/página nuevos** (sin estado de la app),
+  y el **backend en modo `mock` persiste** entre tests; compartir email/niño entre specs cruza estado.
+- **Solución:** cada test rehace el onboarding completo dentro del propio test (helper local
+  `completarOnboarding(page)` que replica el patrón de `onboarding.spec.ts`) y el spec usa **su propio**
+  email (`marta.actividades.e2e@example.com`) y niño (`Lucia`) para no colisionar con otros specs.

@@ -592,3 +592,31 @@ sin tocar runtime: solo la config y los scripts de la suite Playwright de `packa
   Prisma). El pre-push usa el gate canónico `pnpm check`, no comandos ad hoc.
 - **CHANGELOG/versión:** es tooling de repo sin CHANGELOG raíz; se registra en el del **backend** y se
   bumpea backend+raíz (mismo criterio que SonarJS, US-31).
+
+---
+
+## E2E web de actividades e historial (Feature 40 · 2026-06-24 · app v0.14.0 · US-39)
+
+Rama `feature/40-e2e-actividades-historial` (worktree desde `develop`). Amplía la cobertura E2E de la
+app (Playwright sobre el export web de Expo, US-32/US-37) **en flujos**, no en motores: un spec nuevo
+`packages/app/e2e/actividades-historial.spec.ts`, sin tocar runtime.
+
+- **US aparte de la multinavegador (US-37):** son ejes ortogonales. US-37 amplía **dónde** corre el
+  E2E (tres `projects`: Chromium baseline, viewport móvil, motor WebKit); US-39 amplía **qué** flujos
+  se ejercitan (Actividades + Historial, antes solo cubiertos por tests de componente). Separarlas
+  mantiene cada cierre acotado y su trazabilidad limpia.
+- **Onboarding reutilizado como helper, no compartido entre tests:** cada test de Playwright arranca
+  con contexto/página nuevos, así que el recorrido bienvenida → puerta parental → alta → crear perfil
+  → generar cuento se rehace dentro de cada test vía un `completarOnboarding(page)` local que replica
+  el patrón de `onboarding.spec.ts` (no lo importa ni lo modifica).
+- **Email/nombre propios del spec para no chocar con estado persistido:** el backend (mock) persiste
+  entre tests; este spec usa su propio email (`marta.actividades.e2e@example.com`) y niño (`Lucia`)
+  para no colisionar con los de `onboarding.spec.ts`.
+- **Localización por rol/etiqueta accesible y mock determinista:** se afirma sobre contenido estable
+  del `MockProvider` (cuento «{nombre} y la aventura de {tema}», actividades «Actividad de {categoria}
+  nº {n}») y se navega por rol/nombre accesible (coherente con US-30): generar actividades (US-09) →
+  "Realizado" + 3 estrellas → "¡Hecha!" (US-10); y en Historial el cuento bajo "Cuentos mágicos"
+  (US-08).
+- **Cumplimiento intacto:** suite aparte (no entra en `pnpm check` ni en el arranque reproducible),
+  modo `mock`, dependencias solo de desarrollo. La ejecución real requiere Docker + binarios y la
+  verifica el usuario (`pnpm --filter @magyblob/app test:e2e`).
