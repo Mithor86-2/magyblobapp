@@ -221,6 +221,11 @@ sí (levantan un Postgres efímero con Testcontainers y, el E2E de app, Chromium
 En CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) se ejecutan los tres niveles en cada
 push y pull request.
 
+**Git hooks (Husky).** El gate se ejecuta también en local: `pre-commit` pasa `lint-staged` (ESLint
+`--fix` + Prettier) sobre lo _staged_ y `pre-push` corre `pnpm check`. Se activan solos tras
+`pnpm install` (script `prepare`); en una emergencia se saltan con `--no-verify`. Detalle en
+[Docs/estrategia-pruebas.md](Docs/estrategia-pruebas.md#git-hooks-locales-husky).
+
 ## Estructura
 
 ```
