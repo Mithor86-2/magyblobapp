@@ -477,5 +477,23 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Causa:** cada test de Playwright arranca con un **contexto/página nuevos** (sin estado de la app),
   y el **backend en modo `mock` persiste** entre tests; compartir email/niño entre specs cruza estado.
 - **Solución:** cada test rehace el onboarding completo dentro del propio test (helper local
-  `completarOnboarding(page)` que replica el patrón de `onboarding.spec.ts`) y el spec usa **su propio**
-  email (`marta.actividades.e2e@example.com`) y niño (`Lucia`) para no colisionar con otros specs.
+  `completarOnboarding(page)` que replica el patrón de `onboarding.spec.ts`). **Ojo:** un email fijo
+  por spec **no basta** en cuanto hay varios `projects` (ver Feature 41); el email debe ser único por
+  **test**, no por spec.
+
+## Feature 41 — fix E2E web: email único por test (US-37 + US-39)
+
+### Un email fijo por spec choca al correr el E2E en varios navegadores
+
+- **Síntoma:** tras juntar el E2E multinavegador (US-37, 3 `projects`) con los specs de actividades e
+  historial (US-39), los tests fallaban con timeout esperando "Crear nuevo perfil" (el onboarding no
+  avanzaba). En local con un solo navegador no se veía.
+- **Causa:** el backend E2E usa un **Postgres efímero que persiste toda la corrida** (no se resetea
+  entre tests ni entre `projects`). Cada test rehace el alta del adulto, y al usar un **email fijo** el
+  segundo alta en adelante (otro test, u otro navegador) fallaba con "email ya registrado", dejando la
+  app parada antes de la selección de perfil.
+- **Solución:** email **único por test**, derivado de `project` + título del test
+  (`packages/app/e2e/_correo.ts`, `correoUnico(testInfo)`), usado en `onboarding.spec.ts` y
+  `actividades-historial.spec.ts`. Así las N tests × M navegadores no colisionan. Alternativa
+  descartada por YAGNI: resetear/truncar la BD entre tests (endpoint de reset) — más superficie y
+  acoplamiento que un email único.
