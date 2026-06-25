@@ -548,3 +548,29 @@ no **qué cubrían**; no había coverage configurado. La auditoría halló un hu
   job **gate** de `ci.yml` añade `pnpm coverage`. Mismo criterio que integración/E2E (CI-enforced).
 - Detalle: [planes/35-strategic-coverage.md](planes/35-strategic-coverage.md),
   [estrategia-pruebas.md](estrategia-pruebas.md) (sección "Strategic Coverage 100/80/0").
+
+## E2E web multinavegador y reporting (Feature 37 · 2026-06-24 · app v0.13.0 · US-37)
+
+Rama `feature/37-e2e-web-multinavegador` (worktree desde `develop`). Amplía el E2E de la app (US-32)
+sin tocar runtime: solo la config y los scripts de la suite Playwright de `packages/app`.
+
+- **Tres `projects` Playwright (no dos motores nuevos):** `chromium` (`Desktop Chrome`, baseline),
+  `mobile-chrome` (`Pixel 5`) y `mobile-safari` (`iPhone 13`). `mobile-safari` aporta el motor
+  **WebKit** = el de iOS (el valor real de cobertura). `mobile-chrome` **no es un motor nuevo**:
+  reusa el mismo Blink/Chromium; aporta **viewport móvil _portrait_** (que el flujo no se rompa en
+  pantallas estrechas), no un segundo navegador.
+- **Reporting rico (HTML + JSON + line):** `html` → `playwright-report/`, `json` →
+  `test-results/results.json`, más `line` en consola. Permite revisar el fallo fuera de la consola
+  (CI) y consumir el JSON desde otra herramienta.
+- **Captura/vídeo/traza `retain-on-failure`, no `on-first-retry`:** con `workers: 1` y `retries: 0`
+  (local), `on-first-retry` **no captura nada** porque no hay reintento; `*-on-failure` sí conserva
+  la evidencia del primer (y único) intento. `retries: 1` se activa **solo en CI**
+  (`process.env.CI ? 1 : 0`).
+- **`e2e:install` instala `chromium webkit`:** `mobile-safari` necesita el binario de WebKit; sin él
+  ese project no arranca. Los artefactos (`playwright-report/`, `test-results/`) se ignoran en
+  `.gitignore`.
+- **Cumplimiento intacto:** suite aparte (no entra en `pnpm check` ni en el arranque reproducible),
+  modo `mock`, dependencias solo de desarrollo. La ejecución real de los tres proyectos requiere
+  Docker + binarios y la verifica el usuario (`pnpm --filter @magyblob/app test:e2e`).
+- **Pendiente (cierre con el usuario):** estrategia de coste en CI (solo `chromium` en el gate de PR,
+  `mobile-*` en nightly por `--project`) — documentación/CI, no implementada aún.

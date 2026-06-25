@@ -24,7 +24,7 @@ los criterios del DoD) y del gate del [CLAUDE.md](../CLAUDE.md). Origen: US-32 (
 | **Integración (rutas)**        | Endpoints HTTP con dobles in-memory (`app.inject`)          | No (sin BD)                    | `packages/backend/test/routes/*.test.ts`                        | Vitest (`pnpm test`)                         |
 | **Integración (persistencia)** | Los `Prisma*Repository` contra **Postgres real**            | Sí (Postgres)                  | `packages/backend/test/integration-db/*.test.ts`                | Vitest + Testcontainers (`test:integration`) |
 | **E2E backend**                | Servidor real por **HTTP real** + Postgres real (modo mock) | Sí (Postgres, HTTP)            | `packages/backend/test/e2e/*.e2e.test.ts`                       | Vitest + Testcontainers (`test:e2e`)         |
-| **E2E app**                    | App Expo web en navegador contra el backend real (mock)     | Sí (navegador, HTTP, Postgres) | `packages/app/e2e/*.spec.ts`                                    | Playwright + Chromium (`test:e2e`)           |
+| **E2E app**                    | App Expo web en navegador contra el backend real (mock)     | Sí (navegador, HTTP, Postgres) | `packages/app/e2e/*.spec.ts`                                    | Playwright, 3 navegadores (`test:e2e`)       |
 
 **Principio de cumplimiento.** Todas las pruebas corren con `AI_PROVIDER=mock`: sin red, sin IA
 externa ni SDKs de terceros (ver [cumplimiento-menores.md](cumplimiento-menores.md)). Las
@@ -47,10 +47,17 @@ pnpm --filter @magyblob/backend test:integration
 # E2E de backend (servidor real por HTTP + Postgres real, mock) — requiere Docker
 pnpm --filter @magyblob/backend test:e2e
 
-# E2E de app (Playwright sobre Expo web contra backend real mock) — requiere Docker + navegador
-pnpm --filter @magyblob/app e2e:install   # una vez: descarga Chromium
+# E2E de app (Playwright sobre Expo web contra backend real mock) — requiere Docker + navegadores
+pnpm --filter @magyblob/app e2e:install   # una vez: descarga Chromium y WebKit
 pnpm --filter @magyblob/app test:e2e
 ```
+
+**Multinavegador (US-37).** El E2E de app recorre el mismo flujo en **tres `projects`** de Playwright:
+`chromium` (baseline), `mobile-chrome` (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y
+`mobile-safari` (iPhone 13, motor **WebKit** = el de iOS). **Reporting rico**: HTML
+(`playwright-report/`), JSON (`test-results/results.json`) y line; ante fallo se conservan
+captura/vídeo/traza (`*-on-failure`). `retries: 1` solo en CI. Filtrar un navegador concreto:
+`test:e2e -- --project=chromium`.
 
 **Por qué la integración y el E2E van aparte del `pnpm test`.** Necesitan Docker (Testcontainers
 levanta `postgres:16-alpine`), así que se aíslan en sus propias configuraciones de Vitest
