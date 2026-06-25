@@ -2,7 +2,7 @@
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
-**US-37**, **US-39**, **US-40**. Volver al [índice](README.md).
+**US-37**, **US-38**, **US-39**, **US-40**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -528,6 +528,43 @@ desarrollo); ver [estrategia-pruebas.md](../estrategia-pruebas.md) y [cumplimien
   comando local.
 - (No-funcional) Dadas las dependencias añadidas (`@vitest/coverage-v8`), Cuando se instalan, Entonces
   son **solo de desarrollo** y no introducen red ni SDKs de terceros en runtime.
+
+## US-38 — E2E nativo de la app en simuladores (iOS/Android) con Maestro · Could (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero pruebas end-to-end de la app **nativa**
+ejecutadas sobre el **iOS Simulator** y el **Android Emulator**, para validar el flujo real del MVP
+en las plataformas objetivo —incluyendo lo que solo existe en nativo (audio `expo-audio`, lectura
+en voz alta `expo-speech`, navegación nativa)— y no solo sobre el export web.
+
+**Contexto.** El E2E actual ([US-32](#us-32)) recorre la app con **Playwright** sobre el export web
+de Expo (`react-native-web`); eso valida la lógica de pantallas pero **no** es la app nativa.
+Playwright no maneja el iOS Simulator (la emulación de viewport ni siquiera está disponible sobre el
+protocolo de inspección de iOS) y su soporte Android es experimental/web-WebView. Esta historia
+añade un **nivel complementario, no sustituto**. Decisión de herramienta: **Maestro** frente a
+Detox por **YAGNI** (setup mínimo, _flows_ en YAML, integra con Expo dev/development build); Detox se
+descarta por mayor coste de configuración. Se justifica en un **ADR**.
+
+**Criterios de aceptación**
+
+- Dada la app construida para desarrollo (Expo) y el backend en modo `mock`, Cuando se ejecuta el
+  _flow_ de Maestro sobre el **iOS Simulator**, Entonces recorre onboarding → crear perfil → generar
+  cuento → narrarlo, localizando elementos por **identificador/etiqueta accesible** (no por
+  estructura).
+- Dado el mismo _flow_ sobre el **Android Emulator**, Entonces completa el recorrido con el mismo
+  resultado (**paridad de plataformas**).
+- Dada una capacidad **solo nativa** (`expo-speech`/`expo-audio`), Cuando el _flow_ la ejercita,
+  Entonces se verifica un **efecto observable** que el E2E web no puede cubrir, dejando explícita la
+  cobertura aportada.
+- Dada la herramienta, Cuando se consulta la documentación, Entonces
+  [estrategia-pruebas.md](../estrategia-pruebas.md) describe **cuándo aplica E2E nativo (Maestro) vs
+  E2E web (Playwright)**, cómo ejecutarlo en local (simulador/emulador), y la decisión queda en un
+  **ADR**.
+- (CI, opcional) Dado el coste de levantar simuladores, Cuando se define el pipeline, Entonces el
+  E2E nativo corre en un **job separado** (nightly/manual), **no** en el gate de cada PR, y su
+  omisión en PR queda **documentada** para no dar falsa sensación de cobertura.
+- (No-funcional) Dadas las nuevas dependencias, Cuando se ejecutan, Entonces son **solo de
+  desarrollo/CI**, modo `mock` por defecto (sin red ni IA externa ni SDKs de terceros en runtime) y
+  **no** alteran el arranque reproducible ([US-06](#us-06)).
 
 ## US-39 — E2E de actividades e historial (Playwright) · Could (Mejoras)
 

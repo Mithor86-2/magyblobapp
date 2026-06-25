@@ -19,6 +19,42 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.16.0] - 2026-06-25
+
+### Added
+
+- **E2E nativo de la app** con **Maestro** (US-38), nivel complementario —no sustituto— del E2E web
+  de Playwright (US-32/US-37/US-39) para validar el flujo del MVP en las plataformas nativas
+  (incluyendo lo que solo existe en nativo: audio `expo-audio`, voz `expo-speech`, navegación nativa).
+  Incluye:
+  - **Flow** [`.maestro/onboarding.yaml`](.maestro/onboarding.yaml) del happy path (bienvenida →
+    puerta parental → alta → consentimiento → crear perfil → generar cuento mock → narración →
+    actividades → historial), con selectores alineados con el E2E web. La **puerta parental** (opción
+    múltiple, suma aleatoria) se resuelve leyendo la pregunta por **texto** (`copyTextFrom` + regex),
+    calculando la suma con `evalScript` y tocando el chip resultante.
+  - **`testID`** aditivos para selectores estables en nativo: `parental-pregunta` (reto de la puerta
+    parental) y `alta-nombre`/`alta-apellidos`/`alta-email` (campos del alta del adulto). No alteran
+    el render ni los textos visibles y no afectan a los E2E web (que van por rol/nombre accesible).
+  - **ADR 0005** (Maestro vs Detox, decisión por YAGNI) y la sección «E2E web vs E2E nativo» en
+    `Docs/estrategia-pruebas.md`.
+  - **Esqueleto de CI** [`.github/workflows/e2e-native.yml`](../../.github/workflows/e2e-native.yml)
+    en job separado (`workflow_dispatch` + `schedule`), **fuera** del gate de PR por el coste de
+    simuladores.
+
+  **Validado en iOS Simulator** (iPhone 17 Pro, iOS 26.4, **Expo Go**, Maestro 2.6.1): pasada completa
+  en verde, incluida la narración nativa (`expo-speech` degrada a la voz del dispositivo, que Expo Go
+  incluye → no requiere development build). Dependencias solo de desarrollo/CI, modo `mock` por defecto.
+  La ejecución determinista requiere el backend en mock real (proveedor cloud desactivado).
+
+### Fixed
+
+- **7 correcciones del flow Maestro halladas al ejecutarlo en iOS** (selectores/timing): puerta
+  parental por texto (el `testID` de un `<Text>` no se expone como `id` en iOS), cierre de teclado
+  tocando el título (`hideKeyboard` falla en iOS), `scrollUntilVisible` + `centerElement` en chips e
+  interés (quedaban bajo el footer fijo), `extendedWaitUntil` tras navegación, selectores de pestaña por
+  regex (`'Cuentos, tab.*'`) y asserts de subcadena por regex (`'.*Mateo.*'`). Adaptado a Expo Go
+  (`appId host.exp.Exponent`, sin `clearState` por su dev menu; variante development build documentada).
+
 ## [0.15.0] - 2026-06-25
 
 Monitorización de errores y crashes con Sentry, como desviación de cumplimiento asumida (US-40, C-12).

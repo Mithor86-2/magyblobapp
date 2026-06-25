@@ -8,6 +8,8 @@ interface TextFieldProps {
   placeholder?: string;
   keyboardType?: 'default' | 'email-address';
   autoCapitalize?: 'none' | 'words' | 'sentences';
+  /** Identificador estable para selección en E2E nativo (Maestro). Opcional y aditivo. */
+  testID?: string;
 }
 
 /**
@@ -21,11 +23,13 @@ export function TextField({
   placeholder,
   keyboardType = 'default',
   autoCapitalize = 'sentences',
+  testID,
 }: TextFieldProps) {
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        testID={testID}
         style={styles.input}
         value={value}
         onChangeText={onChangeText}

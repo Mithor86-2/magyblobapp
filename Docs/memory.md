@@ -644,3 +644,26 @@ app Expo. Partió de un `npx @sentry/wizard` que falló en la instalación.
   `expo-build-properties`, scripts `expo run:*`) falló en `EXConstants` (fricción `expo-constants` +
   monorepo pnpm, ajena a Sentry) y se **revirtió**; el repo es CNG (`/ios` gitignored). Sentry funciona
   en Expo Go y web sin build nativo. Capturar crashes nativos con symbolication queda para otra rama.
+
+## E2E nativo con Maestro, ejecutado en simulador (Feature 38 · 2026-06-25 · app v0.16.0 · US-38)
+
+Rama `feature/38-e2e-nativo-maestro` (worktree). El andamiaje (flow, `testID`, ADR 0005, CI) ya existía;
+esta sesión **ejecutó el flow por primera vez en un simulador real** y lo dejó verde de extremo a extremo.
+
+- **Validado en Expo Go, no en development build:** el plan/ADR asumían un dev build (por
+  `expo-audio`/`expo-speech`), pero `expo-speech` **degrada a la voz nativa que Expo Go incluye**, así
+  que la narración se valida en Expo Go sin dev build (el prebuild además falla en este monorepo, US-40).
+  Decisión: el flow se adapta a Expo Go (`appId host.exp.Exponent`) y documenta la variante dev build.
+- **Sin `clearState` en Expo Go:** borra los datos de Expo Go y dispara su **dev menu**, que tapa la UI;
+  el flow arranca con sesión limpia y sin `launchApp`. En dev build `clearState` sí es fiable.
+- **Dos hechos de Maestro/iOS que obligaron a 7 correcciones de selectores/timing** (detalle en
+  [lecciones-aprendidas.md](lecciones-aprendidas.md)): el `testID` de un `<Text>` **no** se expone como
+  `id` en iOS (sí los de `TextInput`/botones) → puerta parental por **texto**; y Maestro hace **match
+  completo** del texto → pestañas y nombres por **regex** (`'Cuentos, tab.*'`, `'.*Mateo.*'`). Además:
+  `hideKeyboard` falla (cerrar tocando el título), y los chips bajo el footer fijo necesitan
+  `scrollUntilVisible` + `centerElement`.
+- **Mock real ≠ `AI_PROVIDER=mock`:** por US-14 el HotSwap sirve **cloud** si `ai.cloud` está activa y hay
+  API key en env, aunque se levante con `up:mock`. Para E2E determinista, backend con **claves cloud
+  vacías** (o `ai.cloud` off); `.env`/BD intactos.
+- **Worktree con git roto:** se había registrado con ruta `Master IA` (espacio) en vez de `Master-IA`
+  (guion); `git worktree repair "<ruta-correcta>"` lo arregla.

@@ -498,6 +498,79 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
   descartada por YAGNI: resetear/truncar la BD entre tests (endpoint de reset) — más superficie y
   acoplamiento que un email único.
 
+## Feature 38 — E2E nativo con Maestro (US-38)
+
+### La puerta parental no es un input: es opción múltiple (chips), y el reto es aleatorio
+
+- **Síntoma:** el primer boceto del flow Maestro asumía que la puerta parental era un campo de texto
+  ("introduce la suma y pulsa validar"). No existe tal campo, así que el flow no habría podido pasar
+  la puerta.
+- **Causa:** `components/ParentalGate.tsx` pinta el reto como `Text` "a + b = ?" y ofrece **tres
+  `SelectableChip`** (la respuesta + dos distractores contiguos, **barajados**); el reto se regenera
+  en cada apertura y tras cada fallo. La respuesta no se escribe: se **toca el chip** correcto.
+- **Solución (Maestro):** leer la pregunta por **texto** (regex) y tocar el chip calculado:
+  1. `copyTextFrom: { text: '\d+ \+ \d+ = \?' }` — **NO** por `testID` (ver corrección iOS abajo).
+  2. `evalScript: ${output.ops = maestro.copiedText.match(/\d+/g)}` y
+     `evalScript: ${output.suma = String(Number(output.ops[0]) + Number(output.ops[1]))}`.
+  3. `tapOn: ${output.suma}` — el chip muestra el número como texto visible.
+     Es el mismo enfoque que el E2E web (`onboarding.spec.ts` lee la pregunta por regex y hace clic en el
+     botón con ese número), traducido al DSL de Maestro (`copyTextFrom` + `evalScript` + `output`).
+- **`testID` aditivos:** se añadió una prop `testID` opcional a `TextField` y se etiquetaron los 3
+  campos del alta (`alta-nombre`/`alta-apellidos`/`alta-email`) y el reto parental
+  (`parental-pregunta`). Son **aditivos** y no rompen los E2E web (que van por rol/nombre accesible).
+  Aviso: en iOS los de **`TextInput` sí** se exponen como `id`, pero el del **`Text`**
+  (`parental-pregunta`) **no** (ver corrección iOS abajo) — por eso el reto se localiza por texto.
+- **Gotcha de re-ejecución:** el backend persiste el alta; re-correr el flow con el **mismo email**
+  falla por "email ya registrado" (igual que el E2E web, Feature 41). Cambia el email del flow o
+  limpia la BD entre corridas.
+
+### Ejecución real en iOS Simulator (Expo Go) el 2026-06-25: 7 correcciones del flow
+
+Al correr por fin el flow sobre el iPhone 17 Pro (iOS 26.4, **Expo Go**, Maestro 2.6.1) salió **verde
+de extremo a extremo** (incluida la narración nativa), pero solo tras 7 ajustes. Todos derivan de dos
+hechos de Maestro/iOS: **(a)** el `testID` de un `<Text>` RN **no** se expone como `id` en la jerarquía
+de iOS (sí los de `TextInput`/botones), y **(b)** Maestro hace **match COMPLETO** del texto de un
+elemento (no subcadena).
+
+1. **Puerta parental por texto, no por `testID`:** `copyTextFrom: { id: parental-pregunta }` falla
+   ("Element not found") → `copyTextFrom: { text: '\d+ \+ \d+ = \?' }`.
+2. **`hideKeyboard` falla en iOS** ("Couldn't hide the keyboard") → cerrar teclado **tocando el título**
+   (`tapOn: 'Crea tu cuenta'`); funciona porque el `ScrollView` usa `keyboardShouldPersistTaps="handled"`.
+   Sin cerrarlo, el campo Email (el más bajo) queda tapado y su texto se concatena en Apellidos.
+3. **Chips bajo el footer fijo:** Parentesco/consentimiento e interés quedan tras el footer o fuera de
+   pantalla; `tapOn` no hace scroll y el tap lo intercepta el footer → `scrollUntilVisible` con
+   **`centerElement: true`** (sin centrar, el elemento queda al borde y no se selecciona).
+4. **Asserts tras navegación:** `assertVisible` (timeout corto) falla por la transición + red →
+   `extendedWaitUntil` con `timeout` explícito en cada punto de navegación.
+5. **Pestañas por regex:** iOS expone la pestaña como `"Cuentos, tab, 3 of 4"`; con match completo,
+   `tapOn: 'Cuentos'` no casa → `tapOn: 'Cuentos, tab.*'` (ídem Actividades/Historial).
+6. **Asserts de subcadena por regex:** `assertVisible: 'Mateo'` no casa con "Mateo y la aventura…" ni con
+   "Había una vez Mateo…" (match completo) → `'.*Mateo.*'` / `'.*Había una vez.*'`.
+7. **Sin `clearState` en Expo Go:** `launchApp.clearState` borra los datos de Expo Go y dispara su
+   **dev menu**, que tapa la UI; el flow arranca con sesión limpia y **sin** `launchApp`. (En un
+   **development build** `clearState` sí es fiable y no hay dev menu.)
+
+Dos hallazgos más:
+
+- **Entorno mock ≠ `AI_PROVIDER=mock`:** por US-14 el `HotSwapAIProvider` sirve con **cloud** si la
+  `AppSetting ai.cloud` está activa y hay API key en env (mi `.env` tenía Groq), **aunque** se levante
+  con `up:mock`. El cuento dejaba de ser determinista y el flow fallaba. Para E2E determinista: backend
+  con **claves cloud vacías** (recreé el contenedor con `GROQ_API_KEY= … docker compose up -d backend`)
+  o `ai.cloud` desactivada. El `.env`/BD no se tocan; `pnpm up:mock` restaura el cloud.
+- **La narración nativa funciona en Expo Go:** `expo-speech` degrada a la voz nativa del dispositivo y
+  Expo Go la incluye, así que **no hace falta development build** para validar este flow (el comentario
+  original del flow que lo exigía era conservador).
+
+### Worktree con enlace git roto (ruta con espacio vs guion)
+
+- **Síntoma:** `git status`/commit dentro de `.claude/worktrees/e2e-nativo-maestro` falla con
+  `fatal: not a git repository`; `git worktree list` marca la entrada **`prunable`**.
+- **Causa:** el worktree se registró con la ruta `…/Master IA/…` (con **espacio**) mientras que la real
+  es `…/Master-IA/…` (con **guion**); ambas referencias (`.git` del worktree y `gitdir` del repo) apuntan
+  a la ruta inexistente.
+- **Solución:** desde el repo principal, `git worktree repair "<ruta-correcta-del-worktree>"` reescribe
+  ambas referencias. Tras reparar, el worktree vuelve a operar con git con normalidad.
+
 ## Feature 42 — Sentry (monitorización de errores, US-40)
 
 ### El wizard de Sentry falla la instalación en pnpm 11 (`ERR_PNPM_IGNORED_BUILDS`)
