@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateChildProfile } from '../../src/application/use-cases/CreateChildProfile.js';
 import { RegisterGuardian } from '../../src/application/use-cases/RegisterGuardian.js';
+import { Guardian } from '../../src/domain/entities/Guardian.js';
 import { DomainError } from '../../src/domain/errors.js';
 import type { CreateChildProfileInput } from '../../src/application/dto.js';
 import {
@@ -78,6 +79,23 @@ describe('CreateChildProfile', () => {
     await expect(useCase.execute(input({ guardianId: 'inexistente' }))).rejects.toThrow(
       DomainError,
     );
+  });
+
+  it('rechaza si el adulto no ha otorgado el consentimiento', async () => {
+    // Adulto persistido directamente con consentimiento NO dado (RegisterGuardian lo
+    // exige, así que lo construimos a mano) para ejercitar la guarda del caso de uso.
+    const sinConsentir = new Guardian({
+      id: 'g-sin',
+      nombre: 'Beto',
+      apellidos: 'Ruiz',
+      email: 'beto@example.com',
+      parentesco: 'padre',
+      consentimiento: { dado: false, fecha: new Date('2026-06-10T12:00:00.000Z'), version: 'v1' },
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    await guardians.save(sinConsentir);
+    await expect(useCase.execute(input({ guardianId: 'g-sin' }))).rejects.toThrow(DomainError);
+    expect(profiles.items.size).toBe(0);
   });
 
   it('rechaza un interés fuera del vocabulario', async () => {

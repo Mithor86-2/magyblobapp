@@ -100,6 +100,37 @@ describe('createAIProvider', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it('recomienda actividades vía proveedor cloud cuando está activo (hot-swap)', async () => {
+    const fetchSpy = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    actividades: [
+                      { categoria: 'arte', titulo: 'Collage', descripcion: 'Recorta y pega.' },
+                    ],
+                  }),
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    const ai = createAIProvider(config({ aiProvider: 'mock', cloudApiKeys: { groq: 'sk-test' } }), {
+      settings: settingsConCloud(
+        JSON.stringify({ activo: true, target: 'groq', model: 'llama-3.3-70b-versatile' }),
+      ),
+    });
+    const acts = await ai.recommendActivities({ ...story, cantidad: 1 });
+    expect(acts[0]).toMatchObject({ categoria: 'arte', titulo: 'Collage', proveedor: 'cloud' });
+    expect(fetchSpy).toHaveBeenCalled();
+  });
+
   it('si el proveedor cloud falla, cae a mock (no propaga el error)', async () => {
     const fetchSpy = vi.fn(async () => new Response('boom', { status: 500 }));
     vi.stubGlobal('fetch', fetchSpy);

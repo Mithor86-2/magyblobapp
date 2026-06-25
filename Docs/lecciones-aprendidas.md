@@ -403,3 +403,24 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
 - **Solución:** `exclude: ['e2e/**', '**/dist/**']` en `vitest.config.ts` de la app (y excluir `e2e`
   del `tsconfig` para que el typecheck no arrastre `@playwright/test`). Suites con Docker
   (`integration-db`, `e2e`) van en configs Vitest aparte y fuera del `pnpm test` del gate.
+
+### Coverage v8: el agregado de un directorio puede fallar aunque cada fichero esté al 100%
+
+- **Síntoma:** con umbral 100% en `src/domain/entities/**`, el coverage fallaba (branches 97.14%)
+  mientras la tabla mostraba `Guardian/Story/Activity/...` todos al 100% en ramas.
+- **Causa:** el _glob_ del umbral agrega **todos** los ficheros del patrón; un fichero olvidado en la
+  vista filtrada (`AuditLog.ts`, branches 50%) arrastraba el agregado. El filtro del `grep` con el que
+  miraba la tabla escondía justo ese fichero.
+- **Solución:** mirar el bloque completo del directorio (sin filtrar) para encontrar el fichero que
+  baja la media, no fiarse del agregado ni de una vista filtrada. Lección general: con umbrales por
+  _glob_, el número que importa es el **agregado del patrón**, no el de cada fichero.
+
+### Strategic Coverage: excluir lo cubierto por otra suite, o el número miente
+
+- **Síntoma:** al medir el coverage del `vitest run` unitario, los repos Prisma y los hooks atados a
+  Expo (`useNarration`) salían a 0% y hundían el global, aunque sí están cubiertos (por
+  `test:integration` / E2E).
+- **Causa:** ese código no lo ejercita la suite unitaria; medirlo ahí es medir la suite equivocada.
+- **Solución:** excluirlos del `coverage.exclude` (igual que el tier INFRASTRUCTURE), **documentando**
+  la exclusión (no es truncado silencioso). El 100% se reserva a los _globs_ CORE; el resto cumple el
+  80% de baseline. El umbral se hace cumplir en CI con `pnpm coverage`, no en el `pnpm check` local.

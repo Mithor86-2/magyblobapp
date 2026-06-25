@@ -12,9 +12,11 @@ concurrency:
 
 jobs:
   # Gate del DoD: typecheck + lint + format:check + tests unitarios. No necesita
-  # Docker (las suites que lo requieren se excluyen del `pnpm test`).
+  # Docker (las suites que lo requieren se excluyen del `pnpm test`). Además hace
+  # cumplir los umbrales de Strategic Coverage por tier (US-35) con `pnpm coverage`:
+  # el `pnpm check` local sigue rápido (sin coverage) y el umbral lo fuerza el CI.
   gate:
-    name: Gate (typecheck + lint + format + unit)
+    name: Gate (typecheck + lint + format + unit + coverage)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +27,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - run: pnpm coverage
 
   # Integración de persistencia (Prisma ↔ Postgres real) + E2E del backend por
   # HTTP. Ambas usan Testcontainers; ubuntu-latest trae Docker disponible.

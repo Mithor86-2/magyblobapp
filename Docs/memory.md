@@ -527,3 +527,24 @@ pendientes).
   `devDependencies`. La narración (ElevenLabs) queda fuera del E2E mock (límite: sin clave no se sirve).
 - Detalle del cómo y gotchas: [planes/fase-6.md](planes/fase-6.md), [estrategia-pruebas.md](estrategia-pruebas.md),
   [lecciones-aprendidas.md](lecciones-aprendidas.md).
+
+## Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0 · 2026-06-24 · US-35)
+
+Rama `feature/35-strategic-coverage` (desde `develop`). El gate verificaba que los tests pasan pero
+no **qué cubrían**; no había coverage configurado. La auditoría halló un hueco CORE real:
+`parseResponse` (saneo de la salida del LLM antes de mostrarla a un niño) **sin test propio**.
+
+- **Por qué tiers y no un % global (decisión con el usuario):** un % global premia código trivial y
+  esconde el crítico —«94% de cobertura es inútil si el 6% crítico falla»—. Se clasifica por _"¿qué
+  pasa si esto falla?"_: **CORE 100%** (pérdida de usuario/incumplimiento), **IMPORTANT 80%**
+  (usuario frustrado), **INFRASTRUCTURE 0%** (TypeScript ya valida → se excluye de medir).
+- **Umbrales por _glob_ en `vitest.config.ts` (provider `v8`):** el 100% se aplica solo a los _globs_
+  CORE; el resto cumple el 80% de baseline. Vitest 2.x soporta thresholds por patrón en el mismo config.
+- **Qué se excluye de la medición (y por qué no es hueco):** además del tier 0%, lo cubierto por
+  **otra suite** —repos Prisma (`test:integration`), ElevenLabs/`useNarration` (atado a nativo Expo,
+  E2E/manual), pantallas (composición visual → E2E onboarding), `Icon` (lucide no carga en Vitest)—.
+  Decisión **deliberada y documentada** (no truncado silencioso), coherente con la guía de TDD.
+- **El umbral lo hace cumplir el CI, no el gate local:** `pnpm check` sigue rápido (sin coverage); el
+  job **gate** de `ci.yml` añade `pnpm coverage`. Mismo criterio que integración/E2E (CI-enforced).
+- Detalle: [planes/35-strategic-coverage.md](planes/35-strategic-coverage.md),
+  [estrategia-pruebas.md](estrategia-pruebas.md) (sección "Strategic Coverage 100/80/0").
