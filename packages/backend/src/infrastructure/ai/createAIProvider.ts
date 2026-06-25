@@ -58,6 +58,7 @@ function buildBase(
       model: config.ollamaModel,
       timeoutMs: config.aiTimeoutMs,
       settings,
+      logger,
     });
     return new FallbackProvider(ollama, mock, logger);
   }
@@ -106,6 +107,7 @@ class HotSwapAIProvider implements AIProvider {
       model: cfg.model,
       timeoutMs: this.config.aiTimeoutMs,
       settings: this.settings,
+      logger: this.logger,
     });
     return new FallbackProvider(cloud, this.mock, this.logger);
   }

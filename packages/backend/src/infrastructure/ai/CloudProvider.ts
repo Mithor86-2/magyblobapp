@@ -7,6 +7,8 @@ import type {
 } from '../../domain/ai/AIProvider.js';
 import type { SettingsRepository } from '../../domain/repositories/SettingsRepository.js';
 import { CATEGORIAS } from '../../domain/vocabulary.js';
+import { type AiOp, logPromptEnviado, logRespuestaLlm } from './aiLog.js';
+import type { AILogger } from './FallbackProvider.js';
 import { parseActivities, parseStory } from './parseResponse.js';
 import {
   AI_SETTING_KEYS,
@@ -30,6 +32,8 @@ export interface CloudProviderOptions {
   fetchFn?: typeof fetch;
   /** Config en caliente (AppSetting): plantillas y temperatura. Opcional. */
   settings?: SettingsRepository;
+  /** Logger para observabilidad de prompts/respuestas (US-34). Opcional. */
+  logger?: AILogger;
 }
 
 const TEMPERATURA_DEFECTO = 0.8;
@@ -53,6 +57,7 @@ export class CloudProvider implements AIProvider {
   private readonly timeoutMs: number;
   private readonly fetchFn: typeof fetch;
   private readonly settings?: SettingsRepository;
+  private readonly logger?: AILogger;
 
   constructor(options: CloudProviderOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
@@ -61,6 +66,7 @@ export class CloudProvider implements AIProvider {
     this.timeoutMs = options.timeoutMs ?? 60_000;
     this.fetchFn = options.fetchFn ?? fetch;
     this.settings = options.settings;
+    this.logger = options.logger;
   }
 
   async generateStory(input: GenerateStoryInput): Promise<GeneratedStory> {
@@ -72,6 +78,14 @@ export class CloudProvider implements AIProvider {
     const partes = buildStoryPrompt(input, overrides, params);
     const data = await this.chat<{ titulo?: unknown; cuerpo?: unknown }>(
       conInstruccionJson(partes, INSTRUCCION_JSON_CUENTO),
+      {
+        op: 'generateStory',
+        config: {
+          plantilla: overrides.template ? 'appsetting' : 'defecto',
+          systemFuente: overrides.system ? 'appsetting' : 'defecto',
+          params: params ?? null,
+        },
+      },
     );
     return parseStory(data, 'CloudProvider', 'cloud');
   }
@@ -91,6 +105,15 @@ export class CloudProvider implements AIProvider {
     const partes = buildActivitiesPrompt(input, overrides);
     const data = await this.chat<{ actividades?: unknown }>(
       conInstruccionJson(partes, instruccionJsonActividades()),
+      {
+        op: 'recommendActivities',
+        config: {
+          plantilla: overrides.template ? 'appsetting' : 'defecto',
+          systemFuente: overrides.system ? 'appsetting' : 'defecto',
+          cantidad: input.cantidad,
+          categoria: input.categoria ?? null,
+        },
+      },
     );
     return parseActivities(data, input.cantidad, 'CloudProvider', 'cloud');
   }
@@ -115,8 +138,20 @@ export class CloudProvider implements AIProvider {
     return Number.isFinite(parsed) ? parsed : TEMPERATURA_DEFECTO;
   }
 
-  private async chat<T>(partes: PromptParts): Promise<T> {
+  private async chat<T>(
+    partes: PromptParts,
+    logCtx: { op: AiOp; config: Record<string, unknown> },
+  ): Promise<T> {
     const temperature = await this.leerTemperatura();
+    logPromptEnviado(this.logger, {
+      op: logCtx.op,
+      proveedor: 'cloud',
+      model: this.model,
+      temperature,
+      config: logCtx.config,
+      system: partes.system,
+      prompt: partes.prompt,
+    });
     const res = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -145,7 +180,9 @@ export class CloudProvider implements AIProvider {
       throw new Error('Respuesta del proveedor cloud sin contenido de mensaje.');
     }
     try {
-      return JSON.parse(content) as T;
+      const data = JSON.parse(content) as T;
+      logRespuestaLlm(this.logger, logCtx.op, 'cloud', data);
+      return data;
     } catch {
       throw new Error('El proveedor cloud devolvió un JSON no parseable.');
     }
