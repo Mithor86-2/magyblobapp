@@ -27,4 +27,16 @@ describe('Idioma', () => {
   it('rechaza idiomas no soportados', () => {
     expect(() => Idioma.create('fr')).toThrow(DomainError);
   });
+
+  it('equals compara por valor', () => {
+    expect(Idioma.create('es').equals(Idioma.create('es'))).toBe(true);
+    expect(Idioma.create('es').equals(Idioma.create('en'))).toBe(false);
+  });
+});
+
+describe('Edad.equals', () => {
+  it('compara por valor', () => {
+    expect(Edad.create(4).equals(Edad.create(4))).toBe(true);
+    expect(Edad.create(4).equals(Edad.create(5))).toBe(false);
+  });
 });

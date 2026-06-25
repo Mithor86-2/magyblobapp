@@ -19,7 +19,7 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
-## [0.12.0] - 2026-06-24
+## [0.13.0] - 2026-06-24
 
 E2E web multinavegador y reporting rico con Playwright (US-37).
 
@@ -33,6 +33,22 @@ E2E web multinavegador y reporting rico con Playwright (US-37).
   solo en CI. El script `e2e:install` instala los binarios de **chromium y webkit**, y el
   `.gitignore` ignora `playwright-report/` y `test-results/`. Valida el **export web**, no la app
   nativa; dependencias solo de desarrollo y suite aparte (no toca el arranque reproducible).
+
+## [0.12.0] - 2026-06-24
+
+Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0, US-35).
+
+### Added
+
+- **Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0, US-35):** umbrales de
+  coverage **por _glob_** en [`vitest.config.ts`](vitest.config.ts) (provider `v8`) — **100%** en el
+  tier CORE (`infrastructure/http`, `hooks/sanitizeForSpeech`) y **80%** de baseline IMPORTANT
+  (componentes, store). El tier INFRASTRUCTURE (tipos, gateways, tokens, navegación) y lo cubierto
+  por E2E/manual (pantallas, `useNarration` atado a nativo, `Icon`) se **excluyen** de la medición.
+  Nuevo script `test:coverage`.
+- Tests del tier CORE que faltaban: `sanitizeForSpeech.test.ts` (saneo de texto para la voz nativa),
+  `useAppStore.test.ts` (sesión/consentimiento + migración v0→v1) y, en `http`, `getBaseUrl` y los
+  caminos de _fallback_ del mapeo de error del backend.
 
 ## [0.11.0] - 2026-06-23
 

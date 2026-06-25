@@ -1,6 +1,6 @@
 {
   "name": "@magyblob/app",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "private": true,
   "description": "App móvil (Expo + Zustand). Slice vertical del HITO 1 (Fase 4).",
   "main": "index.ts",
@@ -11,6 +11,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "e2e:install": "playwright install chromium webkit",
     "test:e2e": "EXPO_PUBLIC_API_URL=http://127.0.0.1:4173 expo export --platform web --clear && playwright test"
   },
@@ -39,6 +40,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "~19.2.2",
+    "@vitest/coverage-v8": "^2.1.9",
     "jsdom": "^29.1.1",
     "react-dom": "19.2.3",
     "react-native-web": "^0.21.2",

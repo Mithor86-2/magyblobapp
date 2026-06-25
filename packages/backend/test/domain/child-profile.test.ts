@@ -30,6 +30,10 @@ describe('ChildProfile', () => {
     expect(() => build({ nombre: '  ' })).toThrow(DomainError);
   });
 
+  it('exige elegir un avatar', () => {
+    expect(() => build({ avatar: '  ' })).toThrow(DomainError);
+  });
+
   it('exige al menos un interés', () => {
     expect(() => build({ intereses: [] })).toThrow(DomainError);
   });
