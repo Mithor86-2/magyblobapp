@@ -80,6 +80,13 @@ arquitectura.
   garantía de no-entrenamiento; (d) la **categoría Kids de Apple** prohíbe transmitir datos a terceros,
   así que este modo es incompatible con esa categoría. Sigue siendo **conmutable en caliente** (poner
   `ai.cloud.activo=false` en la BD restaura el camino conforme local/mock).
+- **Log de prompts de IA a nivel `info` (US-34, 2026-06-23 — desviación asumida).** Para depuración,
+  `OllamaProvider`/`CloudProvider` registran el prompt enviado al LLM (y la respuesta) a nivel `info`;
+  el prompt **incluye el nombre del niño** (PII), así que queda en los logs por defecto. **Rompe C-5**
+  en los logs (no saca datos a un tercero, pero los persiste en consola/ficheros de log). Es una
+  decisión consciente para el TFM; en un despliegue real se bajaría a `debug` (off por defecto) o se
+  redactaría el nombre. El `MockProvider` no construye prompts, así que en el modo por defecto sin IA
+  real no se loguea PII de prompts.
 - **Narración con ElevenLabs (US-22, C-11).** Implementada como motor de narración principal por
   decisión del usuario en el contexto del TFM. A diferencia del modo `cloud` del LLM, **no se puede
   minimizar**: para narrar hay que enviar el cuerpo íntegro del cuento, que contiene el nombre del

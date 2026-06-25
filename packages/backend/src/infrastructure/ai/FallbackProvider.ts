@@ -9,6 +9,8 @@ import type {
 /** Logger mínimo (estructural) para no acoplar la infraestructura a pino. */
 export interface AILogger {
   warn(meta: Record<string, unknown>, msg: string): void;
+  /** Opcional: observabilidad de los prompts/IA (US-34). No todos los consumidores lo aportan. */
+  info?(meta: Record<string, unknown>, msg: string): void;
 }
 
 /**

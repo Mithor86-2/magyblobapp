@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Observabilidad de IA (US-34): `OllamaProvider` y `CloudProvider` registran a nivel `info` (pino) el
+  **prompt enviado** al LLM (system + user), su **configuración resuelta** (plantilla por defecto o de
+  `AppSetting`, `params` de longitud/rima/formato, temperatura, modelo, cantidad/categoría) y la
+  **respuesta cruda** del modelo, para cuentos y actividades. Se extiende `AILogger` con `info`
+  (opcional) y se inyecta el logger en ambos providers. El `MockProvider` no aplica (sin prompts).
+  Nota: el prompt incluye el nombre del niño (PII) — desviación asumida, ver
+  [cumplimiento-menores.md](../../Docs/cumplimiento-menores.md) (C-5).
+
 ### Changed
 
 ### Deprecated
