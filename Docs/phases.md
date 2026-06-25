@@ -394,6 +394,14 @@ se abra). Algunas parten de algo ya existente (se indica).
       del CI hace cumplir (el `pnpm check` local sigue rápido). `pnpm check` + `pnpm coverage` verdes
       (192 backend + 58 app).
 
+- [x] ✅ **Git hooks de calidad con Husky + lint-staged** (US-36, backend v0.16.0 / raíz v0.20.0, rama
+      `feature/39-husky-git-hooks` desde `develop`, worktree). Se automatiza el gate en local:
+      `pre-commit` corre `lint-staged` (ESLint `--fix --no-warn-ignored` en backend + Prettier sobre lo
+      _staged_) y `pre-push` corre `pnpm check`. Integración/E2E **no** van en hooks (Docker → CI).
+      Husky v9 sin shebang ni `chmod` (eliminados en v9.1). `husky`/`lint-staged` como devDependency
+      raíz; activación vía `prepare`. Verificado: commit con error de lint se bloquea, `--no-verify`
+      salta, pre-push ejecuta el gate. `pnpm check` verde (192 backend + 58 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

@@ -404,6 +404,29 @@ develop` para integrar lo ya cerrado. Verificar `git branch --show-current` ante
   del `tsconfig` para que el typecheck no arrastre `@playwright/test`). Suites con Docker
   (`integration-db`, `e2e`) van en configs Vitest aparte y fuera del `pnpm test` del gate.
 
+### Husky v9.1+: los hooks ya no llevan shebang ni `chmod`
+
+- **Síntoma:** muchos tutoriales (y prompts generados) crean `.husky/pre-commit` con
+  `#!/usr/bin/env sh` + `. "$(dirname …)/_/husky.sh"` y un `chmod +x`.
+- **Causa:** eso es de Husky ≤ v9.0. En **v9.1+** el _runner_ inyecta el entorno; incluir el shebang o
+  el _sourcing_ emite un _deprecation warning_, y `husky init` ya deja los hooks operativos
+  (`core.hooksPath=.husky/_`).
+- **Solución:** el hook contiene **solo los comandos**. Nada de shebang ni `chmod`.
+
+### `pnpm add` en la raíz del workspace exige `-w`
+
+- **Síntoma:** `pnpm add -D husky` en la raíz aborta ("Running this command will add the dependency to
+  the workspace root…").
+- **Solución:** `pnpm add -D -w husky lint-staged` (la raíz es un workspace `private`).
+
+### lint-staged + ESLint flat config: un fichero ignorado rompe el hook
+
+- **Síntoma:** ESLint 9 falla con "File ignored…" si lint-staged le pasa un fichero que su `ignores`
+  excluye (la app, generados, configs), abortando el commit por un falso positivo.
+- **Solución:** acotar ESLint a `packages/backend/**/*.ts` en la config de `lint-staged` y añadir
+  `--no-warn-ignored`; Prettier se encarga del resto de extensiones. El lockfile no se toca porque
+  `pnpm-lock.yaml` está en `.prettierignore`.
+
 ### Coverage v8: el agregado de un directorio puede fallar aunque cada fichero esté al 100%
 
 - **Síntoma:** con umbral 100% en `src/domain/entities/**`, el coverage fallaba (branches 97.14%)

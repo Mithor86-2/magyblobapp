@@ -1,8 +1,8 @@
 # Epic F — Plataforma y no-funcionales
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
-**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-37**.
-Volver al [índice](README.md).
+**US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
+**US-37**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -446,6 +446,43 @@ webkit`), no solo Chromium.
   [cumplimiento-menores.md](../cumplimiento-menores.md): modo `mock` por defecto (sin red ni IA
   externa), dependencias **solo de desarrollo**, sin SDKs de terceros en runtime; y **no** añade pasos
   ocultos al arranque reproducible ([US-06](#us-06)) — el E2E sigue siendo una suite aparte.
+
+## US-36 — Git hooks de calidad con Husky + lint-staged · Should (Mejoras)
+
+Como **desarrollador del proyecto** quiero que el gate de calidad se ejecute **automáticamente** en
+los Git hooks (no solo por disciplina manual) para que sea imposible commitear código mal formateado
+o pushear con el gate (`pnpm check`) en rojo, manteniendo el commit rápido y el push completo.
+
+**Contexto.** Hoy la regla "verifica el gate antes de pedir commit o cerrar la rama" es **manual**:
+nada impide un commit con lint/formato roto ni un push con el gate en rojo. Se introduce
+[Husky](https://typicode.github.io/husky/) v9 + [lint-staged](https://github.com/lint-staged/lint-staged)
+con una arquitectura de gates **rápido en commit / completo en push**: `pre-commit` corre `lint-staged`
+sobre los archivos _staged_ (autofix de ESLint en el backend + Prettier), y `pre-push` corre el gate
+canónico `pnpm check` (typecheck + lint + format:check + test). La **integración** (`test:integration`)
+y los **E2E** (`test:e2e`) **no** entran en los hooks: requieren Docker y se quedan en CI (coherente
+con [US-32](#us-32) y [estrategia-pruebas.md](../estrategia-pruebas.md)). Ambas dependencias son
+**solo de desarrollo**: sin runtime, red ni SDKs de terceros (compatible con
+[cumplimiento-menores.md](../cumplimiento-menores.md), igual que SonarJS/coverage). Ver el plan
+[39-husky-git-hooks](../planes/39-husky-git-hooks.md).
+
+**Criterios de aceptación**
+
+- Dado un commit con cambios _staged_, Cuando se ejecuta `git commit`, Entonces el hook `pre-commit`
+  corre `lint-staged` y aplica ESLint (autofix, acotado al backend) y Prettier **solo** a los archivos
+  _staged_, terminando en segundos.
+- Dado un archivo _staged_ que ESLint no puede arreglar (p. ej. import que viola la frontera de capas),
+  Cuando se intenta commitear, Entonces el hook **falla** (`exit ≠ 0`) y el commit se aborta.
+- Dado un `git push`, Cuando se ejecuta, Entonces el hook `pre-push` corre `pnpm check` (typecheck +
+  lint + format:check + test) y, si cualquier paso falla, **aborta el push**.
+- Dado que integración y E2E requieren Docker, Cuando se hace commit o push, Entonces **no** se
+  ejecutan en los hooks (siguen ejecutándose en CI).
+- Dada una situación excepcional, Cuando se necesita saltar los hooks, Entonces `git commit/push
+--no-verify` lo permite (uso puntual, no por defecto).
+- Dado un `pnpm install` en una clonación nueva, Cuando termina, Entonces el script `prepare` deja los
+  hooks activos sin pasos manuales (se comparten vía el repo).
+- (No-funcional) Dadas las dependencias `husky` y `lint-staged`, Cuando se instalan, Entonces son
+  `devDependencies`, no añaden red ni SDKs de terceros en runtime, y Husky v9 no emite avisos de
+  deprecación (hooks sin shebang ni `chmod`).
 
 ## US-35 — Cobertura estratégica por riesgo de negocio (100/80/0) · Should (Mejoras)
 

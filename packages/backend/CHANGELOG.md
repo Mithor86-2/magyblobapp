@@ -19,6 +19,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.16.0] - 2026-06-24
+
+Git hooks de calidad con Husky + lint-staged (US-36).
+
+### Added
+
+- Git hooks de calidad con Husky + lint-staged (US-36): `pre-commit` corre `lint-staged` (ESLint
+  `--fix` en el backend + Prettier sobre lo _staged_) y `pre-push` corre el gate completo
+  `pnpm check`. Integración y E2E siguen solo en CI. Dependencias solo de desarrollo.
+
 ## [0.15.0] - 2026-06-24
 
 Cobertura estratégica por riesgo de negocio (Strategic Coverage 100/80/0, US-35).

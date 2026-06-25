@@ -77,6 +77,23 @@ y `pull_request`, con tres jobs que reproducen exactamente los comandos de arrib
 
 El pipeline **falla** si cualquier job falla: es el DoD hecho cumplir de forma automática.
 
+### Git hooks locales (Husky)
+
+[Husky](https://typicode.github.io/husky/) ejecuta el gate de calidad **automáticamente** en los Git
+hooks, con la regla "rápido en commit / completo en push" (origen: US-36). Se instalan solos tras
+`pnpm install` (script `prepare`); los hooks viven en `.husky/` (versionados).
+
+| Hook         | Qué corre                                                                | Velocidad | Por qué ahí                                               |
+| ------------ | ------------------------------------------------------------------------ | --------- | --------------------------------------------------------- |
+| `pre-commit` | `lint-staged`: ESLint `--fix` (backend) + Prettier sobre **lo _staged_** | segundos  | arregla y formatea solo lo tocado; no recorre el monorepo |
+| `pre-push`   | `pnpm check` (typecheck + lint + format:check + test)                    | ~10-15 s  | el gate completo del DoD antes de que el código salga     |
+
+- **Integración y E2E no van en hooks**: requieren Docker y se quedan en CI (ver tabla de arriba).
+- Saltar puntualmente (uso excepcional): `git commit --no-verify` / `git push --no-verify`.
+- `lint-staged` acota ESLint a `packages/backend/**/*.ts` (el lint raíz ignora la app) y pasa Prettier
+  al resto; su configuración vive en el `package.json` raíz. `husky` y `lint-staged` son
+  `devDependencies` (sin runtime ni red; coherente con [cumplimiento-menores.md](cumplimiento-menores.md)).
+
 ## Strategic Coverage 100/80/0 (US-35)
 
 La cobertura se gobierna por **riesgo de negocio**, no por un porcentaje global: «el 94% de
