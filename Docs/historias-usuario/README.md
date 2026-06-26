@@ -19,7 +19,7 @@ Should = HITO 2 · Could = si hay margen.
 
 | Épica | Documento                                           | Historias                                                                                                                                                                     |
 | ----- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02                                                                                                                                      |
+| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02, US-48                                                                                                                               |
 | B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28                                                                                                                               |
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                                                                                  |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                                                                                         |
@@ -75,6 +75,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-43 | Robustez de red/IA: timeouts y errores | Should    | 6       | http.ts / CreateProfile / Historial | [F](epic-f-plataforma.md#us-43)  |
 | US-44 | Validación de fronteras con Zod        | Should    | Mejoras | parseResponse / settings / http.ts  | [F](epic-f-plataforma.md#us-44)  |
 | US-45 | Sesión autenticada del adulto con JWT  | Should    | 6       | Login / http.ts / rutas backend     | [F](epic-f-plataforma.md#us-45)  |
+| US-48 | Contraseña en el alta y login real     | Should    | Mejoras | Alta / Login                        | [A](epic-a-perfil.md#us-48)      |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

@@ -9,7 +9,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Contraseña en la cuenta del adulto (US-48): puerto de dominio `PasswordHasher` y su adaptador
+  (bcrypt/argon2), campo `passwordHash` en la entidad `Guardian` y en `prisma/schema.prisma` con su
+  migración. `RegisterGuardian` deriva y guarda el hash en el alta. Nuevo campo `password` validado
+  por Zod en `POST /guardians` y `POST /guardians/login`.
+
 ### Changed
+
+- `LoginGuardian` deja de ser identificación ligera por email y **verifica la contraseña** contra el
+  `passwordHash` del `Guardian` (US-48); credencial inválida devuelve un `401` genérico que no
+  distingue email inexistente de contraseña errónea.
 
 ### Deprecated
 
@@ -18,6 +27,9 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+- La contraseña del adulto se almacena solo como hash (bcrypt/argon2) y **nunca** se persiste, se
+  devuelve ni se registra en logs/`AuditLog` (US-48). Revierte la postura "sin contraseña" (C-10).
 
 ## [0.19.0] - 2026-06-26
 

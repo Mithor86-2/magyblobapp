@@ -1,6 +1,6 @@
 # Epic A — Perfil del niño y cuenta del adulto
 
-Historias de la **cuenta del adulto** (**US-16**, **US-19**, **US-20**, **US-21**) y del
+Historias de la **cuenta del adulto** (**US-16**, **US-19**, **US-20**, **US-21**, **US-48**) y del
 **perfil del niño** (**US-01**, **US-02**). Volver al [índice](README.md).
 
 ## US-16 — Registro del adulto y consentimiento · Must
@@ -8,6 +8,9 @@ Historias de la **cuenta del adulto** (**US-16**, **US-19**, **US-20**, **US-21*
 Como **padre/tutor** quiero registrarme (nombre, apellidos, parentesco, email) y dar mi
 consentimiento para poder crear perfiles de mis hijos cumpliendo la ley.
 Ver [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+> **Ampliada por [US-48](#us-48):** el alta también define una **contraseña** que se guarda
+> hasheada (revierte la postura "sin contraseña").
 
 **Criterios de aceptación**
 
@@ -32,10 +35,11 @@ Como **padre/tutor** quiero iniciar sesión en mi cuenta para acceder a mis perf
 la zona de gestión, también si vuelvo o cambio de dispositivo.
 Ver [cumplimiento-menores.md](../cumplimiento-menores.md).
 
-> **Alcance del TFM (decisión 2026-06-12):** el inicio de sesión es una **identificación
-> ligera por email, sin contraseña** ni verificación robusta de edad. La autenticación
-> fuerte (factor de autenticación, sesión con token) queda **fuera del alcance** y se
-> declara como mejora futura. Los criterios reflejan el login ligero implementado.
+> **Alcance del TFM (decisión 2026-06-12, revisada el 2026-06-26):** el login era una
+> **identificación ligera por email, sin contraseña**. **[US-48](#us-48) revierte esa
+> postura**: el login ahora **verifica contraseña** contra el `passwordHash` del `Guardian`.
+> La verificación robusta de edad sigue fuera del alcance. Los criterios de abajo reflejan el
+> login ligero original; los de US-48 los amplían con la comprobación de contraseña.
 
 **Criterios de aceptación**
 
@@ -52,6 +56,44 @@ Ver [cumplimiento-menores.md](../cumplimiento-menores.md).
   **puerta parental** (componente `ParentalGate`), separada de la zona infantil.
 - Dado que cierro sesión, Cuando lo confirmo, Entonces se borra la sesión persistida
   (guardián + perfil activo) y la app vuelve al onboarding.
+
+## US-48 — Contraseña en el alta y login real · Should · Mejoras
+
+Como **padre/tutor** quiero proteger mi cuenta con una **contraseña** para que el inicio
+de sesión verifique mi identidad de verdad y nadie pueda entrar solo con conocer mi email.
+Ver [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+> **Cambio de postura (decisión 2026-06-26):** esta historia **revierte** la decisión
+> declarada de _"identificación ligera por email, sin contraseña"_ (Fase 5.5, criterio C-10
+> de [cumplimiento-menores.md](../cumplimiento-menores.md) y el alcance de **US-19**). El alta
+> ahora guarda un **hash de la contraseña** (bcrypt/argon2, nunca en claro) y el login
+> **verifica la contraseña**, dejando de ser una identificación ligera por email. Amplía
+> **US-16** (alta) y **US-19** (login); toca el caso de uso `LoginGuardian`, la pantalla
+> `LoginScreen` y, en el alta, `RegisterGuardian` / `ConsentScreen`.
+
+**Criterios de aceptación**
+
+- Dado el alta del adulto (US-16), Cuando relleno los datos y **defino una contraseña**,
+  Entonces el `Guardian` se crea con el `passwordHash` derivado (bcrypt/argon2) y **nunca**
+  se persiste ni se devuelve la contraseña en claro.
+- Dada una contraseña que no cumple el mínimo de robustez (longitud mínima), Cuando intento
+  darme de alta, Entonces se rechaza por validación con un mensaje claro y no se crea el
+  `Guardian` (`400`).
+- Dado un `Guardian` registrado con contraseña, Cuando inicio sesión con su **email y la
+  contraseña correcta**, Entonces recupero mi cuenta y accedo a mis perfiles
+  (`POST /guardians/login` → `200`).
+- Dado un email registrado, Cuando inicio sesión con la **contraseña incorrecta**, Entonces
+  se rechaza con un mensaje genérico que **no distingue** entre email inexistente y
+  contraseña errónea (para no filtrar qué emails existen) y no se inicia sesión (`401`).
+- Dado un email **no registrado**, Cuando intento iniciar sesión, Entonces se rechaza con el
+  mismo `401` genérico; un email con **formato inválido** se rechaza por validación (`400`).
+- Dado el email, Cuando se busca la cuenta, Entonces se **normaliza** (recorte + minúsculas),
+  de modo que casa aunque se teclee con mayúsculas o espacios.
+- Dado un inicio de sesión correcto, Cuando ocurre, Entonces se registra un `AuditLog` con
+  `accion=login` y el `guardianId` como actor; **no** se registra la contraseña en ningún log.
+- (Dominio/Aplicación) Dado el caso de uso `LoginGuardian`, Cuando recibe email + contraseña,
+  Entonces compara contra el `passwordHash` mediante el `PasswordHasher` (puerto) sin tocar IO
+  real en el test (repositorio en memoria + hasher de prueba).
 
 ## US-20 — Editar datos de la cuenta del adulto · Should
 
