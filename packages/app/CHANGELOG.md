@@ -9,15 +9,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- **`AppErrorBoundary` con _fallback UI_ propia (US-41).** Componente sobre `Sentry.ErrorBoundary` que, ante
-  un error de render, muestra un aviso amable en español con botón de reintento (en vez de la pantalla en
-  blanco) y reporta a Sentry sin PII del niño. Colocado de forma global y por zona (cuentos, actividades,
-  lectura). Sin `showDialog`/`feedbackIntegration` (C-12).
-- **Breadcrumbs de telemetría del recorrido (US-42).** Helper `telemetry` con _wrappers_ tipados
-  (`navigation`/`api`/`ui`) sobre `Sentry.addBreadcrumb`; instrumentación centralizada en la capa HTTP, la
-  navegación y los _handlers_ de negocio. Solo enums/ids/contadores (sin PII del niño); `maxBreadcrumbs`,
-  `beforeBreadcrumb` y `scrubEvent` extendido a `breadcrumbs[].data` como defensa en profundidad.
-
 ### Changed
 
 ### Deprecated
@@ -27,6 +18,21 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+## [0.19.0] - 2026-06-25
+
+### Added
+
+- **`AppErrorBoundary` con _fallback UI_ propia (US-41).** Componente sobre `Sentry.ErrorBoundary` que, ante
+  un error de render, muestra un aviso amable en español con botón de reintento (en vez de la pantalla en
+  blanco) y reporta a Sentry sin PII del niño. Colocado de forma global y por zona (cuentos, actividades,
+  lectura). Sin `showDialog`/`feedbackIntegration` (C-12). El detalle técnico (mensaje, _component stack_)
+  va a Sentry, nunca a la pantalla.
+- **Breadcrumbs de telemetría del recorrido (US-42).** Helper `telemetry` con _wrappers_ tipados
+  (`navigation`/`api`/`ui`) sobre `Sentry.addBreadcrumb` (vía _sink_ inyectado, no-op sin DSN);
+  instrumentación centralizada en la capa HTTP, la navegación (`onStateChange`) y los _handlers_ de
+  negocio. Solo enums/ids/contadores (sin PII del niño); `maxBreadcrumbs`, `beforeBreadcrumb` y
+  `scrubEvent` extendido a `breadcrumbs[].data` como defensa en profundidad.
 
 ## [0.17.0] - 2026-06-25
 

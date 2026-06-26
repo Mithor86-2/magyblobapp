@@ -450,6 +450,17 @@ se abra). Algunas parten de algo ya existente (se indica).
       **disparador de prueba dev-only** en la zona parental (`__DEV__`). `sentry.ts` pasa a 12 tests
       (100% CORE). Solo app; `pnpm check` verde (192 backend + 70 app).
 
+- [x] ✅ **Observabilidad de errores: ErrorBoundary + breadcrumbs (US-41/US-42)** (app v0.19.0 / raíz
+      v0.26.0, rama `feature/44-observabilidad-errores` desde `develop`). Extiende Sentry (US-40).
+      **US-41:** `AppErrorBoundary` sobre `Sentry.ErrorBoundary` con _fallback UI_ propia
+      (`ErrorFallback`) en español —sin `error.message` ni _stack_—, colocado global y **por zona**
+      (cuentos/actividades/lectura) para degradar sin pantalla en blanco; **sin** `showDialog`/feedback
+      (C-12). **US-42:** breadcrumbs del recorrido con un helper `telemetry` puro (sink inyectado,
+      no-op sin DSN) instrumentando capa HTTP (`api`), navegación (`onStateChange`) y acciones de
+      negocio (`ui`), solo enums/ids/contadores; `sentry.ts` endurecido (`maxBreadcrumbs`,
+      `beforeBreadcrumb` y `scrubEvent` redactan el nombre del niño también en `breadcrumbs[].data`).
+      Solo app; `pnpm check` verde (192 backend + 83 app); `http.ts`/`sentry.ts`/`telemetry.ts` 100%.
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
