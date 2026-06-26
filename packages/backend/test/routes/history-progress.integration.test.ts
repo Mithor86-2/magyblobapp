@@ -55,7 +55,7 @@ describe('Historial y progreso (integración)', () => {
       method: 'POST',
       url: '/stories',
       headers: authHeaders(app),
-      payload: { profileId, tema: 'animales', estilo: 'aventura' },
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'] },
     });
     const storyId = story.json().id as string;
 
@@ -116,7 +116,7 @@ describe('Historial y progreso (integración)', () => {
       method: 'POST',
       url: '/stories',
       headers: authHeaders(app),
-      payload: { profileId, tema: 'animales', estilo: 'aventura' },
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'] },
     });
     await app.inject({
       method: 'POST',

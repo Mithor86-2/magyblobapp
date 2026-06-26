@@ -3,8 +3,10 @@ import type { Categoria, Estilo, ProveedorIa, Tema } from '../vocabulary.js';
 
 export interface GenerateStoryInput {
   perfil: ChildProfile;
-  tema: Tema;
-  estilo: Estilo;
+  /** Temas elegidos (multi-selección, US-47); no vacío por contrato. */
+  temas: Tema[];
+  /** Estilos elegidos (multi-selección, US-47); no vacío por contrato. */
+  estilos: Estilo[];
 }
 
 /** Texto del cuento producido por la IA (el dominio le pone id, estado, etc.). */

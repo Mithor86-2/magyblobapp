@@ -89,8 +89,10 @@ export interface ChildProfile {
 // --- Story ---
 export interface GenerateStoryRequest {
   profileId: string;
-  tema: Tema;
-  estilo: Estilo;
+  /** Temas elegidos (multi-selección, US-47); al menos uno. */
+  temas: Tema[];
+  /** Estilos elegidos (multi-selección, US-47); al menos uno. */
+  estilos: Estilo[];
 }
 
 export interface Story {

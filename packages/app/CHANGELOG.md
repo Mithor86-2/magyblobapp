@@ -22,6 +22,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   «Elegir perfil»); con varios o ninguno va a `SelectProfile`, con perfil activo a `Main` y sin
   sesión a `Welcome`. Migración de persistencia del store a **v3** (el shape persistido incorpora
   `profiles`; el estado previo se descarta y el adulto se identifica una vez).
+- Generador de cuentos con **selección múltiple** de temas y estilos (US-47): los chips de la
+  pantalla `StoryGeneratorScreen` ahora son toggle (varios a la vez); el botón "Generar" se
+  deshabilita y avisa si no hay al menos un tema y un estilo. `api.stories.generate` envía las listas
+  `temas`/`estilos` al backend.
+
+### Changed
+
+- `GenerateStoryRequest` pasa de `tema`/`estilo` (singulares) a `temas: Tema[]`/`estilos: Estilo[]`
+  (US-47). La respuesta del cuento no cambia: el backend devuelve el tema/estilo representativo
+  singular, que la app sigue mostrando igual.
 
 ### Deprecated
 

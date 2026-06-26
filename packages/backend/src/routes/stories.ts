@@ -7,11 +7,14 @@ import { NarrateStory } from '../application/use-cases/NarrateStory.js';
 import { ESTILOS, TEMAS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
+// US-47: tema y estilo son listas de selección múltiple. Vocabulario cerrado por
+// elemento, al menos uno y sin duplicados (la validación fina de duplicados la
+// repite el caso de uso, pero se rechaza ya en frontera).
 const bodySchema = z
   .object({
     profileId: z.string().min(1),
-    tema: z.enum(TEMAS),
-    estilo: z.enum(ESTILOS),
+    temas: z.array(z.enum(TEMAS)).min(1),
+    estilos: z.array(z.enum(ESTILOS)).min(1),
   })
   .strict();
 

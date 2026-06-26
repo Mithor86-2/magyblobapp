@@ -24,8 +24,8 @@ describe('MockProvider', () => {
   it('genera un cuento en español con título y cuerpo no vacíos', async () => {
     const story = await provider.generateStory({
       perfil: perfil('es'),
-      tema: 'animales',
-      estilo: 'aventura',
+      temas: ['animales'],
+      estilos: ['aventura'],
     });
     expect(story.titulo).toContain('Lola');
     expect(story.titulo).toContain('animales');
@@ -36,14 +36,18 @@ describe('MockProvider', () => {
   it('genera el cuento en inglés cuando el perfil es en', async () => {
     const story = await provider.generateStory({
       perfil: perfil('en'),
-      tema: 'espacio',
-      estilo: 'divertido',
+      temas: ['espacio'],
+      estilos: ['divertido'],
     });
     expect(story.cuerpo).toContain('Once upon a time');
   });
 
   it('es determinista: misma entrada, misma salida', async () => {
-    const input = { perfil: perfil('es'), tema: 'magia' as const, estilo: 'educativo' as const };
+    const input = {
+      perfil: perfil('es'),
+      temas: ['magia' as const],
+      estilos: ['educativo' as const],
+    };
     const a = await provider.generateStory(input);
     const b = await provider.generateStory(input);
     expect(a).toEqual(b);

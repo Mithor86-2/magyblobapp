@@ -138,8 +138,8 @@ export class InMemorySettingsRepository implements SettingsRepository {
 export class FakeAIProvider implements AIProvider {
   async generateStory(input: GenerateStoryInput) {
     return {
-      titulo: `Cuento de ${input.perfil.nombre} sobre ${input.tema}`,
-      cuerpo: `Había una vez una historia ${input.estilo} en ${input.perfil.idioma.value}.`,
+      titulo: `Cuento de ${input.perfil.nombre} sobre ${input.temas.join(', ')}`,
+      cuerpo: `Había una vez una historia ${input.estilos.join(', ')} en ${input.perfil.idioma.value}.`,
       proveedor: 'mock' as const,
     };
   }

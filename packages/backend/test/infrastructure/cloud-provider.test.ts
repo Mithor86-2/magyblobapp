@@ -42,8 +42,8 @@ describe('CloudProvider', () => {
     const fetchFn = fakeFetch({ titulo: 'El bosque', cuerpo: 'Un cuento bonito.' });
     const story = await provider(fetchFn).generateStory({
       perfil: perfil(),
-      tema: 'animales',
-      estilo: 'aventura',
+      temas: ['animales'],
+      estilos: ['aventura'],
     });
     expect(story).toEqual({
       titulo: 'El bosque',
@@ -54,7 +54,11 @@ describe('CloudProvider', () => {
 
   it('llama a /chat/completions con Bearer, modelo y response_format json_object', async () => {
     const fetchFn = fakeFetch({ titulo: 'T', cuerpo: 'C' });
-    await provider(fetchFn).generateStory({ perfil: perfil(), tema: 'magia', estilo: 'divertido' });
+    await provider(fetchFn).generateStory({
+      perfil: perfil(),
+      temas: ['magia'],
+      estilos: ['divertido'],
+    });
     const [url, opciones] = (fetchFn as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toBe('https://api.groq.com/openai/v1/chat/completions');
     const init = opciones as RequestInit;
@@ -71,14 +75,22 @@ describe('CloudProvider', () => {
       async () => new Response('boom', { status: 401 }),
     ) as unknown as typeof fetch;
     await expect(
-      provider(fetchFn).generateStory({ perfil: perfil(), tema: 'animales', estilo: 'aventura' }),
+      provider(fetchFn).generateStory({
+        perfil: perfil(),
+        temas: ['animales'],
+        estilos: ['aventura'],
+      }),
     ).rejects.toThrow(/401/);
   });
 
   it('lanza si el cuento llega sin título o cuerpo', async () => {
     const fetchFn = fakeFetch({ titulo: '', cuerpo: '' });
     await expect(
-      provider(fetchFn).generateStory({ perfil: perfil(), tema: 'animales', estilo: 'aventura' }),
+      provider(fetchFn).generateStory({
+        perfil: perfil(),
+        temas: ['animales'],
+        estilos: ['aventura'],
+      }),
     ).rejects.toThrow();
   });
 

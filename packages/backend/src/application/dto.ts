@@ -64,8 +64,10 @@ export interface ListProfilesInput {
 // --- GenerateStory ---
 export interface GenerateStoryRequest {
   profileId: string;
-  tema: string;
-  estilo: string;
+  /** Temas elegidos (multi-selección, US-47); el caso de uso valida vocabulario y no-vacío. */
+  temas: string[];
+  /** Estilos elegidos (multi-selección, US-47); el caso de uso valida vocabulario y no-vacío. */
+  estilos: string[];
 }
 
 export interface StoryOutput {

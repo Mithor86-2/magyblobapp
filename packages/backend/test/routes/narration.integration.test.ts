@@ -54,7 +54,7 @@ describe('GET /stories/:id/narration (integración)', () => {
       method: 'POST',
       url: '/stories',
       headers: authHeaders(app),
-      payload: { profileId, tema: 'animales', estilo: 'aventura' },
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'] },
     });
     return story.json().id as string;
   }
