@@ -19,7 +19,7 @@ import type { RootScreenProps } from '../navigation';
 export const CONSENT_VERSION = '1.0';
 
 export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
-  const setGuardian = useAppStore((s) => s.setGuardian);
+  const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
 
   const [nombre, setNombre] = useState('');
@@ -41,7 +41,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
     if (!parentesco) return;
     setSubmitting(true);
     try {
-      const guardian = await api.guardians.register({
+      const session = await api.guardians.register({
         nombre: nombre.trim(),
         apellidos: apellidos.trim(),
         email: email.trim(),
@@ -49,7 +49,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
         consentimientoAceptado: true,
         consentimientoVersion: CONSENT_VERSION,
       });
-      setGuardian(guardian, CONSENT_VERSION);
+      setSession(session, CONSENT_VERSION);
       navigation.replace('SelectProfile');
     } catch (error) {
       const mensaje =

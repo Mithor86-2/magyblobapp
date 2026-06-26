@@ -19,6 +19,35 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.22.0] - 2026-06-26
+
+### Added
+
+- Sesión autenticada con JWT (US-45): el store persiste `accessToken` y `refreshToken`
+  (además de guardián y perfil), con `setSession`/`setTokens`; el adaptador HTTP adjunta
+  `Authorization: Bearer` en las rutas protegidas y, ante un 401, renueva el access con el
+  refresh (`POST /guardians/refresh`) y reintenta una vez. Nuevo gateway `guardians.refresh`.
+
+### Changed
+
+- `guardians.login` y `guardians.register` devuelven la **sesión** (`GuardianSession`:
+  guardián + tokens); las pantallas de login/alta usan `setSession`. La narración adjunta
+  el Bearer al descargar el audio (ruta protegida) y degrada a voz nativa ante un 401. (US-45)
+- Migración de persistencia del store a **v2**: el estado previo (sin tokens) se descarta y
+  el adulto vuelve a identificarse una vez para obtener la sesión JWT. (US-45)
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+- Ante una sesión inválida/expirada que no puede renovarse, el adaptador HTTP cierra la
+  sesión (`logout`) y la app vuelve al onboarding, en lugar de quedar en un estado sin
+  autorización. Los tokens se guardan solo en el almacenamiento local del dispositivo. (US-45)
+
 ## [0.21.0] - 2026-06-25
 
 ### Added

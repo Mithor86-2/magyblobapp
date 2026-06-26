@@ -1,37 +1,54 @@
 /**
  * Estado global de la app (Zustand).
  *
- * Sesión del guardián (Fase 5.5): se **persiste** (AsyncStorage) el `guardian`
- * completo, la `consentVersion` y el `currentProfile` (perfil activo). Así un
- * adulto que vuelve recupera su sesión y su hijo seleccionado sin volver a
- * identificarse. `guardian` es el ancla del cumplimiento (todo perfil cuelga de
- * un Guardian). `logout()` borra la sesión y devuelve al onboarding.
+ * Sesión del guardián (Fase 5.5 + JWT US-45): se **persiste** (AsyncStorage) el
+ * `guardian` completo, la `consentVersion`, el `currentProfile` (perfil activo) y
+ * los **tokens JWT** (`accessToken` corto + `refreshToken` largo). Así un adulto
+ * que vuelve recupera su sesión autenticada y su hijo seleccionado sin volver a
+ * identificarse. `guardian` es el ancla del cumplimiento (todo perfil cuelga de un
+ * Guardian). `logout()` borra la sesión (incluidos los tokens) y vuelve al onboarding.
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { persistStorage } from '../../infrastructure/storage';
 import { setActiveChildName } from '../../infrastructure/sentry';
-import type { ChildProfile, Guardian } from '../../domain/types';
+import type { ChildProfile, Guardian, GuardianSession, SessionTokens } from '../../domain/types';
 
 interface AppState {
   guardian: Guardian | null;
   consentVersion: string | null;
   currentProfile: ChildProfile | null;
-  setGuardian: (guardian: Guardian, consentVersion: string) => void;
+  accessToken: string | null;
+  refreshToken: string | null;
+  /** Abre sesión tras alta/login: guarda el guardián, el consentimiento y los tokens. */
+  setSession: (session: GuardianSession, consentVersion: string) => void;
+  /** Reemplaza los tokens tras una renovación (refresh-on-401). */
+  setTokens: (tokens: SessionTokens) => void;
   setProfile: (profile: ChildProfile) => void;
   /** Limpia el perfil activo para volver a elegir entre los hijos del guardián. */
   clearProfile: () => void;
-  /** Cierra la sesión: borra guardián y perfil, vuelve al onboarding. */
+  /** Cierra la sesión: borra guardián, perfil y tokens, vuelve al onboarding. */
   logout: () => void;
 }
+
+const SESION_VACIA = {
+  guardian: null,
+  consentVersion: null,
+  currentProfile: null,
+  accessToken: null,
+  refreshToken: null,
+} as const;
 
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      guardian: null,
-      consentVersion: null,
-      currentProfile: null,
-      setGuardian: (guardian, consentVersion) => set({ guardian, consentVersion }),
+      ...SESION_VACIA,
+      setSession: (session, consentVersion) => {
+        const { accessToken, refreshToken, ...guardian } = session;
+        set({ guardian, consentVersion, accessToken, refreshToken });
+      },
+      setTokens: (tokens) =>
+        set({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }),
       // Al cambiar el perfil activo, registra/limpia el nombre del niño en Sentry
       // para redactarlo de los eventos antes de salir a terceros (US-40 / C-12).
       setProfile: (profile) => {
@@ -44,7 +61,7 @@ export const useAppStore = create<AppState>()(
       },
       logout: () => {
         setActiveChildName(undefined);
-        set({ guardian: null, consentVersion: null, currentProfile: null });
+        set({ ...SESION_VACIA });
       },
     }),
     {
@@ -53,15 +70,16 @@ export const useAppStore = create<AppState>()(
       // Tras rehidratar la sesión persistida, re-registra el nombre del niño activo
       // para que el scrubbing de Sentry siga protegiéndolo al reabrir la app.
       onRehydrateStorage: () => (state) => setActiveChildName(state?.currentProfile?.nombre),
-      // v1: la sesión pasa de `guardianId` (string) al `guardian` completo + perfil
-      // activo. El estado v0 no puede reconstruir el guardián desde solo el id, así
-      // que se descarta (el adulto vuelve a identificarse una vez).
-      version: 1,
-      migrate: () => ({ guardian: null, consentVersion: null, currentProfile: null }),
+      // v2: la sesión incorpora los tokens JWT (US-45). El estado v0/v1 no los tiene,
+      // así que se descarta (el adulto vuelve a identificarse una vez para obtenerlos).
+      version: 2,
+      migrate: () => ({ ...SESION_VACIA }),
       partialize: (state) => ({
         guardian: state.guardian,
         consentVersion: state.consentVersion,
         currentProfile: state.currentProfile,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
       }),
     },
   ),

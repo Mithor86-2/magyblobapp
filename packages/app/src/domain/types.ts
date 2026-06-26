@@ -56,6 +56,16 @@ export interface LoginGuardianInput {
   email: string;
 }
 
+// --- Sesión autenticada (JWT, US-45) ---
+/** Par de tokens de la sesión: access (corto) + refresh (largo). */
+export interface SessionTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+/** Respuesta de alta/login: el guardián junto con su sesión JWT. */
+export interface GuardianSession extends Guardian, SessionTokens {}
+
 // --- ChildProfile ---
 export interface CreateChildProfileInput {
   guardianId: string;

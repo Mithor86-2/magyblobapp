@@ -5,6 +5,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Speech from 'expo-speech';
 import { api } from '../../composition';
 import { sanitizeForSpeech } from './sanitizeForSpeech';
+import { useAppStore } from '../store/useAppStore';
 import type { Story } from '../../domain/types';
 
 export type EstadoNarracion = 'idle' | 'loading' | 'playing' | 'paused';
@@ -22,6 +23,7 @@ const NARRATION_TIMEOUT_MS = 15_000;
 export function useNarration(story: Story) {
   const player = useAudioPlayer();
   const status = useAudioPlayerStatus(player);
+  const accessToken = useAppStore((s) => s.accessToken);
   const [estado, setEstado] = useState<EstadoNarracion>('idle');
   // Si caímos a la voz nativa, el control de pausa/parada va por expo-speech.
   const vozNativa = useRef(false);
@@ -52,7 +54,12 @@ export function useNarration(story: Story) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), NARRATION_TIMEOUT_MS);
     try {
-      const res = await fetch(api.stories.narrationUrl(story.id), { signal: controller.signal });
+      // Ruta protegida (US-45): el reproductor descarga el MP3 con `fetch`, así que
+      // adjuntamos el Bearer; un 401 cae a la voz nativa como cualquier otro fallo.
+      const res = await fetch(api.stories.narrationUrl(story.id), {
+        signal: controller.signal,
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      });
       if (!res.ok) throw new Error(`Narración no disponible (${res.status}).`);
       const bytes = await res.bytes();
 
@@ -71,7 +78,7 @@ export function useNarration(story: Story) {
     } finally {
       clearTimeout(timer);
     }
-  }, [estado, player, story.id, narrarConVozNativa]);
+  }, [estado, player, story.id, narrarConVozNativa, accessToken]);
 
   const pausar = useCallback(() => {
     if (vozNativa.current) {

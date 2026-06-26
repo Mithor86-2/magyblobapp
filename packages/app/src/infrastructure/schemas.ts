@@ -17,6 +17,15 @@ export const guardianSchema = z.object({
   consentimientoDado: z.boolean(),
 });
 
+/** Par de tokens de sesión (US-45). */
+export const sessionTokensSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+});
+
+/** Respuesta de alta/login: guardián + sesión JWT (US-45). */
+export const guardianSessionSchema = guardianSchema.extend(sessionTokensSchema.shape);
+
 export const childProfileSchema = z.object({
   id: z.string(),
   guardianId: z.string(),

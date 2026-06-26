@@ -18,7 +18,7 @@ import type { RootScreenProps } from '../navigation';
  * email existe, recupera la cuenta y lleva a la selección de perfil.
  */
 export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
-  const setGuardian = useAppStore((s) => s.setGuardian);
+  const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
 
   const [email, setEmail] = useState('');
@@ -32,8 +32,8 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
     setSubmitting(true);
     trackAction('guardian.login');
     try {
-      const guardian = await api.guardians.login({ email: email.trim() });
-      setGuardian(guardian, CONSENT_VERSION);
+      const session = await api.guardians.login({ email: email.trim() });
+      setSession(session, CONSENT_VERSION);
       navigation.replace('SelectProfile');
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
