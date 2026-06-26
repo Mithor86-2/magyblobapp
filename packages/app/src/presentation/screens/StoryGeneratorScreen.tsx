@@ -11,6 +11,7 @@ import { avatarEmoji } from '../components/AvatarPicker';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { NarrationControls } from '../components/NarrationControls';
 import { api } from '../../composition';
+import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { TabScreenProps } from '../navigation';
@@ -32,6 +33,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
     setLoading(true);
     setError(null);
     setStory(null);
+    trackAction('story.generate', { tema, estilo });
     try {
       const result = await api.stories.generate({ profileId: profile.id, tema, estilo });
       setStory(result);

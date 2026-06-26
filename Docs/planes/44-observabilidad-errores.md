@@ -34,38 +34,43 @@ Decisiones tomadas con el usuario:
 
 ## Fase A — `AppErrorBoundary` (US-41)
 
-- [ ] ❌ Crear `presentation/components/AppErrorBoundary.tsx`: envuelve `Sentry.ErrorBoundary` con
-      `fallback={({ resetError }) => <FallbackUI onRetry={resetError} />}`; prop `label?` →
-      `beforeCapture` (`scope.setTag('boundary', label)`); **sin** `showDialog`.
-- [ ] ❌ _Fallback UI_ en español (mensaje genérico, **sin** `error.message` ni _stack_), con tokens
-      `errorContainer`/`onErrorContainer` y `BubblyButton` de «Reintentar».
-- [ ] ❌ Colocación **global**: envolver `<NavigationContainer>` en [App.tsx](../../packages/app/App.tsx).
-- [ ] ❌ Colocación **por zona**: envolver `StoryGeneratorScreen`, `ActivitiesScreen`, `StoryReaderScreen`
-      con su `label`.
-- [ ] ❌ Test `AppErrorBoundary.test.tsx`: hijo que lanza en render → renderiza _fallback_; `onRetry`
-      resetea y remonta.
+- [x] ✅ Crear `presentation/components/AppErrorBoundary.tsx`: envuelve `Sentry.ErrorBoundary` con
+      `fallback={({ resetError }) => <ErrorFallback onRetry={resetError} />}`; prop `label?` →
+      `beforeCapture` (`scope.setTag('boundary', label)`); **sin** `showDialog`. Excluido de cobertura
+      (importa `@sentry/react-native`, no carga bajo Vitest), como `Icon.tsx`.
+- [x] ✅ _Fallback UI_ `ErrorFallback.tsx` en español (mensaje genérico, **sin** `error.message` ni
+      _stack_), con tokens `errorContainer`/`onErrorContainer` y `BubblyButton` de «Reintentar».
+- [x] ✅ Colocación **global**: `AppErrorBoundary` envolviendo `<NavigationContainer>` en
+      [App.tsx](../../packages/app/App.tsx).
+- [x] ✅ Colocación **por zona**: wrappers `CuentosScreen`/`ActividadesScreen`/`LecturaScreen` con su
+      `label` (cuentos/actividades/lectura).
+- [x] ✅ Test `ErrorFallback.test.tsx`: muestra el _fallback_ sin detalle técnico y `onRetry` se invoca
+      al pulsar «Reintentar» (la parte con lógica; el catch lo aporta `Sentry.ErrorBoundary`).
 
 ## Fase B — Breadcrumbs de telemetría (US-42)
 
-- [ ] ❌ Crear helper `infrastructure/telemetry.ts` con _wrappers_ tipados (no-op sin Sentry activo):
-      `trackNavigation(routeName)` (`navigation`), `trackApi({ method, path, status?, ok })` (`api`),
-      `trackAction(name, data?)` (`ui`). Aceptan **solo** enums/ids/contadores.
-- [ ] ❌ Instrumentar `request<T>()` en [http.ts](../../packages/app/src/infrastructure/http.ts):
-      `trackApi` en éxito y en la rama `ApiError` (método, ruta, `status`/resultado; sin cuerpo).
-- [ ] ❌ Navegación: `navigationRef = useNavigationContainerRef()` + `onStateChange` en
-      [App.tsx](../../packages/app/App.tsx) → `trackNavigation(currentRouteName)`.
-- [ ] ❌ Acciones de negocio: `trackAction` en `onGenerate` (cuentos/actividades: `tema/estilo/edad/idioma`),
-      `onComplete` (actividad: `rating`), login/alta, selección/creación de perfil. **Sin** nombre del niño
-      ni texto del cuento.
-- [ ] ❌ Endurecer [sentry.ts](../../packages/app/src/infrastructure/sentry.ts): fijar `maxBreadcrumbs`,
-      añadir `beforeBreadcrumb` defensivo y extender `scrubEvent` para redactar `breadcrumbs[].data`.
-- [ ] ❌ Tests: `telemetry.test.ts` (categoría/nivel correctos, sin campos PII) y caso extra en
-      `sentry.test.ts` (redacción del nombre del niño también en `breadcrumbs[].data`).
+- [x] ✅ Crear helper `infrastructure/telemetry.ts` con _wrappers_ tipados (no-op sin Sentry activo, vía
+      _sink_ inyectado): `trackNavigation` (`navigation`), `trackApi` (`api`), `trackAction` (`ui`).
+      Aceptan **solo** enums/ids/contadores (tipo `SafeData`).
+- [x] ✅ Instrumentar `request<T>()` en [http.ts](../../packages/app/src/infrastructure/http.ts):
+      `trackApi` en éxito/no-ok (con `status`) y en fallo de red (sin `status`); sin cuerpo. (CORE 100%.)
+- [x] ✅ Navegación: `navigationRef = useNavigationContainerRef()` + `onStateChange` en
+      [App.tsx](../../packages/app/App.tsx) → `trackNavigation(getCurrentRoute().name)`.
+- [x] ✅ Acciones de negocio: `trackAction` en `story.generate` (tema/estilo), `activities.recommend`
+      (categoría), `activity.complete` (valoración), `guardian.login` y `profile.create` (edad/idioma/nº
+      intereses). **Sin** nombre del niño ni texto del cuento. _(YAGNI: alta/selección de perfil quedan
+      cubiertas por los breadcrumbs `navigation` + `api`; no se añade `trackAction` redundante.)_
+- [x] ✅ Endurecer [sentry.ts](../../packages/app/src/infrastructure/sentry.ts): `maxBreadcrumbs: 50`,
+      `beforeBreadcrumb: scrubBreadcrumb` (redacta message y `data`), y `scrubEvent` extendido a
+      `breadcrumbs[].data`. Sink cableado en `sentry.bootstrap.ts` solo con DSN activo.
+- [x] ✅ Tests: `telemetry.test.ts` (categoría/nivel, no-op sin sink, sin PII) y casos extra en
+      `sentry.test.ts` (`scrubBreadcrumb` y redacción en `breadcrumbs[].data`).
 
 ## Fase C — Verificación y cierre
 
-- [ ] ❌ Gate verde: `pnpm check` (typecheck + lint de import-boundaries + format:check + test).
-- [ ] ❌ Prueba manual con DSN: recorrido (Welcome→Login→SelectProfile→Main→Cuentos→generar) + disparador
+- [x] ✅ Gate verde: `pnpm check` (typecheck + lint + format:check + test). Backend 192/192, app 83/83.
+      Cobertura app: `http.ts`/`sentry.ts`/`telemetry.ts` al 100%, global 99.88%.
+- [ ] 🔄 Prueba manual con DSN: recorrido (Welcome→Login→SelectProfile→Main→Cuentos→generar) + disparador
       dev-only de `ParentalScreen` → en Sentry, ver _timeline_ de breadcrumbs y tag `boundary`, **sin PII
       del niño**; forzar error de render en una zona → _fallback_ + reintento sin tumbar la app.
 - [ ] ❌ Solicitar pruebas al usuario (manual u ofrecer verificación automatizada).

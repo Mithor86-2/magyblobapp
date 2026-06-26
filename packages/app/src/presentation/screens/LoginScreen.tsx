@@ -6,6 +6,7 @@ import { TextField } from '../components/TextField';
 import { useDialog } from '../components/DialogProvider';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
+import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
 import { CONSENT_VERSION } from './ConsentScreen';
@@ -29,6 +30,7 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
 
   async function onSubmit() {
     setSubmitting(true);
+    trackAction('guardian.login');
     try {
       const guardian = await api.guardians.login({ email: email.trim() });
       setGuardian(guardian, CONSENT_VERSION);

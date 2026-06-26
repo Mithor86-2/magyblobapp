@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,9 +18,16 @@ import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
 import { HistoryScreen } from './src/presentation/screens/HistoryScreen';
 import { DialogProvider } from './src/presentation/components/DialogProvider';
+import { AppErrorBoundary } from './src/presentation/components/AppErrorBoundary';
 import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
-import type { MainTabParamList, RootStackParamList } from './src/presentation/navigation';
+import { trackNavigation } from './src/infrastructure/telemetry';
+import type {
+  MainTabParamList,
+  RootScreenProps,
+  RootStackParamList,
+  TabScreenProps,
+} from './src/presentation/navigation';
 import { colors, fonts, radius } from './src/presentation/theme/tokens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,6 +42,35 @@ const stackScreenOptions = {
   headerBackButtonDisplayMode: 'minimal',
   headerTitleAlign: 'center',
 } as const;
+
+/**
+ * Boundaries por zona (US-41): aíslan las pantallas de contenido generado para que
+ * un crash en una no tumbe toda la app (las otras pestañas siguen operativas). El
+ * boundary global de `App` es la red de seguridad de nivel superior.
+ */
+function CuentosScreen(props: TabScreenProps<'Cuentos'>) {
+  return (
+    <AppErrorBoundary label="cuentos">
+      <StoryGeneratorScreen {...props} />
+    </AppErrorBoundary>
+  );
+}
+
+function ActividadesScreen(props: TabScreenProps<'Actividades'>) {
+  return (
+    <AppErrorBoundary label="actividades">
+      <ActivitiesScreen {...props} />
+    </AppErrorBoundary>
+  );
+}
+
+function LecturaScreen(props: RootScreenProps<'StoryReader'>) {
+  return (
+    <AppErrorBoundary label="lectura">
+      <StoryReaderScreen {...props} />
+    </AppErrorBoundary>
+  );
+}
 
 /** Icono de pestaña: icono lucide dentro de un "blob" pastel cuando está activo. */
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
@@ -63,12 +99,12 @@ function MainTabs() {
       />
       <Tab.Screen
         name="Actividades"
-        component={ActivitiesScreen}
+        component={ActividadesScreen}
         options={{ tabBarIcon: ({ focused }) => <TabIcon name="activities" focused={focused} /> }}
       />
       <Tab.Screen
         name="Cuentos"
-        component={StoryGeneratorScreen}
+        component={CuentosScreen}
         options={{ tabBarIcon: ({ focused }) => <TabIcon name="story" focused={focused} /> }}
       />
       <Tab.Screen
@@ -96,6 +132,8 @@ export default function App() {
   const hydrated = useStoreHydrated();
   const guardian = useAppStore((s) => s.guardian);
   const currentProfile = useAppStore((s) => s.currentProfile);
+  // Ref de la navegación para registrar breadcrumbs de pantalla (US-42).
+  const navigationRef = useNavigationContainerRef<RootStackParamList>();
 
   if (!fontsLoaded || !hydrated) {
     return (
@@ -112,50 +150,59 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <DialogProvider>
-        <NavigationContainer>
-          <StatusBar style="dark" />
-          <Stack.Navigator initialRouteName={initialRoute} screenOptions={stackScreenOptions}>
-            {/* Bienvenida (inicial) y las pestañas no llevan cabecera del stack. */}
-            <Stack.Screen
-              name="Welcome"
-              component={WelcomeScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Consent"
-              component={ConsentScreen}
-              options={{ title: 'Crear cuenta' }}
-            />
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ title: 'Iniciar sesión' }}
-            />
-            <Stack.Screen
-              name="SelectProfile"
-              component={SelectProfileScreen}
-              options={{ title: 'Elegir perfil' }}
-            />
-            <Stack.Screen
-              name="CreateProfile"
-              component={CreateProfileScreen}
-              options={{ title: 'Crear perfil' }}
-            />
-            <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-            <Stack.Screen
-              name="Parental"
-              component={ParentalScreen}
-              options={{ title: 'Zona de adultos' }}
-            />
-            <Stack.Screen
-              name="StoryReader"
-              component={StoryReaderScreen}
-              options={{ title: 'Cuento' }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </DialogProvider>
+      <AppErrorBoundary label="app">
+        <DialogProvider>
+          <NavigationContainer
+            ref={navigationRef}
+            onStateChange={() => {
+              // Breadcrumb por cambio de pantalla: solo el nombre de ruta (sin params/PII).
+              const route = navigationRef.getCurrentRoute();
+              if (route) trackNavigation(route.name);
+            }}
+          >
+            <StatusBar style="dark" />
+            <Stack.Navigator initialRouteName={initialRoute} screenOptions={stackScreenOptions}>
+              {/* Bienvenida (inicial) y las pestañas no llevan cabecera del stack. */}
+              <Stack.Screen
+                name="Welcome"
+                component={WelcomeScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Consent"
+                component={ConsentScreen}
+                options={{ title: 'Crear cuenta' }}
+              />
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{ title: 'Iniciar sesión' }}
+              />
+              <Stack.Screen
+                name="SelectProfile"
+                component={SelectProfileScreen}
+                options={{ title: 'Elegir perfil' }}
+              />
+              <Stack.Screen
+                name="CreateProfile"
+                component={CreateProfileScreen}
+                options={{ title: 'Crear perfil' }}
+              />
+              <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+              <Stack.Screen
+                name="Parental"
+                component={ParentalScreen}
+                options={{ title: 'Zona de adultos' }}
+              />
+              <Stack.Screen
+                name="StoryReader"
+                component={LecturaScreen}
+                options={{ title: 'Cuento' }}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </DialogProvider>
+      </AppErrorBoundary>
     </SafeAreaProvider>
   );
 }
