@@ -73,14 +73,29 @@ Todo en capas externas (infra del backend + infra de la app), con tests existent
 - [x] ✅ Gate completo `pnpm check` verde (EXIT 0): typecheck + lint + format + 192 backend + 87 app.
 - [x] ✅ Entradas en `packages/backend/CHANGELOG.md` y `packages/app/CHANGELOG.md`.
 
-## Fase 2 — Rutas Fastify vía type-provider (OPCIONAL, decidir tras Fase 1)
+## Fase 2 — Rutas Fastify vía type-provider (hecha)
 
-- [ ] ❌ Evaluar `fastify-type-provider-zod` compatible con Fastify 5; comprobar que la ruta de error
-      (validación → 400) sigue pasando por [errorHandler.ts](../../packages/backend/src/routes/errorHandler.ts).
-- [ ] ❌ Migrar los 4 schemas de ruta a esquemas Zod como **única fuente de verdad**, derivando los
-      tipos de [dto.ts](../../packages/backend/src/application/dto.ts) con `z.infer` (elimina duplicación).
-- [ ] ❌ Tests de integración de rutas verdes sin cambios de contrato; documentar el nuevo flujo de
-      validación en la API doc si aplica.
+- [x] ✅ `fastify-type-provider-zod` (v7) instalado, compatible con Fastify 5 + Zod 4. Compiladores
+      (`validatorCompiler`/`serializerCompiler`) cableados en [server.ts](../../packages/backend/src/server.ts)
+      antes de registrar rutas. Sin esquema `response`, la serialización por defecto se mantiene (no
+      afecta a la narración que devuelve un `Buffer`).
+- [x] ✅ Las 4 rutas con body (`guardians`, `guardians/login`, `profiles`, `stories`,
+      `activities/recommend`, `activities/:id/complete`) migradas de JSON Schema a Zod vía
+      `app.withTypeProvider<ZodTypeProvider>()`; el tipo del body se **infiere del esquema** (se elimina
+      `app.post<{ Body }>` y los imports de DTO en las rutas). `.strict()` replica
+      `additionalProperties: false`.
+- [x] ✅ **Decisión de capas:** los DTOs de `application` **no** se derivan con `z.infer` de los
+      esquemas Zod — eso obligaría a `application → infrastructure`, prohibido por el invariante. Los
+      esquemas Zod viven en las rutas (infra) y los DTOs siguen siendo el contrato de los casos de uso;
+      la duplicación eliminada es la del **literal JSON Schema**.
+- [x] ✅ `errorHandler` intacto: los errores de validación de Zod llegan con `statusCode 400` igual que
+      los de Ajv → contrato `{ error: { tipo, mensaje } }` y status 400 preservados. Regex de email del
+      login con la misma supresión `sonarjs/super-linear-regex` que `Guardian.emailValido`.
+- [x] ✅ 25 tests de integración de rutas verdes sin cambios de contrato; gate completo `pnpm check`
+      verde (EXIT 0): 192 backend + 87 app. Entrada en `packages/backend/CHANGELOG.md`.
+
+> **Pendiente fuera del gate:** las suites con Docker (`test:integration` de persistencia y `test:e2e`)
+> no se han corrido en local (requieren Docker); se ejecutan en CI.
 
 ## Cierre
 
