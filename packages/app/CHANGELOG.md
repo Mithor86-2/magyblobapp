@@ -19,6 +19,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.0.0] - 2026-06-26
+
+Primer release de producción. App verificada contra el backend en producción (Render / Neon / Groq).
+Hito de versión: consolida el trabajo de las versiones 0.x; sin cambios de código respecto a la 0.24.0.
+
 ## [0.24.0] - 2026-06-26
 
 ### Added
