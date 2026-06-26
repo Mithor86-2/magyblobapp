@@ -19,6 +19,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.20.0] - 2026-06-25
+
+### Added
+
+- Robustez de red/IA (US-43, Fase 6): **timeout con `AbortController`** en la capa HTTP
+  (`infrastructure/http.ts`, 15 s por defecto / 30 s en generación) y en la narración
+  (`useNarration`, 15 s con fallback a voz nativa). Al vencer se produce un `ApiError` de tipo
+  `timeout` tratado como el resto de errores. Tests del timeout en `http.test.ts`.
+
+### Changed
+
+- `HistoryScreen`: el estado de error ahora incluye un botón **«Reintentar»** (antes solo texto).
+
 ## [0.19.0] - 2026-06-25
 
 ### Added

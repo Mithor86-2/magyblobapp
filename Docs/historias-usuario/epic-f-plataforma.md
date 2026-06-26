@@ -718,3 +718,36 @@ redactar también `breadcrumbs[].data` (hoy solo redacta `message`).
 - (Cumplimiento) Dado que **no hay DSN**, Cuando la app funciona, Entonces los _wrappers_ son **no-op** y no
   se transmite nada (coherente con [US-06](#us-06) y **C-12**); sin Session Replay ni tracking automático de
   navegación de terceros.
+
+## US-43 — Robustez de red/IA en la app: timeouts y estados de error · Should (Fase 6)
+
+Como **niño/a usuario** (y como responsable del producto) quiero que, si el backend o la IA **tardan o
+no responden**, la app **no se quede colgada** y muestre un aviso claro con opción de **reintentar**,
+para que un fallo de red o de generación no bloquee la experiencia.
+
+**Contexto.** Cierra el ítem de robustez de la **Fase 6** y su DoD (_"la app no rompe ante fallos de IA
+o red"_). Hoy la capa HTTP ([`infrastructure/http.ts`](../../packages/app/src/infrastructure/http.ts))
+usa `fetch` **sin timeout**: si el backend no responde, el spinner queda indefinido. Se añade un
+**`AbortController` con timeout configurable** (p. ej. 30 s generación, 15 s narración) que, al vencer,
+produce un `ApiError` de tipo `timeout` tratado como el resto de errores. La mayoría de pantallas ya
+muestran carga + error (`StoryGenerator`, `Actividades`, `SelectProfile`, `History`, `Login`); se
+completan los huecos: **spinner de carga en `CreateProfile`** y **botón «Reintentar» en `History`**. La
+narración ([`useNarration`](../../packages/app/src/presentation/hooks/useNarration.ts)) gana timeout y
+conserva su **fallback a voz nativa** on-device. **Solo app**, no toca el backend ni el arranque
+reproducible (US-06), sin red externa ni SDKs de terceros nuevos.
+
+**Criterios de aceptación**
+
+- Dado que el backend no responde, Cuando una petición supera el **timeout** configurado, Entonces se
+  aborta y se produce un `ApiError` (tipo `timeout`); la app muestra el **estado de error** y **no**
+  queda con un spinner indefinido.
+- Dado un fallo de red o timeout al **generar cuento** o **recomendar actividades**, Cuando ocurre,
+  Entonces la pantalla muestra un **aviso claro** con opción de **reintentar** y la app sigue operativa.
+- Dado que estoy **creando un perfil**, Cuando la petición está en curso, Entonces veo un **estado de
+  carga** (spinner) y el botón no permite envíos duplicados.
+- Dado un error al cargar el **Historial**, Cuando se muestra, Entonces hay un botón **«Reintentar»**
+  que reintenta sin tener que salir y volver a la pestaña.
+- Dado un fallo o timeout de la **narración** (ElevenLabs/red), Cuando intento escuchar, Entonces
+  degrada a la **voz nativa** del dispositivo sin colgarse ni mostrar error técnico.
+- (Tests) Dado el camino de error (petición que falla/expira), Cuando se ejercita en test, Entonces se
+  verifica que la UI muestra el error/reintento y no rompe.
