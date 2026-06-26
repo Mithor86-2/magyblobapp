@@ -24,7 +24,7 @@ Should = HITO 2 · Could = si hay margen.
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                                                                                         |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                                                                                                |
 | E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                                                                                                                                                  |
-| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45, US-46 |
+| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45, US-46, US-50 |
 
 ## Trazabilidad (historia → fase → pantalla)
 
@@ -79,6 +79,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-46 | Configuración validada con Zod         | Should    | Mejoras | — (config backend)                  | [F](epic-f-plataforma.md#us-46)  |
 | US-47 | Cuentos mejorados (multi-tema/prompt)  | Should    | Mejoras | Generador                           | [B](epic-b-cuentos.md#us-47)     |
 | US-48 | Contraseña en el alta y login real     | Should    | Mejoras | Alta / Login                        | [A](epic-a-perfil.md#us-48)      |
+| US-50 | Dashboard/Home sin sesión (efímero)    | Should    | Mejoras | Inicio sin sesión                   | [F](epic-f-plataforma.md#us-50)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 
