@@ -66,9 +66,11 @@ Decisiones con el usuario (2026-06-25):
 ### Fase E — Gate, docs y cierre
 
 - [x] ✅ Gate verde (`pnpm check`).
-- [ ] 🔄 Pruebas con el usuario (manual o verificación ofrecida).
-- [ ] ❌ Docs + cierre con `cerrar-feature` (SemVer app, CHANGELOG fechado, phases/memory/lecciones,
-      marcar el ítem de robustez de la Fase 6).
+- [x] ✅ Pruebas con el usuario: verificación automática de `http.test.ts` (18/18, incluidos los 2 de
+      timeout) ejecutada y confirmada.
+- [x] ✅ Docs + cierre con `cerrar-feature`: SemVer **re-bumpeado** por trabajo en paralelo (develop ya
+      iba en app 0.19.0/raíz 0.26.0 por US-41/42) → app **0.20.0** / raíz **0.27.0**; CHANGELOG fechado;
+      ítem de robustez de la Fase 6 marcado en phases.md.
 
 ## Riesgos / pendientes
 

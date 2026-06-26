@@ -246,13 +246,21 @@ infantil. Plan en [planes/fase-5-5.md](planes/fase-5-5.md). Cubre **US-19** (log
       Expo web contra el backend real en mock (1 test); **CI** en GitHub Actions (gate + integración +
       E2E). Estrategia y guía TDD en [estrategia-pruebas.md](estrategia-pruebas.md). Verificado en
       local: gate verde, integración 25/25 y E2E (backend 3/3, app 1/1).
-- [ ] Test por cada caso de uso y cada endpoint (significativo) — base cubierta; repaso de huecos
-      pendiente.
-- [ ] Estados de carga/error y timeouts de IA en la app.
-- [ ] Revisión de acoplamiento, nombres y separación de capas.
-- [ ] Repaso del checklist de cumplimiento para menores (parental gate, sin terceros,
-      minimización, conservación) — ver [cumplimiento-menores.md](cumplimiento-menores.md).
-- **DoD:** suite completa en verde; app no rompe ante fallos de IA o red.
+- [x] Test por cada caso de uso y cada endpoint (significativo) — **auditoría 2026-06-25**: 10/10 casos
+      de uso y 10/10 endpoints con test (solo `GET /health` trivial sin test). Sin huecos.
+- [x] Estados de carga/error y timeouts de IA en la app (US-43, app v0.20.0 / raíz v0.27.0, rama
+      `feature/44-robustez-red-app`). Timeout con `AbortController` en `http.ts` (15 s / 30 s
+      generación → `ApiError('timeout')`) y en la narración (15 s, degrada a voz nativa); botón
+      «Reintentar» en el Historial. Cierra el agujero del DoD. Tests del timeout en `http.test.ts`.
+- [x] Revisión de acoplamiento, nombres y separación de capas — **auditoría 2026-06-25**: backend sin
+      violaciones (ESLint de capas activo, `/domain` sin dependencias externas), vocabulario ES/EN
+      coherente. La app usa Clean Arch _ligera_ (el store importa infra a propósito; mejora opcional).
+- [ ] Repaso del checklist de cumplimiento para menores — **auditoría 2026-06-25**: parental gate,
+      borrado en cascada, minimización y Sentry (C-12, `setActiveChildName` cableado) ✅; desviaciones
+      cloud/ElevenLabs/Sentry documentadas. **Pendiente (difer.): C-7** (política de privacidad) y
+      **C-9** (retención/purga) — ver [cumplimiento-menores.md](cumplimiento-menores.md).
+- **DoD:** suite completa en verde ✅; app no rompe ante fallos de IA o red ✅ (US-43). _Falta solo
+  cerrar C-7/C-9 del checklist de cumplimiento._
 
 ---
 
