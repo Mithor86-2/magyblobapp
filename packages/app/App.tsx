@@ -21,6 +21,7 @@ import { DialogProvider } from './src/presentation/components/DialogProvider';
 import { AppErrorBoundary } from './src/presentation/components/AppErrorBoundary';
 import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
+import { resolveInitialRoute } from './src/presentation/initialRoute';
 import { trackNavigation } from './src/infrastructure/telemetry';
 import type {
   MainTabParamList,
@@ -132,8 +133,25 @@ export default function App() {
   const hydrated = useStoreHydrated();
   const guardian = useAppStore((s) => s.guardian);
   const currentProfile = useAppStore((s) => s.currentProfile);
+  const profiles = useAppStore((s) => s.profiles);
+  const setProfile = useAppStore((s) => s.setProfile);
   // Ref de la navegación para registrar breadcrumbs de pantalla (US-42).
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
+
+  // Recupera la sesión persistida y decide la ruta inicial (US-49): sin sesión →
+  // onboarding; con perfil activo → pestañas; sin perfil activo pero con un único
+  // hijo → auto-seleccionarlo y entrar; con 0 o varios → elegir perfil.
+  const { route: initialRoute, autoSelect } = resolveInitialRoute({
+    guardian,
+    currentProfile,
+    profiles,
+  });
+
+  // El side-effect de auto-selección se dispara fuera del render para no mutar el
+  // store durante el cálculo de la ruta.
+  useEffect(() => {
+    if (autoSelect) setProfile(autoSelect);
+  }, [autoSelect, setProfile]);
 
   if (!fontsLoaded || !hydrated) {
     return (
@@ -142,11 +160,6 @@ export default function App() {
       </View>
     );
   }
-
-  // Recupera la sesión persistida: con guardián y perfil activo entra directo a
-  // las pestañas; con guardián pero sin perfil, a elegir entre sus hijos; sin
-  // sesión, al onboarding.
-  const initialRoute = guardian ? (currentProfile ? 'Main' : 'SelectProfile') : 'Welcome';
 
   return (
     <SafeAreaProvider>

@@ -66,23 +66,23 @@ Leyenda: ❌ pendiente · 🔄 en curso · ✅ hecha. Cada fase incluye **crear 
 - [x] ✅ `## [Unreleased]` con los 6 grupos en [CHANGELOG del app](../../packages/app/CHANGELOG.md).
 - [ ] ❌ Commit de andamiaje (`docs(planes): plan y US-49 de la feature 53 …`).
 
-### Fase 1 — Estado `profiles` en el store ❌
+### Fase 1 — Estado `profiles` en el store ✅
 
-- [ ] ❌ `useAppStore`: añadir `profiles: ChildProfile[]` (inicial `[]`) y la acción
+- [x] ✅ `useAppStore`: añadir `profiles: ChildProfile[]` (inicial `[]`) y la acción
       `setProfiles(profiles: ChildProfile[])`. Incluir `profiles` en `partialize` y resetearlo en
       `logout` (parte de `SESION_VACIA`).
-- [ ] ❌ **Persistencia**: subir la `version` del store (v2 → v3) y mantener el `migrate` que
+- [x] ✅ **Persistencia**: subir la `version` del store (v2 → v3) y mantener el `migrate` que
       descarta el estado previo, ya que el shape persistido cambia (coherente con v1/v2 de US-45).
-- [ ] ❌ `SelectProfileScreen`: alimentar `setProfiles` con la lista cargada (fuente única de
+- [x] ✅ `SelectProfileScreen`: alimentar `setProfiles` con la lista cargada (fuente única de
       verdad) en lugar del `useState` local; el resto del comportamiento de la pantalla no cambia.
-- [ ] ❌ **Test:** `useAppStore.test.ts` — `setProfiles` guarda la lista; `logout` la limpia;
+- [x] ✅ **Test:** `useAppStore.test.ts` — `setProfiles` guarda la lista; `logout` la limpia;
       `partialize` incluye `profiles`; la migración descarta estado de versión previa.
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde).
-- [ ] ❌ **Docs:** entrada en `## [Unreleased]` del CHANGELOG del app (`Added`/`Changed`).
+- [x] ✅ **Ejecutar test** (`pnpm check` verde).
+- [x] ✅ **Docs:** entrada en `## [Unreleased]` del CHANGELOG del app (`Added`/`Changed`).
 
-### Fase 2 — Lógica de arranque en `App.tsx` ❌
+### Fase 2 — Lógica de arranque en `App.tsx` ✅
 
-- [ ] ❌ `App.tsx` (~L149): suscribirse a `profiles` y `setProfile` del store. Calcular la ruta
+- [x] ✅ `App.tsx`: suscribirse a `profiles` y `setProfile` del store. Calcular la ruta
       inicial con la regla de US-49:
   - sin `guardian` → `Welcome`;
   - con `guardian` y `currentProfile` → `Main` (sin cambios);
@@ -90,14 +90,15 @@ Leyenda: ❌ pendiente · 🔄 en curso · ✅ hecha. Cada fase incluye **crear 
     (`setProfile(profiles[0])`) y `Main`;
   - con `guardian`, sin `currentProfile` y `profiles.length !== 1` (0 o >1) → `SelectProfile` (la
     pantalla invita a crear el primero si está vacía).
-- [ ] ❌ Extraer la decisión a una función pura testeable (p. ej. `resolveInitialRoute({ guardian,
-      currentProfile, profiles })`) para poder probar la lógica sin montar el árbol de navegación;
-      el efecto de auto-selección (`setProfile`) se dispara en un `useEffect` cuando proceda.
-- [ ] ❌ **Test:** test de la lógica de arranque (función pura): cubre los cuatro caminos
-      (sin sesión, perfil activo, 1 perfil → auto-selección + `Main`, >1 perfil → `SelectProfile`,
-      0 perfiles → `SelectProfile`).
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde).
-- [ ] ❌ **Docs:** entrada en `## [Unreleased]` del CHANGELOG del app (`Changed`).
+- [x] ✅ Extraída la decisión a una función pura testeable
+      (`resolveInitialRoute({ guardian, currentProfile, profiles })` en
+      `src/presentation/initialRoute.ts`) para probar la lógica sin montar el árbol de navegación;
+      devuelve `{ route, autoSelect }` y el efecto de auto-selección (`setProfile`) se dispara en un
+      `useEffect` de `App.tsx` cuando procede.
+- [x] ✅ **Test:** `initialRoute.test.ts` cubre los cuatro caminos (sin sesión, perfil activo,
+      1 perfil → auto-selección + `Main`, >1 perfil → `SelectProfile`, 0 perfiles → `SelectProfile`).
+- [x] ✅ **Ejecutar test** (`pnpm check` verde).
+- [x] ✅ **Docs:** entrada en `## [Unreleased]` del CHANGELOG del app (`Changed`).
 
 ### Fase 3 — Documentación y cierre ❌
 
