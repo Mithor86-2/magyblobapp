@@ -128,3 +128,33 @@ quién genero el cuento (soporte multi-niño).
   crear uno antes de continuar.
 - Dado que selecciono un perfil, Cuando genero un cuento, Entonces se usa ese perfil
   como destino.
+
+## US-49 — Selección de perfil al arrancar · Should · Mejoras
+
+Como **padre/tutor** con varios hijos quiero que, al abrir la app con la sesión ya
+iniciada pero sin un perfil activo, se me lleve a elegir perfil cuando tengo más de uno,
+y se entre directo cuando solo tengo uno, para no tener que reseleccionar de más.
+
+Amplía [US-02](#us-02): US-02 cubre **listar y elegir** un perfil; US-49 añade la
+**lógica de arranque** que decide a qué pantalla ir según cuántos perfiles tiene el
+guardián (reaprovecha la pantalla `SelectProfileScreen` ya existente).
+
+**Criterios de aceptación**
+
+- Dado un guardián con sesión iniciada y **sin perfil activo**, Cuando abro la app y
+  tiene **más de un** perfil creado, Entonces la app abre la pantalla de **selección de
+  perfil** (`SelectProfile`) para que elija para quién jugar.
+- Dado un guardián con sesión iniciada y **sin perfil activo**, Cuando abro la app y
+  tiene **exactamente un** perfil, Entonces ese perfil se **auto-selecciona** como perfil
+  activo y la app entra directa a las pestañas (`Main`), sin pasar por la selección.
+- Dado un guardián con sesión iniciada que **ya tiene un perfil activo** persistido,
+  Cuando abro la app, Entonces se entra directo a `Main` con ese perfil (comportamiento
+  previo, sin cambios).
+- Dado un guardián **sin ningún** perfil creado, Cuando abro la app, Entonces se mantiene
+  el flujo de selección/creación existente (la pantalla de selección invita a crear el
+  primero), sin error.
+- Dado que **no hay sesión** (sin guardián), Cuando abro la app, Entonces se va al
+  onboarding (`Welcome`), igual que hasta ahora.
+- (Estado) Dado el store, Cuando se cargan los perfiles del guardián, Entonces quedan
+  disponibles en `profiles` (vía `setProfiles`) para que la lógica de arranque pueda
+  contar cuántos hay; los perfiles se persisten junto al resto de la sesión.

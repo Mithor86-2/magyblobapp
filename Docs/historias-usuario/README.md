@@ -19,7 +19,7 @@ Should = HITO 2 · Could = si hay margen.
 
 | Épica | Documento                                           | Historias                                                                                                                                                                     |
 | ----- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02                                                                                                                                      |
+| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02, US-49                                                                                                                               |
 | B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28                                                                                                                               |
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                                                                                  |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                                                                                         |
@@ -38,6 +38,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-17 | Logs y tracking de primera parte       | Should    | 3→6     | —                                   | [F](epic-f-plataforma.md#us-17)  |
 | US-18 | Configuración editable (prompts/IA)    | Should    | 2→3     | —                                   | [F](epic-f-plataforma.md#us-18)  |
 | US-02 | Listar y seleccionar perfiles          | Must      | 3→5.5   | Selección de perfil                 | [A](epic-a-perfil.md#us-02)      |
+| US-49 | Selección de perfil al arrancar        | Should    | Mejoras | Selección de perfil                 | [A](epic-a-perfil.md#us-49)      |
 | US-03 | Generar cuento personalizado           | Must      | 2→4     | Generador                           | [B](epic-b-cuentos.md#us-03)     |
 | US-04 | Fallback automático a mock             | Must      | 2       | Generador                           | [B](epic-b-cuentos.md#us-04)     |
 | US-05 | Modo de IA configurable por env        | Must      | 2       | —                                   | [B](epic-b-cuentos.md#us-05)     |
