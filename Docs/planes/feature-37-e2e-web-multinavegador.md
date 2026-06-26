@@ -63,24 +63,24 @@ Estado de partida:
 
 ### Fase 4 — Coste en CI (documentación)
 
-- ❌ Documentar la estrategia de coste (con `workers: 1`, ~3x navegadores en serie): dejar **solo
-  `chromium`** en el gate de PR y `mobile-safari`/`mobile-chrome` en un job **nightly** filtrando por
-  `--project`. Reflejarlo en [estrategia-pruebas.md](../estrategia-pruebas.md) y/o en el workflow de CI.
-  _(Pendiente: tarea de documentación/CI; se aborda en el cierre con el usuario.)_
+- ✅ Estrategia de coste **revisada y simplificada** respecto al plan inicial: los **tres** proyectos
+  web (`chromium`, `mobile-chrome`, `mobile-safari`) corren en el **gate de cada PR** (job `e2e-app`),
+  porque en headless son rápidos y baratos. El split «solo chromium en PR / mobile en nightly» **no se
+  adoptó** para el E2E web; el esquema nightly/manual se reserva para el E2E **nativo** (Maestro, US-38,
+  [e2e-native.yml](../../.github/workflows/e2e-native.yml)). Documentado en
+  [estrategia-pruebas.md](../estrategia-pruebas.md) (tabla Playwright vs Maestro).
 
 ### Fase 5 — Gate y cierre
 
 - ✅ Verificar el gate: `pnpm check` (typecheck + lint + format:check + test) en verde, exit 0
   (139 backend + 41 app). _(El E2E con Docker queda fuera del gate, como `test:e2e`; se verifica aparte.)_
-- ❌ Verificar que el **E2E sigue verde** (al menos `chromium`; idealmente los tres proyectos con
-  Docker y `e2e:install`). _(Requiere Docker/Testcontainers y binarios de navegador → verificación
-  del usuario; ver Riesgos.)_
+- ✅ Verificar que el **E2E sigue verde** con Docker y `e2e:install`: los tres proyectos
+  (`chromium`, `mobile-chrome`, `mobile-safari`/WebKit) en verde.
 - ✅ Actualizar docs (CHANGELOG de `@magyblob/app`, `phases.md`, `memory.md`,
   `lecciones-aprendidas.md`, `estrategia-pruebas.md`, este plan).
 - ✅ Versionado SemVer (minor): app `0.11.0 → 0.12.0`, raíz `0.18.0 → 0.19.0`; CHANGELOG de
   `@magyblob/app` movido a `## [0.12.0] - 2026-06-24` con `## [Unreleased]` vacío.
-- ❌ Cierre con Git Flow (`git flow feature finish`): **pendiente de confirmación explícita del
-  usuario** tras sus pruebas con Docker/navegadores.
+- ✅ Cierre con Git Flow (`git flow feature finish`): confirmado y mergeado a `develop`.
 
 ## Riesgos / pendientes
 

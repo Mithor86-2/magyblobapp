@@ -67,4 +67,5 @@ el arranque reproducible ([US-06](../historias-usuario/epic-f-plataforma.md#us-0
       conflictos de trazabilidad/épica/CHANGELOG conservando ambos lados.
 - [x] ✅ Cierre: versión SemVer (raíz `0.21.0`, app `0.14.0`) + `CHANGELOG.md` de la app fechado
       (`## [0.14.0] - 2026-06-24`) + tracking docs (phases, memory, lecciones-aprendidas).
-- [ ] ❌ Ejecutar `pnpm --filter @magyblob/app test:e2e` con Docker (validación del usuario).
+- [x] ✅ Ejecutar `pnpm --filter @magyblob/app test:e2e` con Docker — verde (9/9, incluidos los
+      proyectos `mobile-chrome` y `mobile-safari`/WebKit). Feature cerrada y mergeada a `develop`.

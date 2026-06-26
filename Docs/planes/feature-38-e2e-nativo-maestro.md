@@ -49,11 +49,10 @@ Decisiones tomadas con el usuario (2026-06-24):
       consecuencias) y registrarlo en [../ADR/README.md](../ADR/README.md).
       → [../ADR/0005-e2e-nativo-maestro.md](../ADR/0005-e2e-nativo-maestro.md). **0005** confirmado
       como siguiente número libre (existían 0001–0004).
-- [ ] ❌ Instalar/configurar **Maestro** y el **build de desarrollo** de Expo (iOS/Android) necesario
-      para ejecutar los _flows_ sobre simulador/emulador.
-      _No automatizable aquí_: el entorno es headless, sin Xcode iOS Simulator, sin Android Emulator y
-      sin build de Expo. Los pasos quedan documentados (flow + estrategia-pruebas + esqueleto CI) para
-      ejecutarlos en una máquina con simuladores.
+- [x] ✅ Instalar/configurar **Maestro** y el **build de desarrollo** de Expo (iOS/Android) necesario
+      para ejecutar los _flows_ sobre simulador/emulador. Ejecutado en una máquina con Xcode/iOS
+      Simulator (ver "Actualización 2026-06-25"); el entorno headless de andamiaje no podía correrlo,
+      por eso los pasos quedaron documentados (flow + estrategia-pruebas + esqueleto CI).
 - [x] ✅ Escribir el **_flow_ YAML** del happy path: onboarding → crear perfil → generar cuento →
       narración (+ actividades e historial), localizando por identificador/etiqueta accesible.
       → [../../packages/app/.maestro/onboarding.yaml](../../packages/app/.maestro/onboarding.yaml).
@@ -102,10 +101,9 @@ Decisiones tomadas con el usuario (2026-06-24):
       → [../../.github/workflows/e2e-native.yml](../../.github/workflows/e2e-native.yml)
       (`workflow_dispatch` + `schedule`, **sin** push/PR). **Esqueleto**: los pasos de build dev +
       arranque de simulador/emulador + `maestro test` quedan como `# TODO` a validar en runner real.
-- [ ] ❌ Docs + cierre con **`cerrar-feature`** (gate verde, versión SemVer, CHANGELOG por paquete,
-      tracking docs) → pruebas con el usuario → confirmación → `finish`.
-      CHANGELOG de la app actualizado en `## [Unreleased]`; el versionado SemVer y el `finish` quedan
-      para el cierre con el usuario.
+- [x] ✅ Docs + cierre con **`cerrar-feature`** (gate verde, versión SemVer, CHANGELOG por paquete,
+      tracking docs) → pruebas con el usuario → confirmación → `finish`. Cerrada y mergeada a `develop`
+      (app `0.16.0` / raíz `0.23.0`). _Queda pendiente solo la paridad Android (ver arriba)._
 
 ## Estado de la automatización (2026-06-25)
 

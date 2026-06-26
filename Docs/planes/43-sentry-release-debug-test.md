@@ -69,4 +69,5 @@ Estado de partida:
 - [x] ✅ Ampliar/reescribir criterios de US-40 (PII niño-sí/adulto-no, release, debug, disparador dev).
 - [x] ✅ Actualizar fila **C-12** en `cumplimiento-menores.md` con la política de PII revisada.
 - [x] ✅ CHANGELOG `@magyblob/app` (Unreleased) + docs afectadas.
-- [ ] 🔄 Gate verde (`pnpm check`) + pruebas con el usuario → cierre con `cerrar-feature`.
+- [x] ✅ Gate verde (`pnpm check`) + pruebas con el usuario → cierre con `cerrar-feature`. Cerrada
+      y mergeada a `develop` (app `0.17.0` / raíz `0.24.0`).

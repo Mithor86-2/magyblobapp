@@ -52,10 +52,10 @@ Estado de partida:
 - [x] ✅ Tests: 8 casos en `sentry.test.ts` (gating, opciones, `scrubEvent`); `sentry.ts` al **100%**
       de cobertura (nivel CORE en `vitest.config.ts`); `sentry.bootstrap.ts` excluido (bootstrap).
 - [x] ✅ CHANGELOG `packages/app` (`Added` + `Security`): entrada de la integración Sentry.
-- [ ] 🔄 Verificar E2E (Playwright, `mock`, sin DSN) verdes y Sentry inactivo — pendiente de correr la
-      suite con Docker (CI ya corre sin `.env`, así que Sentry queda inactivo allí por construcción).
-- [ ] ❌ Pruebas con el usuario + cierre con `cerrar-feature` (SemVer app, CHANGELOG fechado, merge tras
-      confirmación del usuario).
+- [x] ✅ Verificar E2E (Playwright, `mock`, sin DSN) verdes y Sentry inactivo — suite con Docker en
+      verde (CI corre sin `.env`, así que Sentry queda inactivo allí por construcción).
+- [x] ✅ Pruebas con el usuario + cierre con `cerrar-feature` (SemVer app, CHANGELOG fechado, merge tras
+      confirmación del usuario). Cerrada y mergeada a `develop`.
 
 ## Decisión sobre el prebuild nativo (2026-06-25)
 
