@@ -18,6 +18,9 @@ import type { RootScreenProps } from '../navigation';
 /** Versión de los términos/política que el adulto acepta (se registra en el AuditLog). */
 export const CONSENT_VERSION = '1.0';
 
+/** Longitud mínima de la contraseña (US-48); debe coincidir con la validación del backend. */
+export const PASSWORD_MIN_LENGTH = 8;
+
 export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
@@ -25,6 +28,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [parentesco, setParentesco] = useState<Parentesco | null>(null);
   const [aceptado, setAceptado] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -33,6 +37,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
     nombre.trim() !== '' &&
     apellidos.trim() !== '' &&
     email.trim() !== '' &&
+    password.length >= PASSWORD_MIN_LENGTH &&
     parentesco !== null &&
     aceptado &&
     !submitting;
@@ -46,6 +51,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
         apellidos: apellidos.trim(),
         email: email.trim(),
         parentesco,
+        password,
         consentimientoAceptado: true,
         consentimientoVersion: CONSENT_VERSION,
       });
@@ -100,6 +106,15 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
           placeholder="tu@email.com"
           keyboardType="email-address"
           autoCapitalize="none"
+        />
+        <TextField
+          testID="alta-password"
+          label={`Contraseña (mínimo ${PASSWORD_MIN_LENGTH} caracteres)`}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Crea una contraseña"
+          autoCapitalize="none"
+          secureTextEntry
         />
 
         <Text style={styles.fieldLabel}>Parentesco</Text>
