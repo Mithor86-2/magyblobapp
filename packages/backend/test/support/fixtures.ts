@@ -12,6 +12,7 @@ import { Idioma } from '../../src/domain/value-objects/Idioma.js';
 import type { PrismaClient } from '../../src/generated/prisma/index.js';
 import { PrismaChildProfileRepository } from '../../src/infrastructure/repositories/PrismaChildProfileRepository.js';
 import { PrismaGuardianRepository } from '../../src/infrastructure/repositories/PrismaGuardianRepository.js';
+import { HASH_DE_PRUEBA } from './doubles.js';
 
 /**
  * Factorías de entidades de dominio válidas para los tests de integración.
@@ -20,7 +21,9 @@ import { PrismaGuardianRepository } from '../../src/infrastructure/repositories/
  */
 const FECHA = new Date('2026-06-10T12:00:00.000Z');
 
-export function nuevoGuardian(overrides: Partial<{ id: string; email: string }> = {}): Guardian {
+export function nuevoGuardian(
+  overrides: Partial<{ id: string; email: string; passwordHash: string }> = {},
+): Guardian {
   return new Guardian({
     id: overrides.id ?? randomUUID(),
     nombre: 'Ana',
@@ -28,6 +31,8 @@ export function nuevoGuardian(overrides: Partial<{ id: string; email: string }> 
     email: overrides.email ?? `ana-${randomUUID()}@example.com`,
     parentesco: 'madre',
     telefono: '600123123',
+    // Hash bcrypt de prueba (formato $2 válido); no se verifica en persistencia.
+    passwordHash: overrides.passwordHash ?? HASH_DE_PRUEBA,
     consentimiento: { dado: true, fecha: FECHA, version: 'v1' },
     creadoEn: FECHA,
   });

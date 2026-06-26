@@ -9,6 +9,13 @@ import type { AppDeps } from '../dependencies.js';
 import type { Config } from '../config.js';
 import { signSession, verifyRefreshToken } from '../auth.js';
 
+/**
+ * Robustez mínima de la contraseña (US-48): al menos 8 caracteres. Un mínimo
+ * razonable sin imponer reglas de composición que penalizan la usabilidad (NIST);
+ * el tope evita payloads abusivos (y el límite de bcrypt a 72 bytes).
+ */
+const passwordSchema = z.string().min(8).max(128);
+
 const bodySchema = z
   .object({
     nombre: z.string().min(1),
@@ -16,6 +23,7 @@ const bodySchema = z
     email: z.string().min(3),
     parentesco: z.enum(PARENTESCOS),
     telefono: z.string().optional(),
+    password: passwordSchema,
     consentimientoAceptado: z.boolean(),
     consentimientoVersion: z.string().min(1),
   })
@@ -27,6 +35,9 @@ const loginSchema = z
     // formato básico, email normalizado y acotado, sin riesgo real de ReDoS.
     // eslint-disable-next-line sonarjs/super-linear-regex -- igual que Guardian.emailValido
     email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+    // En login solo se exige presencia (la verificación de robustez fue en el alta);
+    // así una contraseña corta errónea cae en el 401 genérico, no en un 400 distinto.
+    password: z.string().min(1),
   })
   .strict();
 

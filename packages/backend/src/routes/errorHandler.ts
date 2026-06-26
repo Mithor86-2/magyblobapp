@@ -1,5 +1,10 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { ConflictError, DomainError, NotFoundError } from '../domain/errors.js';
+import {
+  ConflictError,
+  DomainError,
+  InvalidCredentialsError,
+  NotFoundError,
+} from '../domain/errors.js';
 
 /**
  * Manejo de errores centralizado: traduce los errores de dominio y de validación
@@ -23,6 +28,7 @@ export function registerErrorHandler(app: FastifyInstance): void {
 }
 
 function statusDe(error: FastifyError): number {
+  if (error instanceof InvalidCredentialsError) return 401;
   if (error instanceof NotFoundError) return 404;
   if (error instanceof ConflictError) return 409;
   if (error instanceof DomainError) return 400;

@@ -1,16 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
 
 describe('rutas de guardians', () => {
   let app: FastifyInstance;
   let handles: ReturnType<typeof makeInMemoryDeps>;
 
+  const PASSWORD = CLAVE_DE_PRUEBA;
   const altaValida = {
     nombre: 'Ana',
     apellidos: 'García',
     email: 'ana@example.com',
     parentesco: 'madre',
+    password: PASSWORD,
     consentimientoAceptado: true,
     consentimientoVersion: 'v1',
   };
@@ -58,13 +61,22 @@ describe('rutas de guardians', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it('inicia sesión por email (200) y registra el login en el audit log', async () => {
+  it('rechaza el alta con una contraseña demasiado corta (400, validación de esquema)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians',
+      payload: { ...altaValida, email: 'corta@example.com', password: 'corta' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('inicia sesión con email + contraseña correctos (200) y registra el login en el audit log', async () => {
     await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
 
     const res = await app.inject({
       method: 'POST',
       url: '/guardians/login',
-      payload: { email: altaValida.email },
+      payload: { email: altaValida.email, password: PASSWORD },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json().email).toBe(altaValida.email);
@@ -74,21 +86,33 @@ describe('rutas de guardians', () => {
     expect(login?.guardianId).toBe(res.json().id);
   });
 
-  it('devuelve 404 al iniciar sesión con un email no registrado', async () => {
+  it('devuelve 401 genérico al iniciar sesión con la contraseña incorrecta', async () => {
+    await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
+
     const res = await app.inject({
       method: 'POST',
       url: '/guardians/login',
-      payload: { email: 'desconocido@example.com' },
+      payload: { email: altaValida.email, password: 'incorrecta' },
     });
-    expect(res.statusCode).toBe(404);
-    expect(res.json().error.tipo).toBe('NotFoundError');
+    expect(res.statusCode).toBe(401);
+    expect(res.json().error.tipo).toBe('InvalidCredentialsError');
+  });
+
+  it('devuelve el mismo 401 al iniciar sesión con un email no registrado (no filtra cuál falló)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/login',
+      payload: { email: 'desconocido@example.com', password: PASSWORD },
+    });
+    expect(res.statusCode).toBe(401);
+    expect(res.json().error.tipo).toBe('InvalidCredentialsError');
   });
 
   it('rechaza un email con formato inválido al iniciar sesión (400, validación de esquema)', async () => {
     const res = await app.inject({
       method: 'POST',
       url: '/guardians/login',
-      payload: { email: 'no-es-email' },
+      payload: { email: 'no-es-email', password: PASSWORD },
     });
     expect(res.statusCode).toBe(400);
   });

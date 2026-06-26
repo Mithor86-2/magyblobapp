@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
 
 describe('rutas de profiles', () => {
   let app: FastifyInstance;
@@ -24,6 +25,7 @@ describe('rutas de profiles', () => {
         apellidos: 'García',
         email: 'ana@example.com',
         parentesco: 'madre',
+        password: CLAVE_DE_PRUEBA,
         consentimientoAceptado: true,
         consentimientoVersion: 'v1',
       },

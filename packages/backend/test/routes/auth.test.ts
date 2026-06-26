@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
 import type { TokenPayload } from '../../src/auth.js';
 
 /**
@@ -12,11 +13,13 @@ describe('autenticación JWT (US-45)', () => {
   let app: FastifyInstance;
   let handles: ReturnType<typeof makeInMemoryDeps>;
 
+  const PASSWORD = CLAVE_DE_PRUEBA;
   const altaValida = {
     nombre: 'Ana',
     apellidos: 'García',
     email: 'ana@example.com',
     parentesco: 'madre',
+    password: PASSWORD,
     consentimientoAceptado: true,
     consentimientoVersion: 'v1',
   };
@@ -35,7 +38,7 @@ describe('autenticación JWT (US-45)', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/guardians/login',
-      payload: { email: altaValida.email },
+      payload: { email: altaValida.email, password: PASSWORD },
     });
     expect(res.statusCode).toBe(200);
     return res.json();

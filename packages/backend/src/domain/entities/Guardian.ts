@@ -15,6 +15,12 @@ export interface GuardianProps {
   email: string;
   parentesco: Parentesco;
   telefono?: string;
+  /**
+   * Hash de la contraseña (US-48). El dominio guarda solo el hash derivado por el
+   * `PasswordHasher`; **nunca** la contraseña en claro. La validación de robustez
+   * (longitud mínima) ocurre antes de hashear, en el caso de uso / la frontera HTTP.
+   */
+  passwordHash: string;
   consentimiento: Consentimiento;
   creadoEn: Date;
 }
@@ -30,6 +36,7 @@ export class Guardian {
   readonly email: string;
   readonly parentesco: Parentesco;
   readonly telefono?: string;
+  readonly passwordHash: string;
   readonly consentimiento: Consentimiento;
   readonly creadoEn: Date;
 
@@ -41,6 +48,8 @@ export class Guardian {
     if (!Guardian.emailValido(email)) throw new DomainError(`Email inválido: "${props.email}".`);
     if (!esParentesco(props.parentesco))
       throw new DomainError(`Parentesco inválido: "${props.parentesco}".`);
+    if (props.passwordHash.trim() === '')
+      throw new DomainError('El hash de la contraseña es obligatorio.');
 
     this.id = props.id;
     this.nombre = props.nombre;
@@ -48,6 +57,7 @@ export class Guardian {
     this.email = email;
     this.parentesco = props.parentesco;
     this.telefono = props.telefono;
+    this.passwordHash = props.passwordHash;
     this.consentimiento = props.consentimiento;
     this.creadoEn = props.creadoEn;
   }

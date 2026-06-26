@@ -14,6 +14,7 @@ import { PrismaActivityRepository } from './repositories/PrismaActivityRepositor
 import { PrismaInteractionEventRepository } from './repositories/PrismaInteractionEventRepository.js';
 import { PrismaAuditLogRepository } from './repositories/PrismaAuditLogRepository.js';
 import { PrismaSettingsRepository } from './repositories/PrismaSettingsRepository.js';
+import { BcryptPasswordHasher } from './auth/BcryptPasswordHasher.js';
 
 /**
  * Raíz de composición de producción: cablea los repos Prisma y el AIProvider real
@@ -41,6 +42,7 @@ export function buildProductionDeps(config: Config, logger?: TTSLogger): AppDeps
       timeoutMs: config.tts.timeoutMs,
       logger,
     }),
+    hasher: new BcryptPasswordHasher(),
     bus: new InMemoryEventBus(),
     newId: () => randomUUID(),
     now: () => new Date(),

@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadConfig } from '../../src/config.js';
 import { buildServer } from '../../src/server.js';
 import { startTestDb, type TestDb } from '../support/db.js';
+import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
 
 /**
  * E2E del backend: arranca el servidor real (composición de producción, sin
@@ -69,6 +70,7 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
       apellidos: 'García',
       email: 'ana.e2e@example.com',
       parentesco: 'madre',
+      password: CLAVE_DE_PRUEBA,
       consentimientoAceptado: true,
       consentimientoVersion: 'v1',
     });
@@ -76,8 +78,11 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
     const guardian = (await alta.json()) as { id: string; consentimientoDado: boolean };
     expect(guardian.consentimientoDado).toBe(true);
 
-    // 2) Login por email → recupera la misma cuenta y emite la sesión JWT (US-45)
-    const login = await http('POST', '/guardians/login', { email: 'ana.e2e@example.com' });
+    // 2) Login con email + contraseña → recupera la cuenta y emite la sesión JWT (US-45/US-48)
+    const login = await http('POST', '/guardians/login', {
+      email: 'ana.e2e@example.com',
+      password: CLAVE_DE_PRUEBA,
+    });
     expect(login.status).toBe(200);
     const sesion = (await login.json()) as { id: string; accessToken: string };
     expect(sesion).toMatchObject({ id: guardian.id });
@@ -158,11 +163,15 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
       apellidos: 'Ruiz',
       email: 'bea.e2e@example.com',
       parentesco: 'madre',
+      password: CLAVE_DE_PRUEBA,
       consentimientoAceptado: true,
       consentimientoVersion: 'v1',
     });
     const guardian = (await alta.json()) as { id: string };
-    const login = await http('POST', '/guardians/login', { email: 'bea.e2e@example.com' });
+    const login = await http('POST', '/guardians/login', {
+      email: 'bea.e2e@example.com',
+      password: CLAVE_DE_PRUEBA,
+    });
     const { accessToken: token } = (await login.json()) as { accessToken: string };
 
     const perfilRes = await http(

@@ -21,6 +21,7 @@ model Guardian {
   email              String         @unique
   parentesco         String
   telefono           String?
+  passwordHash       String
   consentimientoDado Boolean
   consentimientoEn   DateTime
   consentimientoVer  String

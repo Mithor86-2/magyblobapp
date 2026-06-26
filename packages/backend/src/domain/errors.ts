@@ -25,3 +25,15 @@ export class ConflictError extends DomainError {
     this.name = 'ConflictError';
   }
 }
+
+/**
+ * Credenciales de inicio de sesión inválidas (US-48). HTTP 401. El mensaje es
+ * **deliberadamente genérico** y NO distingue entre email inexistente y
+ * contraseña errónea, para no revelar qué emails están registrados.
+ */
+export class InvalidCredentialsError extends DomainError {
+  constructor(message = 'Email o contraseña incorrectos.') {
+    super(message);
+    this.name = 'InvalidCredentialsError';
+  }
+}

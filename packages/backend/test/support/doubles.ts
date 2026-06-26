@@ -19,6 +19,7 @@ import type { InteractionEventRepository } from '../../src/domain/repositories/I
 import type { AuditLogRepository } from '../../src/domain/repositories/AuditLogRepository.js';
 import type { SettingsRepository } from '../../src/domain/repositories/SettingsRepository.js';
 import type { TTSProvider, SynthesizeInput } from '../../src/domain/tts/TTSProvider.js';
+import type { PasswordHasher } from '../../src/domain/auth/PasswordHasher.js';
 import type { Clock, IdGenerator } from '../../src/application/ports.js';
 
 /** Repositorio de adultos en memoria para tests. */
@@ -173,6 +174,31 @@ export class FakeTTSProvider implements TTSProvider {
 export class FailingTTSProvider implements TTSProvider {
   async synthesize(): Promise<never> {
     throw new Error('ElevenLabs no disponible (test).');
+  }
+}
+
+/**
+ * Credenciales de prueba compartidas (US-48). Se nombran sin las palabras que la
+ * regla `sonarjs/no-hardcoded-passwords` vigila (`password`/`pwd`/…) porque son
+ * literales de test deliberados, no secretos reales: `CLAVE_DE_PRUEBA` es la
+ * contraseña en claro y `HASH_DE_PRUEBA` un hash bcrypt de juguete (formato `$2`).
+ */
+export const CLAVE_DE_PRUEBA = 'Contrasena123';
+export const HASH_DE_PRUEBA = '$2b$10$abcdefghijklmnopqrstuv';
+
+/**
+ * `PasswordHasher` falso y determinista para tests (US-48): no usa bcrypt (lento),
+ * solo antepone un prefijo reversible. `verify` casa cuando el hash es el del plano.
+ * Suficiente para comprobar que el caso de uso hashea al alta y compara al login,
+ * sin tocar la librería real (eso lo cubre `bcrypt-password-hasher.test.ts`).
+ */
+export class FakePasswordHasher implements PasswordHasher {
+  async hash(plano: string): Promise<string> {
+    return `hashed:${plano}`;
+  }
+
+  async verify(plano: string, hash: string): Promise<boolean> {
+    return hash === `hashed:${plano}`;
   }
 }
 
