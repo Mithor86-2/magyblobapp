@@ -665,3 +665,41 @@ diferencias que costaron iteración:
   (la nueva encima de la ya existente). Conviene `git fetch`/mirar `develop` justo antes de fijar
   la versión, y —si se trabaja en paralelo— cerrar las features de una en una para minimizar el
   solape. Ver también [worktree por feature](#worktree-con-enlace-git-roto-ruta-con-espacio-vs-guion).
+
+## Feature 46 — Validación con Zod (US-44)
+
+### `z.unknown().transform()` vuelve la clave **obligatoria** en un `z.object`
+
+- **Síntoma:** al migrar `parseResponse` a Zod, una actividad válida sin `duracionMin`/`nivel`
+  (campos que el LLM puede omitir) se rechazaba entera; los tests fallaban con "ninguna actividad
+  válida".
+- **Causa:** el saneo "número en rango o `undefined`" se modeló como `z.unknown().transform(...)`.
+  Un `transform` envuelve el esquema en un pipe que `z.object` trata como **requerido**: si la clave
+  falta, falla la validación del objeto completo (no basta con que `unknown` acepte `undefined`).
+- **Solución:** añadir `.optional()` al final (`z.unknown().transform(...).optional()`). Con la clave
+  ausente, `optional` corta y devuelve `undefined` sin ejecutar el transform; presente con basura, el
+  transform la sanea a `undefined`. Regla general: campos opcionales saneados con `transform` →
+  siempre `.optional()`.
+
+### Mover una `pattern` de JSON Schema a un literal regex Zod despierta a SonarJS
+
+- **Síntoma:** la regex de email del login (`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`), que vivía como `pattern`
+  (string) en el JSON Schema sin quejas, al pasar a `z.string().regex(/.../)` disparó
+  `sonarjs/super-linear-regex` (backtracking) y rompió el lint del gate.
+- **Causa:** SonarJS analiza los **literales** de expresión regular, no los patrones en strings; el
+  literal expone el backtracking que el string ocultaba.
+- **Solución:** reutilizar la justificación que ya tenía la entidad de dominio (`Guardian.emailValido`
+  usa la misma regex con `// eslint-disable-next-line sonarjs/super-linear-regex`): formato básico,
+  email normalizado y de longitud acotada → sin ReDoS real. Mantener la supresión coherente entre
+  capas en vez de complicar la regex.
+
+### Zod no puede entrar en `/domain` (invariante de capas) ni los DTOs derivarse de la infra
+
+- **Síntoma/decisión:** la idea inicial de "una sola fuente de verdad" derivando los DTOs de
+  `application` con `z.infer` de los esquemas de ruta **viola** el invariante de capas: obligaría a
+  `application → infrastructure` (los esquemas de ruta son infraestructura) y el lint
+  `no-restricted-imports` lo bloquea. Igual, `zod` no puede importarse en `/domain` (cero deps).
+- **Solución:** los value-objects (`Edad`, `Idioma`) **no se tocan**; los esquemas Zod viven en
+  `infrastructure` (rutas, adaptador HTTP) y en `application` solo si no cruzan hacia dentro. La
+  duplicación que sí se elimina con `fastify-type-provider-zod` es la del **literal JSON Schema** vs
+  el genérico `app.post<{ Body }>` (el body se infiere del esquema), no la de los DTOs.

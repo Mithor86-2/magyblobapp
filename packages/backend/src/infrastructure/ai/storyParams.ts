@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { SettingsRepository } from '../../domain/repositories/SettingsRepository.js';
 
 /** Clave de `AppSetting` con los parámetros configurables de generación de cuentos. */
@@ -34,6 +35,20 @@ export interface ResolvedStoryParams {
 }
 
 /**
+ * Esquema de `prompt.story.params`: límites enteros positivos con `min <= max`,
+ * `rima` booleana y `formatos` no vacío tras filtrar al vocabulario y deduplicar.
+ */
+const storyParamsSchema = z
+  .object({
+    palabrasMin: z.number().int().positive(),
+    palabrasMax: z.number().int().positive(),
+    rima: z.boolean(),
+    formatos: z.array(z.unknown()).transform((arr) => [...new Set(arr.filter(esFormatoCuento))]),
+  })
+  .refine((o) => o.palabrasMax >= o.palabrasMin)
+  .refine((o) => o.formatos.length > 0);
+
+/**
  * Parsea y valida el JSON de `prompt.story.params`. Devuelve `null` (no inválido =
  * comportamiento por defecto, sin bloque de formato) si falta, no es JSON o no cumple
  * la forma esperada. Sanea: límites enteros positivos con `min <= max` y `formatos`
@@ -47,18 +62,8 @@ export function parseStoryParams(raw: string | null | undefined): StoryParams | 
   } catch {
     return null;
   }
-  if (typeof data !== 'object' || data === null) return null;
-  const o = data as Record<string, unknown>;
-
-  const min = enteroPositivo(o.palabrasMin);
-  const max = enteroPositivo(o.palabrasMax);
-  if (min === null || max === null || max < min) return null;
-  if (typeof o.rima !== 'boolean') return null;
-  if (!Array.isArray(o.formatos)) return null;
-  const formatos = o.formatos.filter(esFormatoCuento);
-  if (formatos.length === 0) return null;
-
-  return { palabrasMin: min, palabrasMax: max, rima: o.rima, formatos: [...new Set(formatos)] };
+  const result = storyParamsSchema.safeParse(data);
+  return result.success ? result.data : null;
 }
 
 /** Lee y valida `prompt.story.params` del repositorio de settings. */
@@ -81,9 +86,4 @@ export function resolveStoryParams(
     rima: params.rima,
     formato: params.formatos[i]!,
   };
-}
-
-/** Entero > 0, o `null` si no lo es. */
-function enteroPositivo(value: unknown): number | null {
-  return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
 }

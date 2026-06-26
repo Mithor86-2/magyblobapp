@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { loadConfig, type Config } from './config.js';
 import type { AppDeps } from './dependencies.js';
 import { healthRoutes } from './routes/health.js';
@@ -40,6 +41,12 @@ export async function buildServer(
       info: (meta, msg) => app.log.info(meta, msg),
       warn: (meta, msg) => app.log.warn(meta, msg),
     });
+
+  // Validación de entrada con Zod en las rutas (US-44): los esquemas `body` de cada
+  // ruta son Zod y el type-provider infiere el tipo del cuerpo. Sin esquema `response`,
+  // la serialización sigue siendo la de Fastify por defecto (no afecta a la narración).
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
 
   registerErrorHandler(app);
   await app.register(healthRoutes);

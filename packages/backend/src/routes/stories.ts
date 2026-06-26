@@ -1,21 +1,19 @@
 import type { FastifyInstance } from 'fastify';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
+import { z } from 'zod';
 import { GenerateStory } from '../application/use-cases/GenerateStory.js';
 import { MarkStoryRead } from '../application/use-cases/MarkStoryRead.js';
 import { NarrateStory } from '../application/use-cases/NarrateStory.js';
-import type { GenerateStoryRequest } from '../application/dto.js';
 import { ESTILOS, TEMAS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
-const bodySchema = {
-  type: 'object',
-  required: ['profileId', 'tema', 'estilo'],
-  additionalProperties: false,
-  properties: {
-    profileId: { type: 'string', minLength: 1 },
-    tema: { type: 'string', enum: [...TEMAS] },
-    estilo: { type: 'string', enum: [...ESTILOS] },
-  },
-} as const;
+const bodySchema = z
+  .object({
+    profileId: z.string().min(1),
+    tema: z.enum(TEMAS),
+    estilo: z.enum(ESTILOS),
+  })
+  .strict();
 
 /** Genera (y persiste) un cuento para un perfil; registra el evento de uso. */
 export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
@@ -23,10 +21,9 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
   const markStoryRead = new MarkStoryRead(deps);
   const narrateStory = new NarrateStory(deps);
 
-  app.post<{ Body: GenerateStoryRequest }>(
-    '/stories',
-    { schema: { body: bodySchema } },
-    async (request, reply) => {
+  app
+    .withTypeProvider<ZodTypeProvider>()
+    .post('/stories', { schema: { body: bodySchema } }, async (request, reply) => {
       const story = await generateStory.execute(request.body);
 
       await deps.bus.publish({
@@ -38,8 +35,7 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
       });
 
       return reply.code(201).send(story);
-    },
-  );
+    });
 
   // Marca un cuento como leído (US-07). Idempotente.
   app.post<{ Params: { id: string } }>('/stories/:id/read', async (request) =>

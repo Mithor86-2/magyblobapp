@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { SettingsRepository } from '../../domain/repositories/SettingsRepository.js';
 import { esCloudTarget, type CloudTarget } from './cloudPresets.js';
 
@@ -14,6 +15,13 @@ export interface CloudSetting {
   model: string;
 }
 
+/** Esquema de la forma `{activo, target, model}`: `target` conocido, `model` no vacío. */
+const cloudSettingSchema = z.object({
+  activo: z.boolean(),
+  target: z.custom<CloudTarget>(esCloudTarget),
+  model: z.string().trim().min(1),
+});
+
 /**
  * Parsea y valida el JSON de `ai.cloud`. Devuelve `null` (no inválido = no se usa
  * cloud) si falta, no es JSON, o no cumple la forma `{activo, target, model}` con
@@ -28,17 +36,8 @@ export function parseCloudSetting(raw: string | null | undefined): CloudSetting 
   } catch {
     return null;
   }
-  if (typeof data !== 'object' || data === null) return null;
-  const o = data as Record<string, unknown>;
-  if (
-    typeof o.activo !== 'boolean' ||
-    !esCloudTarget(o.target) ||
-    typeof o.model !== 'string' ||
-    o.model.trim() === ''
-  ) {
-    return null;
-  }
-  return { activo: o.activo, target: o.target, model: o.model.trim() };
+  const result = cloudSettingSchema.safeParse(data);
+  return result.success ? result.data : null;
 }
 
 /** Lee `ai.cloud` del repositorio de settings y lo valida. */

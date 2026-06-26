@@ -12,6 +12,45 @@ import { createApiGateways, getBaseUrl } from './http';
 const BASE = 'http://localhost:3000';
 const api = createApiGateways(BASE);
 
+// Fixtures completos: desde US-44 el adaptador valida las respuestas con Zod, así que
+// los cuerpos mockeados deben cumplir el contrato del backend (no valen objetos parciales).
+const GUARDIAN = {
+  id: 'g1',
+  nombre: 'Ana',
+  apellidos: 'Pérez',
+  email: 'ana@example.com',
+  parentesco: 'madre',
+  consentimientoDado: true,
+} as const;
+const PROFILE = {
+  id: 'p1',
+  guardianId: 'g1',
+  nombre: 'Leo',
+  edad: 4,
+  idioma: 'es',
+  avatar: 'zorro',
+  intereses: ['animales'],
+} as const;
+const STORY = {
+  id: 's1',
+  profileId: 'p1',
+  tema: 'magia',
+  estilo: 'aventura',
+  titulo: 'Hola',
+  cuerpo: 'Érase una vez.',
+  idioma: 'es',
+  estado: 'nuevo',
+  proveedor: 'mock',
+} as const;
+const ACTIVITY = {
+  id: 'a1',
+  profileId: 'p1',
+  categoria: 'arte',
+  titulo: 'Pintar',
+  descripcion: 'Pinta con los dedos.',
+  proveedor: 'mock',
+} as const;
+
 function okResponse(body: unknown): Response {
   return { ok: true, status: 201, json: async () => body } as unknown as Response;
 }
@@ -48,8 +87,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
   });
 
   it('guardians.register hace POST /guardians con cuerpo JSON', async () => {
-    const guardian = { id: 'g1', nombre: 'Ana', consentimientoDado: true };
-    const fetchMock = vi.fn().mockResolvedValue(okResponse(guardian));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN));
     vi.stubGlobal('fetch', fetchMock);
 
     const input = {
@@ -62,7 +100,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
     };
     const result = await api.guardians.register(input);
 
-    expect(result).toEqual(guardian);
+    expect(result).toEqual(GUARDIAN);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/guardians`);
@@ -72,13 +110,12 @@ describe('createApiGateways (adaptador HTTP)', () => {
   });
 
   it('guardians.login hace POST /guardians/login con el email', async () => {
-    const guardian = { id: 'g1', email: 'ana@example.com', consentimientoDado: true };
-    const fetchMock = vi.fn().mockResolvedValue(okResponse(guardian));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN));
     vi.stubGlobal('fetch', fetchMock);
 
     const result = await api.guardians.login({ email: 'ana@example.com' });
 
-    expect(result).toEqual(guardian);
+    expect(result).toEqual(GUARDIAN);
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/guardians/login`);
     expect(options.method).toBe('POST');
@@ -86,7 +123,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
   });
 
   it('profiles.list hace GET /guardians/:id/profiles', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse([{ id: 'p1', nombre: 'Leo' }]));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse([PROFILE]));
     vi.stubGlobal('fetch', fetchMock);
 
     const out = await api.profiles.list('g1');
@@ -94,11 +131,11 @@ describe('createApiGateways (adaptador HTTP)', () => {
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/guardians/g1/profiles`);
     expect(options.method).toBe('GET');
-    expect(out).toEqual([{ id: 'p1', nombre: 'Leo' }]);
+    expect(out).toEqual([PROFILE]);
   });
 
   it('profiles.create hace POST /profiles', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 'p1' }));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(PROFILE));
     vi.stubGlobal('fetch', fetchMock);
 
     await api.profiles.create({
@@ -116,7 +153,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
   });
 
   it('stories.generate hace POST /stories', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 's1', titulo: 'Hola' }));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(STORY));
     vi.stubGlobal('fetch', fetchMock);
 
     await api.stories.generate({ profileId: 'p1', tema: 'magia', estilo: 'aventura' });
@@ -131,7 +168,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
   });
 
   it('activities.recommend hace POST /activities/recommend', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse([{ id: 'a1', categoria: 'arte' }]));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse([ACTIVITY]));
     vi.stubGlobal('fetch', fetchMock);
 
     await api.activities.recommend({ profileId: 'p1', categoria: 'musica', cantidad: 2 });
@@ -147,7 +184,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
   });
 
   it('stories.markRead hace POST /stories/:id/read', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 's1', estado: 'leido' }));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...STORY, estado: 'leido' }));
     vi.stubGlobal('fetch', fetchMock);
 
     await api.stories.markRead('s1');
@@ -168,7 +205,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
   });
 
   it('activities.complete hace POST /activities/:id/complete con la valoración', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 'a1', valoracion: 3 }));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...ACTIVITY, valoracion: 3 }));
     vi.stubGlobal('fetch', fetchMock);
 
     await api.activities.complete('a1', 3);
@@ -286,7 +323,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
 
   it('una petición que responde antes del timeout no se aborta', async () => {
     vi.useFakeTimers();
-    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 's1' }));
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(STORY));
     vi.stubGlobal('fetch', fetchMock);
 
     const story = await api.stories.generate({
@@ -295,8 +332,33 @@ describe('createApiGateways (adaptador HTTP)', () => {
       estilo: 'aventura',
     });
 
-    expect(story).toEqual({ id: 's1' });
+    expect(story).toEqual(STORY);
     expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
     vi.useRealTimers();
+  });
+
+  it('una respuesta OK con forma inesperada da ApiError de tipo malformed', async () => {
+    // El backend responde 200 pero con un cuerpo que no cumple el contrato (faltan campos).
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(okResponse({ id: 's1', titulo: 'Hola' })));
+
+    const error = await api.stories
+      .generate({ profileId: 'p1', tema: 'magia', estilo: 'aventura' })
+      .catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.tipo).toBe('malformed');
+  });
+
+  it('una lista con un elemento inválido da ApiError de tipo malformed', async () => {
+    // Un perfil válido y otro con `edad` no numérica: la validación rechaza toda la respuesta.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(okResponse([PROFILE, { ...PROFILE, edad: 'cuatro' }])),
+    );
+
+    const error = await api.profiles.list('g1').catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.tipo).toBe('malformed');
   });
 });

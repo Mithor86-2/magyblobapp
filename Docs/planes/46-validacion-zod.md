@@ -49,35 +49,53 @@ repartida en tres formas distintas:
 
 Todo en capas externas (infra del backend + infra de la app), con tests existentes como red.
 
-- [ ] ❌ Añadir `zod` (v4) como dependencia de `@magyblob/backend` y de `@magyblob/app`
-      (`pnpm --filter <pkg> add zod`). Verificar `minimumReleaseAge` del workspace no bloquea la versión.
-- [ ] ❌ **parseResponse.ts** — sustituir el saneo manual por esquemas Zod equivalentes:
-      `storySchema` (`titulo`/`cuerpo` string no vacío tras `trim`), `actividadSchema`
-      (`categoria` vía `z.enum(CATEGORIAS)`, `titulo`/`descripcion` no vacíos, `duracionMin`/`nivel`
-      enteros en rango con descarte → `undefined`). Conservar: filtrar inválidas, `slice(cantidad)`,
-      error si 0 válidas. Mantener firmas públicas (`parseStory`/`parseActivities`).
-- [ ] ❌ **cloudSettings.ts** — `parseCloudSetting` con `z.object({activo, target, model}).safeParse`;
-      `target` validado contra `esCloudTarget`, `model` no vacío; ante fallo → `null` (privacidad por
-      defecto). Sin lanzar.
-- [ ] ❌ **storyParams.ts** — `parseStoryParams` con esquema Zod: `palabrasMin/Max` enteros positivos
-      con `max >= min`, `rima` boolean, `formatos` array filtrado a vocabulario y dedup; fallo → `null`.
-- [ ] ❌ **app/infrastructure/http.ts** — esquemas Zod para las respuestas (`Guardian`, `ChildProfile`,
-      `Story`, `Activity`, `History`); `request<T>` valida con `safeParse` y lanza `ApiError`
-      controlado (en vez de `as TResponse`) si la forma no cumple. Evaluar Zod Mini por bundle.
-- [ ] ❌ Tests co-localizados por esquema (válido / inválido / saneable) que repliquen el
-      comportamiento de la validación manual sustituida (`parseResponse.test.ts`, settings, http).
-- [ ] ❌ **Verificar invariante de capas:** `pnpm lint` confirma que ningún import de `zod` aparece en
+- [x] ✅ Añadir `zod` (v4.4.3) como dependencia de `@magyblob/backend` y de `@magyblob/app`. No
+      bloqueado por `minimumReleaseAge`.
+- [x] ✅ **parseResponse.ts** — saneo manual sustituido por esquemas Zod: `storySchema`
+      (`textoNoVacio` = trim + min(1)), `actividadSchema` (`z.enum(CATEGORIAS)`, `textoNoVacio`,
+      `duracionMin`/`nivel` vía `enteroEnRango(...).optional()` → `undefined` si falta o fuera de rango).
+      Firmas públicas y mensajes de error intactos. Tests existentes verdes sin cambios.
+- [x] ✅ **cloudSettings.ts** — `parseCloudSetting` con `cloudSettingSchema.safeParse` (`activo` boolean,
+      `target` vía `z.custom(esCloudTarget)`, `model` `z.string().trim().min(1)`); `JSON.parse` con
+      try/catch conservado; fallo → `null`. Tests verdes.
+- [x] ✅ **storyParams.ts** — `parseStoryParams` con `storyParamsSchema` (enteros positivos,
+      `palabrasMax >= palabrasMin` por `refine`, `rima` boolean, `formatos` filtrado+dedup no vacío por
+      `refine`); helper `enteroPositivo` eliminado. Tests verdes (incluye dedup).
+- [x] ✅ **app/infrastructure/http.ts + schemas.ts** — esquemas Zod por respuesta en
+      `infrastructure` (reusan vocabularios de `domain`); `request` recibe el esquema y valida en la
+      frontera → `ApiError` tipo `malformed` si no cumple (en vez del cast `as`). Decisión del usuario:
+      validar y actualizar tests. Los mocks parciales de `http.test.ts` pasan a fixtures completos.
+- [x] ✅ Backend: tests existentes (192) verdes sin tocarlos → el comportamiento se preservó 1:1.
+- [x] ✅ App: `http.test.ts` con fixtures completos + 2 tests nuevos del caso `malformed` (objeto y
+      lista con elemento inválido); 87 tests verdes.
+- [x] ✅ **Invariante de capas verificado:** `grep` y `pnpm lint` confirman 0 imports de `zod` en
       `/domain` (regla `no-restricted-imports` verde).
-- [ ] ❌ Gate verde (`pnpm check`) + entradas en `CHANGELOG.md` (backend y app) bajo `## [Unreleased]`.
+- [x] ✅ Gate completo `pnpm check` verde (EXIT 0): typecheck + lint + format + 192 backend + 87 app.
+- [x] ✅ Entradas en `packages/backend/CHANGELOG.md` y `packages/app/CHANGELOG.md`.
 
-## Fase 2 — Rutas Fastify vía type-provider (OPCIONAL, decidir tras Fase 1)
+## Fase 2 — Rutas Fastify vía type-provider (hecha)
 
-- [ ] ❌ Evaluar `fastify-type-provider-zod` compatible con Fastify 5; comprobar que la ruta de error
-      (validación → 400) sigue pasando por [errorHandler.ts](../../packages/backend/src/routes/errorHandler.ts).
-- [ ] ❌ Migrar los 4 schemas de ruta a esquemas Zod como **única fuente de verdad**, derivando los
-      tipos de [dto.ts](../../packages/backend/src/application/dto.ts) con `z.infer` (elimina duplicación).
-- [ ] ❌ Tests de integración de rutas verdes sin cambios de contrato; documentar el nuevo flujo de
-      validación en la API doc si aplica.
+- [x] ✅ `fastify-type-provider-zod` (v7) instalado, compatible con Fastify 5 + Zod 4. Compiladores
+      (`validatorCompiler`/`serializerCompiler`) cableados en [server.ts](../../packages/backend/src/server.ts)
+      antes de registrar rutas. Sin esquema `response`, la serialización por defecto se mantiene (no
+      afecta a la narración que devuelve un `Buffer`).
+- [x] ✅ Las 4 rutas con body (`guardians`, `guardians/login`, `profiles`, `stories`,
+      `activities/recommend`, `activities/:id/complete`) migradas de JSON Schema a Zod vía
+      `app.withTypeProvider<ZodTypeProvider>()`; el tipo del body se **infiere del esquema** (se elimina
+      `app.post<{ Body }>` y los imports de DTO en las rutas). `.strict()` replica
+      `additionalProperties: false`.
+- [x] ✅ **Decisión de capas:** los DTOs de `application` **no** se derivan con `z.infer` de los
+      esquemas Zod — eso obligaría a `application → infrastructure`, prohibido por el invariante. Los
+      esquemas Zod viven en las rutas (infra) y los DTOs siguen siendo el contrato de los casos de uso;
+      la duplicación eliminada es la del **literal JSON Schema**.
+- [x] ✅ `errorHandler` intacto: los errores de validación de Zod llegan con `statusCode 400` igual que
+      los de Ajv → contrato `{ error: { tipo, mensaje } }` y status 400 preservados. Regex de email del
+      login con la misma supresión `sonarjs/super-linear-regex` que `Guardian.emailValido`.
+- [x] ✅ 25 tests de integración de rutas verdes sin cambios de contrato; gate completo `pnpm check`
+      verde (EXIT 0): 192 backend + 87 app. Entrada en `packages/backend/CHANGELOG.md`.
+
+> **Pendiente fuera del gate:** las suites con Docker (`test:integration` de persistencia y `test:e2e`)
+> no se han corrido en local (requieren Docker); se ejecutan en CI.
 
 ## Cierre
 

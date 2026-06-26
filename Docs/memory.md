@@ -707,3 +707,26 @@ detectado en la auditoría de Fase 6.
 - **Versionado en paralelo (lección aplicada):** al cerrar, `develop` ya iba en app 0.19.0/raíz 0.26.0
   por US-41/42 cerradas en paralelo; se **re-bumpea** a la siguiente libre (app 0.20.0/raíz 0.27.0) en
   vez de la versión planeada. C-7/C-9 del checklist de cumplimiento quedan diferidas a otra rama.
+
+## Validación de fronteras con Zod (Feature 46 · 2026-06-25 · backend v0.17.0 / app v0.21.0 · US-44)
+
+Se adopta **Zod 4** como librería de validación, de forma **incremental y acotada**, para reemplazar
+el saneo imperativo disperso por esquemas declarativos en las **fronteras de datos no fiables**.
+
+- **Por qué Zod y dónde:** las entradas no fiables (salida del LLM, settings JSON, respuestas del
+  backend en la app, entrada HTTP de las rutas) se validan/sanean mejor con esquemas que con cadenas
+  de `typeof`. Es el caso de uso natural de "parse, don't validate".
+- **Restricción dura de arquitectura:** Zod **no entra en `/domain`** (cero deps externas, invariante
+  ESLint). Los value-objects `Edad`/`Idioma` no se tocan; los esquemas viven en
+  `application`/`infrastructure`. Además, **los DTOs de `application` no se derivan** con `z.infer` de
+  los esquemas de ruta: eso cruzaría `application → infrastructure`, prohibido. La duplicación que se
+  elimina con `fastify-type-provider-zod` es la del **literal JSON Schema** (el body se infiere del
+  esquema), no la de los DTOs.
+- **Comportamiento preservado:** el saneo del LLM sigue **saneando, no solo rechazando** (trim,
+  descarte de números fuera de rango → `undefined`, categorías inexistentes); los 192 tests del
+  backend pasaron **sin tocarlos**. En la app, la novedad es que una respuesta que no cumple el
+  contrato produce un `ApiError` tipo `malformed` en vez de propagar un objeto malformado por
+  `as TResponse`.
+- **Cumplimiento:** Zod y `fastify-type-provider-zod` son librerías puras (sin red/SDK/telemetría) →
+  **no afectan** a C-2/C-5. Enlaza con la robustez de red/IA de la app (US-43), que dejó `http.ts`
+  como el punto único de contacto con la red donde ahora también se valida.

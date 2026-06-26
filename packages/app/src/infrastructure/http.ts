@@ -8,20 +8,25 @@
  * El app es agnóstico del proveedor de IA: solo llama a `POST /stories` y el
  * backend decide (mock | local) según su propia configuración.
  */
+import type { z } from 'zod';
 import { ApiError } from '../domain/errors';
 import { trackApi } from './telemetry';
+import {
+  activityListSchema,
+  activitySchema,
+  childProfileListSchema,
+  childProfileSchema,
+  guardianSchema,
+  historySchema,
+  storySchema,
+} from './schemas';
 import type { Api } from '../domain/gateways';
 import type {
-  Activity,
-  ChildProfile,
   CreateChildProfileInput,
   GenerateStoryRequest,
-  Guardian,
-  History,
   LoginGuardianInput,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
-  Story,
 } from '../domain/types';
 
 const DEFAULT_BASE_URL = 'http://localhost:3000';
@@ -42,6 +47,7 @@ async function request<TResponse>(
   baseUrl: string,
   path: string,
   options: { method: 'GET' | 'POST'; body?: unknown; timeoutMs?: number },
+  schema: z.ZodType<TResponse>,
 ): Promise<TResponse> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const controller = new AbortController();
@@ -81,7 +87,19 @@ async function request<TResponse>(
     );
   }
 
-  return (await response.json()) as TResponse;
+  // Validación de la respuesta en la frontera: el backend puede cambiar o devolver
+  // algo inesperado; en vez de propagar un objeto malformado por un cast `as`, se
+  // produce un `ApiError` controlado que la UI trata como el resto de errores.
+  const data = (await response.json().catch(() => null)) as unknown;
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    throw new ApiError(
+      response.status,
+      'malformed',
+      'El servidor devolvió una respuesta inesperada.',
+    );
+  }
+  return parsed.data;
 }
 
 /** Composition de los gateways HTTP. `baseUrl` inyectable (tests); por defecto, el env. */
@@ -89,43 +107,52 @@ export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
   return {
     guardians: {
       register: (input: RegisterGuardianInput) =>
-        request<Guardian>(baseUrl, '/guardians', { method: 'POST', body: input }),
+        request(baseUrl, '/guardians', { method: 'POST', body: input }, guardianSchema),
       login: (input: LoginGuardianInput) =>
-        request<Guardian>(baseUrl, '/guardians/login', { method: 'POST', body: input }),
+        request(baseUrl, '/guardians/login', { method: 'POST', body: input }, guardianSchema),
     },
     profiles: {
       create: (input: CreateChildProfileInput) =>
-        request<ChildProfile>(baseUrl, '/profiles', { method: 'POST', body: input }),
+        request(baseUrl, '/profiles', { method: 'POST', body: input }, childProfileSchema),
       list: (guardianId: string) =>
-        request<ChildProfile[]>(baseUrl, `/guardians/${guardianId}/profiles`, { method: 'GET' }),
+        request(
+          baseUrl,
+          `/guardians/${guardianId}/profiles`,
+          { method: 'GET' },
+          childProfileListSchema,
+        ),
     },
     stories: {
       generate: (req: GenerateStoryRequest) =>
-        request<Story>(baseUrl, '/stories', {
-          method: 'POST',
-          body: req,
-          timeoutMs: GENERATION_TIMEOUT_MS,
-        }),
+        request(
+          baseUrl,
+          '/stories',
+          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
+          storySchema,
+        ),
       markRead: (storyId: string) =>
-        request<Story>(baseUrl, `/stories/${storyId}/read`, { method: 'POST' }),
+        request(baseUrl, `/stories/${storyId}/read`, { method: 'POST' }, storySchema),
       narrationUrl: (storyId: string) => `${baseUrl}/stories/${storyId}/narration`,
     },
     activities: {
       recommend: (req: RecommendActivitiesRequest) =>
-        request<Activity[]>(baseUrl, '/activities/recommend', {
-          method: 'POST',
-          body: req,
-          timeoutMs: GENERATION_TIMEOUT_MS,
-        }),
+        request(
+          baseUrl,
+          '/activities/recommend',
+          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
+          activityListSchema,
+        ),
       complete: (activityId: string, valoracion: number) =>
-        request<Activity>(baseUrl, `/activities/${activityId}/complete`, {
-          method: 'POST',
-          body: { valoracion },
-        }),
+        request(
+          baseUrl,
+          `/activities/${activityId}/complete`,
+          { method: 'POST', body: { valoracion } },
+          activitySchema,
+        ),
     },
     history: {
       get: (profileId: string) =>
-        request<History>(baseUrl, `/profiles/${profileId}/history`, { method: 'GET' }),
+        request(baseUrl, `/profiles/${profileId}/history`, { method: 'GET' }, historySchema),
     },
   };
 }

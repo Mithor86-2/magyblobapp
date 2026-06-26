@@ -473,6 +473,20 @@ se abra). Algunas parten de algo ya existente (se indica).
       `beforeBreadcrumb` y `scrubEvent` redactan el nombre del niño también en `breadcrumbs[].data`).
       Solo app; `pnpm check` verde (192 backend + 83 app); `http.ts`/`sentry.ts`/`telemetry.ts` 100%.
 
+- [x] ✅ **Validación de fronteras de datos con Zod (US-44)** (backend v0.17.0 / app v0.21.0 / raíz
+      v0.28.0, rama `feature/46-validacion-zod` desde `develop`). **Fase 1:** el saneo imperativo
+      (`typeof`/rangos) de las fronteras no fiables pasa a esquemas Zod conservando el comportamiento de
+      **sanear, no solo rechazar** — salida del LLM (`parseResponse.ts`) y settings JSON
+      (`cloudSettings.ts`, `storyParams.ts`); en la app, el adaptador HTTP valida las respuestas del
+      backend (`infrastructure/schemas.ts`) y produce `ApiError` tipo `malformed` en vez del cast
+      `as TResponse`. **Fase 2:** las 4 rutas Fastify migran de JSON Schema escrito a mano a Zod vía
+      `fastify-type-provider-zod` (`ZodTypeProvider`), infiriendo el tipo del body del esquema;
+      `.strict()` replica `additionalProperties:false` y el contrato de error (400 +
+      `{error:{tipo,mensaje}}`) queda intacto. **Invariante de capas respetado:** `zod` y el
+      type-provider quedan **fuera de `/domain`** (value-objects sin tocar) y los DTOs de `application`
+      no se derivan de esquemas de infraestructura. Cumplimiento C-2/C-5 sin cambios (librerías puras).
+      `pnpm check` verde (192 backend + 87 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
