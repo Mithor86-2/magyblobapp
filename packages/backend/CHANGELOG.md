@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.21.0] - 2026-06-26
+
+### Added
+
 - Ambiente de producción guiado (US-51): **`render.yaml`** en la raíz (Blueprint IaC de Render) que
   despliega el backend como _web service_ Docker con `dockerfilePath: packages/backend/Dockerfile`,
   `dockerContext: .` (contexto = raíz del repo), `branch: main`, `healthCheckPath: /health`, región

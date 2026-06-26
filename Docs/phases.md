@@ -551,6 +551,29 @@ la integración (238 backend + 114 app). Pendiente del lote: pruebas con el usua
       logs). _Versión diferida (se asigna al integrar en `develop`)._ Pendiente: pruebas con el usuario y
       `finish` tras confirmación. Plan en [planes/feature-52-password-login.md](planes/feature-52-password-login.md).
 
+### Lote de mejoras en paralelo — Ola 2 (integrada en `develop` el 2026-06-26)
+
+Dos features sobre la Ola 1 ya integrada (F-E depende de F-B+F-D; F-F de F-A). Integradas con
+versionado diferido: **backend v0.21.0 / app v0.24.0 / raíz v0.32.0**; gate verde (254 backend +
+120 app). Pendiente del lote: **pruebas manuales del usuario** (acordadas para el final del plan).
+
+- [x] ✅ **Dashboard/Home sin sesión, uso libre efímero (US-50, F-E, rama `feature/54-dashboard-anonimo`).**
+      Casos de uso `GenerateStoryAnonymous`/`RecommendActivitiesAnonymous` que **no persisten nada** y no
+      piden `profileId` ni nombre de niño (solo edad/idioma/temas-estilos o categoría/cantidad); rutas
+      **públicas** `POST /stories/anonymous` y `POST /activities/recommend/anonymous` validadas con Zod,
+      con **rate-limit en memoria** (3 cuentos + 3 actividades por cliente → 429, sin dependencia nueva).
+      App: pantalla `Dashboard` como inicio sin sesión (`resolveInitialRoute`: sin sesión → `Dashboard`)
+      con contador efímero en cliente. Cumplimiento: **C-14** (efímero, conforme con C-1: no crea dato de
+      menor sin consentimiento). Sin tocar el modelo de datos. Plan en
+      [planes/feature-54-dashboard-anonimo.md](planes/feature-54-dashboard-anonimo.md).
+- [x] ✅ **Ambiente de producción guiado (US-51, F-F, rama `feature/55-produccion-guiada`).** `render.yaml`
+      (Blueprint IaC: Docker, contexto raíz, `branch: main`, health `/health`, Frankfurt, free; secretos
+      `sync: false`), guía `Docs/despliegue.md` (Neon PG16 + Render + Groq; migraciones automáticas en el
+      arranque; cold start del plan free), `EXPO_PUBLIC_API_URL` parametrizable en el app. Ollama no va a
+      producción; la IA real se obtiene con Groq (excepción de cumplimiento documentada, C-5). Solo
+      infra/docs: no cambia el runtime ni `docker compose up`. Plan en
+      [planes/feature-55-produccion-guiada.md](planes/feature-55-produccion-guiada.md).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
