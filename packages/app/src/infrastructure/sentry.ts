@@ -22,7 +22,7 @@
 // Solo tipos: `import type` se borra en runtime, así que este módulo NO carga
 // `@sentry/react-native` (que arrastra react-native y no es importable bajo Vitest).
 // La inicialización real vive en `sentry.bootstrap.ts`.
-import type { ErrorEvent, ReactNativeOptions } from '@sentry/react-native';
+import type { Breadcrumb, ErrorEvent, ReactNativeOptions } from '@sentry/react-native';
 
 /** DSN del proyecto Sentry; llega por env de Expo (`EXPO_PUBLIC_*`). */
 export function getSentryDsn(): string | undefined {
@@ -61,6 +61,15 @@ function redactChildName(text: string): string {
   return text.replace(new RegExp(escapeRegExp(activeChildName), 'gi'), CHILD_REDACTED);
 }
 
+/** Redacta el nombre del niño en los valores de texto de un `data` de breadcrumb. */
+function redactData(data: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(data)) {
+    out[key] = typeof value === 'string' ? redactChildName(value) : value;
+  }
+  return out;
+}
+
 /**
  * `beforeSend`: minimiza el evento antes de salir a un tercero. Función pura y
  * testeable (US-35, nivel CORE: protege que no salga PII de un menor).
@@ -87,9 +96,24 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
   }
   for (const crumb of event.breadcrumbs ?? []) {
     if (crumb.message) crumb.message = redactChildName(crumb.message);
+    if (crumb.data) crumb.data = redactData(crumb.data);
   }
 
   return event;
+}
+
+/**
+ * `beforeBreadcrumb`: red de seguridad que redacta el nombre del niño de cada
+ * breadcrumb (message y valores de `data`) **antes de almacenarlo**, complementando
+ * a `scrubEvent` (que actúa al enviar). Los wrappers de `telemetry.ts` ya evitan PII
+ * por construcción; esto cubre además los breadcrumbs automáticos del SDK. Devuelve
+ * siempre el breadcrumb (nunca `null`): el filtrado de dev-server/DSN lo encadena el
+ * propio SDK con su `beforeBreadcrumb` por defecto.
+ */
+export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
+  if (breadcrumb.message) breadcrumb.message = redactChildName(breadcrumb.message);
+  if (breadcrumb.data) breadcrumb.data = redactData(breadcrumb.data);
+  return breadcrumb;
 }
 
 function isDev(): boolean {
@@ -114,5 +138,9 @@ export function buildSentryOptions(dsn: string, release?: string): ReactNativeOp
     tracesSampleRate: 0,
     sendDefaultPii: false,
     beforeSend: scrubEvent,
+    // Telemetría del recorrido (US-42): acota el rastro y redacta PII del niño de
+    // cada breadcrumb antes de almacenarlo (defensa en profundidad sobre beforeSend).
+    maxBreadcrumbs: 50,
+    beforeBreadcrumb: scrubBreadcrumb,
   };
 }

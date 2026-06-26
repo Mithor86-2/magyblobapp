@@ -47,6 +47,7 @@ export default defineConfig({
         'src/presentation/screens/**', // composición visual → e2e/onboarding.spec.ts
         'src/presentation/hooks/useNarration.ts', // atado a expo-audio/file-system/speech
         'src/presentation/components/Icon.tsx', // lucide-react-native no carga bajo Vitest (US-30)
+        'src/presentation/components/AppErrorBoundary.tsx', // importa @sentry/react-native (no carga bajo Vitest); su ErrorFallback sí se prueba (US-41)
         '**/*.d.ts',
       ],
       thresholds: {

@@ -9,6 +9,7 @@
  * backend decide (mock | local) según su propia configuración.
  */
 import { ApiError } from '../domain/errors';
+import { trackApi } from './telemetry';
 import type { Api } from '../domain/gateways';
 import type {
   Activity,
@@ -43,8 +44,12 @@ async function request<TResponse>(
     });
   } catch {
     // Fallo de red (backend caído, host inalcanzable): la UI lo trata como reintentable.
+    trackApi({ method: options.method, path, ok: false });
     throw new ApiError(0, 'network', 'No se pudo conectar con el servidor.');
   }
+
+  // Breadcrumb del recorrido (US-42): método, ruta y resultado, sin cuerpo ni PII.
+  trackApi({ method: options.method, path, status: response.status, ok: response.ok });
 
   if (!response.ok) {
     const fallback = `Error ${response.status}`;

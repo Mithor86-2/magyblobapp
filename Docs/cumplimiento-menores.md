@@ -116,7 +116,14 @@ arquitectura.
   no-entrenamiento. El DSN es una **clave pública de ingesta** (no un secreto). Ver
   [US-40](historias-usuario/epic-f-plataforma.md#us-40) y los planes
   [planes/42-sentry-monitorizacion-errores.md](planes/42-sentry-monitorizacion-errores.md) y
-  [planes/43-sentry-release-debug-test.md](planes/43-sentry-release-debug-test.md).
+  [planes/43-sentry-release-debug-test.md](planes/43-sentry-release-debug-test.md). **Ampliación
+  (US-41/US-42):** un `AppErrorBoundary` con _fallback UI_ propia que **no** usa `showDialog`/feedback
+  de Sentry (UI/red de tercero con PII) y **no** muestra `error.message` ni el _component stack_ al
+  usuario; y **breadcrumbs** del recorrido (navegación/API/acciones) que transportan **solo
+  enums/ids/contadores** —nunca el nombre del niño ni texto libre—, con `beforeBreadcrumb` y
+  `scrubEvent` redactando el nombre del niño también en `breadcrumbs[].data` como defensa en
+  profundidad. Sin DSN, ambos son no-op. Ver
+  [planes/44-observabilidad-errores.md](planes/44-observabilidad-errores.md).
 - Estas reglas se revisan en la **Fase 6** (robustez) y se cierran en la **Fase 7**
   (documentación: añadir política de privacidad y data-safety).
 

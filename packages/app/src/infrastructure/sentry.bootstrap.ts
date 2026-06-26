@@ -8,6 +8,7 @@
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
 import { buildSentryOptions, getSentryDsn } from './sentry';
+import { setBreadcrumbSink } from './telemetry';
 
 /** Release a partir de la versión del app (`app.json`); agrupa errores por versión. */
 function getRelease(): string | undefined {
@@ -23,4 +24,7 @@ export function initSentry(): void {
   const dsn = getSentryDsn();
   if (!dsn) return;
   Sentry.init(buildSentryOptions(dsn, getRelease()));
+  // Cablea el destino real de los breadcrumbs de telemetría (US-42). Solo con DSN
+  // activo: sin Sentry, los wrappers de `telemetry.ts` quedan no-op.
+  setBreadcrumbSink((breadcrumb) => Sentry.addBreadcrumb(breadcrumb));
 }

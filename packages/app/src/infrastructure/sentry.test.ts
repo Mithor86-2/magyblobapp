@@ -4,6 +4,7 @@ import {
   buildSentryOptions,
   getSentryDsn,
   isSentryEnabled,
+  scrubBreadcrumb,
   scrubEvent,
   setActiveChildName,
 } from './sentry';
@@ -50,6 +51,12 @@ describe('buildSentryOptions', () => {
     expect(opts.sendDefaultPii).toBe(false);
     expect(opts.tracesSampleRate).toBe(0);
     expect(opts.beforeSend).toBe(scrubEvent);
+  });
+
+  it('acota los breadcrumbs y redacta su PII con beforeBreadcrumb (US-42)', () => {
+    const opts = buildSentryOptions(DSN);
+    expect(opts.maxBreadcrumbs).toBe(50);
+    expect(opts.beforeBreadcrumb).toBe(scrubBreadcrumb);
   });
 
   it('etiqueta la release cuando se le pasa la versión del app', () => {
@@ -108,7 +115,10 @@ describe('scrubEvent', () => {
       message: 'Error generando el cuento de Lucía la valiente',
       // Una excepción/breadcrumb sin texto: no debe romper la redacción.
       exception: { values: [{ value: 'lucía no encontrada' }, { type: 'Error' }] },
-      breadcrumbs: [{ message: 'perfil Lucía cargado' }, { category: 'ui.tap' }],
+      breadcrumbs: [
+        { message: 'perfil Lucía cargado', data: { nombre: 'Lucía', edad: 4 } },
+        { category: 'ui.tap' },
+      ],
     };
 
     const out = scrubEvent(event);
@@ -116,6 +126,8 @@ describe('scrubEvent', () => {
     expect(out.message).toBe('Error generando el cuento de [child] la valiente');
     expect(out.exception?.values?.[0]?.value).toBe('[child] no encontrada');
     expect(out.breadcrumbs?.[0]?.message).toBe('perfil [child] cargado');
+    // También redacta el nombre del niño en los valores de texto de `data`.
+    expect(out.breadcrumbs?.[0]?.data).toEqual({ nombre: '[child]', edad: 4 });
   });
 
   it('NO redacta el email del adulto (puede salir según la política)', () => {
@@ -132,5 +144,33 @@ describe('scrubEvent', () => {
     setActiveChildName(undefined);
     const event: ErrorEvent = { type: undefined, message: 'Error genérico sin nombres' };
     expect(scrubEvent(event).message).toBe('Error genérico sin nombres');
+  });
+});
+
+describe('scrubBreadcrumb (beforeBreadcrumb, US-42)', () => {
+  afterEach(() => setActiveChildName(undefined));
+
+  it('redacta el nombre del niño en message y en los valores de texto de data', () => {
+    setActiveChildName('Lucía');
+    const out = scrubBreadcrumb({
+      category: 'navigation',
+      message: 'pantalla de Lucía',
+      data: { perfil: 'Lucía', status: 200 },
+    });
+
+    expect(out.message).toBe('pantalla de [child]');
+    expect(out.data).toEqual({ perfil: '[child]', status: 200 });
+  });
+
+  it('devuelve el breadcrumb intacto cuando no hay message ni data', () => {
+    setActiveChildName('Lucía');
+    const crumb = { category: 'ui.tap' };
+    expect(scrubBreadcrumb(crumb)).toBe(crumb);
+  });
+
+  it('sin perfil activo, no toca el contenido', () => {
+    const out = scrubBreadcrumb({ message: 'GET /x', data: { status: 500 } });
+    expect(out.message).toBe('GET /x');
+    expect(out.data).toEqual({ status: 500 });
   });
 });

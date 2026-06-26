@@ -2,7 +2,7 @@
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
-**US-37**, **US-38**, **US-39**, **US-40**. Volver al [índice](README.md).
+**US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**. Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -656,3 +656,65 @@ verificar la tubería.
   retirando el DSN (sin DSN → comportamiento conforme, nada sale).
 - (No-funcional) Dado el modo `mock`/desarrollo, Cuando se ejecutan los E2E y el gate, Entonces Sentry
   permanece inactivo (sin DSN) y no añade pasos ocultos al arranque reproducible ([US-06](#us-06)).
+
+## US-41 — Degradación elegante ante errores de render (ErrorBoundary) · Could (Mejoras)
+
+Como **niño/a usuario** (y como responsable del producto) quiero que, si una pantalla falla de forma
+inesperada, la app **muestre un aviso amable y permita reintentar** en lugar de quedarse en blanco
+(_white screen of death_), para que un fallo en una zona no rompa toda la experiencia.
+
+**Contexto.** Extiende la monitorización de [US-40](#us-40). Hoy solo existe `Sentry.wrap(App)` (boundary
+raíz **sin _fallback_ propia**: ante un crash de render se ve la pantalla nativa por defecto). Se añade un
+componente propio **`AppErrorBoundary`** sobre `Sentry.ErrorBoundary` que captura el error, lo reporta a
+Sentry (con `scrubEvent` ya redactando PII del niño) y renderiza una **_fallback UI_ en español** acorde al
+tema (`BubblyButton` de reintento, colores `errorContainer`/`onErrorContainer`). Se coloca en **dos
+niveles**: global (envolviendo la navegación) y **por zona** en las pantallas de contenido generado
+(`StoryGenerator`, `Actividades`, `StoryReader`) para aislar fallos. **No** se usa la prop `showDialog`
+(diálogo de _feedback_ de Sentry): es UI/red de tercero que recoge PII y choca con **C-12** y con la regla
+de diálogos propios ([US-23](#us-23)); la app usa su `DialogProvider`.
+
+**Criterios de aceptación**
+
+- Dado un componente hijo que lanza un error de render, Cuando ocurre dentro de un `AppErrorBoundary`,
+  Entonces se muestra una **_fallback UI_ en español** (mensaje amable, sin _stack_ ni texto técnico) y la
+  app **no** queda en blanco.
+- Dada la _fallback UI_, Cuando el usuario pulsa **«Reintentar»**, Entonces el boundary se **resetea**
+  (`resetError`) y vuelve a montar el contenido.
+- Dado un boundary **por zona** (p. ej. `Cuentos`), Cuando esa pantalla falla, Entonces el resto de la app
+  (otras tabs, navegación) **sigue operativa** (degradación elegante).
+- Dado un error capturado por el boundary y un **DSN** configurado, Cuando se reporta a Sentry, Entonces el
+  evento llega etiquetado con el origen (`boundary`) y **sin PII del niño** (vía `scrubEvent`); sin DSN, no
+  sale nada.
+- (Cumplimiento) Dado el boundary, Entonces **no** se activa `showDialog`/`feedbackIntegration` ni se
+  muestra `error.message` ni el _component stack_ al usuario (coherente con **C-12** y [US-23](#us-23)).
+
+## US-42 — Telemetría del recorrido del usuario (breadcrumbs) · Could (Mejoras)
+
+Como **desarrollador/responsable del producto** quiero registrar el **rastro de eventos previos a un
+error** (navegación → acciones → llamadas API) para **reconstruir los pasos exactos** del usuario y
+reproducir bugs que no se dan en desarrollo, sin pedir _logs_ manuales.
+
+**Contexto.** Extiende [US-40](#us-40). Hoy no hay ningún `addBreadcrumb` propio. Se añade un helper
+**`telemetry`** con _wrappers_ tipados sobre `Sentry.addBreadcrumb` (categorías `navigation`/`api`/`ui`,
+niveles `info`/`warning`/`error`) que aceptan **solo datos no-PII por construcción** (enums/ids/contadores:
+`tema`, `estilo`, `edad`, `idioma`, `status`, `rating`). Instrumentación centralizada: en `request()` (capa
+HTTP, cubre los 9 endpoints), en el `onStateChange` de la navegación, y en los _handlers_ de negocio
+(generar cuento/actividades, completar actividad, login/alta, selección/creación de perfil). Como **defensa
+en profundidad** se fija `maxBreadcrumbs`, se añade un `beforeBreadcrumb` y se extiende `scrubEvent` para
+redactar también `breadcrumbs[].data` (hoy solo redacta `message`).
+
+**Criterios de aceptación**
+
+- Dado un recorrido del usuario (navegar, generar, llamar a la API), Cuando ocurre un error y se envía a
+  Sentry, Entonces el evento incluye un **_timeline_ de breadcrumbs** con las categorías
+  `navigation`/`api`/`ui` previas, con su **nivel** (`info`/`warning`/`error`).
+- Dada una llamada API en `request()`, Cuando termina (éxito o `ApiError`), Entonces se registra un
+  breadcrumb `api` con **método, ruta y `status`/resultado**, **sin** cuerpo ni datos sensibles.
+- Dado un cambio de pantalla, Cuando cambia el estado de navegación, Entonces se registra un breadcrumb
+  `navigation` con el **nombre de ruta** (sin parámetros con PII).
+- Dado un breadcrumb a punto de enviarse, Cuando contiene (por error) el **nombre del niño**, Entonces se
+  **redacta** (`[child]`) tanto en `message` como en `data` (vía `scrubEvent`/`beforeBreadcrumb`), y nunca
+  se registra texto libre (prompt del cuento, nombre del perfil).
+- (Cumplimiento) Dado que **no hay DSN**, Cuando la app funciona, Entonces los _wrappers_ son **no-op** y no
+  se transmite nada (coherente con [US-06](#us-06) y **C-12**); sin Session Replay ni tracking automático de
+  navegación de terceros.

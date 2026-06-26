@@ -10,6 +10,7 @@ import type { Activity, Categoria } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { CATEGORIA_LABEL } from '../labels';
 import { api } from '../../composition';
+import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import type { TabScreenProps } from '../navigation';
@@ -28,6 +29,7 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
     if (!profile) return;
     setLoading(true);
     setError(null);
+    trackAction('activities.recommend', { categoria: categoria ?? 'todas' });
     try {
       const result = await api.activities.recommend({
         profileId: profile.id,
@@ -43,6 +45,7 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
   }
 
   async function onComplete(activityId: string, valoracion: number) {
+    trackAction('activity.complete', { valoracion });
     try {
       const updated = await api.activities.complete(activityId, valoracion);
       setActivities((prev) => prev.map((a) => (a.id === activityId ? updated : a)));

@@ -11,6 +11,7 @@ import type { CodigoIdioma, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { IDIOMA_LABEL, TEMA_LABEL } from '../labels';
 import { api } from '../../composition';
+import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
@@ -46,6 +47,8 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
   async function onSubmit() {
     if (edad === null || avatar === null || guardianId === null) return;
     setSubmitting(true);
+    // Solo enums/contadores; nunca el nombre del niño (PII).
+    trackAction('profile.create', { edad, idioma, intereses: intereses.length });
     try {
       const profile = await api.profiles.create({
         guardianId,
