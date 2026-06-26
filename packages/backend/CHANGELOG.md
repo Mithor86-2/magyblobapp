@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Modo anónimo efímero (US-50): casos de uso `GenerateStoryAnonymous` y
+  `RecommendActivitiesAnonymous` que generan contenido **sin persistir nada** y sin pedir
+  `profileId` ni nombre de niño (solo edad, idioma y temas/estilos o categoría/cantidad).
+- Rutas **públicas** `POST /stories/anonymous` y `POST /activities/recommend/anonymous` (sin el
+  decorador `authenticate`), validadas con Zod, con **rate-limit en memoria** (3 cuentos + 3
+  actividades por cliente; sin dependencia nueva) que responde **429** al superarlo.
+- Error de aplicación `TooManyRequestsError` (HTTP 429) para el límite del modo anónimo.
+
 ### Changed
 
 ### Deprecated

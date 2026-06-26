@@ -86,6 +86,28 @@ export interface StoryOutput {
   proveedor: ProveedorIa;
 }
 
+// --- GenerateStoryAnonymous (US-50, modo efímero sin sesión) ---
+export interface GenerateStoryAnonymousRequest {
+  /** Edad del niño (2-6). Solo se usa para acotar la generación; no se persiste. */
+  edad: number;
+  /** Idioma del cuento; por defecto el del dominio (`es`). */
+  idioma?: string;
+  /** Temas elegidos (multi-selección, US-47); el caso de uso valida vocabulario y no-vacío. */
+  temas: string[];
+  /** Estilos elegidos (multi-selección, US-47); el caso de uso valida vocabulario y no-vacío. */
+  estilos: string[];
+}
+
+/** Cuento anónimo generado: contenido sin id, perfil ni estado (no se persiste). */
+export interface AnonymousStoryOutput {
+  tema: Tema;
+  estilo: Estilo;
+  titulo: string;
+  cuerpo: string;
+  idioma: CodigoIdioma;
+  proveedor: ProveedorIa;
+}
+
 // --- NarrateStory ---
 export interface NarrateStoryRequest {
   storyId: string;
@@ -108,6 +130,28 @@ export interface RecommendActivitiesRequest {
   categoria?: string;
   /** Cuántas actividades generar (por defecto 3). */
   cantidad?: number;
+}
+
+// --- RecommendActivitiesAnonymous (US-50, modo efímero sin sesión) ---
+export interface RecommendActivitiesAnonymousRequest {
+  /** Edad del niño (2-6). Solo acota la generación; no se persiste. */
+  edad: number;
+  /** Idioma de las actividades; por defecto el del dominio (`es`). */
+  idioma?: string;
+  /** Si se indica, acota a una categoría; si no, libre. */
+  categoria?: string;
+  /** Cuántas actividades generar (por defecto 3). */
+  cantidad?: number;
+}
+
+/** Actividad anónima generada: contenido sin id ni perfil (no se persiste). */
+export interface AnonymousActivityOutput {
+  categoria: Categoria;
+  titulo: string;
+  descripcion: string;
+  duracionMin?: number;
+  nivel?: number;
+  proveedor: ProveedorIa;
 }
 
 export interface ActivityOutput {

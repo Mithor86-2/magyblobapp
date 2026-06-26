@@ -27,6 +27,22 @@ export class ConflictError extends DomainError {
 }
 
 /**
+ * Se ha superado el límite de uso permitido sin sesión (US-50, modo anónimo
+ * efímero). HTTP 429. No es una violación de invariante de dominio, sino una
+ * política de la capa HTTP, pero se modela como error de aplicación para que el
+ * manejo de errores centralizado lo traduzca con el cuerpo uniforme.
+ */
+export class TooManyRequestsError extends Error {
+  readonly statusCode = 429;
+  constructor(
+    message = 'Has alcanzado el límite de pruebas gratuitas. Crea una cuenta para seguir.',
+  ) {
+    super(message);
+    this.name = 'TooManyRequestsError';
+  }
+}
+
+/**
  * Credenciales de inicio de sesión inválidas (US-48). HTTP 401. El mensaje es
  * **deliberadamente genérico** y NO distingue entre email inexistente y
  * contraseña errónea, para no revelar qué emails están registrados.

@@ -9,6 +9,7 @@ import { guardianRoutes } from './routes/guardians.js';
 import { profileRoutes } from './routes/profiles.js';
 import { storyRoutes } from './routes/stories.js';
 import { activityRoutes } from './routes/activities.js';
+import { anonymousRoutes } from './routes/anonymous.js';
 import { historyRoutes } from './routes/history.js';
 
 /**
@@ -58,6 +59,9 @@ export async function buildServer(
   profileRoutes(app, resolved);
   storyRoutes(app, resolved);
   activityRoutes(app, resolved);
+  // Rutas públicas del modo anónimo efímero (US-50): sin `authenticate`, con
+  // rate-limit en memoria. Se registran junto al resto; no exigen sesión.
+  anonymousRoutes(app, resolved);
   historyRoutes(app, resolved);
 
   return app;
