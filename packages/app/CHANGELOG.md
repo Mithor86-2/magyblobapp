@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.21.0] - 2026-06-25
+
+### Added
+
 - Validación con Zod de las respuestas del backend en el adaptador HTTP
   (`infrastructure/schemas.ts`): cada gateway valida su respuesta y, si no cumple el
   contrato, produce un `ApiError` de tipo `malformed` en vez de propagar un objeto
@@ -18,14 +32,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - `infrastructure/http.ts`: `request` recibe el esquema Zod de la respuesta y la valida
   en la frontera antes de devolverla. (US-44)
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.20.0] - 2026-06-25
 

@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.17.0] - 2026-06-25
+
+### Added
+
 - Dependencia `zod` (v4) para validación declarativa en capas application/infrastructure
   (no en `/domain`, que conserva cero dependencias externas). (US-44)
 - Dependencia `fastify-type-provider-zod` (v7) para validar la entrada HTTP de las rutas con
@@ -24,14 +38,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   esquemas Zod vía `ZodTypeProvider`: elimina la duplicación entre el esquema y el tipo del body
   (ya no se declara `app.post<{ Body }>`). Contrato de validación preservado (400 +
   `{ error: { tipo, mensaje } }`); `.strict()` replica `additionalProperties: false`. (US-44)
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.16.0] - 2026-06-24
 
