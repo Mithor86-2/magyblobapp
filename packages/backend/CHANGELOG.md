@@ -11,12 +11,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - Dependencia `zod` (v4) para validación declarativa en capas application/infrastructure
   (no en `/domain`, que conserva cero dependencias externas). (US-44)
+- Dependencia `fastify-type-provider-zod` (v7) para validar la entrada HTTP de las rutas con
+  Zod e inferir el tipo del cuerpo desde el esquema (single source of truth). (US-44)
 
 ### Changed
 
 - Validación de fronteras no fiables migrada de chequeos `typeof` imperativos a esquemas Zod,
   conservando el comportamiento de **sanear, no solo rechazar**: salida del LLM
   (`parseResponse.ts`) y settings JSON (`cloudSettings.ts`, `storyParams.ts`). (US-44)
+- Rutas Fastify (`/guardians`, `/guardians/login`, `/profiles`, `/stories`,
+  `/activities/recommend`, `/activities/:id/complete`) migradas de JSON Schema escrito a mano a
+  esquemas Zod vía `ZodTypeProvider`: elimina la duplicación entre el esquema y el tipo del body
+  (ya no se declara `app.post<{ Body }>`). Contrato de validación preservado (400 +
+  `{ error: { tipo, mensaje } }`); `.strict()` replica `additionalProperties: false`. (US-44)
 
 ### Deprecated
 
