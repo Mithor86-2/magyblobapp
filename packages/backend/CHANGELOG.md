@@ -19,6 +19,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.0.0] - 2026-06-26
+
+Primer release de producción. Backend desplegado en **Render** (Docker) con PostgreSQL en **Neon** e
+IA cloud en **Groq**, verificado de extremo a extremo contra producción (`/health` y generación de
+cuento real). Hito de versión: consolida el trabajo de las versiones 0.x; sin cambios de código
+respecto a la 0.21.0.
+
 ## [0.21.0] - 2026-06-26
 
 ### Added
