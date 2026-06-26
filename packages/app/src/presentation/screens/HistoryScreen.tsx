@@ -5,6 +5,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { BubblyButton } from '../components/BubblyButton';
 import { Icon } from '../components/Icon';
 import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -54,7 +55,12 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       <Text style={styles.subtitle}>Mira todo lo que has aprendido y creado.</Text>
 
       {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{error}</Text>
+          <BubblyButton label="Reintentar" onPress={() => void load()} variant="secondary" />
+        </View>
+      ) : null}
 
       <Text style={styles.section}>Cuentos mágicos</Text>
       {history.stories.length === 0 ? (
@@ -120,9 +126,17 @@ const styles = StyleSheet.create({
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,
   },
+  errorBox: {
+    backgroundColor: colors.errorContainer,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.sm,
+    alignItems: 'center',
+  },
   error: {
     ...typography.labelBold,
     color: colors.onErrorContainer,
+    textAlign: 'center',
   },
   storyCard: {
     backgroundColor: colors.surfaceContainer,

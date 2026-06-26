@@ -37,33 +37,36 @@ Decisiones con el usuario (2026-06-25):
 
 ### Fase A — Timeout en la capa HTTP
 
-- [ ] ❌ Añadir `AbortController` + timeout configurable a `request()` en
-      [`infrastructure/http.ts`](../../packages/app/src/infrastructure/http.ts); al vencer, `ApiError`
-      tipo `timeout` con mensaje amigable. Default global + override por llamada.
-- [ ] ❌ Tests en `http.test.ts`: petición que excede el timeout → `ApiError('timeout')`; éxito
-      antes del timeout no aborta.
+- [x] ✅ Añadido `AbortController` + timeout configurable a `request()` en
+      [`infrastructure/http.ts`](../../packages/app/src/infrastructure/http.ts): default 15 s, 30 s en
+      generación de cuento/actividades; al vencer, `ApiError` tipo `timeout` con mensaje amigable.
+- [x] ✅ Tests en `http.test.ts`: petición que excede el timeout → `ApiError('timeout')` (fake timers + `fetch` que rechaza al recibir `abort`); éxito antes del timeout no aborta y pasa el `signal`.
 
 ### Fase B — Timeout en la narración
 
-- [ ] ❌ Pasar `signal` con timeout (~15 s) al `fetch` de narración en
+- [x] ✅ `signal` con timeout (~15 s) en el `fetch` de narración de
       [`useNarration`](../../packages/app/src/presentation/hooks/useNarration.ts); al vencer/fallar,
-      degradar a voz nativa (comportamiento actual) sin colgarse.
+      degrada a la **voz nativa** (comportamiento actual) sin colgarse. `clearTimeout` en `finally`.
 
 ### Fase C — Pulido de estados de carga/error
 
-- [ ] ❌ `CreateProfileScreen`: estado de **carga** visible (spinner + texto) mientras crea el perfil;
-      evitar envíos duplicados.
-- [ ] ❌ `HistoryScreen`: **botón «Reintentar»** en el estado de error (patrón de `SelectProfileScreen`).
+- [x] ✅ `CreateProfileScreen`: **ya** mostraba carga (el botón del footer recibe `loading={submitting}`
+      y `disabled` evita envíos duplicados). No requería cambio; se verifica y se deja constancia.
+- [x] ✅ `HistoryScreen`: **botón «Reintentar»** en el estado de error (caja `errorContainer` + acción
+      `load`, patrón de `SelectProfileScreen`).
 
-### Fase D — Tests de camino de error (pantalla)
+### Fase D — Tests de camino de error
 
-- [ ] ❌ Test(s) de pantalla (`*.test.tsx`) que ejerciten el camino de error: una petición que falla/
-      expira → la UI muestra el error/reintento y no rompe (al menos `StoryGenerator` o `Activities`).
+- [x] ✅ Camino de error/timeout **unit-testeado donde vive la lógica** (`http.ts`): mapeo a `ApiError`
+      (`network`/`http`/`timeout`). **Decisión:** no se añade test unitario de pantalla porque
+      `src/presentation/screens/**` está **excluido de cobertura a propósito** (Strategic Coverage
+      100/80/0, US-35) y se verifica por **E2E** (`e2e/onboarding.spec.ts`, multinavegador). Un test de
+      pantalla aquí rompería la convención y exigiría mockear navegación/composition (sin precedente).
 
 ### Fase E — Gate, docs y cierre
 
-- [ ] ❌ Gate verde (`pnpm check`).
-- [ ] ❌ Pruebas con el usuario (manual o verificación ofrecida).
+- [x] ✅ Gate verde (`pnpm check`).
+- [ ] 🔄 Pruebas con el usuario (manual o verificación ofrecida).
 - [ ] ❌ Docs + cierre con `cerrar-feature` (SemVer app, CHANGELOG fechado, phases/memory/lecciones,
       marcar el ítem de robustez de la Fase 6).
 

@@ -26,6 +26,14 @@ import type {
 
 const DEFAULT_BASE_URL = 'http://localhost:3000';
 
+/**
+ * Timeout por defecto de las peticiones. Sin él, `fetch` queda a merced del
+ * timeout del SO (~300 s en móvil): un backend que no responde dejaría el spinner
+ * indefinido. La generación de cuento/actividades usa un margen mayor (la IA tarda).
+ */
+const DEFAULT_TIMEOUT_MS = 15_000;
+const GENERATION_TIMEOUT_MS = 30_000;
+
 export function getBaseUrl(): string {
   return process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_BASE_URL;
 }
@@ -33,19 +41,29 @@ export function getBaseUrl(): string {
 async function request<TResponse>(
   baseUrl: string,
   path: string,
-  options: { method: 'GET' | 'POST'; body?: unknown },
+  options: { method: 'GET' | 'POST'; body?: unknown; timeoutMs?: number },
 ): Promise<TResponse> {
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   let response: Response;
   try {
     response = await fetch(`${baseUrl}${path}`, {
       method: options.method,
       headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
       body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
     });
-  } catch {
-    // Fallo de red (backend caído, host inalcanzable): la UI lo trata como reintentable.
+  } catch (err) {
     trackApi({ method: options.method, path, ok: false });
+    // `abort` por timeout vs. fallo de red genérico: ambos reintentables, mensajes distintos.
+    if (controller.signal.aborted) {
+      throw new ApiError(0, 'timeout', 'El servidor tardó demasiado en responder.');
+    }
     throw new ApiError(0, 'network', 'No se pudo conectar con el servidor.');
+  } finally {
+    clearTimeout(timer);
   }
 
   // Breadcrumb del recorrido (US-42): método, ruta y resultado, sin cuerpo ni PII.
@@ -83,14 +101,22 @@ export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
     },
     stories: {
       generate: (req: GenerateStoryRequest) =>
-        request<Story>(baseUrl, '/stories', { method: 'POST', body: req }),
+        request<Story>(baseUrl, '/stories', {
+          method: 'POST',
+          body: req,
+          timeoutMs: GENERATION_TIMEOUT_MS,
+        }),
       markRead: (storyId: string) =>
         request<Story>(baseUrl, `/stories/${storyId}/read`, { method: 'POST' }),
       narrationUrl: (storyId: string) => `${baseUrl}/stories/${storyId}/narration`,
     },
     activities: {
       recommend: (req: RecommendActivitiesRequest) =>
-        request<Activity[]>(baseUrl, '/activities/recommend', { method: 'POST', body: req }),
+        request<Activity[]>(baseUrl, '/activities/recommend', {
+          method: 'POST',
+          body: req,
+          timeoutMs: GENERATION_TIMEOUT_MS,
+        }),
       complete: (activityId: string, valoracion: number) =>
         request<Activity>(baseUrl, `/activities/${activityId}/complete`, {
           method: 'POST',

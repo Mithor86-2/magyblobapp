@@ -9,6 +9,9 @@ import type { Story } from '../../domain/types';
 
 export type EstadoNarracion = 'idle' | 'loading' | 'playing' | 'paused';
 
+/** Timeout de la descarga del audio: si ElevenLabs no responde, degradamos a voz nativa sin colgarnos. */
+const NARRATION_TIMEOUT_MS = 15_000;
+
 /**
  * Narración de un cuento (US-22). Pide el audio al backend (ElevenLabs, vía
  * proxy), lo cachea en disco y lo reproduce con `expo-audio`. Si la petición
@@ -46,8 +49,10 @@ export function useNarration(story: Story) {
     }
 
     setEstado('loading');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), NARRATION_TIMEOUT_MS);
     try {
-      const res = await fetch(api.stories.narrationUrl(story.id));
+      const res = await fetch(api.stories.narrationUrl(story.id), { signal: controller.signal });
       if (!res.ok) throw new Error(`Narración no disponible (${res.status}).`);
       const bytes = await res.bytes();
 
@@ -61,7 +66,10 @@ export function useNarration(story: Story) {
       player.play();
       setEstado('playing');
     } catch {
+      // Red/timeout/clave ausente/backend caído → voz nativa del dispositivo, sin error visible.
       narrarConVozNativa();
+    } finally {
+      clearTimeout(timer);
     }
   }, [estado, player, story.id, narrarConVozNativa]);
 

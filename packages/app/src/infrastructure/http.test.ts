@@ -259,4 +259,44 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(error.tipo).toBe('network');
     expect(error.status).toBe(0);
   });
+
+  it('una petición que excede el timeout se aborta y da ApiError de tipo timeout', async () => {
+    vi.useFakeTimers();
+    // fetch nunca resuelve por sí solo: solo rechaza cuando el AbortController dispara `abort`.
+    const fetchMock = vi.fn(
+      (_url: string, opts: { signal: AbortSignal }) =>
+        new Promise<Response>((_, reject) => {
+          opts.signal.addEventListener('abort', () => reject(new Error('Aborted')));
+        }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const pending = api.stories
+      .generate({ profileId: 'p1', tema: 'magia', estilo: 'aventura' })
+      .catch((e) => e);
+    // generación usa 30 s de timeout; al vencer, el controller aborta el fetch.
+    await vi.advanceTimersByTimeAsync(30_000);
+    const error = await pending;
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.tipo).toBe('timeout');
+    expect(error.status).toBe(0);
+    vi.useRealTimers();
+  });
+
+  it('una petición que responde antes del timeout no se aborta', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ id: 's1' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const story = await api.stories.generate({
+      profileId: 'p1',
+      tema: 'magia',
+      estilo: 'aventura',
+    });
+
+    expect(story).toEqual({ id: 's1' });
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+    vi.useRealTimers();
+  });
 });
