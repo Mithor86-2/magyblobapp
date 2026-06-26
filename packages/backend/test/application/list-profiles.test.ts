@@ -3,6 +3,8 @@ import { CreateChildProfile } from '../../src/application/use-cases/CreateChildP
 import { ListProfiles } from '../../src/application/use-cases/ListProfiles.js';
 import { RegisterGuardian } from '../../src/application/use-cases/RegisterGuardian.js';
 import {
+  CLAVE_DE_PRUEBA,
+  FakePasswordHasher,
   InMemoryChildProfileRepository,
   InMemoryGuardianRepository,
   relojFijo,
@@ -22,6 +24,7 @@ describe('ListProfiles', () => {
 
     const register = new RegisterGuardian({
       guardians,
+      hasher: new FakePasswordHasher(),
       newId: secuencialIdGenerator('g'),
       now: relojFijo(),
     });
@@ -31,6 +34,7 @@ describe('ListProfiles', () => {
         apellidos: 'García',
         email: 'ana@example.com',
         parentesco: 'madre',
+        password: CLAVE_DE_PRUEBA,
         consentimientoAceptado: true,
         consentimientoVersion: 'v1',
       })

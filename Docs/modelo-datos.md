@@ -27,6 +27,7 @@ erDiagram
         string   email               "cuenta + consentimiento"
         string   parentesco          "madre | padre | tutor_legal | abuelo_a | otro"
         string   telefono            "opcional"
+        string   passwordHash        "hash bcrypt de la contraseña (US-48); nunca en claro"
         boolean  consentimientoDado  "consentimiento parental verificable"
         datetime consentimientoEn    "fecha del consentimiento"
         string   consentimientoVer   "versión de los términos aceptados"
@@ -195,6 +196,12 @@ tema del cuento; los intereses pre-seleccionan el tema (decisión I-2).
 - **`Guardian` y consentimiento:** el alta de un niño exige un `Guardian` con
   consentimiento registrado (`consentimientoDado/En/Ver`). Datos del adulto al mínimo
   necesario (minimización). El email es la base de la cuenta y del consentimiento.
+- **`Guardian.passwordHash` (US-48):** la cuenta del adulto guarda el **hash bcrypt**
+  de su contraseña; el login lo **verifica** (revierte la "identificación ligera sin
+  contraseña" de Fase 5.5; ver C-1/C-10 en [cumplimiento-menores.md](cumplimiento-menores.md)).
+  El hash es **dato del adulto, no del menor**, e irreversible: **nunca** se persiste ni se
+  registra la contraseña en claro (ni en logs ni en `AuditLog`). bcrypt incorpora la sal en
+  el propio valor, así que no hay columna de sal aparte.
 - **`InteractionEvent` (primera parte):** sin PII en `payload`, referencia al niño por
   `profileId` interno (pseudónimo); **nunca** alimenta analítica/publicidad de terceros
   ni usa identificadores de dispositivo (regla de las tiendas Kids/Families).

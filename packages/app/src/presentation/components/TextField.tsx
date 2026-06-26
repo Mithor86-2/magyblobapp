@@ -8,6 +8,8 @@ interface TextFieldProps {
   placeholder?: string;
   keyboardType?: 'default' | 'email-address';
   autoCapitalize?: 'none' | 'words' | 'sentences';
+  /** Oculta el texto introducido (contraseñas). Opcional y aditivo. */
+  secureTextEntry?: boolean;
   /** Identificador estable para selección en E2E nativo (Maestro). Opcional y aditivo. */
   testID?: string;
 }
@@ -23,6 +25,7 @@ export function TextField({
   placeholder,
   keyboardType = 'default',
   autoCapitalize = 'sentences',
+  secureTextEntry = false,
   testID,
 }: TextFieldProps) {
   return (
@@ -37,6 +40,7 @@ export function TextField({
         placeholderTextColor={colors.onSurfaceVariant}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
+        secureTextEntry={secureTextEntry}
         autoCorrect={false}
       />
     </View>

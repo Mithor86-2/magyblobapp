@@ -5,6 +5,9 @@ import { Guardian } from '../../src/domain/entities/Guardian.js';
 import { DomainError } from '../../src/domain/errors.js';
 import type { CreateChildProfileInput } from '../../src/application/dto.js';
 import {
+  CLAVE_DE_PRUEBA,
+  FakePasswordHasher,
+  HASH_DE_PRUEBA,
   InMemoryChildProfileRepository,
   InMemoryGuardianRepository,
   relojFijo,
@@ -23,6 +26,7 @@ describe('CreateChildProfile', () => {
 
     const register = new RegisterGuardian({
       guardians,
+      hasher: new FakePasswordHasher(),
       newId: secuencialIdGenerator('g'),
       now: relojFijo(),
     });
@@ -31,6 +35,7 @@ describe('CreateChildProfile', () => {
       apellidos: 'García',
       email: 'ana@example.com',
       parentesco: 'madre',
+      password: CLAVE_DE_PRUEBA,
       consentimientoAceptado: true,
       consentimientoVersion: 'v1',
     });
@@ -90,6 +95,7 @@ describe('CreateChildProfile', () => {
       apellidos: 'Ruiz',
       email: 'beto@example.com',
       parentesco: 'padre',
+      passwordHash: HASH_DE_PRUEBA,
       consentimiento: { dado: false, fecha: new Date('2026-06-10T12:00:00.000Z'), version: 'v1' },
       creadoEn: new Date('2026-06-10T12:00:00.000Z'),
     });

@@ -13,18 +13,21 @@ import { CONSENT_VERSION } from './ConsentScreen';
 import type { RootScreenProps } from '../navigation';
 
 /**
- * Inicio de sesión del adulto (US-19): identificación ligera por email, sin
- * contraseña (la autenticación robusta queda fuera del alcance del TFM). Si el
- * email existe, recupera la cuenta y lleva a la selección de perfil.
+ * Inicio de sesión del adulto (US-48): verifica **email + contraseña** contra el
+ * backend (revierte el login ligero por email de US-19). Si las credenciales son
+ * correctas, recupera la cuenta y lleva a la selección de perfil. Ante credenciales
+ * inválidas el backend responde un 401 **genérico** que no distingue entre email
+ * inexistente y contraseña errónea; la UI muestra el mismo mensaje genérico.
  */
 export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
   const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
 
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const canSubmit = email.trim() !== '' && !submitting;
+  const canSubmit = email.trim() !== '' && password !== '' && !submitting;
 
   const irACrearCuenta = () => navigation.replace('Consent');
 
@@ -32,18 +35,15 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
     setSubmitting(true);
     trackAction('guardian.login');
     try {
-      const session = await api.guardians.login({ email: email.trim() });
+      const session = await api.guardians.login({ email: email.trim(), password });
       setSession(session, CONSENT_VERSION);
       navigation.replace('SelectProfile');
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        // Sin cuenta con ese email: ofrece ir directo al alta (no dejar sin salida).
-        dialog.confirm({
-          title: 'No encontramos esa cuenta',
-          message: 'No hay ninguna cuenta con ese email. ¿Quieres crear una?',
-          confirmLabel: 'Crear cuenta',
-          cancelLabel: 'Reintentar',
-          onConfirm: irACrearCuenta,
+      if (error instanceof ApiError && error.status === 401) {
+        // Credencial inválida: mensaje genérico (no revela si el email existe).
+        dialog.alert({
+          title: 'No pudimos iniciar sesión',
+          message: 'El email o la contraseña no son correctos. Revísalos e inténtalo de nuevo.',
         });
       } else {
         const mensaje = error instanceof ApiError ? error.message : 'No se pudo iniciar sesión.';
@@ -66,16 +66,27 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
       }
     >
       <Text style={styles.body}>
-        Escribe el email con el que creaste tu cuenta. Te llevaremos a tus perfiles.
+        Escribe el email y la contraseña con los que creaste tu cuenta. Te llevaremos a tus
+        perfiles.
       </Text>
 
       <TextField
+        testID="login-email"
         label="Email"
         value={email}
         onChangeText={setEmail}
         placeholder="tu@email.com"
         keyboardType="email-address"
         autoCapitalize="none"
+      />
+      <TextField
+        testID="login-password"
+        label="Contraseña"
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Tu contraseña"
+        autoCapitalize="none"
+        secureTextEntry
       />
 
       <Pressable

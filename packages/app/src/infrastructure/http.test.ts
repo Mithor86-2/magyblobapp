@@ -97,6 +97,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
       apellidos: 'Pérez',
       email: 'ana@example.com',
       parentesco: 'madre' as const,
+      password: 'Contrasena123',
       consentimientoAceptado: true,
       consentimientoVersion: '1.0',
     };
@@ -111,17 +112,23 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(JSON.parse(options.body)).toEqual(input);
   });
 
-  it('guardians.login hace POST /guardians/login con el email y devuelve la sesión', async () => {
+  it('guardians.login hace POST /guardians/login con email + contraseña y devuelve la sesión', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN_SESSION));
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await api.guardians.login({ email: 'ana@example.com' });
+    const result = await api.guardians.login({
+      email: 'ana@example.com',
+      password: 'Contrasena123',
+    });
 
     expect(result).toEqual(GUARDIAN_SESSION);
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/guardians/login`);
     expect(options.method).toBe('POST');
-    expect(JSON.parse(options.body)).toEqual({ email: 'ana@example.com' });
+    expect(JSON.parse(options.body)).toEqual({
+      email: 'ana@example.com',
+      password: 'Contrasena123',
+    });
   });
 
   it('profiles.list hace GET /guardians/:id/profiles', async () => {
@@ -289,6 +296,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
         apellidos: 'Pérez',
         email: 'ana@example.com',
         parentesco: 'madre',
+        password: 'Contrasena123',
         consentimientoAceptado: true,
         consentimientoVersion: '1.0',
       })

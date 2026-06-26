@@ -3,6 +3,8 @@ import { RegisterGuardian } from '../../src/application/use-cases/RegisterGuardi
 import { DomainError } from '../../src/domain/errors.js';
 import type { RegisterGuardianInput } from '../../src/application/dto.js';
 import {
+  CLAVE_DE_PRUEBA,
+  FakePasswordHasher,
   InMemoryGuardianRepository,
   relojFijo,
   secuencialIdGenerator,
@@ -14,6 +16,7 @@ function inputValido(overrides: Partial<RegisterGuardianInput> = {}): RegisterGu
     apellidos: 'García López',
     email: 'ana@example.com',
     parentesco: 'madre',
+    password: CLAVE_DE_PRUEBA,
     consentimientoAceptado: true,
     consentimientoVersion: 'v1',
     ...overrides,
@@ -28,6 +31,7 @@ describe('RegisterGuardian', () => {
     guardians = new InMemoryGuardianRepository();
     useCase = new RegisterGuardian({
       guardians,
+      hasher: new FakePasswordHasher(),
       newId: secuencialIdGenerator('g'),
       now: relojFijo(),
     });
@@ -38,6 +42,15 @@ describe('RegisterGuardian', () => {
     expect(out.id).toBe('g-1');
     expect(out.consentimientoDado).toBe(true);
     expect(guardians.items.size).toBe(1);
+  });
+
+  it('hashea la contraseña con el PasswordHasher y guarda el hash, no el plano', async () => {
+    const clave = 'MiClaveSegura';
+    await useCase.execute(inputValido({ password: clave }));
+    const guardado = [...guardians.items.values()][0];
+    // El doble hashea con prefijo; lo relevante es que NO se guarda el plano tal cual.
+    expect(guardado.passwordHash).not.toBe(clave);
+    expect(guardado.passwordHash).toBe(`hashed:${clave}`);
   });
 
   it('rechaza el alta si no se acepta el consentimiento', async () => {

@@ -38,6 +38,8 @@ export interface RegisterGuardianInput {
   email: string;
   parentesco: Parentesco;
   telefono?: string;
+  /** Contraseña en claro (US-48): viaja al backend, que la hashea; nunca se persiste. */
+  password: string;
   consentimientoAceptado: boolean;
   consentimientoVersion: string;
 }
@@ -51,9 +53,11 @@ export interface Guardian {
   consentimientoDado: boolean;
 }
 
-// Login ligero por email (sin contraseña; ver Docs/historias-usuario US-19).
+// Login real con email + contraseña (US-48; revierte el login ligero de US-19).
 export interface LoginGuardianInput {
   email: string;
+  /** Contraseña en claro: el backend la verifica contra el hash del Guardian. */
+  password: string;
 }
 
 // --- Sesión autenticada (JWT, US-45) ---

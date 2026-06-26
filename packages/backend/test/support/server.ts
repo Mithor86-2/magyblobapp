@@ -5,6 +5,7 @@ import { MockProvider } from '../../src/infrastructure/ai/MockProvider.js';
 import { InMemoryEventBus } from '../../src/infrastructure/events/InMemoryEventBus.js';
 import { wireDomainEvents } from '../../src/infrastructure/events/subscribers.js';
 import {
+  FakePasswordHasher,
   FakeTTSProvider,
   InMemoryActivityRepository,
   InMemoryAuditLogRepository,
@@ -49,6 +50,7 @@ export function makeInMemoryDeps() {
   const events = new InMemoryInteractionEventRepository();
   const audit = new InMemoryAuditLogRepository();
   const tts = new FakeTTSProvider();
+  const hasher = new FakePasswordHasher();
 
   const deps: AppDeps = {
     guardians,
@@ -60,6 +62,7 @@ export function makeInMemoryDeps() {
     audit,
     ai: new MockProvider(),
     tts,
+    hasher,
     bus: new InMemoryEventBus(),
     newId: secuencialIdGenerator(),
     now: relojFijo(),
@@ -68,7 +71,7 @@ export function makeInMemoryDeps() {
   // Mismos suscriptores que en producción, sobre los dobles en memoria.
   wireDomainEvents(deps.bus, deps);
 
-  return { deps, guardians, profiles, stories, narrations, activities, events, audit, tts };
+  return { deps, guardians, profiles, stories, narrations, activities, events, audit, tts, hasher };
 }
 
 /** Construye el servidor con dobles en memoria (no toca Prisma ni la DB). */

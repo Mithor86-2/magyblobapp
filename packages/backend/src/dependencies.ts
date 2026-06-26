@@ -8,6 +8,7 @@ import type { StoryNarrationRepository } from './domain/repositories/StoryNarrat
 import type { ActivityRepository } from './domain/repositories/ActivityRepository.js';
 import type { InteractionEventRepository } from './domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from './domain/repositories/AuditLogRepository.js';
+import type { PasswordHasher } from './domain/auth/PasswordHasher.js';
 import type { Clock, IdGenerator } from './application/ports.js';
 
 /**
@@ -25,6 +26,8 @@ export interface AppDeps {
   audit: AuditLogRepository;
   ai: AIProvider;
   tts: TTSProvider;
+  /** Hasher de contraseñas (US-48): el alta deriva el hash, el login lo verifica. */
+  hasher: PasswordHasher;
   /** Bus de eventos de dominio (Observer): las rutas publican, los suscriptores registran. */
   bus: EventBus;
   newId: IdGenerator;

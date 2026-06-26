@@ -17,6 +17,7 @@ export class PrismaGuardianRepository implements GuardianRepository {
         email: guardian.email,
         parentesco: guardian.parentesco,
         telefono: guardian.telefono ?? null,
+        passwordHash: guardian.passwordHash,
         consentimientoDado: guardian.consentimiento.dado,
         consentimientoEn: guardian.consentimiento.fecha,
         consentimientoVer: guardian.consentimiento.version,
@@ -44,6 +45,7 @@ function toGuardian(row: PrismaGuardian): Guardian {
     email: row.email,
     parentesco: row.parentesco as Parentesco,
     telefono: row.telefono ?? undefined,
+    passwordHash: row.passwordHash,
     consentimiento: {
       dado: row.consentimientoDado,
       fecha: row.consentimientoEn,

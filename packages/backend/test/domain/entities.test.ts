@@ -6,6 +6,7 @@ import { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js'
 import { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import { AuditLog } from '../../src/domain/entities/AuditLog.js';
 import { DomainError } from '../../src/domain/errors.js';
+import { HASH_DE_PRUEBA } from '../support/doubles.js';
 
 /**
  * Invariantes de las entidades de dominio. Tier CORE (Strategic Coverage 100/80/0,
@@ -24,6 +25,7 @@ describe('Guardian', () => {
       apellidos: 'García',
       email: 'Ana@Example.com ',
       parentesco: 'madre',
+      passwordHash: HASH_DE_PRUEBA,
       consentimiento: { dado: true, fecha, version: 'v1' },
       creadoEn: fecha,
       ...overrides,
@@ -32,6 +34,10 @@ describe('Guardian', () => {
 
   it('normaliza el email (recorte + minúsculas)', () => {
     expect(build().email).toBe('ana@example.com');
+  });
+
+  it('exige un hash de contraseña no vacío (US-48)', () => {
+    expect(() => build({ passwordHash: '  ' })).toThrow(DomainError);
   });
 
   it('exige nombre no vacío', () => {

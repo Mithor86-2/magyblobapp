@@ -32,6 +32,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - `GenerateStoryRequest` pasa de `tema`/`estilo` (singulares) a `temas: Tema[]`/`estilos: Estilo[]`
   (US-47). La respuesta del cuento no cambia: el backend devuelve el tema/estilo representativo
   singular, que la app sigue mostrando igual.
+- Campo de **contraseña** en el alta (`ConsentScreen`) y en el login (`LoginScreen`) del adulto
+  (US-48), con validación de longitud mínima; los gateways de alta/login envían la contraseña.
+
+### Changed
+
+- El login deja de ser identificación ligera por email: `LoginScreen` exige contraseña y muestra un
+  mensaje de error **genérico** ante credencial inválida (`401`), sin distinguir email de contraseña
+  (US-48).
 
 ### Deprecated
 
@@ -40,6 +48,9 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+- La contraseña se introduce con entrada protegida (`secureTextEntry`) y solo viaja al backend; no se
+  persiste en el cliente (US-48).
 
 ## [0.22.0] - 2026-06-26
 

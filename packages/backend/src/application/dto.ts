@@ -15,6 +15,8 @@ export interface RegisterGuardianInput {
   email: string;
   parentesco: Parentesco;
   telefono?: string;
+  /** Contraseña en claro (US-48): se hashea en el caso de uso, nunca se persiste. */
+  password: string;
   /** El adulto debe aceptar para poder crear perfiles. */
   consentimientoAceptado: boolean;
   /** Versión de los términos/política aceptada. */
@@ -32,8 +34,10 @@ export interface GuardianOutput {
 
 // --- LoginGuardian ---
 export interface LoginGuardianInput {
-  /** Identificador del adulto. Login ligero por email (sin contraseña). */
+  /** Identificador del adulto. Se normaliza (recorte + minúsculas) al buscar la cuenta. */
   email: string;
+  /** Contraseña en claro (US-48): se verifica contra el `passwordHash` del Guardian. */
+  password: string;
 }
 
 // --- CreateChildProfile ---
