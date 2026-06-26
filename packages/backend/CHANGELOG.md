@@ -9,7 +9,22 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Validación de la configuración por variables de entorno con un **esquema Zod** (`config.ts`,
+  US-46): `loadConfig` parsea/normaliza cada variable (coerción de `PORT`/timeouts a entero positivo,
+  `AI_PROVIDER` restringido a `mock|local`, recorte de cadenas) y, en `NODE_ENV=production`, **exige
+  `DATABASE_URL`** presente y no vacía, fallando al arrancar con un mensaje claro (`ConfigError` +
+  `z.prettifyError`, indicando qué variable falta o está mal). `index.ts` aborta el proceso
+  (`exit 1`) imprimiendo el detalle antes de levantar el servidor. Tests ampliados (defaults dev,
+  override, normalización de tipos, fallo en producción). Zod ya estaba disponible (US-44); no se
+  añade dependencia.
+
 ### Changed
+
+- El secreto JWT inseguro/vacío sigue **degradando al default de desarrollo**, pero ahora emite un
+  **WARNING** explícito (no es un error fatal, ni en producción): preserva el arranque reproducible
+  (`docker compose up`, que corre con `NODE_ENV=production` y `JWT_SECRET` vacío por defecto). La
+  validación estricta se reserva a variables genuinamente requeridas (`DATABASE_URL`) y a los
+  formatos (enums, números). (US-46)
 
 ### Deprecated
 
