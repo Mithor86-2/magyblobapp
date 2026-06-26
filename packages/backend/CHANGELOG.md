@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.19.0] - 2026-06-26
+
+### Added
+
 - `.gitattributes` con `merge=union` para los `CHANGELOG.md` (raíz y por paquete): los apéndices
   concurrentes bajo `## [Unreleased]` se auto-fusionan al mergear en paralelo, sin marcadores de
   conflicto. Nueva skill de repo `versionar` (fuente única del versionado diferido) y doc
@@ -21,14 +35,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   en `develop` (post-merge), serializando la operación y eliminando la colisión de versión entre
   features en paralelo. `CLAUDE.md` y la skill `cerrar-feature` ahora delegan el versionado en la
   skill `versionar`.
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.18.0] - 2026-06-26
 
