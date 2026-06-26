@@ -61,77 +61,79 @@ Leyenda: ❌ pendiente · 🔄 en curso · ✅ hecha. Cada fase incluye **crear 
 
 ### Fase 0 — Andamiaje (dependencia del hasher + puerto)
 
-- [ ] ❌ Elegir y añadir la dependencia de hashing (`bcrypt`/`bcryptjs` o `argon2`) a
+- [x] ✅ Elegir y añadir la dependencia de hashing (`bcrypt`/`bcryptjs` o `argon2`) a
       `packages/backend`, verificando que `docker compose up` sigue levantando sin pasos ocultos.
-- [ ] ❌ Definir el puerto de dominio `PasswordHasher` (`hash(plano)`, `verify(plano, hash)`) en
+- [x] ✅ Definir el puerto de dominio `PasswordHasher` (`hash(plano)`, `verify(plano, hash)`) en
       `packages/backend/src/domain/` (sin dependencia de framework).
-- [ ] ❌ Implementación de infraestructura del `PasswordHasher` (adaptador sobre la librería elegida).
-- [ ] ❌ **Test:** test unitario del adaptador (hash ≠ plano, `verify` true/false).
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde).
-- [ ] ❌ **Docs:** `CHANGELOG` backend (`Added`).
+- [x] ✅ Implementación de infraestructura del `PasswordHasher` (adaptador sobre la librería elegida).
+- [x] ✅ **Test:** test unitario del adaptador (hash ≠ plano, `verify` true/false).
+- [x] ✅ **Ejecutar test** (`pnpm check` verde).
+- [x] ✅ **Docs:** `CHANGELOG` backend (`Added`).
 
 ### Fase 1 — Modelo de datos: `passwordHash` en Guardian
 
-- [ ] ❌ Añadir `passwordHash` a la entidad de dominio `Guardian`
+- [x] ✅ Añadir `passwordHash` a la entidad de dominio `Guardian`
       ([domain/entities/Guardian.ts](../../packages/backend/src/domain/entities/Guardian.ts)).
-- [ ] ❌ Añadir el campo a `prisma/schema.prisma` (modelo `Guardian`) y crear la **migración** Prisma.
-- [ ] ❌ Adaptar `PrismaGuardianRepository` (persistir/leer `passwordHash`) y los seeds si procede.
-- [ ] ❌ **Regla del CLAUDE.md (no se difiere):** actualizar
+- [x] ✅ Añadir el campo a `prisma/schema.prisma` (modelo `Guardian`) y crear la **migración** Prisma.
+- [x] ✅ Adaptar `PrismaGuardianRepository` (persistir/leer `passwordHash`) y los seeds si procede.
+- [x] ✅ **Regla del CLAUDE.md (no se difiere):** actualizar
       [Docs/modelo-datos.md](../modelo-datos.md) en el **mismo cambio** — bloque `mermaid erDiagram`
       (campo nuevo) y revisar la parte conceptual (minimización: el hash no es dato de menor; nunca
       en claro).
-- [ ] ❌ **Test:** ajustar dobles in-memory del repo (incluyen `passwordHash`).
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde).
-- [ ] ❌ **Docs:** `CHANGELOG` backend (`Added`/`Changed`).
+- [x] ✅ **Test:** ajustar dobles in-memory del repo (incluyen `passwordHash`).
+- [x] ✅ **Ejecutar test** (`pnpm check` verde).
+- [x] ✅ **Docs:** `CHANGELOG` backend (`Added`/`Changed`).
 
 ### Fase 2 — Alta: `RegisterGuardian` hashea (backend)
 
-- [ ] ❌ `RegisterGuardian` recibe la contraseña en el DTO de entrada, la **hashea** vía
+- [x] ✅ `RegisterGuardian` recibe la contraseña en el DTO de entrada, la **hashea** vía
       `PasswordHasher` y guarda solo el `passwordHash`; **nunca** devuelve la contraseña.
-- [ ] ❌ Ruta `POST /guardians` ([routes/guardians.ts](../../packages/backend/src/routes/guardians.ts)):
+- [x] ✅ Ruta `POST /guardians` ([routes/guardians.ts](../../packages/backend/src/routes/guardians.ts)):
       esquema Zod con el campo `password` (mínimo de robustez/longitud) → `400` si no cumple.
-- [ ] ❌ **Test:** caso de uso (`RegisterGuardian.test.ts`, hasher de prueba — guarda hash, no claro) +
+- [x] ✅ **Test:** caso de uso (`RegisterGuardian.test.ts`, hasher de prueba — guarda hash, no claro) +
       endpoint (`test/routes/guardians.test.ts`, alta con/sin contraseña válida).
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde).
-- [ ] ❌ **Docs:** `CHANGELOG` backend.
+- [x] ✅ **Ejecutar test** (`pnpm check` verde).
+- [x] ✅ **Docs:** `CHANGELOG` backend.
 
 ### Fase 3 — Login: `LoginGuardian` verifica contraseña (backend)
 
-- [ ] ❌ `LoginGuardian` recibe email + contraseña, normaliza el email, busca el `Guardian` y
+- [x] ✅ `LoginGuardian` recibe email + contraseña, normaliza el email, busca el `Guardian` y
       **verifica** la contraseña contra `passwordHash` vía `PasswordHasher`; credencial inválida →
       **401 genérico** (no distingue email inexistente de contraseña errónea).
-- [ ] ❌ Mantener el `AuditLog` `accion=login` con `guardianId` (sin registrar la contraseña).
-- [ ] ❌ Ruta `POST /guardians/login`: esquema Zod con `password`; respuesta inalterada (sesión JWT).
-- [ ] ❌ **Test:** caso de uso (`LoginGuardian.test.ts`: ok / contraseña errónea / email inexistente) +
+- [x] ✅ Mantener el `AuditLog` `accion=login` con `guardianId` (sin registrar la contraseña).
+- [x] ✅ Ruta `POST /guardians/login`: esquema Zod con `password`; respuesta inalterada (sesión JWT).
+- [x] ✅ **Test:** caso de uso (`LoginGuardian.test.ts`: ok / contraseña errónea / email inexistente) +
       endpoint (`test/routes/guardians.test.ts`: 200 con credencial correcta, 401 genérico, 400 por
       validación).
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde).
-- [ ] ❌ **Docs:** `CHANGELOG` backend (`Changed`/`Security`).
+- [x] ✅ **Ejecutar test** (`pnpm check` verde).
+- [x] ✅ **Docs:** `CHANGELOG` backend (`Changed`/`Security`).
 
 ### Fase 4 — Campo contraseña en la app (alta y login)
 
-- [ ] ❌ `ConsentScreen` ([presentation/screens/ConsentScreen.tsx](../../packages/app/src/presentation/screens/ConsentScreen.tsx)):
+- [x] ✅ `ConsentScreen` ([presentation/screens/ConsentScreen.tsx](../../packages/app/src/presentation/screens/ConsentScreen.tsx)):
       campo **contraseña** (secureTextEntry) en el alta; validación de longitud mínima; gateway de
       `register` envía la contraseña.
-- [ ] ❌ `LoginScreen` ([presentation/screens/LoginScreen.tsx](../../packages/app/src/presentation/screens/LoginScreen.tsx)):
+- [x] ✅ `LoginScreen` ([presentation/screens/LoginScreen.tsx](../../packages/app/src/presentation/screens/LoginScreen.tsx)):
       campo **contraseña**; gateway de `login` la envía; mensaje de error genérico ante 401.
-- [ ] ❌ Ajustar tipos/gateway HTTP (`domain` + `infrastructure/http`) para los nuevos campos.
-- [ ] ❌ **Test:** test de componente (user-centric) de `ConsentScreen`/`LoginScreen` (campo
+- [x] ✅ Ajustar tipos/gateway HTTP (`domain` + `infrastructure/http`) para los nuevos campos.
+- [x] ✅ **Test:** test de componente (user-centric) de `ConsentScreen`/`LoginScreen` (campo
       contraseña, validación mínima, envío del valor).
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde).
-- [ ] ❌ **Docs:** `CHANGELOG` app (`Added`/`Changed`).
+- [x] ✅ **Ejecutar test** (`pnpm check` verde).
+- [x] ✅ **Docs:** `CHANGELOG` app (`Added`/`Changed`).
 
 ### Fase 5 — Cumplimiento, documentación y cierre
 
-- [ ] ❌ **Actualizar [cumplimiento-menores.md](../cumplimiento-menores.md) (cambio de postura, no se
+- [x] ✅ **Actualizar [cumplimiento-menores.md](../cumplimiento-menores.md) (cambio de postura, no se
       difiere):** revisar **C-10** — ya no es "identificación ligera sin contraseña"; el login
       verifica contraseña con hash (bcrypt/argon2), el hash va en BD pero **nunca** en claro y la
       contraseña no se registra en logs. Coherencia con C-13 (JWT) y con US-16/US-19/US-48.
-- [ ] ❌ **US-48** y la trazabilidad de [historias-usuario/README.md](../historias-usuario/README.md)
+- [x] ✅ **US-48** y la trazabilidad de [historias-usuario/README.md](../historias-usuario/README.md)
       reflejadas (hecho en el andamiaje; revisar al cierre).
-- [ ] ❌ [phases.md](../phases.md): feature reflejada en el lote de Mejoras.
+- [x] ✅ [phases.md](../phases.md): feature reflejada en el lote de Mejoras.
 - [ ] ❌ Cierre con la skill **`cerrar-feature`** (delega versionado en `versionar`): gate verde,
-      **pruebas con el usuario**, y `finish`/merge **solo tras confirmación explícita**.
+      **pruebas con el usuario**, y `finish`/merge **solo tras confirmación explícita**. _(Pendiente:
+      la implementación está completa y el gate en verde; falta la confirmación del usuario y el
+      `finish` — no se ejecuta sin su "sí".)_
 
 ## Verificación (DoD)
 

@@ -214,6 +214,10 @@ infantil. Plan en [planes/fase-5-5.md](planes/fase-5-5.md). Cubre **US-19** (log
 > Limitación reconocida (coherente con [cumplimiento-menores.md](cumplimiento-menores.md)): el
 > "login" es una **identificación ligera por email** (sin contraseña ni verificación robusta de
 > edad), que queda fuera del alcance del TFM y se declara como tal.
+>
+> **Revertida después por US-48** (lote de Mejoras, rama `feature/52-password-login`): el alta guarda
+> un **hash de la contraseña** y el login la **verifica**. La parte de contraseña deja de ser
+> limitación; persiste solo la verificación robusta de **edad**.
 
 - [x] **F1 — Identificar al guardián (backend).** Caso de uso `LoginGuardian` (por email vía
       `GuardianRepository.findByEmail`) + ruta `POST /guardians/login` (validación por `pattern`) +
@@ -506,6 +510,19 @@ se abra). Algunas parten de algo ya existente (se indica).
       `pnpm install` para el `pnpm-lock`. Protocolo consolidado en `Docs/trabajo-en-paralelo.md`.
       Verificado: merge union de dos ramas sin conflicto (ambos bullets) y `pnpm check` verde
       (203 backend + 98 app).
+
+- [x] ✅ **Contraseña en el alta y login real (US-48, F-C del lote en paralelo, rama
+      `feature/52-password-login` desde `develop`).** Revierte la "identificación ligera por email sin
+      contraseña" de la Fase 5.5: puerto de dominio `PasswordHasher` con adaptador `BcryptPasswordHasher`
+      (sobre `bcryptjs`, JS puro → no rompe `docker compose up` ni el gate), campo `passwordHash` en la
+      entidad `Guardian` y en `prisma/schema.prisma` (migración `add_password_hash_to_guardian`).
+      `RegisterGuardian` **hashea** y guarda solo el hash; `LoginGuardian` **verifica** la contraseña y
+      devuelve un **401 genérico** (`InvalidCredentialsError`) que no distingue email inexistente de
+      contraseña errónea. Rutas con `password` validado por Zod (mín. 8 en el alta). App: campo
+      contraseña (`secureTextEntry`) en `ConsentScreen` y `LoginScreen`; el login muestra error genérico
+      ante 401. Cumplimiento: refuerza **C-1/C-10** (la contraseña va como hash, nunca en claro ni en
+      logs). _Versión diferida (se asigna al integrar en `develop`)._ Pendiente: pruebas con el usuario y
+      `finish` tras confirmación. Plan en [planes/feature-52-password-login.md](planes/feature-52-password-login.md).
 
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
