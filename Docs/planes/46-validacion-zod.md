@@ -49,26 +49,29 @@ repartida en tres formas distintas:
 
 Todo en capas externas (infra del backend + infra de la app), con tests existentes como red.
 
-- [ ] ❌ Añadir `zod` (v4) como dependencia de `@magyblob/backend` y de `@magyblob/app`
-      (`pnpm --filter <pkg> add zod`). Verificar `minimumReleaseAge` del workspace no bloquea la versión.
-- [ ] ❌ **parseResponse.ts** — sustituir el saneo manual por esquemas Zod equivalentes:
-      `storySchema` (`titulo`/`cuerpo` string no vacío tras `trim`), `actividadSchema`
-      (`categoria` vía `z.enum(CATEGORIAS)`, `titulo`/`descripcion` no vacíos, `duracionMin`/`nivel`
-      enteros en rango con descarte → `undefined`). Conservar: filtrar inválidas, `slice(cantidad)`,
-      error si 0 válidas. Mantener firmas públicas (`parseStory`/`parseActivities`).
-- [ ] ❌ **cloudSettings.ts** — `parseCloudSetting` con `z.object({activo, target, model}).safeParse`;
-      `target` validado contra `esCloudTarget`, `model` no vacío; ante fallo → `null` (privacidad por
-      defecto). Sin lanzar.
-- [ ] ❌ **storyParams.ts** — `parseStoryParams` con esquema Zod: `palabrasMin/Max` enteros positivos
-      con `max >= min`, `rima` boolean, `formatos` array filtrado a vocabulario y dedup; fallo → `null`.
-- [ ] ❌ **app/infrastructure/http.ts** — esquemas Zod para las respuestas (`Guardian`, `ChildProfile`,
-      `Story`, `Activity`, `History`); `request<T>` valida con `safeParse` y lanza `ApiError`
-      controlado (en vez de `as TResponse`) si la forma no cumple. Evaluar Zod Mini por bundle.
-- [ ] ❌ Tests co-localizados por esquema (válido / inválido / saneable) que repliquen el
-      comportamiento de la validación manual sustituida (`parseResponse.test.ts`, settings, http).
-- [ ] ❌ **Verificar invariante de capas:** `pnpm lint` confirma que ningún import de `zod` aparece en
+- [x] ✅ Añadir `zod` (v4.4.3) como dependencia de `@magyblob/backend` y de `@magyblob/app`. No
+      bloqueado por `minimumReleaseAge`.
+- [x] ✅ **parseResponse.ts** — saneo manual sustituido por esquemas Zod: `storySchema`
+      (`textoNoVacio` = trim + min(1)), `actividadSchema` (`z.enum(CATEGORIAS)`, `textoNoVacio`,
+      `duracionMin`/`nivel` vía `enteroEnRango(...).optional()` → `undefined` si falta o fuera de rango).
+      Firmas públicas y mensajes de error intactos. Tests existentes verdes sin cambios.
+- [x] ✅ **cloudSettings.ts** — `parseCloudSetting` con `cloudSettingSchema.safeParse` (`activo` boolean,
+      `target` vía `z.custom(esCloudTarget)`, `model` `z.string().trim().min(1)`); `JSON.parse` con
+      try/catch conservado; fallo → `null`. Tests verdes.
+- [x] ✅ **storyParams.ts** — `parseStoryParams` con `storyParamsSchema` (enteros positivos,
+      `palabrasMax >= palabrasMin` por `refine`, `rima` boolean, `formatos` filtrado+dedup no vacío por
+      `refine`); helper `enteroPositivo` eliminado. Tests verdes (incluye dedup).
+- [x] ✅ **app/infrastructure/http.ts + schemas.ts** — esquemas Zod por respuesta en
+      `infrastructure` (reusan vocabularios de `domain`); `request` recibe el esquema y valida en la
+      frontera → `ApiError` tipo `malformed` si no cumple (en vez del cast `as`). Decisión del usuario:
+      validar y actualizar tests. Los mocks parciales de `http.test.ts` pasan a fixtures completos.
+- [x] ✅ Backend: tests existentes (192) verdes sin tocarlos → el comportamiento se preservó 1:1.
+- [x] ✅ App: `http.test.ts` con fixtures completos + 2 tests nuevos del caso `malformed` (objeto y
+      lista con elemento inválido); 87 tests verdes.
+- [x] ✅ **Invariante de capas verificado:** `grep` y `pnpm lint` confirman 0 imports de `zod` en
       `/domain` (regla `no-restricted-imports` verde).
-- [ ] ❌ Gate verde (`pnpm check`) + entradas en `CHANGELOG.md` (backend y app) bajo `## [Unreleased]`.
+- [x] ✅ Gate completo `pnpm check` verde (EXIT 0): typecheck + lint + format + 192 backend + 87 app.
+- [x] ✅ Entradas en `packages/backend/CHANGELOG.md` y `packages/app/CHANGELOG.md`.
 
 ## Fase 2 — Rutas Fastify vía type-provider (OPCIONAL, decidir tras Fase 1)
 
