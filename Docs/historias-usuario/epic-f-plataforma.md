@@ -2,7 +2,8 @@
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
-**US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**.
+**US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
+**US-46**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -848,3 +849,49 @@ httpOnly. **Backend + app.** Ver el plan [48-jwt-sesion](../planes/feature-48-jw
 - (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: emisión de tokens en login,
   refresh (200/401), rutas protegidas (401 sin token / OK con token), y en la app que `http.ts` adjunta
   la cabecera y hace refresh-on-401, y que el store persiste/limpia los tokens.
+
+## US-46 — Configuración del backend validada con Zod · Should (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero que la **configuración derivada de variables de
+entorno** se valide con un esquema declarativo al arrancar, de modo que un despliegue de **producción**
+con secretos ausentes o mal formados (`DATABASE_URL`, `JWT_SECRET`, etc.) **falle de inmediato con un
+mensaje claro** en lugar de arrancar con valores de desarrollo inseguros o caer más tarde de forma
+opaca.
+
+**Contexto.** Hoy [`loadConfig()`](../../packages/backend/src/config.ts) lee `process.env` de forma
+**imperativa** con _helpers_ sueltos (`parsePort`, `parseAiProvider`, `loadCloudApiKeys`,
+`loadAuthConfig`, `loadTtsConfig`) y **defaults de desarrollo silenciosos**: en producción, un
+`JWT_SECRET` ausente cae al secreto inseguro `dev-insecure-…` y un `DATABASE_URL` vacío no se detecta
+hasta que Prisma falla. No hay validación de frontera de la config ni fallo temprano. Aprovechando que
+**US-44** ya introdujo **Zod** en el backend, se reescribe `loadConfig()` sobre un **esquema Zod** que
+normaliza y valida las variables, con una **regla condicional por entorno**: en `NODE_ENV=production`
+los secretos/URLs críticos son **obligatorios** (sin caer a defaults de desarrollo), mientras que en
+desarrollo/test se conserva el comportamiento actual (defaults seguros). El esquema se invoca en el
+**arranque** ([`index.ts`](../../packages/backend/src/index.ts)): si la validación falla, el proceso
+**aborta** (`exit ≠ 0`) imprimiendo los errores agregados de Zod (qué variable falta o está mal).
+**Solo backend.** Zod es una librería pura sin red/SDK/telemetría → **no afecta** a C-2/C-5
+([cumplimiento-menores.md](../cumplimiento-menores.md)) ni al arranque reproducible
+([US-06](#us-06)): el modo por defecto (`AI_PROVIDER=mock`, `NODE_ENV` no productivo) sigue arrancando
+con `cp .env.example .env && docker compose up` sin pasos ocultos.
+
+**Criterios de aceptación**
+
+- Dado `NODE_ENV=production` y una variable crítica ausente o mal formada (p. ej. `DATABASE_URL` vacía,
+  `JWT_SECRET` ausente), Cuando el backend arranca, Entonces `loadConfig()` **lanza** y el proceso
+  **aborta** (`exit ≠ 0`) con un mensaje que indica **qué** variable(s) fallan, sin levantar el
+  servidor.
+- Dado `NODE_ENV=production` y un `JWT_SECRET` ausente, Cuando se valida la config, Entonces **no** se
+  cae al secreto de desarrollo (`dev-insecure-…`): el secreto inseguro queda restringido a entornos no
+  productivos.
+- Dado el modo por defecto (sin `NODE_ENV=production`, `AI_PROVIDER=mock`), Cuando se arranca con
+  `cp .env.example .env && docker compose up`, Entonces la config valida con los **defaults de
+  desarrollo** y el arranque reproducible ([US-06](#us-06)) sigue funcionando sin pasos ocultos.
+- Dada una variable con tipo/valor inválido (p. ej. `PORT` no numérico, `AI_PROVIDER` fuera de
+  `mock|local`), Cuando se valida, Entonces el esquema la **normaliza o rechaza** de forma predecible
+  (mismo contrato `Config` que hoy), sin propagar un valor basura.
+- Dado el invariante de capas, Cuando se ejecuta el lint, Entonces el esquema Zod vive en
+  infraestructura/config (no en `/domain`) y la regla `no-restricted-imports` sigue verde.
+- (Tests) Dado el esquema, Cuando se ejercitan sus casos (defaults de desarrollo, override por env,
+  fallo en producción por secreto/URL ausente, normalización de tipos), Entonces los tests
+  co-localizados de [`config.test.ts`](../../packages/backend/test/config.test.ts) —hoy solo cubre la
+  parte JWT— se **amplían** para cubrirlos y `pnpm check` queda verde.

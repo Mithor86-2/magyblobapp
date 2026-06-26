@@ -24,7 +24,7 @@ Should = HITO 2 · Could = si hay margen.
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                                                                                  |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                                                                                         |
 | E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                                                                                                                                           |
-| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45 |
+| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45, US-46 |
 
 ## Trazabilidad (historia → fase → pantalla)
 
@@ -75,6 +75,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-43 | Robustez de red/IA: timeouts y errores | Should    | 6       | http.ts / CreateProfile / Historial | [F](epic-f-plataforma.md#us-43)  |
 | US-44 | Validación de fronteras con Zod        | Should    | Mejoras | parseResponse / settings / http.ts  | [F](epic-f-plataforma.md#us-44)  |
 | US-45 | Sesión autenticada del adulto con JWT  | Should    | 6       | Login / http.ts / rutas backend     | [F](epic-f-plataforma.md#us-45)  |
+| US-46 | Configuración validada con Zod         | Should    | Mejoras | — (config backend)                  | [F](epic-f-plataforma.md#us-46)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 
