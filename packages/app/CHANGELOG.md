@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.18.0] - 2026-06-25
+
+### Added
+
 - E2E nativo en **Android** (US-38, paridad de plataformas): nuevo flow
   `.maestro/onboarding.android.yaml`, validado en verde sobre Android Emulator (Pixel_9_Pro) con
   Expo Go y Maestro (56 pasos, narración nativa incluida). Documentada la receta de ejecución
