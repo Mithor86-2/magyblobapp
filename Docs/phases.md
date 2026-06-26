@@ -511,6 +511,33 @@ se abra). Algunas parten de algo ya existente (se indica).
       Verificado: merge union de dos ramas sin conflicto (ambos bullets) y `pnpm check` verde
       (203 backend + 98 app).
 
+### Lote de mejoras en paralelo — Ola 1 (integrada en `develop` el 2026-06-26)
+
+Cuatro features ejecutadas a la vez, una por worktree desde `develop` (plan de coordinación en
+[planes/coordinacion-mejoras-paralelo.md](planes/coordinacion-mejoras-paralelo.md)). Integradas en
+bloque con **versionado diferido**: **backend v0.20.0 / app v0.23.0 / raíz v0.31.0**; gate verde tras
+la integración (238 backend + 114 app). Pendiente del lote: pruebas con el usuario al final + la Ola 2
+(F-E dashboard anónimo, F-F producción guiada).
+
+- [x] ✅ **Configuración validada con Zod (US-46, F-A, rama `feature/50-config-zod`).** `loadConfig`
+      se reescribe sobre un esquema Zod que normaliza/coacciona cada variable y, en
+      `NODE_ENV=production`, **exige `DATABASE_URL`** fallando al arrancar con mensaje claro
+      (`ConfigError` + `z.prettifyError`; `index.ts` aborta con `exit 1`). El secreto JWT inseguro sigue
+      degradando con **WARNING** (no fatal) para **preservar `docker compose up`**. `config.test.ts`
+      pasa de 3 a 19 casos. Plan en [planes/feature-50-config-zod.md](planes/feature-50-config-zod.md).
+- [x] ✅ **Cuentos mejorados: multi-tema/estilo + prompt (US-47, F-B, rama
+      `feature/51-cuentos-multitema-prompt`).** `POST /stories` acepta **listas** `temas`/`estilos`
+      (Zod `z.array(...).min(1)`, sin duplicados); `buildStoryPrompt` interpola la lista legible ES/EN
+      conservando US-26/US-28. Límite del cuento subido en el seed (`150-200` → `200-350` palabras). App:
+      chips de selección múltiple en `StoryGeneratorScreen`. **Sin migración Prisma** (se persiste el
+      primero de cada lista como valor representativo). Plan en
+      [planes/feature-51-cuentos-multitema-prompt.md](planes/feature-51-cuentos-multitema-prompt.md).
+- [x] ✅ **Selección de perfil al arrancar (US-49, amplía US-02, F-D, rama
+      `feature/53-seleccion-perfil-arranque`).** Función pura `resolveInitialRoute` decide la ruta inicial
+      (sin sesión → `Welcome`; perfil activo → `Main`; 1 perfil → auto-selección + `Main`; varios/0 →
+      `SelectProfile`), con tests de los caminos. El store guarda `profiles` (fuente única, persistencia
+      v2→v3). Solo app. Plan en
+      [planes/feature-53-seleccion-perfil-arranque.md](planes/feature-53-seleccion-perfil-arranque.md).
 - [x] ✅ **Contraseña en el alta y login real (US-48, F-C del lote en paralelo, rama
       `feature/52-password-login` desde `develop`).** Revierte la "identificación ligera por email sin
       contraseña" de la Fase 5.5: puerto de dominio `PasswordHasher` con adaptador `BcryptPasswordHasher`

@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.23.0] - 2026-06-26
+
+### Added
+
 - Selección de perfil al arrancar (US-49, amplía US-02): el store guarda la lista de hijos del
   guardián (`profiles` + `setProfiles`) como fuente única, y `SelectProfileScreen` la alimenta en
   lugar de un `useState` local. Función pura `resolveInitialRoute` (en
@@ -26,26 +40,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   pantalla `StoryGeneratorScreen` ahora son toggle (varios a la vez); el botón "Generar" se
   deshabilita y avisa si no hay al menos un tema y un estilo. `api.stories.generate` envía las listas
   `temas`/`estilos` al backend.
-
-### Changed
-
 - `GenerateStoryRequest` pasa de `tema`/`estilo` (singulares) a `temas: Tema[]`/`estilos: Estilo[]`
   (US-47). La respuesta del cuento no cambia: el backend devuelve el tema/estilo representativo
   singular, que la app sigue mostrando igual.
 - Campo de **contraseña** en el alta (`ConsentScreen`) y en el login (`LoginScreen`) del adulto
   (US-48), con validación de longitud mínima; los gateways de alta/login envían la contraseña.
-
-### Changed
-
 - El login deja de ser identificación ligera por email: `LoginScreen` exige contraseña y muestra un
   mensaje de error **genérico** ante credencial inválida (`401`), sin distinguir email de contraseña
   (US-48).
-
-### Deprecated
-
-### Removed
-
-### Fixed
 
 ### Security
 

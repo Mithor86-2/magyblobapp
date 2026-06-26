@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.20.0] - 2026-06-26
+
+### Added
+
 - Validación de la configuración por variables de entorno con un **esquema Zod** (`config.ts`,
   US-46): `loadConfig` parsea/normaliza cada variable (coerción de `PORT`/timeouts a entero positivo,
   `AI_PROVIDER` restringido a `mock|local`, recorte de cadenas) y, en `NODE_ENV=production`, **exige
@@ -30,9 +44,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   (no vacío, sin duplicados, vocabulario cerrado). El prompt (`buildStoryPrompt`) interpola la lista
   legible de temas y estilos en español ("animales y espacio") e inglés ("animals and space"),
   conservando reglas narrativas (US-28), tono por edad e intereses (US-26).
-
-### Changed
-
 - Firma de la capa de IA a arrays (US-47): `GenerateStoryInput` pasa de `tema`/`estilo` a
   `temas: Tema[]`/`estilos: Estilo[]`, igual que `GenerateStoryRequest`. Se sube el límite de
   longitud del cuento en el seed `prompt.story.params` de `150-200` a **`200-350`** palabras (cuento
@@ -44,18 +55,9 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   y en `prisma/schema.prisma` con su migración. `RegisterGuardian` deriva y guarda el hash en el
   alta. Nuevo campo `password` validado por Zod (mínimo 8 caracteres en el alta) en `POST /guardians`
   y `POST /guardians/login`.
-
-### Changed
-
 - `LoginGuardian` deja de ser identificación ligera por email y **verifica la contraseña** contra el
   `passwordHash` del `Guardian` (US-48); credencial inválida devuelve un `401` genérico
   (`InvalidCredentialsError`) que no distingue email inexistente de contraseña errónea.
-
-### Deprecated
-
-### Removed
-
-### Fixed
 
 ### Security
 
