@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { loadConfig, type Config } from './config.js';
 import type { AppDeps } from './dependencies.js';
+import { registerAuth } from './auth.js';
 import { healthRoutes } from './routes/health.js';
 import { registerErrorHandler } from './routes/errorHandler.js';
 import { guardianRoutes } from './routes/guardians.js';
@@ -49,8 +50,11 @@ export async function buildServer(
   app.setSerializerCompiler(serializerCompiler);
 
   registerErrorHandler(app);
+  // Autenticación JWT (US-45): registra @fastify/jwt y el decorador `authenticate`
+  // antes que las rutas, que lo referencian en su `onRequest` para protegerse.
+  await registerAuth(app, config);
   await app.register(healthRoutes);
-  guardianRoutes(app, resolved);
+  guardianRoutes(app, resolved, config);
   profileRoutes(app, resolved);
   storyRoutes(app, resolved);
   activityRoutes(app, resolved);

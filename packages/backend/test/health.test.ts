@@ -21,6 +21,7 @@ describe('GET /health', () => {
         voiceIdByLang: { es: 'voz-es', en: 'voz-en' },
         timeoutMs: 1000,
       },
+      auth: { secret: 'test-secret', accessTtl: '15m', refreshTtl: '7d' },
     });
   });
 

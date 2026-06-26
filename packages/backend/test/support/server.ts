@@ -32,6 +32,11 @@ const TEST_CONFIG = {
     voiceIdByLang: { es: 'voz-es', en: 'voz-en' },
     timeoutMs: 1000,
   },
+  auth: {
+    secret: 'test-secret-no-usar-en-produccion',
+    accessTtl: '15m',
+    refreshTtl: '7d',
+  },
 } as const;
 
 /** Dependencias en memoria + handles a los repos para inspeccionarlos en los tests. */
@@ -69,4 +74,16 @@ export function makeInMemoryDeps() {
 /** Construye el servidor con dobles en memoria (no toca Prisma ni la DB). */
 export async function buildTestServer(deps: AppDeps): Promise<FastifyInstance> {
   return buildServer(TEST_CONFIG, deps);
+}
+
+/**
+ * Cabecera `Authorization: Bearer <access token>` para ejercitar las rutas
+ * protegidas (US-45). Firma un access token válido con el secreto de TEST_CONFIG.
+ */
+export function authHeaders(
+  app: FastifyInstance,
+  guardian: { id: string; email: string } = { id: 'g-test', email: 'tester@example.com' },
+): { authorization: string } {
+  const token = app.jwt.sign({ guardianId: guardian.id, email: guardian.email, type: 'access' });
+  return { authorization: `Bearer ${token}` };
 }

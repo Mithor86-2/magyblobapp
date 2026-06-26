@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 /**
  * Integración de F2 (historial + progreso) por HTTP con dobles en memoria:
@@ -36,6 +36,7 @@ describe('Historial y progreso (integración)', () => {
     const profile = await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: {
         guardianId,
         nombre: 'Mateo',
@@ -53,11 +54,16 @@ describe('Historial y progreso (integración)', () => {
     const story = await app.inject({
       method: 'POST',
       url: '/stories',
+      headers: authHeaders(app),
       payload: { profileId, tema: 'animales', estilo: 'aventura' },
     });
     const storyId = story.json().id as string;
 
-    const res = await app.inject({ method: 'POST', url: `/stories/${storyId}/read` });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/stories/${storyId}/read`,
+      headers: authHeaders(app),
+    });
     expect(res.statusCode).toBe(200);
     expect(res.json().estado).toBe('leido');
   });
@@ -67,6 +73,7 @@ describe('Historial y progreso (integración)', () => {
     const rec = await app.inject({
       method: 'POST',
       url: '/activities/recommend',
+      headers: authHeaders(app),
       payload: { profileId, cantidad: 1 },
     });
     const activityId = rec.json()[0].id as string;
@@ -74,6 +81,7 @@ describe('Historial y progreso (integración)', () => {
     const res = await app.inject({
       method: 'POST',
       url: `/activities/${activityId}/complete`,
+      headers: authHeaders(app),
       payload: { valoracion: 2 },
     });
     expect(res.statusCode).toBe(200);
@@ -89,12 +97,14 @@ describe('Historial y progreso (integración)', () => {
     const rec = await app.inject({
       method: 'POST',
       url: '/activities/recommend',
+      headers: authHeaders(app),
       payload: { profileId, cantidad: 1 },
     });
     const activityId = rec.json()[0].id as string;
     const res = await app.inject({
       method: 'POST',
       url: `/activities/${activityId}/complete`,
+      headers: authHeaders(app),
       payload: { valoracion: 9 },
     });
     expect(res.statusCode).toBe(400);
@@ -105,15 +115,21 @@ describe('Historial y progreso (integración)', () => {
     await app.inject({
       method: 'POST',
       url: '/stories',
+      headers: authHeaders(app),
       payload: { profileId, tema: 'animales', estilo: 'aventura' },
     });
     await app.inject({
       method: 'POST',
       url: '/activities/recommend',
+      headers: authHeaders(app),
       payload: { profileId, cantidad: 2 },
     });
 
-    const res = await app.inject({ method: 'GET', url: `/profiles/${profileId}/history` });
+    const res = await app.inject({
+      method: 'GET',
+      url: `/profiles/${profileId}/history`,
+      headers: authHeaders(app),
+    });
     expect(res.statusCode).toBe(200);
     const body = res.json() as { stories: unknown[]; activities: unknown[] };
     expect(body.stories).toHaveLength(1);

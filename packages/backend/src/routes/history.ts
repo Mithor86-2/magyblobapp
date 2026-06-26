@@ -6,7 +6,9 @@ import type { AppDeps } from '../dependencies.js';
 export function historyRoutes(app: FastifyInstance, deps: AppDeps): void {
   const getHistory = new GetHistory(deps);
 
-  app.get<{ Params: { profileId: string } }>('/profiles/:profileId/history', async (request) =>
-    getHistory.execute({ profileId: request.params.profileId }),
+  app.get<{ Params: { profileId: string } }>(
+    '/profiles/:profileId/history',
+    { onRequest: app.authenticate },
+    async (request) => getHistory.execute({ profileId: request.params.profileId }),
   );
 }

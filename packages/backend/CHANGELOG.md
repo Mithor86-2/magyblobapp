@@ -19,6 +19,42 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [0.18.0] - 2026-06-26
+
+### Added
+
+- Dependencia `@fastify/jwt` (v10) y módulo `auth.ts`: autenticación de la sesión del
+  guardián con JWT (US-45). El login emite un **access token** corto y un **refresh
+  token** largo (secreto único, distinguidos por el claim `type`); decorador
+  `authenticate` (hook `onRequest`) que protege las rutas de datos. (US-45)
+- Ruta `POST /guardians/refresh`: renueva el access token a partir de un refresh token
+  válido (200) o responde 401 si es inválido/expirado o no es de tipo refresh. (US-45)
+- Configuración de autenticación en `config.ts` (`auth`): `JWT_SECRET`, `JWT_ACCESS_TTL`
+  (def. `15m`) y `JWT_REFRESH_TTL` (def. `7d`), con defaults solo de desarrollo; cableadas
+  en `.env.example` y `docker-compose.yml`. (US-45)
+
+### Changed
+
+- `POST /guardians/login` y `POST /guardians` (auto-login tras el alta) ahora devuelven,
+  además del `Guardian`, `accessToken` y `refreshToken` para iniciar la sesión
+  autenticada. (US-45)
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+- Las rutas que operan sobre datos del guardián y del perfil
+  (`GET /guardians/:id/profiles`, `POST /profiles`, `POST /stories`,
+  `POST /stories/:id/read`, `GET /stories/:id/narration`, `POST /activities/recommend`,
+  `POST /activities/:id/complete`, `GET /profiles/:id/history`) exigen un access token
+  válido y responden **401** sin él. Públicas: `GET /health`, `POST /guardians`,
+  `POST /guardians/login`, `POST /guardians/refresh`. El secreto JWT va en variables de
+  entorno, nunca en BD. (US-45)
+
 ## [0.17.0] - 2026-06-25
 
 ### Added

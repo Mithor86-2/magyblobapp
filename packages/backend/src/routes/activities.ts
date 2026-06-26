@@ -24,31 +24,36 @@ export function activityRoutes(app: FastifyInstance, deps: AppDeps): void {
 
   app
     .withTypeProvider<ZodTypeProvider>()
-    .post('/activities/recommend', { schema: { body: bodySchema } }, async (request, reply) => {
-      const activities = await recommendActivities.execute(request.body);
-      return reply.code(201).send(activities);
-    });
-
-  // Marca una actividad como completada con valoración (US-10); registra el evento de uso.
-  app
-    .withTypeProvider<ZodTypeProvider>()
     .post(
-      '/activities/:id/complete',
-      { schema: { body: completeSchema, params: completeParamsSchema } },
-      async (request) => {
-        const activity = await completeActivity.execute({
-          activityId: request.params.id,
-          valoracion: request.body.valoracion,
-        });
-
-        await deps.bus.publish({
-          tipo: 'actividad_completada',
-          profileId: activity.profileId,
-          activityId: activity.id,
-          valoracion: activity.valoracion,
-        });
-
-        return activity;
+      '/activities/recommend',
+      { schema: { body: bodySchema }, onRequest: app.authenticate },
+      async (request, reply) => {
+        const activities = await recommendActivities.execute(request.body);
+        return reply.code(201).send(activities);
       },
     );
+
+  // Marca una actividad como completada con valoración (US-10); registra el evento de uso.
+  app.withTypeProvider<ZodTypeProvider>().post(
+    '/activities/:id/complete',
+    {
+      schema: { body: completeSchema, params: completeParamsSchema },
+      onRequest: app.authenticate,
+    },
+    async (request) => {
+      const activity = await completeActivity.execute({
+        activityId: request.params.id,
+        valoracion: request.body.valoracion,
+      });
+
+      await deps.bus.publish({
+        tipo: 'actividad_completada',
+        profileId: activity.profileId,
+        activityId: activity.id,
+        valoracion: activity.valoracion,
+      });
+
+      return activity;
+    },
+  );
 }

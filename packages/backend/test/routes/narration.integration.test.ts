@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 /**
  * Integración de la narración (US-22): flujo completo por HTTP
@@ -38,6 +38,7 @@ describe('GET /stories/:id/narration (integración)', () => {
     const profile = await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: {
         guardianId,
         nombre: 'Mateo',
@@ -52,6 +53,7 @@ describe('GET /stories/:id/narration (integración)', () => {
     const story = await app.inject({
       method: 'POST',
       url: '/stories',
+      headers: authHeaders(app),
       payload: { profileId, tema: 'animales', estilo: 'aventura' },
     });
     return story.json().id as string;
@@ -60,7 +62,11 @@ describe('GET /stories/:id/narration (integración)', () => {
   it('devuelve el audio del cuento como audio/mpeg', async () => {
     const storyId = await crearCuento();
 
-    const res = await app.inject({ method: 'GET', url: `/stories/${storyId}/narration` });
+    const res = await app.inject({
+      method: 'GET',
+      url: `/stories/${storyId}/narration`,
+      headers: authHeaders(app),
+    });
 
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toContain('audio/mpeg');
@@ -74,8 +80,16 @@ describe('GET /stories/:id/narration (integración)', () => {
   it('sirve de caché en la segunda llamada (sin re-sintetizar)', async () => {
     const storyId = await crearCuento();
 
-    await app.inject({ method: 'GET', url: `/stories/${storyId}/narration` });
-    await app.inject({ method: 'GET', url: `/stories/${storyId}/narration` });
+    await app.inject({
+      method: 'GET',
+      url: `/stories/${storyId}/narration`,
+      headers: authHeaders(app),
+    });
+    await app.inject({
+      method: 'GET',
+      url: `/stories/${storyId}/narration`,
+      headers: authHeaders(app),
+    });
 
     expect(handles.tts.llamadas).toBe(1); // ElevenLabs se llamó una sola vez
     const eventos = handles.events.items.filter((e) => e.tipo === 'cuento_narrado');
@@ -83,7 +97,11 @@ describe('GET /stories/:id/narration (integración)', () => {
   });
 
   it('devuelve 404 si el cuento no existe', async () => {
-    const res = await app.inject({ method: 'GET', url: '/stories/inexistente/narration' });
+    const res = await app.inject({
+      method: 'GET',
+      url: '/stories/inexistente/narration',
+      headers: authHeaders(app),
+    });
     expect(res.statusCode).toBe(404);
     expect(res.json().error.tipo).toBe('NotFoundError');
   });

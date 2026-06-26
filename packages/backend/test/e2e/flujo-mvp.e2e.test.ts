@@ -43,10 +43,14 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
     method: string,
     path: string,
     body?: unknown,
+    token?: string,
   ): Promise<{ status: number; ok: boolean; json: () => Promise<unknown> }> {
+    const headers: Record<string, string> = {};
+    if (body !== undefined) headers['content-type'] = 'application/json';
+    if (token !== undefined) headers.authorization = `Bearer ${token}`;
     const res = await fetch(`${baseUrl}${path}`, {
       method,
-      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+      headers: Object.keys(headers).length === 0 ? undefined : headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     return { status: res.status, ok: res.ok, json: () => res.json() };
@@ -72,57 +76,71 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
     const guardian = (await alta.json()) as { id: string; consentimientoDado: boolean };
     expect(guardian.consentimientoDado).toBe(true);
 
-    // 2) Login por email → recupera la misma cuenta
+    // 2) Login por email → recupera la misma cuenta y emite la sesión JWT (US-45)
     const login = await http('POST', '/guardians/login', { email: 'ana.e2e@example.com' });
     expect(login.status).toBe(200);
-    expect((await login.json()) as { id: string }).toMatchObject({ id: guardian.id });
+    const sesion = (await login.json()) as { id: string; accessToken: string };
+    expect(sesion).toMatchObject({ id: guardian.id });
+    expect(typeof sesion.accessToken).toBe('string');
+    const token = sesion.accessToken;
 
-    // 3) Crear perfil de niño
-    const altaPerfil = await http('POST', '/profiles', {
-      guardianId: guardian.id,
-      nombre: 'Mateo',
-      edad: 4,
-      idioma: 'es',
-      avatar: 'a1',
-      intereses: ['animales'],
-    });
+    // 3) Crear perfil de niño (ruta protegida → con Bearer token)
+    const altaPerfil = await http(
+      'POST',
+      '/profiles',
+      {
+        guardianId: guardian.id,
+        nombre: 'Mateo',
+        edad: 4,
+        idioma: 'es',
+        avatar: 'a1',
+        intereses: ['animales'],
+      },
+      token,
+    );
     expect(altaPerfil.status).toBe(201);
     const perfil = (await altaPerfil.json()) as { id: string };
 
     // 4) Listar perfiles del adulto
-    const lista = await http('GET', `/guardians/${guardian.id}/profiles`);
+    const lista = await http('GET', `/guardians/${guardian.id}/profiles`, undefined, token);
     expect(lista.status).toBe(200);
     expect((await lista.json()) as unknown[]).toHaveLength(1);
 
     // 5) Generar cuento (mock determinista)
-    const genera = await http('POST', '/stories', {
-      profileId: perfil.id,
-      tema: 'animales',
-      estilo: 'aventura',
-    });
+    const genera = await http(
+      'POST',
+      '/stories',
+      { profileId: perfil.id, tema: 'animales', estilo: 'aventura' },
+      token,
+    );
     expect(genera.status).toBe(201);
     const story = (await genera.json()) as { id: string; titulo: string; proveedor: string };
     expect(story.titulo).toContain('Mateo');
     expect(story.proveedor).toBe('mock');
 
     // 6) El historial del perfil incluye el cuento recién creado (persistió)
-    const historial = await http('GET', `/profiles/${perfil.id}/history`);
+    const historial = await http('GET', `/profiles/${perfil.id}/history`, undefined, token);
     expect(historial.status).toBe(200);
     const hist = (await historial.json()) as { stories: Array<{ id: string }> };
     expect(hist.stories.map((s) => s.id)).toContain(story.id);
 
     // 7) Recomendar actividades y marcar una como completada
-    const recomienda = await http('POST', '/activities/recommend', {
-      profileId: perfil.id,
-      cantidad: 2,
-    });
+    const recomienda = await http(
+      'POST',
+      '/activities/recommend',
+      { profileId: perfil.id, cantidad: 2 },
+      token,
+    );
     expect(recomienda.status).toBe(201);
     const actividades = (await recomienda.json()) as Array<{ id: string }>;
     expect(actividades.length).toBeGreaterThan(0);
 
-    const completa = await http('POST', `/activities/${actividades[0].id}/complete`, {
-      valoracion: 3,
-    });
+    const completa = await http(
+      'POST',
+      `/activities/${actividades[0].id}/complete`,
+      { valoracion: 3 },
+      token,
+    );
     expect(completa.status).toBe(200);
     expect((await completa.json()) as { valoracion: number }).toMatchObject({ valoracion: 3 });
 
@@ -144,23 +162,32 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
       consentimientoVersion: 'v1',
     });
     const guardian = (await alta.json()) as { id: string };
-    const perfilRes = await http('POST', '/profiles', {
-      guardianId: guardian.id,
-      nombre: 'Lía',
-      edad: 5,
-      idioma: 'es',
-      avatar: 'a2',
-      intereses: ['magia'],
-    });
+    const login = await http('POST', '/guardians/login', { email: 'bea.e2e@example.com' });
+    const { accessToken: token } = (await login.json()) as { accessToken: string };
+
+    const perfilRes = await http(
+      'POST',
+      '/profiles',
+      {
+        guardianId: guardian.id,
+        nombre: 'Lía',
+        edad: 5,
+        idioma: 'es',
+        avatar: 'a2',
+        intereses: ['magia'],
+      },
+      token,
+    );
     const perfil = (await perfilRes.json()) as { id: string };
-    const storyRes = await http('POST', '/stories', {
-      profileId: perfil.id,
-      tema: 'magia',
-      estilo: 'divertido',
-    });
+    const storyRes = await http(
+      'POST',
+      '/stories',
+      { profileId: perfil.id, tema: 'magia', estilo: 'divertido' },
+      token,
+    );
     const story = (await storyRes.json()) as { id: string };
 
-    const narracion = await http('GET', `/stories/${story.id}/narration`);
+    const narracion = await http('GET', `/stories/${story.id}/narration`, undefined, token);
     expect(narracion.ok).toBe(false);
   });
 });

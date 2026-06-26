@@ -22,7 +22,26 @@ export interface Config {
   cloudApiKeys: Partial<Record<CloudTarget, string>>;
   /** Síntesis de voz (ElevenLabs). La API key es secreta y se lee de env. */
   tts: TtsConfig;
+  /** Autenticación de la sesión del guardián con JWT (US-45). */
+  auth: AuthConfig;
 }
+
+export interface AuthConfig {
+  /**
+   * Secreto de firma de los JWT (env `JWT_SECRET`). Único secreto para access y
+   * refresh; los tokens se distinguen por el claim `type` (YAGNI: no se separan
+   * secretos/namespaces). En producción **debe** fijarse por env; el valor por
+   * defecto es solo para desarrollo/arranque reproducible.
+   */
+  secret: string;
+  /** Vida del access token, p. ej. `15m` (env `JWT_ACCESS_TTL`). */
+  accessTtl: string;
+  /** Vida del refresh token, p. ej. `7d` (env `JWT_REFRESH_TTL`). */
+  refreshTtl: string;
+}
+
+/** Secreto JWT por defecto, **solo desarrollo** (igual que el resto de defaults). */
+const DEV_JWT_SECRET = 'dev-insecure-jwt-secret-change-me-in-production';
 
 export interface TtsConfig {
   /** `xi-api-key` de ElevenLabs (env `ELEVENT_LABS_API`); `undefined` ⇒ voz nativa. */
@@ -70,6 +89,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     aiTimeoutMs: parsePort(env.AI_TIMEOUT_MS, 60_000),
     cloudApiKeys: loadCloudApiKeys(env),
     tts: loadTtsConfig(env),
+    auth: loadAuthConfig(env),
+  };
+}
+
+function loadAuthConfig(env: NodeJS.ProcessEnv): AuthConfig {
+  return {
+    secret: env.JWT_SECRET?.trim() || DEV_JWT_SECRET,
+    accessTtl: env.JWT_ACCESS_TTL?.trim() || '15m',
+    refreshTtl: env.JWT_REFRESH_TTL?.trim() || '7d',
   };
 }
 

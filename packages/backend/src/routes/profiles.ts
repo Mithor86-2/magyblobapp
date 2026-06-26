@@ -24,15 +24,19 @@ export function profileRoutes(app: FastifyInstance, deps: AppDeps): void {
 
   app
     .withTypeProvider<ZodTypeProvider>()
-    .post('/profiles', { schema: { body: bodySchema } }, async (request, reply) => {
-      const profile = await createChildProfile.execute(request.body);
+    .post(
+      '/profiles',
+      { schema: { body: bodySchema }, onRequest: app.authenticate },
+      async (request, reply) => {
+        const profile = await createChildProfile.execute(request.body);
 
-      await deps.bus.publish({
-        tipo: 'perfil_creado',
-        guardianId: profile.guardianId,
-        profileId: profile.id,
-      });
+        await deps.bus.publish({
+          tipo: 'perfil_creado',
+          guardianId: profile.guardianId,
+          profileId: profile.id,
+        });
 
-      return reply.code(201).send(profile);
-    });
+        return reply.code(201).send(profile);
+      },
+    );
 }

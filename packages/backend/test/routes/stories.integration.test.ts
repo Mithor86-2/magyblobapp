@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 /**
  * Test de integración del DoD de la Fase 3: el flujo completo por HTTP
@@ -39,6 +39,7 @@ describe('POST /stories (integración)', () => {
     const profile = await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: {
         guardianId,
         nombre: 'Mateo',
@@ -58,6 +59,7 @@ describe('POST /stories (integración)', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/stories',
+      headers: authHeaders(app),
       payload: { profileId, tema: 'animales', estilo: 'aventura' },
     });
 
@@ -83,6 +85,7 @@ describe('POST /stories (integración)', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/stories',
+      headers: authHeaders(app),
       payload: { profileId: 'inexistente', tema: 'animales', estilo: 'aventura' },
     });
     expect(res.statusCode).toBe(404);
@@ -94,6 +97,7 @@ describe('POST /stories (integración)', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/stories',
+      headers: authHeaders(app),
       payload: { profileId, tema: 'piratas', estilo: 'aventura' },
     });
     expect(res.statusCode).toBe(400);
