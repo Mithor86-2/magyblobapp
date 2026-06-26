@@ -9,7 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Dependencia `zod` (v4) para validación declarativa en capas application/infrastructure
+  (no en `/domain`, que conserva cero dependencias externas). (US-44)
+
 ### Changed
+
+- Validación de fronteras no fiables migrada de chequeos `typeof` imperativos a esquemas Zod,
+  conservando el comportamiento de **sanear, no solo rechazar**: salida del LLM
+  (`parseResponse.ts`) y settings JSON (`cloudSettings.ts`, `storyParams.ts`). (US-44)
 
 ### Deprecated
 
