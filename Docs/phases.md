@@ -495,6 +495,18 @@ se abra). Algunas parten de algo ya existente (se indica).
       no se derivan de esquemas de infraestructura. Cumplimiento C-2/C-5 sin cambios (librerías puras).
       `pnpm check` verde (192 backend + 87 app).
 
+- [x] ✅ **Flujo de trabajo en paralelo sin conflictos** (devex/proceso, backend v0.19.0 / raíz
+      v0.30.0, rama `feature/49-flujo-paralelo` desde `develop`). Elimina los conflictos que aparecían
+      **al mergear features en paralelo** (Lecciones A y D). **Versionado diferido:** la rama de feature
+      ya no toca `version`; el número SemVer y el fechado del CHANGELOG se asignan **al integrar en
+      `develop`** (post-merge), donde la operación queda serializada → desaparece la colisión de versión.
+      La política de versionado/CHANGELOG se traslada a una **skill propia `versionar`** (fuente única);
+      `CLAUDE.md` y `cerrar-feature` la **referencian**, no la duplican. `.gitattributes` con
+      `merge=union` para los CHANGELOG (apéndices concurrentes se auto-fusionan sin conflicto) y receta
+      `pnpm install` para el `pnpm-lock`. Protocolo consolidado en `Docs/trabajo-en-paralelo.md`.
+      Verificado: merge union de dos ramas sin conflicto (ambos bullets) y `pnpm check` verde
+      (203 backend + 98 app).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

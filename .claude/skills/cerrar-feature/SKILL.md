@@ -45,43 +45,23 @@ Antes de versionar, pon al día **toda** la documentación que el cambio deje de
 
 Todo en **español** (lenguaje ubicuo del proyecto).
 
-## 3. Sube la versión (SemVer)
+## 3. Versionado y CHANGELOG → skill `versionar` (versionado diferido)
 
-Actualiza el campo `version`:
+El versionado y el CHANGELOG los gobierna la skill [versionar](../versionar/SKILL.md), **fuente
+única** de la política. No repitas aquí el procedimiento; aplícala. Regla clave del **versionado
+diferido**:
 
-- Raíz: [package.json](../../../package.json).
-- Paquete(s) afectado(s): `packages/backend/package.json` y/o `packages/app/package.json`.
+- **En la rama de feature: NO toques `version`** (ni `package.json` raíz, ni `packages/*`, ni
+  `app.json`). Limítate a dejar tus entradas bajo `## [Unreleased]` del CHANGELOG del paquete
+  afectado, agrupadas (Added/Changed/Deprecated/Removed/Fixed/Security). **No** crees la sección
+  fechada `## [x.y.z]`.
+- **El bump de versión y el fechado del CHANGELOG se hacen al integrar en `develop`** (paso "Versiona
+  al integrar" de la skill `versionar`), tras el merge. Como `develop` es lineal, queda serializado y
+  no colisiona con otras features cerradas en paralelo.
 
-Criterio SemVer:
+Verifica solo que tus entradas de `## [Unreleased]` están completas y en español.
 
-- `patch` (x.y.**z**) — correcciones retrocompatibles.
-- `minor` (x.**y**.0) — funcionalidad nueva retrocompatible (lo habitual al cerrar una feature).
-- `major` (**x**.0.0) — cambios incompatibles.
-
-El bump va en el **mismo cierre**, no se difiere.
-
-## 4. Mueve el CHANGELOG
-
-Por cada paquete con cambios, edita su `CHANGELOG.md`
-(`packages/backend/CHANGELOG.md`, `packages/app/CHANGELOG.md`) siguiendo
-[Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/):
-
-1. Lo que esté en `## [Unreleased]` (agrupado en `Added`, `Changed`, `Deprecated`, `Removed`,
-   `Fixed`, `Security`) se mueve a una nueva sección versionada:
-
-   ```markdown
-   ## [x.y.z] - AAAA-MM-DD
-   ```
-
-   Usa la fecha de hoy en formato `AAAA-MM-DD`.
-
-2. Deja un `## [Unreleased]` vacío con los seis grupos para la próxima feature.
-3. Las entradas se redactan en español.
-
-> Si tienes acceso a la fecha actual del entorno, úsala. Si no, pregúntala al usuario antes de
-> escribir la fecha; no la inventes.
-
-## 5. Commit y cierre con Git Flow
+## 4. Commit y cierre con Git Flow
 
 Stagea selectivamente (`git add <file>`, **nunca** `git add -A`). Mensaje en
 **Conventional Commits en español**, imperativo, ≤72 chars en el asunto:
@@ -98,8 +78,8 @@ comandos concretos) o **ofrécele/genera una verificación automatizada**. No ci
 
 **Regla de seguridad (enforced): pide confirmación antes de finalizar.** No ejecutes
 `git flow feature finish` (ni el merge a `develop`/`main`) sin **confirmación explícita del
-usuario**. Haz todo lo anterior (gate, versión, CHANGELOG, docs, commits, pruebas) y **detente
-aquí**: pregunta y espera el "sí" antes de cerrar la rama.
+usuario**. Haz todo lo anterior (gate, entradas de `[Unreleased]`, docs, commits, pruebas) y
+**detente aquí**: pregunta y espera el "sí" antes de cerrar la rama.
 
 Tras la confirmación, cierra la rama con Git Flow usando `git flow` directamente. La skill
 **`gitflow-es:git`** del plugin cubre el detalle del flujo:
@@ -110,6 +90,15 @@ git flow feature finish <id>-<descripcion-kebab-case>
 
 Recuerda: la identidad local de commit es la cuenta personal `Mithor86-2` — **no** la resetees.
 
+## 5. Versiona al integrar (en `develop`, post-merge)
+
+`git flow feature finish` te deja ya en `develop` con la feature mergeada. **Ahora** se asigna la
+versión, siguiendo el paso "Versiona al integrar" de la skill [versionar](../versionar/SKILL.md):
+elige la siguiente versión SemVer libre, bumpea `version` (raíz + paquete(s)), mueve el CHANGELOG a
+`## [x.y.z] - AAAA-MM-DD`, y commitea `chore(release): vX.Y.Z` en `develop`. Resuelve cualquier
+conflicto residual con las recetas de `versionar` (CHANGELOG `merge=union`, lockfile `pnpm install`).
+Ver también [Docs/trabajo-en-paralelo.md](../../../Docs/trabajo-en-paralelo.md).
+
 ## Checklist final
 
 - [ ] `pnpm check` verde.
@@ -117,6 +106,6 @@ Recuerda: la identidad local de commit es la cuenta personal `Mithor86-2` — **
 - [ ] phases.md / memory.md / lecciones-aprendidas.md actualizados.
 - [ ] README / api.md / docs afectadas actualizados.
 - [ ] Si la feature tocó `schema.prisma`, `modelo-datos.md` sincronizado (diagrama + parte conceptual).
-- [ ] `version` subida en package.json(s) según SemVer.
-- [ ] CHANGELOG movido de Unreleased a versión fechada (por paquete).
+- [ ] En la rama de feature **no** se tocó `version`; las entradas viven bajo `## [Unreleased]`.
 - [ ] Commit(s) en Conventional Commits (español) + rama cerrada con Git Flow.
+- [ ] **Post-merge en `develop`:** versión bumpeada y CHANGELOG fechado vía skill `versionar`.

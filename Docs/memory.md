@@ -761,3 +761,23 @@ existente, **sin contraseña** (se conserva la identificación ligera del cumpli
 - **Cumplimiento (C-13, refuerzo no desviación):** JWT es una librería local de tokens, **sin red
   externa ni terceros** → no afecta a C-2/C-5; las rutas de datos dejan de ser anónimas. Secreto en
   env (`JWT_SECRET`), nunca en BD.
+
+## Versionado diferido y trabajo en paralelo (Feature 49 · 2026-06-26 · devex/proceso)
+
+Rama `feature/49-flujo-paralelo` (desde `develop`). Tooling/proceso para que abrir/cerrar features en
+paralelo deje de generar conflictos al mergear a `develop`. Cierra el hilo de las Lecciones A y D.
+
+- **Versionado diferido al merge (cambio de proceso).** La versión es un recurso compartido; si cada
+  rama la reserva al empezar/cerrar, dos features eligen el mismo `x.y.z` a ciegas y colisionan
+  (`package.json`, `app.json`, `CHANGELOG.md`). Decisión: **la rama de feature NO toca `version`**;
+  solo acumula bajo `## [Unreleased]`. El número y la sección fechada se asignan **al integrar en
+  `develop`** (post-merge), donde la operación queda serializada → la colisión desaparece de raíz.
+- **Política de versionado en una skill propia (`versionar`), fuente única.** Decisión del usuario:
+  no duplicar el procedimiento entre `CLAUDE.md` y `cerrar-feature`. La skill `versionar` describe la
+  política, el criterio SemVer, la mecánica Keep a Changelog y el paso "Versiona al integrar";
+  `CLAUDE.md` y `cerrar-feature` la **referencian**. Se cambia en un solo sitio.
+- **`.gitattributes` con `merge=union` para los CHANGELOG.** Los apéndices concurrentes bajo
+  `[Unreleased]` se auto-fusionan sin marcadores (driver nativo de git, viaja con el repo). `pnpm-lock`
+  **no** va en union (corrompería el árbol); su receta es `pnpm install` (pnpm reconcilia el lockfile).
+- **Protocolo consolidado en [trabajo-en-paralelo.md](trabajo-en-paralelo.md).** Worktree por feature,
+  commit-pronto y las recetas de conflicto al integrar, en un único doc enlazado desde `CLAUDE.md`.

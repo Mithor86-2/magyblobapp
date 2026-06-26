@@ -745,3 +745,27 @@ diferencias que costaron iteración:
   (`EXPO_PUBLIC_API_URL=http://10.0.2.2:3000`); en simulador iOS vale `localhost`; en dispositivo
   físico, la **IP LAN** del Mac. Tras cambiar `.env`, reiniciar Metro con caché limpia (`start -c`),
   porque `EXPO_PUBLIC_*` se lee al arrancar, no en caliente.
+
+## Feature 49 — Conflictos del trabajo en paralelo (devex/proceso)
+
+Cierra estructuralmente las Lecciones A (working tree se revierte) y D (colisión de versión al cerrar
+en paralelo): ya no se mitigan a mano, se evitan por diseño. Protocolo en
+[trabajo-en-paralelo.md](trabajo-en-paralelo.md); política de versionado en la skill `versionar`.
+
+### La colisión de versión se evita difiriendo la versión al merge, no resolviéndola
+
+- **Síntoma (Lección D):** dos features que cerraban en paralelo elegían el mismo `x.y.z` al iniciar
+  el cierre y chocaban en `package.json`/`app.json`/`CHANGELOG.md` al mergear a `develop`.
+- **Causa raíz:** el número de versión es un recurso compartido que se "reservaba" en la rama de
+  feature pero no se materializaba hasta el merge → ambas ramas lo elegían a ciegas.
+- **Solución estructural:** **versionado diferido**. La rama de feature no toca `version` (solo
+  acumula bajo `## [Unreleased]`); el número y el fechado del CHANGELOG se asignan **al integrar en
+  `develop`**, donde `develop` lineal serializa la operación y no hay dos ramas eligiendo a la vez. La
+  política completa vive en la skill `versionar` (fuente única, referenciada desde `CLAUDE.md`).
+
+### Conflictos de CHANGELOG y lockfile: union + `pnpm install`, no merge manual
+
+- **CHANGELOG:** `merge=union` en `.gitattributes` (driver nativo de git) fusiona los apéndices de
+  ambos lados bajo `## [Unreleased]` sin marcadores de conflicto. Trade-off: revisar duplicados.
+- **`pnpm-lock.yaml`:** **no** se resuelve a mano ni con union (corrompería el árbol de deps). Ante un
+  conflicto, `pnpm install` reconcilia el lockfile automáticamente (docs de pnpm) y se commitea.

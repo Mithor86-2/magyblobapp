@@ -54,9 +54,14 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
   `presentation/screens` consumiendo el `api` inyectado y los tokens de theme → registro en el
   navegador). Vive en el repo: [.claude/skills/nueva-pantalla/](.claude/skills/nueva-pantalla/).
 - **`cerrar-feature`** — al finalizar una feature o cerrar una fase. Aplica la Definition of Done
-  (gate verde con `pnpm check`), el versionado SemVer, el `CHANGELOG.md` por paquete, la
-  actualización de docs y el cierre con Git Flow. Es la skill que ejecuta el proceso descrito en
-  "Versionado y changelog" más abajo. Vive en el repo: [.claude/skills/cerrar-feature/](.claude/skills/cerrar-feature/).
+  (gate verde con `pnpm check`), la actualización de docs y el cierre con Git Flow. El versionado y
+  el CHANGELOG los **delega** en la skill `versionar` (versionado diferido: la versión se asigna al
+  integrar en `develop`, no en la rama). Vive en el repo: [.claude/skills/cerrar-feature/](.claude/skills/cerrar-feature/).
+- **`versionar`** — fuente única del versionado del proyecto: política de **versionado diferido**
+  (la versión y el `## [x.y.z]` del CHANGELOG se asignan al integrar en `develop`, nunca en la rama
+  de feature), criterio SemVer y mecánica Keep a Changelog, más las recetas para resolver conflictos
+  de versión / CHANGELOG / `pnpm-lock` al mergear en paralelo. La invoca `cerrar-feature`; ver
+  "Versionado y changelog" más abajo. Vive en el repo: [.claude/skills/versionar/](.claude/skills/versionar/).
 - **`gitflow-es:git`** / **`gitflow-es:commit`** (plugin `gitflow-es`) — para cualquier operación de
   ramas o commits (start/finish de features, hotfixes, releases, mensajes en Conventional Commits en
   español). Ver "Git workflow" más abajo.
@@ -185,7 +190,11 @@ cambiar"). Para trabajar en varias features a la vez, **un git worktree por feat
 en paralelo con `isolation: "worktree"`). **Siempre que al trabajar en paralelo aparezcan conflictos
 de rama por compartir el working tree, crea un worktree por rama** en vez de seguir en el mismo
 directorio. La config `.claude/settings.json` fija `worktree.baseRef: "head"` para que el worktree
-integrado de Claude Code salga del HEAD (develop) y no de `origin/main`.
+integrado de Claude Code salga del HEAD (develop) y no de `origin/main`. El **protocolo completo de
+paralelismo** (worktrees, commit-pronto y recetas para resolver los conflictos al integrar) vive en
+[Docs/trabajo-en-paralelo.md](Docs/trabajo-en-paralelo.md); los conflictos de CHANGELOG se evitan con
+`merge=union` en [.gitattributes](.gitattributes) y los de versión con el versionado diferido (skill
+`versionar`).
 
 **Regla de seguridad (enforced): no finalizar una feature sin confirmación.** Nunca ejecutes
 `git flow feature finish` (ni mergees una rama de feature a `develop`/`main`) sin **confirmación
@@ -212,12 +221,16 @@ work identity) — preserve this; do not reset `git config --local user.*`.
 
 ## Versionado y changelog (enforced)
 
-El **cierre de una feature** lo orquesta paso a paso la skill **`cerrar-feature`** — úsala, no
-repitas el procedimiento a mano. Cubre, en el mismo cierre (no se difiere): poner al día la
-documentación afectada (tracking docs, README, API, etc.), subir `version` por
-[SemVer](https://semver.org/lang/es/) en los `package.json` (raíz + paquete afectado), y mover el
-`CHANGELOG.md` de cada paquete (formato [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/),
-entradas en español) de `## [Unreleased]` a una sección versionada `## [x.y.z] - AAAA-MM-DD`.
+La **política de versionado y CHANGELOG vive en la skill [`versionar`](.claude/skills/versionar/)**
+(fuente única) — no la repitas aquí ni en el chat; aplícala. Regla central: **versionado diferido**.
+La versión es un recurso compartido, así que **en la rama de feature no se toca `version`**: solo se
+acumulan entradas bajo `## [Unreleased]`. El número [SemVer](https://semver.org/lang/es/) y el
+`## [x.y.z] - AAAA-MM-DD` del [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/) se
+asignan **al integrar en `develop`** (post-merge), donde la operación queda serializada y dos
+features en paralelo dejan de colisionar. El **cierre de una feature** lo orquesta la skill
+**`cerrar-feature`**, que delega el versionado en `versionar`. Las recetas de conflicto al mergear
+(CHANGELOG `merge=union`, `pnpm-lock` con `pnpm install`) están en `versionar` y en
+[Docs/trabajo-en-paralelo.md](Docs/trabajo-en-paralelo.md).
 
 Dos reglas que aplican **durante** el desarrollo, no solo al cerrar:
 
