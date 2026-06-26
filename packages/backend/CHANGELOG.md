@@ -9,6 +9,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Ambiente de producción guiado (US-51): **`render.yaml`** en la raíz (Blueprint IaC de Render) que
+  despliega el backend como _web service_ Docker con `dockerfilePath: packages/backend/Dockerfile`,
+  `dockerContext: .` (contexto = raíz del repo), `branch: main`, `healthCheckPath: /health`, región
+  Frankfurt y plan free. Los secretos (`DATABASE_URL`, `JWT_SECRET`, `GROQ_API_KEY`) van con
+  `sync: false` (se introducen en el panel, nunca en el repo); el resto (`NODE_ENV=production`,
+  `AI_PROVIDER=mock`, TTLs, timeouts) con valor fijo. Las migraciones Prisma corren solas al arrancar
+  vía el `CMD` del Dockerfile (`prisma migrate deploy && node dist/index.js`). Ollama no va a
+  producción (plan free sin GPU); la IA real se obtiene con el modo cloud (Groq). Guía reproducible
+  en `Docs/despliegue.md` (Neon PG16 con `sslmode=require` y host `-pooler`, Render, Groq, cold start
+  del plan free, probar antes contra una rama de Neon). Solo infra/docs: no cambia el runtime ni el
+  arranque reproducible local (`docker compose up`).
+
 ### Changed
 
 ### Deprecated

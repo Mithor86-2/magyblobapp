@@ -9,6 +9,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Documentada la parametrización de `EXPO_PUBLIC_API_URL` hacia el backend de **producción** (Render,
+  US-51) en `.env.example` (comentario con la URL pública de ejemplo), sin romper el default local
+  (`http://localhost:3000`). La URL se inlinea en el bundle (no es secreta). Ver `Docs/despliegue.md`.
+
 ### Changed
 
 ### Deprecated

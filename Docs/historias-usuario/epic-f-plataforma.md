@@ -3,7 +3,7 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**.
+**US-46**, **US-51**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -895,3 +895,64 @@ con `cp .env.example .env && docker compose up` sin pasos ocultos.
   fallo en producción por secreto/URL ausente, normalización de tipos), Entonces los tests
   co-localizados de [`config.test.ts`](../../packages/backend/test/config.test.ts) —hoy solo cubre la
   parte JWT— se **amplían** para cubrirlos y `pnpm check` queda verde.
+
+## US-51 — Ambiente de producción guiado (despliegue) · Should (Mejoras)
+
+Como **desarrollador/evaluador del proyecto** quiero un **camino de despliegue de producción
+reproducible y documentado** (infraestructura como código + guía paso a paso) para poner el backend en
+la nube con su base de datos gestionada y un proveedor de IA accesible, sin pasos ocultos y sin
+exponer secretos en el repositorio.
+
+**Contexto.** Hasta ahora el proyecto solo se levantaba en local con `docker compose up`
+([US-06](#us-06)) y la **configuración del backend ya se valida al arrancar con Zod**
+([US-46](#us-46)), que en `NODE_ENV=production` **exige `DATABASE_URL`** y avisa de un `JWT_SECRET`
+inseguro. Esta historia añade el **ambiente de producción guiado**, decidido con el usuario:
+
+- **Backend en [Render](https://render.com)** como _web service_ Docker, construido con el
+  [`Dockerfile`](../../packages/backend/Dockerfile) existente (contexto de build = **raíz del repo**),
+  health check en `/health`, rama `main` → producción. Las **migraciones Prisma** corren solas en el
+  arranque vía el `CMD` del Dockerfile (`prisma migrate deploy && node dist/index.js`), sin pasos
+  ocultos.
+- **Base de datos en [Neon](https://neon.tech)** (PostgreSQL 16 gestionado), con _connection string_
+  `sslmode=require` y host `-pooler`.
+- **IA en la nube con [Groq](https://groq.com)** (free tier), reutilizando el `CloudProvider` ya
+  existente (US-14); **Ollama no va a producción** (no hay GPU en el plan free).
+- **Infraestructura como código**: un [`render.yaml`](../../render.yaml) (Blueprint de Render) declara
+  el servicio y sus variables; los **secretos** (`DATABASE_URL`, `JWT_SECRET`, `GROQ_API_KEY`) se
+  marcan `sync: false` (se introducen en el panel, **nunca** en el repo).
+
+Es **infra + docs**: no toca el runtime del backend (la config Zod de US-46 ya soporta producción) ni
+la lógica de la app, solo añade el blueprint, la guía [`Docs/despliegue.md`](../despliegue.md) y la
+parametrización de `EXPO_PUBLIC_API_URL` de la app hacia el backend de producción (sin romper el
+default local). **Cumplimiento:** usar Groq en producción implica que el **texto del cuento sale a un
+tercero** en la nube; se documenta como **desviación asumida del TFM**, coherente con la ya declarada
+para el modo cloud ([C-5](../cumplimiento-menores.md)). Sin la `GROQ_API_KEY` el backend cae al modo
+base (`mock`/`local`) y no sale nada (conforme).
+
+**Criterios de aceptación**
+
+- Dado el [`render.yaml`](../../render.yaml) en la raíz, Cuando se importa como Blueprint en Render,
+  Entonces define un _web service_ **Docker** con `dockerfilePath: packages/backend/Dockerfile`,
+  `dockerContext: .`, `branch: main`, `healthCheckPath: /health`, región y plan declarados, sin Root
+  Directory (contexto = raíz del repo).
+- Dados los **secretos** de producción (`DATABASE_URL`, `JWT_SECRET`, `GROQ_API_KEY`), Cuando se
+  declaran en el blueprint, Entonces van con `sync: false` (se introducen en el panel de Render),
+  **nunca** con valores reales versionados; el resto de variables (`NODE_ENV=production`,
+  `AI_PROVIDER=mock`, …) llevan valor fijo.
+- Dado `NODE_ENV=production` y los valores del blueprint, Cuando el backend arranca en Render, Entonces
+  la validación Zod ([US-46](#us-46)) **pasa** porque `DATABASE_URL` está presente; el `CMD` del
+  Dockerfile aplica las **migraciones** (`prisma migrate deploy`) y luego levanta el servidor, y
+  `/health` responde 200.
+- Dada la guía [`Docs/despliegue.md`](../despliegue.md), Cuando un evaluador la sigue, Entonces puede
+  crear el proyecto en Neon (PG16, `sslmode=require`, host `-pooler`), el _web service_ en Render
+  (contexto raíz, env vars) y la API key de Groq, **probando antes contra una rama de Neon** que
+  contra la base de `main`, y conoce el **cold start** del plan free.
+- Dada la app, Cuando se construye apuntando a producción, Entonces `EXPO_PUBLIC_API_URL` se
+  **parametriza** hacia la URL de Render (documentado en el `.env.example` del app, comentado) **sin
+  romper** el default local (`http://localhost:3000`).
+- (Cumplimiento) Dado el uso de **Groq** en producción, Entonces queda documentado en
+  [cumplimiento-menores.md](../cumplimiento-menores.md) como **desviación asumida (TFM)**, coherente
+  con C-5; y **sin la API key** el backend cae al modo base (`mock`/`local`) sin enviar nada a terceros.
+- (No-funcional) Dado el blueprint y la guía, Cuando se revisan, Entonces **no** contienen secretos
+  reales y el arranque reproducible local ([US-06](#us-06)) sigue intacto (`docker compose up` no
+  cambia).

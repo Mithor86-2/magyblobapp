@@ -125,6 +125,21 @@ arquitectura.
   `scrubEvent` redactando el nombre del niño también en `breadcrumbs[].data` como defensa en
   profundidad. Sin DSN, ambos son no-op. Ver
   [planes/44-observabilidad-errores.md](planes/44-observabilidad-errores.md).
+- **Groq en el despliegue de producción (US-51, 2026-06-26 — desviación asumida, extiende C-5).** El
+  ambiente de producción guiado ([despliegue.md](despliegue.md): backend en Render, BD en Neon, IA en
+  Groq) usa el **modo cloud con Groq** como camino por defecto en producción, porque Ollama (IA local)
+  **no** se despliega (el plan free no tiene GPU). En consecuencia, en producción el **texto del
+  cuento** (y los datos minimizados del perfil: edad, intereses, idioma; **nunca** nombre ni
+  identificadores) **sale a un tercero** en la nube (Groq). Es la **misma desviación de privacidad
+  asumida que C-5**, ahora materializada como comportamiento por defecto del despliegue real, no solo
+  como opt-in: **rompe C-5** y es incompatible con la categoría Kids de Apple. Salvedades que se
+  mantienen: (a) **sin `GROQ_API_KEY` en el entorno, el backend cae al modo base** (`mock`/`local`) y
+  no envía nada —un despliegue sin esa key es conforme—; (b) sigue siendo **conmutable en caliente**
+  desde la BD (`ai.cloud.activo=false`); (c) el free tier de Groq puede registrar/entrenar con los
+  datos enviados —para datos reales de menores haría falta un proveedor con DPA y garantía de
+  no-entrenamiento—. El secreto (`GROQ_API_KEY`) va en variables de entorno del servicio (panel de
+  Render, `sync: false` en [`render.yaml`](../render.yaml)), **nunca** en el repositorio ni en la BD.
+  Ver [US-51](historias-usuario/epic-f-plataforma.md#us-51) y [US-14](historias-usuario/epic-f-plataforma.md#us-14).
 - **Política de conservación (C-9, 2026-06-25 — limitación de conservación, GDPR art. 5.1.e).** Se
   acotan los datos que no son contenido funcional del usuario:
   - **`InteractionEvent` (telemetría de primera parte): 90 días** desde `creadoEn`. Es suficiente para

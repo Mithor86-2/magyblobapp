@@ -1,0 +1,59 @@
+# Blueprint de Render (infraestructura como código) — backend de magyblob (US-51).
+#
+# Despliega el backend como web service Docker construido con el Dockerfile del
+# monorepo. La guía paso a paso (Neon + Render + Groq) está en Docs/despliegue.md.
+#
+# Importante:
+# - Contexto de build = RAÍZ del repo (dockerContext: .), igual que docker-compose.
+#   El Root Directory del servicio se deja VACÍO en el panel de Render.
+# - Las migraciones Prisma corren solas al arrancar: se respeta el CMD del
+#   Dockerfile (`prisma migrate deploy && node dist/index.js`), no se fija
+#   `dockerCommand`.
+# - La base de datos NO se declara aquí: vive en Neon (Postgres gestionado, PG16).
+#   Se inyecta como secreto `DATABASE_URL` (sslmode=require, host -pooler).
+# - Ollama NO va a producción (plan free sin GPU): AI_PROVIDER=mock. El modo cloud
+#   (Groq) se activa desde la BD (AppSetting `ai.cloud`) y solo usa la GROQ_API_KEY.
+# - Los SECRETOS van con `sync: false`: se introducen en el panel de Render al crear
+#   el Blueprint; NUNCA con valores reales en este fichero.
+
+services:
+  - type: web
+    name: magyblob-backend
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: packages/backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      # --- Secretos: se introducen en el panel de Render (sync: false) ---
+      # Connection string de Neon (PostgreSQL 16). Requerida en producción por la
+      # validación Zod (US-46): host -pooler y sslmode=require.
+      - key: DATABASE_URL
+        sync: false
+      # Secreto de firma de los JWT de sesión (US-45). Obligatorio en producción:
+      # un valor largo y aleatorio (p. ej. `openssl rand -base64 48`).
+      - key: JWT_SECRET
+        sync: false
+      # API key de Groq (modo cloud, US-14). Sin ella el backend cae al modo base
+      # (mock/local) y no sale nada a terceros.
+      - key: GROQ_API_KEY
+        sync: false
+
+      # --- Valores fijos ---
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: '3000'
+      - key: LOG_LEVEL
+        value: info
+      # Modo base de IA. El cloud (Groq) se conmuta desde la BD, no por env.
+      - key: AI_PROVIDER
+        value: mock
+      - key: AI_TIMEOUT_MS
+        value: '60000'
+      - key: JWT_ACCESS_TTL
+        value: 15m
+      - key: JWT_REFRESH_TTL
+        value: 7d
