@@ -238,7 +238,7 @@ infantil. Plan en [planes/fase-5-5.md](planes/fase-5-5.md). Cubre **US-19** (log
 
 ---
 
-## FASE 6 — Calidad y robustez ★ HITO 2 🟡 (en curso)
+## FASE 6 — Calidad y robustez ★ HITO 2 ✅
 
 - [x] **Pruebas de integración, E2E y CI (US-32, rama `feature/34-integracion-e2e-ci`).** Integración
       de los 8 `Prisma*Repository` contra **Postgres real** con Testcontainers (25 tests); **E2E de
@@ -255,12 +255,14 @@ infantil. Plan en [planes/fase-5-5.md](planes/fase-5-5.md). Cubre **US-19** (log
 - [x] Revisión de acoplamiento, nombres y separación de capas — **auditoría 2026-06-25**: backend sin
       violaciones (ESLint de capas activo, `/domain` sin dependencias externas), vocabulario ES/EN
       coherente. La app usa Clean Arch _ligera_ (el store importa infra a propósito; mejora opcional).
-- [ ] Repaso del checklist de cumplimiento para menores — **auditoría 2026-06-25**: parental gate,
+- [x] Repaso del checklist de cumplimiento para menores — **auditoría 2026-06-25**: parental gate,
       borrado en cascada, minimización y Sentry (C-12, `setActiveChildName` cableado) ✅; desviaciones
-      cloud/ElevenLabs/Sentry documentadas. **Pendiente (difer.): C-7** (política de privacidad) y
-      **C-9** (retención/purga) — ver [cumplimiento-menores.md](cumplimiento-menores.md).
-- **DoD:** suite completa en verde ✅; app no rompe ante fallos de IA o red ✅ (US-43). _Falta solo
-  cerrar C-7/C-9 del checklist de cumplimiento._
+      cloud/ElevenLabs/Sentry documentadas. **C-9** (conservación) **documentada** (rama
+      `feature/47-politica-retencion-c9`): retención `InteractionEvent` 90 d / `AuditLog` 365 d, purga
+      automática diferida a Fase 7. **C-7** (política de privacidad) es entregable de **Fase 7** por
+      diseño — ver [cumplimiento-menores.md](cumplimiento-menores.md).
+- **DoD:** suite completa en verde ✅; app no rompe ante fallos de IA o red ✅ (US-43); checklist de
+  cumplimiento revisado ✅ (C-7 → Fase 7). **HITO 2 cerrado.**
 
 ---
 
