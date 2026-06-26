@@ -1,6 +1,7 @@
 # Epic B — Generación de cuentos (núcleo)
 
-Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**. Volver al [índice](README.md).
+Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**, **US-26**, **US-28**, **US-47**.
+Volver al [índice](README.md).
 
 ## US-03 — Generar cuento personalizado · Must
 
@@ -147,3 +148,50 @@ el contrato HTTP no cambia. Afecta a `local`/`cloud` (el `MockProvider` no usa p
   nombre, edad, intereses y estilo, y la longitud configurable (`palabrasMin/Max`).
 - (No funcional) Dado el cambio de prompts, Cuando se ejecuta el gate, Entonces los tests de
   `mock`/`local` siguen en verde y la salida estructurada (`titulo`/`cuerpo`) se mantiene parseable.
+
+## US-47 — Cuentos mejorados: multi-tema/estilo, prompt más rico y mayor longitud · Should (Mejoras)
+
+Como **niño/a** (con ayuda del tutor) quiero poder elegir **más de un tema y más de un estilo** al
+generar un cuento, y que el cuento sea más **divertido y desarrollado** (más largo), para tener
+historias más variadas y entretenidas.
+
+**Contexto.** Amplía [US-03](#us-03) (hoy la generación elige **un solo** tema y **un solo** estilo)
+y [US-28](#us-28) (reglas narrativas del prompt maestro). Combina dos mejoras del lote post-HITO 2
+(2.4 multi-selección + 2.6 prompt más dinámico/largo); ambas reescriben el pipeline de cuentos, por
+lo que van **en una sola feature** (ver [coordinación del lote](../planes/coordinacion-mejoras-paralelo.md),
+F-B). Toca **backend** (ruta `routes/stories.ts`, `GenerateStoryInput`, `buildStoryPrompt`,
+parámetros en `storyParams.ts` + seed `prompt.story.params`) y **app** (`StoryGeneratorScreen` con
+chips de selección múltiple). Se diseña **sin migración Prisma** (decisión anti-conflicto del lote):
+el cuento sigue persistiendo en las columnas actuales de `Story` (un `tema`/`estilo` representativo),
+no se añaden columnas. Afecta a `local`/`cloud` en la calidad del texto; el `MockProvider` mantiene
+una salida determinista válida.
+
+**Criterios de aceptación**
+
+- Dado un perfil seleccionado, Cuando abro el generador, Entonces puedo seleccionar **uno o varios**
+  temas (del vocabulario `animales | espacio | magia | aventuras | musica`, pre-seleccionados por
+  los intereses del perfil) y **uno o varios** estilos (`aventura | divertido | educativo`) mediante
+  chips de selección múltiple.
+- Dado que selecciono varios temas y/o estilos, Cuando pulso "Generar cuento", Entonces la petición
+  envía **arrays** (`temas`, `estilos`) al backend y el cuento combina lo elegido en una sola
+  historia coherente.
+- Dado que no selecciono ningún tema o ningún estilo, Cuando intento generar, Entonces la UI me pide
+  elegir al menos uno (no se envía una lista vacía) y el backend rechaza la entrada vacía.
+- Dado el caso de uso de generación, Cuando se invoca, Entonces delega en
+  `AIProvider.generateStory({ perfil, temas, estilos })` (interfaz `GenerateStoryInput` con arrays) y
+  nunca depende de una implementación concreta (Clean Architecture).
+- Dado el prompt del cuento, Cuando se construye en `buildStoryPrompt`, Entonces interpola la **lista
+  legible** de temas y de estilos (p. ej. "sobre animales y magia, con un estilo divertido y
+  educativo") y mantiene las reglas narrativas de US-28 (estructura, tono tierno, onomatopeyas, final
+  feliz) y la personalización de US-26 (nombre, edad, intereses, tono por edad).
+- Dado el prompt mejorado, Cuando se genera, Entonces el cuento tiene **más desarrollo narrativo**:
+  el límite de palabras (`palabrasMax` en `storyParams.ts` y el seed `prompt.story.params`) se sube
+  respecto al valor actual, y el prompt pide explícitamente extenderse sin quedarse corto.
+- Dado el diseño sin migración, Cuando se persiste el cuento, Entonces se guarda en las columnas
+  actuales de `Story` (un `tema`/`estilo` representativo de la selección), **sin** columnas nuevas ni
+  migración Prisma.
+- (Mock) Dado `AI_PROVIDER=mock`, Cuando genero un cuento con varios temas/estilos, Entonces recibo
+  un resultado determinista y válido sin Ollama.
+- (No funcional) Dado el cambio de pipeline y prompts, Cuando se ejecuta el gate, Entonces los tests
+  (caso de uso, endpoint, gateway de la app y `mock`/`local`) siguen en verde y la salida
+  estructurada (`titulo`/`cuerpo`) se mantiene parseable.
