@@ -9,12 +9,16 @@
  */
 import type {
   Activity,
+  AnonymousActivity,
+  AnonymousStory,
   ChildProfile,
   CreateChildProfileInput,
+  GenerateStoryAnonymousRequest,
   GenerateStoryRequest,
   GuardianSession,
   History,
   LoginGuardianInput,
+  RecommendActivitiesAnonymousRequest,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
   SessionTokens,
@@ -38,6 +42,8 @@ export interface ProfileGateway {
 
 export interface StoryGateway {
   generate(request: GenerateStoryRequest): Promise<Story>;
+  /** Genera un cuento en modo anónimo efímero, sin sesión ni persistencia (US-50). */
+  generateAnonymous(request: GenerateStoryAnonymousRequest): Promise<AnonymousStory>;
   /** Marca un cuento como leído (US-07). */
   markRead(storyId: string): Promise<Story>;
   /** URL del audio de narración del cuento (US-22). Constructor puro, sin red. */
@@ -46,6 +52,8 @@ export interface StoryGateway {
 
 export interface ActivityGateway {
   recommend(request: RecommendActivitiesRequest): Promise<Activity[]>;
+  /** Recomienda actividades en modo anónimo efímero, sin sesión ni persistencia (US-50). */
+  recommendAnonymous(request: RecommendActivitiesAnonymousRequest): Promise<AnonymousActivity[]>;
   /** Registra una actividad completada con valoración 1-3 (US-10). */
   complete(activityId: string, valoracion: number): Promise<Activity>;
 }

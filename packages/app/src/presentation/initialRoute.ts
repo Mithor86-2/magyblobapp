@@ -3,8 +3,9 @@
  * pura (sin IO ni navegación montada) para poder probar los cuatro caminos sin el
  * `NavigationContainer`.
  *
- * Reglas (US-49, amplía US-02):
- * - Sin sesión (`guardian` nulo) → `Welcome` (onboarding).
+ * Reglas (US-50, amplía US-49/US-02):
+ * - Sin sesión (`guardian` nulo) → `Dashboard` (inicio sin sesión: explica la app
+ *   y permite probar cuentos/actividades efímeros; desde ahí se llega a alta/login).
  * - Con sesión y perfil activo persistido → `Main` (entra directo a las pestañas).
  * - Con sesión, sin perfil activo y **exactamente 1** perfil → auto-seleccionar ese
  *   perfil y entrar a `Main`.
@@ -37,7 +38,7 @@ export function resolveInitialRoute({
   currentProfile,
   profiles,
 }: ResolveInitialRouteInput): ResolveInitialRouteResult {
-  if (!guardian) return { route: 'Welcome', autoSelect: null };
+  if (!guardian) return { route: 'Dashboard', autoSelect: null };
   if (currentProfile) return { route: 'Main', autoSelect: null };
   if (profiles.length === 1) return { route: 'Main', autoSelect: profiles[0] };
   return { route: 'SelectProfile', autoSelect: null };

@@ -76,7 +76,7 @@ actualizar docs**.
 - ✅ DTOs anónimos en [application/dto.ts](../../packages/backend/src/application/dto.ts).
 - ✅ Rate-limit en memoria: hook `onRequest` ([routes/anonymousRateLimit.ts](../../packages/backend/src/routes/anonymousRateLimit.ts))
   con `TooManyRequestsError` (429) en [domain/errors.ts](../../packages/backend/src/domain/errors.ts)
-  + manejo en [routes/errorHandler.ts](../../packages/backend/src/routes/errorHandler.ts).
+  - manejo en [routes/errorHandler.ts](../../packages/backend/src/routes/errorHandler.ts).
 - ✅ Rutas públicas `POST /stories/anonymous` y `POST /activities/recommend/anonymous` (sin
   `authenticate`), Zod en frontera. Tests de integración (200/201 + 429 + 400).
 

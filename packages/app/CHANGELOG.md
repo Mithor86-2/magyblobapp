@@ -9,7 +9,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Pantalla `Dashboard` de **inicio sin sesión** (US-50): explica la app y permite probar hasta 3
+  cuentos y 3 actividades en **modo anónimo efímero** (contador en el cliente, no persistente), con
+  accesos a crear cuenta e iniciar sesión.
+- Gateways anónimos `stories.generateAnonymous` y `activities.recommendAnonymous` (rutas públicas del
+  backend, sin token) y sus tipos/esquemas Zod de respuesta.
+
 ### Changed
+
+- `resolveInitialRoute`: sin sesión, la ruta inicial pasa de `Welcome` a `Dashboard` (US-50).
 
 ### Deprecated
 

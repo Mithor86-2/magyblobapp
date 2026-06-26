@@ -49,6 +49,16 @@ export const storySchema = z.object({
   proveedor: z.enum(PROVEEDORES_IA),
 });
 
+/** Cuento anónimo (US-50): sin id, profileId ni estado (no se persiste). */
+export const anonymousStorySchema = z.object({
+  tema: z.enum(TEMAS),
+  estilo: z.enum(ESTILOS),
+  titulo: z.string(),
+  cuerpo: z.string(),
+  idioma: z.enum(IDIOMAS),
+  proveedor: z.enum(PROVEEDORES_IA),
+});
+
 export const activitySchema = z.object({
   id: z.string(),
   profileId: z.string(),
@@ -62,6 +72,17 @@ export const activitySchema = z.object({
   proveedor: z.enum(PROVEEDORES_IA),
 });
 export const activityListSchema = z.array(activitySchema);
+
+/** Actividad anónima (US-50): sin id ni profileId (no se persiste). */
+export const anonymousActivitySchema = z.object({
+  categoria: z.enum(CATEGORIAS),
+  titulo: z.string(),
+  descripcion: z.string(),
+  duracionMin: z.number().optional(),
+  nivel: z.number().optional(),
+  proveedor: z.enum(PROVEEDORES_IA),
+});
+export const anonymousActivityListSchema = z.array(anonymousActivitySchema);
 
 export const historySchema = z.object({
   stories: z.array(storySchema),

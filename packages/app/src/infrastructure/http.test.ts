@@ -176,6 +176,51 @@ describe('createApiGateways (adaptador HTTP)', () => {
     });
   });
 
+  it('stories.generateAnonymous hace POST /stories/anonymous sin token (US-50)', async () => {
+    const anonStory = {
+      tema: 'magia',
+      estilo: 'aventura',
+      titulo: 'Hola',
+      cuerpo: 'Érase una vez.',
+      idioma: 'es',
+      proveedor: 'mock',
+    };
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(anonStory));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.stories.generateAnonymous({
+      edad: 4,
+      temas: ['magia'],
+      estilos: ['aventura'],
+    });
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/stories/anonymous`);
+    expect(options.method).toBe('POST');
+    // Ruta pública: no se adjunta cabecera Authorization.
+    expect(options.headers?.Authorization).toBeUndefined();
+    expect(JSON.parse(options.body)).toEqual({ edad: 4, temas: ['magia'], estilos: ['aventura'] });
+    expect(out).not.toHaveProperty('profileId');
+  });
+
+  it('activities.recommendAnonymous hace POST /activities/recommend/anonymous (US-50)', async () => {
+    const anonActivity = {
+      categoria: 'arte',
+      titulo: 'Pintar',
+      descripcion: 'Pinta con los dedos.',
+      proveedor: 'mock',
+    };
+    const fetchMock = vi.fn().mockResolvedValue(okResponse([anonActivity]));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.activities.recommendAnonymous({ edad: 5, categoria: 'arte', cantidad: 2 });
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/activities/recommend/anonymous`);
+    expect(options.headers?.Authorization).toBeUndefined();
+    expect(JSON.parse(options.body)).toEqual({ edad: 5, categoria: 'arte', cantidad: 2 });
+  });
+
   it('activities.recommend hace POST /activities/recommend', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse([ACTIVITY]));
     vi.stubGlobal('fetch', fetchMock);

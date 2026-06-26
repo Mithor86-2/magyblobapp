@@ -29,13 +29,13 @@ const profile: ChildProfile = {
 const otroProfile: ChildProfile = { ...profile, id: 'p-2', nombre: 'Lucía', edad: 5 };
 
 describe('resolveInitialRoute', () => {
-  it('sin sesión → Welcome (onboarding), sin auto-selección', () => {
+  it('sin sesión → Dashboard (inicio sin sesión, US-50), sin auto-selección', () => {
     const { route, autoSelect } = resolveInitialRoute({
       guardian: null,
       currentProfile: null,
       profiles: [],
     });
-    expect(route).toBe('Welcome');
+    expect(route).toBe('Dashboard');
     expect(autoSelect).toBeNull();
   });
 

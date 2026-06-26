@@ -111,6 +111,43 @@ export interface Story {
   proveedor: ProveedorIa;
 }
 
+// --- Modo anónimo efímero (US-50): genera y devuelve sin persistir ni sesión ---
+/** Petición de cuento anónimo: datos mínimos, sin `profileId` ni nombre de niño. */
+export interface GenerateStoryAnonymousRequest {
+  edad: number;
+  idioma?: CodigoIdioma;
+  temas: Tema[];
+  estilos: Estilo[];
+}
+
+/** Cuento anónimo: contenido sin id, perfil ni estado (no se persiste). */
+export interface AnonymousStory {
+  tema: Tema;
+  estilo: Estilo;
+  titulo: string;
+  cuerpo: string;
+  idioma: CodigoIdioma;
+  proveedor: ProveedorIa;
+}
+
+/** Petición de actividades anónimas: datos mínimos, sin `profileId`. */
+export interface RecommendActivitiesAnonymousRequest {
+  edad: number;
+  idioma?: CodigoIdioma;
+  categoria?: Categoria;
+  cantidad?: number;
+}
+
+/** Actividad anónima: contenido sin id ni perfil (no se persiste). */
+export interface AnonymousActivity {
+  categoria: Categoria;
+  titulo: string;
+  descripcion: string;
+  duracionMin?: number;
+  nivel?: number;
+  proveedor: ProveedorIa;
+}
+
 // --- Activity ---
 export interface RecommendActivitiesRequest {
   profileId: string;

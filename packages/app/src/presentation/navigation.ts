@@ -9,6 +9,8 @@ import type { Story } from '../domain/types';
  * - Tabs (`Main`): pestañas inferiores (Inicio · Actividades · Cuentos · Historial).
  */
 export type RootStackParamList = {
+  /** Inicio sin sesión (US-50): explica la app y permite probar cuentos/actividades efímeros. */
+  Dashboard: undefined;
   Welcome: undefined;
   Consent: undefined;
   Login: undefined;

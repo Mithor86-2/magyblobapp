@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
+import { DashboardScreen } from './src/presentation/screens/DashboardScreen';
 import { WelcomeScreen } from './src/presentation/screens/WelcomeScreen';
 import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
 import { LoginScreen } from './src/presentation/screens/LoginScreen';
@@ -175,7 +176,12 @@ export default function App() {
           >
             <StatusBar style="dark" />
             <Stack.Navigator initialRouteName={initialRoute} screenOptions={stackScreenOptions}>
-              {/* Bienvenida (inicial) y las pestañas no llevan cabecera del stack. */}
+              {/* Inicio sin sesión (US-50), bienvenida y las pestañas no llevan cabecera. */}
+              <Stack.Screen
+                name="Dashboard"
+                component={DashboardScreen}
+                options={{ headerShown: false }}
+              />
               <Stack.Screen
                 name="Welcome"
                 component={WelcomeScreen}
