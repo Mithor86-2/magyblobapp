@@ -561,6 +561,28 @@ Dos hallazgos más:
   Expo Go la incluye, así que **no hace falta development build** para validar este flow (el comentario
   original del flow que lo exigía era conservador).
 
+### Paridad Android (2026-06-25): un flow hermano y 5 diferencias con iOS
+
+Validar el mismo happy path en **Android Emulator (Pixel_9_Pro, Android 16) con Expo Go** pasó en
+verde (56 pasos, exit 0), pero el flow de iOS **no sirve tal cual**. Hice un fichero hermano
+`onboarding.android.yaml` (no se puede compartir: el `appId` es fijo en la cabecera del flow). Las
+diferencias que costaron iteración:
+
+- **Red del emulador (la más importante):** en Android `localhost` es el **propio emulador**, no el
+  host. La app no veía el backend hasta arrancar Metro con `EXPO_PUBLIC_API_URL=http://10.0.2.2:3100`
+  (`10.0.2.2` = alias del host en el emulador Android). En iOS Simulator no pasa: comparte `localhost`.
+- **`appId`:** Expo Go es `host.exp.Exponent` en iOS y `host.exp.exponent` (minúscula) en Android.
+- **Entrada Unicode no soportada** en Android ([Maestro #146]): `inputText: 'García'` falla con
+  "Unicode character input is not supported". Se escribe `'Garcia'` sin tilde (no afecta a la validación).
+- **Etiquetas de pestañas:** iOS expone `"Cuentos, tab, 3 of 4"` (de ahí el regex `Cuentos, tab.*`);
+  Android expone el texto plano `"Cuentos"`. Maestro hace match completo, así que el selector difiere.
+- **Splash vs bienvenida:** el splash de Expo muestra el título `"Aprendizaje Mágico"`, igual que la
+  bienvenida → asertar el título da falso positivo mientras bundlea. Hay que esperar el **botón**
+  `"Crear cuenta"` (`extendedWaitUntil`). Tras `pm clear`, Expo Go abre su **dev-menu**; se descarta con
+  un `tapOn: { text: Continue, optional: true }` al inicio (BACK **no**: sale de la app).
+
+[Maestro #146]: https://github.com/mobile-dev-inc/maestro/issues/146
+
 ### Worktree con enlace git roto (ruta con espacio vs guion)
 
 - **Síntoma:** `git status`/commit dentro de `.claude/worktrees/e2e-nativo-maestro` falla con

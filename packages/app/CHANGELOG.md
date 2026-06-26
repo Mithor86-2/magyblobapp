@@ -9,6 +9,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- E2E nativo en **Android** (US-38, paridad de plataformas): nuevo flow
+  `.maestro/onboarding.android.yaml`, validado en verde sobre Android Emulator (Pixel_9_Pro) con
+  Expo Go y Maestro (56 pasos, narración nativa incluida). Documentada la receta de ejecución
+  (red `10.0.2.2`, backend mock `e2e-serve` en :3100) en `estrategia-pruebas.md` y el plan.
+
 ### Changed
 
 ### Deprecated

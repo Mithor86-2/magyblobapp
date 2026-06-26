@@ -436,8 +436,10 @@ se abra). Algunas parten de algo ya existente (se indica).
       build). Verificarlo destapó **7 correcciones** del flow (puerta parental por texto —el `testID` de
       un `<Text>` no se expone en iOS—, cierre de teclado por toque, `scrollUntilVisible`+`centerElement`,
       `extendedWaitUntil`, pestañas por regex, asserts de subcadena por regex, sin `clearState` en Expo
-      Go) y un ajuste de entorno (backend en mock real, cloud off). Pendiente: Android (paridad). Solo
-      app + docs; `pnpm check` verde (192 backend + 66 app).
+      Go) y un ajuste de entorno (backend en mock real, cloud off). **Paridad Android verde** (2026-06-25,
+      Pixel_9_Pro/Android 16, Expo Go, 56 pasos): flow hermano `onboarding.android.yaml` (difieren
+      `appId`, red `10.0.2.2`, etiquetas de pestañas, sin Unicode en input). Solo app + docs;
+      `pnpm check` verde.
 
 - [x] ✅ **Sentry: adaptaciones compatibles (extensión US-40)** (app v0.17.0 / raíz v0.24.0, rama
       `feature/43-sentry-release-debug-test` desde `develop`). A raíz de revisar una lección de

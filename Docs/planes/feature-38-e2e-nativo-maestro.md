@@ -91,8 +91,11 @@ Decisiones tomadas con el usuario (2026-06-24):
   - **Entorno (no es bug del flow):** pese a `AI_PROVIDER=mock`, por US-14 el HotSwap servía con
     **Groq** (`ai.cloud` activa + `GROQ_API_KEY` en `.env`) → cuento no determinista. Para E2E
     determinista, backend con **claves cloud vacías** (o `ai.cloud` desactivada).
-- [ ] 🔄 Ejecutar el _flow_ sobre el **Android Emulator** y verificar paridad de plataformas.
-      _Pendiente de tu máquina_: requiere Android SDK + AVD + development build.
+- [x] ✅ Ejecutar el _flow_ sobre el **Android Emulator** y verificar paridad de plataformas.
+      Validado el 2026-06-25 en **Pixel_9_Pro (Android 16) con Expo Go** (Maestro 2.6.1): pasada
+      completa en verde (56 pasos, exit 0) con `packages/app/.maestro/onboarding.android.yaml`,
+      incluida la narración nativa. Bastó Expo Go (no hizo falta development build). Ver
+      "Actualización 2026-06-25 (paridad Android)" abajo.
 - [x] ✅ Documentar en [../estrategia-pruebas.md](../estrategia-pruebas.md) **cuándo Maestro vs
       Playwright**, cómo ejecutarlo en local (simulador/emulador) y enlazar el ADR.
       → nueva sección «E2E web (Playwright) vs E2E nativo (Maestro)» + fila en la pirámide.
@@ -116,8 +119,26 @@ Integrado `develop` (root 0.21.1, app 0.14.1; US-35/36/37/39).
 sobre el **iOS Simulator (iPhone 17 Pro, iOS 26.4) con Expo Go** (Maestro 2.6.1), recorrido completo
 incluida la narración nativa. La verificación destapó **7 correcciones de selectores/timing** (ya
 aplicadas a `onboarding.yaml`; detalle en la tarea de arriba y en `lecciones-aprendidas.md`) y un
-**ajuste de entorno** (backend en mock real con claves cloud vacías). Queda pendiente solo:
-**Android Emulator** (paridad de plataformas) y el **cierre** (versión + CHANGELOG + `finish`).
+**ajuste de entorno** (backend en mock real con claves cloud vacías).
+
+**Actualización 2026-06-25 (paridad Android):** el _flow_ se **ejecutó y pasó en verde** sobre el
+**Android Emulator (Pixel_9_Pro, Android 16) con Expo Go** (Maestro 2.6.1): pasada completa de **56
+pasos, exit 0**, incluida la narración nativa. Se creó la variante
+`packages/app/.maestro/onboarding.android.yaml` (el `appId` y algunos selectores difieren por
+plataforma, ver abajo). Diferencias iOS→Android encontradas y resueltas:
+
+- **`appId`**: `host.exp.Exponent` (iOS) → `host.exp.exponent` (Android, minúscula).
+- **Red del emulador**: en Android `localhost` es el guest; el host se alcanza por **`10.0.2.2`**.
+  La app se arrancó con `EXPO_PUBLIC_API_URL=http://10.0.2.2:3100` (backend mock `e2e-serve` en :3100).
+- **Pestañas**: iOS expone `"Cuentos, tab, 3 of 4"` (regex `Cuentos, tab.*`); Android expone el
+  texto plano `"Cuentos"`/`"Actividades"`/`"Historial"`.
+- **Entrada Unicode**: Maestro en Android **no** soporta acentos ([issue #146]); `"García"` → `"Garcia"`.
+- **Splash / dev-menu de Expo Go**: se espera el **botón** `"Crear cuenta"` (no el título, que también
+  sale en el splash) y se descarta el dev-menu (`tapOn Continue`, opcional).
+
+Queda solo el **cierre** (versión + CHANGELOG + `finish`).
+
+[issue #146]: https://github.com/mobile-dev-inc/maestro/issues/146
 
 ## Notas / riesgos
 

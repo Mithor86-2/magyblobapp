@@ -106,17 +106,23 @@ jobs:
           curl -fsSL https://get.maestro.mobile.dev | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
-      # TODO: construir un development build de Android e instalarlo en el
-      # emulador. Boceto (a validar):
-      #   - run: pnpm --filter @magyblob/app exec expo prebuild --platform android
-      #   - run: |
-      #       cd packages/app/android
-      #       ./gradlew assembleDebug
-      # TODO: arrancar un emulador (p. ej. con la action
-      # reactivecircus/android-emulator-runner) e instalar el APK + ejecutar:
-      #   - run: maestro test packages/app/.maestro/onboarding.yaml
+      # VALIDADO EN LOCAL (2026-06-25, Pixel_9_Pro / Android 16, Expo Go, Maestro
+      # 2.6.1): pasada completa en verde (56 pasos, exit 0) con el flow
+      # packages/app/.maestro/onboarding.android.yaml. Receta (a portar a un runner
+      # con emulador, p. ej. reactivecircus/android-emulator-runner):
+      #   1. Backend mock determinista en el host:
+      #        pnpm --filter @magyblob/backend exec tsx scripts/e2e-serve.ts  # :3100
+      #   2. Metro APUNTANDO AL HOST DESDE EL EMULADOR (clave en Android):
+      #        EXPO_PUBLIC_API_URL=http://10.0.2.2:3100 \
+      #          pnpm --filter @magyblob/app exec expo start --android
+      #      (`localhost` en el emulador es el guest; el host se alcanza por 10.0.2.2.
+      #      `expo start --android` instala Expo Go en el emulador y carga la app.)
+      #   3. Esperar la bienvenida y ejecutar el flow Android:
+      #        maestro test packages/app/.maestro/onboarding.android.yaml
+      # No basta `assembleDebug`/dev build: con Expo Go alcanza (la narración degrada
+      # a la voz nativa, expo-speech, incluida en Expo Go). appId = host.exp.exponent.
 
-      - name: Placeholder (pendiente de runner con emulador)
+      - name: Placeholder (pendiente de runner con emulador en CI)
         run: |
-          echo "Esqueleto de E2E nativo Android: completar build dev,"
-          echo "arranque del emulador y 'maestro test' (ver TODOs)."
+          echo "E2E nativo Android validado en LOCAL (ver receta en los comentarios)."
+          echo "Falta cablear el emulador en el runner de CI."
