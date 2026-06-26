@@ -20,6 +20,8 @@ import { trackApi } from './telemetry';
 import {
   activityListSchema,
   activitySchema,
+  anonymousActivityListSchema,
+  anonymousStorySchema,
   childProfileListSchema,
   childProfileSchema,
   guardianSessionSchema,
@@ -30,8 +32,10 @@ import {
 import type { Api } from '../domain/gateways';
 import type {
   CreateChildProfileInput,
+  GenerateStoryAnonymousRequest,
   GenerateStoryRequest,
   LoginGuardianInput,
+  RecommendActivitiesAnonymousRequest,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
   SessionTokens,
@@ -235,6 +239,14 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           storySchema,
           session,
         ),
+      // Modo anónimo efímero (US-50): ruta pública (sin `auth`); no persiste nada.
+      generateAnonymous: (req: GenerateStoryAnonymousRequest) =>
+        request(
+          baseUrl,
+          '/stories/anonymous',
+          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
+          anonymousStorySchema,
+        ),
       markRead: (storyId: string) =>
         request(
           baseUrl,
@@ -253,6 +265,14 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
           activityListSchema,
           session,
+        ),
+      // Modo anónimo efímero (US-50): ruta pública (sin `auth`); no persiste nada.
+      recommendAnonymous: (req: RecommendActivitiesAnonymousRequest) =>
+        request(
+          baseUrl,
+          '/activities/recommend/anonymous',
+          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
+          anonymousActivityListSchema,
         ),
       complete: (activityId: string, valoracion: number) =>
         request(

@@ -12,8 +12,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Documentada la parametrización de `EXPO_PUBLIC_API_URL` hacia el backend de **producción** (Render,
   US-51) en `.env.example` (comentario con la URL pública de ejemplo), sin romper el default local
   (`http://localhost:3000`). La URL se inlinea en el bundle (no es secreta). Ver `Docs/despliegue.md`.
+- Pantalla `Dashboard` de **inicio sin sesión** (US-50): explica la app y permite probar hasta 3
+  cuentos y 3 actividades en **modo anónimo efímero** (contador en el cliente, no persistente), con
+  accesos a crear cuenta e iniciar sesión.
+- Gateways anónimos `stories.generateAnonymous` y `activities.recommendAnonymous` (rutas públicas del
+  backend, sin token) y sus tipos/esquemas Zod de respuesta.
 
 ### Changed
+
+- `resolveInitialRoute`: sin sesión, la ruta inicial pasa de `Welcome` a `Dashboard` (US-50).
 
 ### Deprecated
 

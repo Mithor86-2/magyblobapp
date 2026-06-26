@@ -3,7 +3,7 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-51**.
+**US-46**, **US-50**, **US-51**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -956,3 +956,54 @@ base (`mock`/`local`) y no sale nada (conforme).
 - (No-funcional) Dado el blueprint y la guía, Cuando se revisan, Entonces **no** contienen secretos
   reales y el arranque reproducible local ([US-06](#us-06)) sigue intacto (`docker compose up` no
   cambia).
+
+## US-50 — Dashboard/Home sin sesión (uso libre efímero) · Should (Mejoras)
+
+Como **adulto que aún no se ha registrado** quiero una pantalla de inicio que me explique la app y me
+deje **probar la generación de cuentos y actividades sin crear cuenta**, para conocer el valor del
+producto antes de dar de alta a nadie, sin que se guarde ningún dato del menor.
+
+**Contexto.** Hoy, sin sesión, el arranque va directo a **Bienvenida** (onboarding):
+[`resolveInitialRoute`](../../packages/app/src/presentation/initialRoute.ts) devuelve `Welcome` cuando
+`guardian` es nulo, y **toda** generación exige sesión (rutas `POST /stories` y
+`POST /activities/recommend` protegidas con JWT, [US-45](#us-45)) y un `profileId` persistido. Esta
+historia añade un **modo anónimo efímero**: una pantalla **Dashboard** como ruta inicial sin sesión que
+explica la app y permite generar **hasta 3 cuentos y 3 actividades** de prueba, llamando a **rutas
+públicas nuevas** (`POST /stories/anonymous`, `POST /activities/recommend/anonymous`) que **generan y
+devuelven el contenido sin persistir nada y sin pedir nombre de niño** (solo datos mínimos: edad,
+idioma y temas/estilos para el cuento; categoría/cantidad para actividades). El backend protege el modo
+con un **rate-limit en memoria** (sin dependencia nueva, hook `onRequest`): máx. 3 cuentos + 3
+actividades por cliente (IP), con **429** al superarlo. El cliente lleva su propio **contador efímero**
+(no persistente) y desde el Dashboard se llega al **alta** o al **login**. **Backend + app.** Depende de
+[US-47](epic-b-cuentos.md#us-47) (multi-tema/estilo en `POST /stories`) y de
+[US-49](epic-a-perfil.md#us-49) (`resolveInitialRoute`).
+
+> **Cumplimiento (C-1, C-14).** El modo anónimo es **efímero**: no persiste datos del menor ni su
+> nombre (no se crea `ChildProfile` ni `Story`/`Activity`), por lo que **no genera dato de menor sin
+> consentimiento** (coherente con C-1). Solo viajan datos mínimos no identificativos (edad, idioma,
+> temas) y el contenido generado se devuelve y se descarta. El rate-limit usa la IP **solo en memoria
+> y de forma efímera** (no se persiste, no es PII de menor). Ver [cumplimiento-menores.md](../cumplimiento-menores.md)
+> (C-14).
+
+**Criterios de aceptación**
+
+- Dado que **no hay sesión**, Cuando arranca la app, Entonces la ruta inicial es **`Dashboard`** (no
+  `Welcome`): una pantalla que explica la app y ofrece probar cuentos/actividades y, además, **crear
+  cuenta** o **iniciar sesión**.
+- Dado el Dashboard, Cuando pulso **«Generar cuento»** (con sus temas/estilos y una edad/idioma por
+  defecto), Entonces la app llama a `POST /stories/anonymous` y muestra el cuento generado **sin** que
+  se cree cuenta ni se persista nada.
+- Dado el Dashboard, Cuando pulso **«Generar actividades»**, Entonces la app llama a
+  `POST /activities/recommend/anonymous` y muestra las actividades generadas, también de forma efímera.
+- Dado el **límite de uso** (3 cuentos y 3 actividades), Cuando lo alcanzo, Entonces la app deshabilita
+  el botón correspondiente e invita a **crear cuenta** para seguir; y el backend responde **429** si se
+  fuerza una petición por encima del límite (mensaje claro).
+- Dadas las rutas anónimas, Cuando se llaman **sin token**, Entonces responden con normalidad (son
+  **públicas**, como `POST /guardians`); y **validan su entrada con Zod** (vocabulario cerrado de temas,
+  estilos, categorías; edad e idioma en rango), devolviendo **400** ante datos inválidos.
+- (Cumplimiento) Dado el modo anónimo, Entonces **no** crea `ChildProfile`, `Story` ni `Activity` (no
+  toca el modelo de datos ni Prisma) y **no** recibe ni guarda el nombre del niño; queda documentado en
+  [cumplimiento-menores.md](../cumplimiento-menores.md) (C-14) como efímero y conforme con C-1.
+- (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: los casos de uso anónimos
+  **no persisten** (repos sin escrituras), las rutas responden **200/201** dentro del límite y **429**
+  al superarlo, y en la app que el Dashboard llama a los gateways anónimos y respeta el contador efímero.
