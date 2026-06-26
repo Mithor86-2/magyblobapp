@@ -7,6 +7,12 @@
  *
  * El app es agnóstico del proveedor de IA: solo llama a `POST /stories` y el
  * backend decide (mock | local) según su propia configuración.
+ *
+ * Sesión autenticada (US-45): las peticiones a rutas protegidas adjuntan
+ * `Authorization: Bearer <accessToken>`. Ante un 401, se intenta **una** renovación
+ * con el refresh token (`POST /guardians/refresh`) y se reintenta; si la renovación
+ * falla, se cierra la sesión (`onAuthExpired`). Los tokens los provee un
+ * `SessionStore` inyectado desde el composition root (sin acoplar la app al store).
  */
 import type { z } from 'zod';
 import { ApiError } from '../domain/errors';
@@ -16,8 +22,9 @@ import {
   activitySchema,
   childProfileListSchema,
   childProfileSchema,
-  guardianSchema,
+  guardianSessionSchema,
   historySchema,
+  sessionTokensSchema,
   storySchema,
 } from './schemas';
 import type { Api } from '../domain/gateways';
@@ -27,6 +34,7 @@ import type {
   LoginGuardianInput,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
+  SessionTokens,
 } from '../domain/types';
 
 const DEFAULT_BASE_URL = 'http://localhost:3000';
@@ -39,37 +47,117 @@ const DEFAULT_BASE_URL = 'http://localhost:3000';
 const DEFAULT_TIMEOUT_MS = 15_000;
 const GENERATION_TIMEOUT_MS = 30_000;
 
+/**
+ * Puerto de sesión que el adaptador HTTP usa para leer los tokens, guardarlos tras
+ * una renovación y cerrar sesión cuando el refresh falla. Lo implementa el
+ * composition root sobre el store; el adaptador no conoce el store ni Zustand.
+ */
+export interface SessionStore {
+  getAccessToken(): string | null;
+  getRefreshToken(): string | null;
+  setTokens(tokens: SessionTokens): void;
+  onAuthExpired(): void;
+}
+
 export function getBaseUrl(): string {
   return process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_BASE_URL;
+}
+
+interface RequestOptions {
+  method: 'GET' | 'POST';
+  body?: unknown;
+  timeoutMs?: number;
+  /** La ruta exige access token: adjunta Bearer y aplica refresh-on-401 (US-45). */
+  auth?: boolean;
+}
+
+/** Renueva el par de tokens contra `POST /guardians/refresh`. Lanza `ApiError` si falla. */
+async function postRefresh(baseUrl: string, refreshToken: string): Promise<SessionTokens> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/guardians/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+      signal: controller.signal,
+    });
+  } catch {
+    throw new ApiError(0, 'network', 'No se pudo renovar la sesión.');
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!response.ok) {
+    throw new ApiError(response.status, 'unauthorized', 'La sesión ha caducado.');
+  }
+  const data = (await response.json().catch(() => null)) as unknown;
+  const parsed = sessionTokensSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ApiError(response.status, 'malformed', 'Respuesta de renovación inesperada.');
+  }
+  return parsed.data;
 }
 
 async function request<TResponse>(
   baseUrl: string,
   path: string,
-  options: { method: 'GET' | 'POST'; body?: unknown; timeoutMs?: number },
+  options: RequestOptions,
   schema: z.ZodType<TResponse>,
+  session?: SessionStore,
 ): Promise<TResponse> {
-  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const auth = options.auth ?? false;
 
-  let response: Response;
-  try {
-    response = await fetch(`${baseUrl}${path}`, {
-      method: options.method,
-      headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
-      body: options.body ? JSON.stringify(options.body) : undefined,
-      signal: controller.signal,
-    });
-  } catch (err) {
-    trackApi({ method: options.method, path, ok: false });
-    // `abort` por timeout vs. fallo de red genérico: ambos reintentables, mensajes distintos.
-    if (controller.signal.aborted) {
-      throw new ApiError(0, 'timeout', 'El servidor tardó demasiado en responder.');
+  async function fetchOnce(token: string | null): Promise<Response> {
+    const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    const headers: Record<string, string> = {};
+    if (options.body) headers['Content-Type'] = 'application/json';
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}${path}`, {
+        method: options.method,
+        headers: Object.keys(headers).length > 0 ? headers : undefined,
+        body: options.body ? JSON.stringify(options.body) : undefined,
+        signal: controller.signal,
+      });
+    } catch {
+      trackApi({ method: options.method, path, ok: false });
+      // `abort` por timeout vs. fallo de red genérico: ambos reintentables, mensajes distintos.
+      if (controller.signal.aborted) {
+        throw new ApiError(0, 'timeout', 'El servidor tardó demasiado en responder.');
+      }
+      throw new ApiError(0, 'network', 'No se pudo conectar con el servidor.');
+    } finally {
+      clearTimeout(timer);
     }
-    throw new ApiError(0, 'network', 'No se pudo conectar con el servidor.');
-  } finally {
-    clearTimeout(timer);
+    return response;
+  }
+
+  let response = await fetchOnce(auth ? (session?.getAccessToken() ?? null) : null);
+
+  // Refresh-on-401 (US-45): un access token caducado → renovar una vez y reintentar;
+  // si no hay refresh o la renovación falla, cerrar la sesión.
+  if (auth && response.status === 401 && session) {
+    const refreshToken = session.getRefreshToken();
+    let renovados: SessionTokens | null = null;
+    if (refreshToken !== null) {
+      try {
+        renovados = await postRefresh(baseUrl, refreshToken);
+        session.setTokens(renovados);
+      } catch {
+        renovados = null;
+      }
+    }
+    if (renovados !== null) {
+      response = await fetchOnce(renovados.accessToken);
+    } else {
+      session.onAuthExpired();
+    }
   }
 
   // Breadcrumb del recorrido (US-42): método, ruta y resultado, sin cuerpo ni PII.
@@ -102,24 +190,40 @@ async function request<TResponse>(
   return parsed.data;
 }
 
-/** Composition de los gateways HTTP. `baseUrl` inyectable (tests); por defecto, el env. */
-export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
+/**
+ * Composition de los gateways HTTP. `baseUrl` y `session` inyectables (tests);
+ * por defecto, el env y sin sesión (el composition root cablea el store).
+ */
+export function createApiGateways(baseUrl: string = getBaseUrl(), session?: SessionStore): Api {
   return {
     guardians: {
       register: (input: RegisterGuardianInput) =>
-        request(baseUrl, '/guardians', { method: 'POST', body: input }, guardianSchema),
+        request(baseUrl, '/guardians', { method: 'POST', body: input }, guardianSessionSchema),
       login: (input: LoginGuardianInput) =>
-        request(baseUrl, '/guardians/login', { method: 'POST', body: input }, guardianSchema),
+        request(
+          baseUrl,
+          '/guardians/login',
+          { method: 'POST', body: input },
+          guardianSessionSchema,
+        ),
+      refresh: (refreshToken: string) => postRefresh(baseUrl, refreshToken),
     },
     profiles: {
       create: (input: CreateChildProfileInput) =>
-        request(baseUrl, '/profiles', { method: 'POST', body: input }, childProfileSchema),
+        request(
+          baseUrl,
+          '/profiles',
+          { method: 'POST', body: input, auth: true },
+          childProfileSchema,
+          session,
+        ),
       list: (guardianId: string) =>
         request(
           baseUrl,
           `/guardians/${guardianId}/profiles`,
-          { method: 'GET' },
+          { method: 'GET', auth: true },
           childProfileListSchema,
+          session,
         ),
     },
     stories: {
@@ -127,11 +231,18 @@ export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
         request(
           baseUrl,
           '/stories',
-          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
+          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
           storySchema,
+          session,
         ),
       markRead: (storyId: string) =>
-        request(baseUrl, `/stories/${storyId}/read`, { method: 'POST' }, storySchema),
+        request(
+          baseUrl,
+          `/stories/${storyId}/read`,
+          { method: 'POST', auth: true },
+          storySchema,
+          session,
+        ),
       narrationUrl: (storyId: string) => `${baseUrl}/stories/${storyId}/narration`,
     },
     activities: {
@@ -139,20 +250,28 @@ export function createApiGateways(baseUrl: string = getBaseUrl()): Api {
         request(
           baseUrl,
           '/activities/recommend',
-          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
+          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
           activityListSchema,
+          session,
         ),
       complete: (activityId: string, valoracion: number) =>
         request(
           baseUrl,
           `/activities/${activityId}/complete`,
-          { method: 'POST', body: { valoracion } },
+          { method: 'POST', body: { valoracion }, auth: true },
           activitySchema,
+          session,
         ),
     },
     history: {
       get: (profileId: string) =>
-        request(baseUrl, `/profiles/${profileId}/history`, { method: 'GET' }, historySchema),
+        request(
+          baseUrl,
+          `/profiles/${profileId}/history`,
+          { method: 'GET', auth: true },
+          historySchema,
+          session,
+        ),
     },
   };
 }

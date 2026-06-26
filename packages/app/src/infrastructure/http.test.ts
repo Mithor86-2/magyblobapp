@@ -22,6 +22,8 @@ const GUARDIAN = {
   parentesco: 'madre',
   consentimientoDado: true,
 } as const;
+// Alta/login devuelven el guardián + la sesión JWT (US-45).
+const GUARDIAN_SESSION = { ...GUARDIAN, accessToken: 'at-1', refreshToken: 'rt-1' } as const;
 const PROFILE = {
   id: 'p1',
   guardianId: 'g1',
@@ -86,8 +88,8 @@ describe('createApiGateways (adaptador HTTP)', () => {
     vi.restoreAllMocks();
   });
 
-  it('guardians.register hace POST /guardians con cuerpo JSON', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN));
+  it('guardians.register hace POST /guardians con cuerpo JSON y devuelve la sesión', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN_SESSION));
     vi.stubGlobal('fetch', fetchMock);
 
     const input = {
@@ -100,7 +102,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
     };
     const result = await api.guardians.register(input);
 
-    expect(result).toEqual(GUARDIAN);
+    expect(result).toEqual(GUARDIAN_SESSION);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/guardians`);
@@ -109,13 +111,13 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(JSON.parse(options.body)).toEqual(input);
   });
 
-  it('guardians.login hace POST /guardians/login con el email', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN));
+  it('guardians.login hace POST /guardians/login con el email y devuelve la sesión', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN_SESSION));
     vi.stubGlobal('fetch', fetchMock);
 
     const result = await api.guardians.login({ email: 'ana@example.com' });
 
-    expect(result).toEqual(GUARDIAN);
+    expect(result).toEqual(GUARDIAN_SESSION);
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/guardians/login`);
     expect(options.method).toBe('POST');
@@ -360,5 +362,168 @@ describe('createApiGateways (adaptador HTTP)', () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.tipo).toBe('malformed');
+  });
+});
+
+describe('sesión autenticada (US-45)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function fakeSession(tokens: { accessToken: string | null; refreshToken: string | null }) {
+    return {
+      getAccessToken: vi.fn(() => tokens.accessToken),
+      getRefreshToken: vi.fn(() => tokens.refreshToken),
+      setTokens: vi.fn(),
+      onAuthExpired: vi.fn(),
+    };
+  }
+
+  it('adjunta Authorization: Bearer en las rutas protegidas cuando hay sesión', async () => {
+    const session = fakeSession({ accessToken: 'at-1', refreshToken: 'rt-1' });
+    const authed = createApiGateways(BASE, session);
+    const fetchMock = vi.fn().mockResolvedValue(okResponse([PROFILE]));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await authed.profiles.list('g1');
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers.Authorization).toBe('Bearer at-1');
+  });
+
+  it('no adjunta Authorization si la sesión no tiene access token', async () => {
+    const session = fakeSession({ accessToken: null, refreshToken: 'rt-1' });
+    const authed = createApiGateways(BASE, session);
+    const fetchMock = vi.fn().mockResolvedValue(okResponse([PROFILE]));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await authed.profiles.list('g1');
+
+    // GET sin token ni cuerpo → sin cabeceras.
+    expect(fetchMock.mock.calls[0][1].headers).toBeUndefined();
+  });
+
+  it('ante un 401 renueva el token con el refresh y reintenta una vez', async () => {
+    const session = fakeSession({ accessToken: 'at-old', refreshToken: 'rt-1' });
+    const authed = createApiGateways(BASE, session);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(errorResponse(401, 'UnauthorizedError', 'No autorizado'))
+      .mockResolvedValueOnce(okResponse({ accessToken: 'at-new', refreshToken: 'rt-new' }))
+      .mockResolvedValueOnce(okResponse([PROFILE]));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await authed.profiles.list('g1');
+
+    expect(out).toEqual([PROFILE]);
+    expect(session.setTokens).toHaveBeenCalledWith({
+      accessToken: 'at-new',
+      refreshToken: 'rt-new',
+    });
+    expect(session.onAuthExpired).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls[1][0]).toBe(`${BASE}/guardians/refresh`);
+    expect(fetchMock.mock.calls[2][1].headers.Authorization).toBe('Bearer at-new');
+  });
+
+  it('ante un 401, si la renovación falla, cierra la sesión y propaga el error', async () => {
+    const session = fakeSession({ accessToken: 'at-old', refreshToken: 'rt-1' });
+    const authed = createApiGateways(BASE, session);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(errorResponse(401, 'UnauthorizedError', 'No autorizado'))
+      .mockResolvedValueOnce(errorResponse(401, 'UnauthorizedError', 'expirado'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const error = await authed.profiles.list('g1').catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(401);
+    expect(session.onAuthExpired).toHaveBeenCalledTimes(1);
+    expect(session.setTokens).not.toHaveBeenCalled();
+  });
+
+  it('ante un 401 sin refresh token, cierra la sesión sin intentar renovar', async () => {
+    const session = fakeSession({ accessToken: 'at-old', refreshToken: null });
+    const authed = createApiGateways(BASE, session);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(errorResponse(401, 'UnauthorizedError', 'No autorizado'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const error = await authed.profiles.list('g1').catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(session.onAuthExpired).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1); // no hubo intento de refresh
+  });
+
+  it('sin sesión inyectada, un 401 se propaga sin intentar renovar', async () => {
+    const anon = createApiGateways(BASE);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(errorResponse(401, 'UnauthorizedError', 'No autorizado')),
+    );
+
+    const error = await anon.profiles.list('g1').catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(401);
+  });
+
+  it('guardians.refresh hace POST /guardians/refresh y devuelve los tokens', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(okResponse({ accessToken: 'at-x', refreshToken: 'rt-x' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const tokens = await createApiGateways(BASE).guardians.refresh('rt-1');
+
+    expect(tokens).toEqual({ accessToken: 'at-x', refreshToken: 'rt-x' });
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/guardians/refresh`);
+    expect(JSON.parse(options.body)).toEqual({ refreshToken: 'rt-1' });
+  });
+
+  it('guardians.refresh con un fallo de red da ApiError de tipo network', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Network request failed')));
+
+    const error = await createApiGateways(BASE)
+      .guardians.refresh('rt-1')
+      .catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.tipo).toBe('network');
+  });
+
+  it('guardians.refresh con una respuesta malformada da ApiError de tipo malformed', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(okResponse({ accessToken: 'solo-uno' })));
+
+    const error = await createApiGateways(BASE)
+      .guardians.refresh('rt-1')
+      .catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.tipo).toBe('malformed');
+  });
+
+  it('guardians.refresh aborta por timeout (network)', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn(
+      (_url: string, opts: { signal: AbortSignal }) =>
+        new Promise<Response>((_, reject) => {
+          opts.signal.addEventListener('abort', () => reject(new Error('Aborted')));
+        }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const pending = createApiGateways(BASE)
+      .guardians.refresh('rt-1')
+      .catch((e) => e);
+    await vi.advanceTimersByTimeAsync(15_000);
+    const error = await pending;
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.tipo).toBe('network');
+    vi.useRealTimers();
   });
 });

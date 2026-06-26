@@ -6,6 +6,8 @@ import { ListProfiles } from '../application/use-cases/ListProfiles.js';
 import { LoginGuardian } from '../application/use-cases/LoginGuardian.js';
 import { PARENTESCOS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
+import type { Config } from '../config.js';
+import { signSession, verifyRefreshToken } from '../auth.js';
 
 const bodySchema = z
   .object({
@@ -28,8 +30,10 @@ const loginSchema = z
   })
   .strict();
 
+const refreshSchema = z.object({ refreshToken: z.string().min(1) }).strict();
+
 /** Alta del adulto responsable (+ registro de consentimiento) y listado de sus perfiles. */
-export function guardianRoutes(app: FastifyInstance, deps: AppDeps): void {
+export function guardianRoutes(app: FastifyInstance, deps: AppDeps, config: Config): void {
   const registerGuardian = new RegisterGuardian(deps);
   const listProfiles = new ListProfiles(deps);
   const loginGuardian = new LoginGuardian(deps);
@@ -45,9 +49,13 @@ export function guardianRoutes(app: FastifyInstance, deps: AppDeps): void {
         consentimientoVersion: request.body.consentimientoVersion,
       });
 
-      return reply.code(201).send(guardian);
+      // Auto-login tras el alta: emite la sesión para no obligar a un login extra
+      // (las rutas de datos exigen token desde US-45).
+      const tokens = await signSession(reply, config, guardian);
+      return reply.code(201).send({ ...guardian, ...tokens });
     });
 
+  // Login por email: además del guardián, emite la sesión JWT (access + refresh).
   app
     .withTypeProvider<ZodTypeProvider>()
     .post('/guardians/login', { schema: { body: loginSchema } }, async (request, reply) => {
@@ -58,10 +66,23 @@ export function guardianRoutes(app: FastifyInstance, deps: AppDeps): void {
         guardianId: guardian.id,
       });
 
-      return reply.code(200).send(guardian);
+      const tokens = await signSession(reply, config, guardian);
+      return reply.code(200).send({ ...guardian, ...tokens });
     });
 
-  app.get<{ Params: { guardianId: string } }>('/guardians/:guardianId/profiles', async (request) =>
-    listProfiles.execute({ guardianId: request.params.guardianId }),
+  // Renueva el access token a partir de un refresh token válido (US-45). Pública
+  // (no exige access token); el refresh viaja en el cuerpo (la app es RN/Expo).
+  app
+    .withTypeProvider<ZodTypeProvider>()
+    .post('/guardians/refresh', { schema: { body: refreshSchema } }, async (request, reply) => {
+      const { guardianId, email } = verifyRefreshToken(app, request.body.refreshToken);
+      const tokens = await signSession(reply, config, { id: guardianId, email });
+      return reply.code(200).send(tokens);
+    });
+
+  app.get<{ Params: { guardianId: string } }>(
+    '/guardians/:guardianId/profiles',
+    { onRequest: app.authenticate },
+    async (request) => listProfiles.execute({ guardianId: request.params.guardianId }),
   );
 }

@@ -730,3 +730,34 @@ el saneo imperativo disperso por esquemas declarativos en las **fronteras de dat
 - **Cumplimiento:** Zod y `fastify-type-provider-zod` son librerías puras (sin red/SDK/telemetría) →
   **no afectan** a C-2/C-5. Enlaza con la robustez de red/IA de la app (US-43), que dejó `http.ts`
   como el punto único de contacto con la red donde ahora también se valida.
+
+## Sesión autenticada con JWT (Feature 48 · 2026-06-26 · backend v0.18.0 / app v0.22.0 · US-45)
+
+Se añade **autenticación de sesión con JWT** (`@fastify/jwt` v10) sobre el login ligero por email
+existente, **sin contraseña** (se conserva la identificación ligera del cumplimiento).
+
+- **Un solo secreto + claim `type`, no dual-namespace.** El plan inicial preveía dos secretos/
+  namespaces de `@fastify/jwt` (access/refresh). Se **revisó a un único secreto** distinguiendo
+  access vs refresh por el claim `type` del payload: la augmentación de tipos del patrón namespaced
+  (los métodos `${ns}JwtSign/Verify` no se añaden al tipo global de Fastify sin declaración manual con
+  `FastifyJwtNamespace`, que además bundlea sign/verify/decode) es frágil para el gate de TS. El
+  secreto único cumple **todos** los criterios funcionales de US-45 y es más simple (YAGNI); misma
+  seguridad efectiva para el alcance del TFM.
+- **Auto-login en el alta.** `POST /guardians` (registro) también emite la sesión. Sin esto, el
+  onboarding rompía: tras el alta se va a crear/seleccionar perfil, que ya son rutas protegidas → 401.
+- **`onRequest` para `authenticate`, no `preHandler`.** Así el 401 ocurre **antes** de validar el
+  cuerpo (no se procesa nada de una petición no autenticada). Consecuencia en tests: una petición sin
+  token a una ruta con validación da **401** (no 400), porque el hook corre antes que el esquema.
+- **Verificación token↔ruta diferida.** Solo se exige un access token válido; no se comprueba que el
+  `guardianId`/`profileId` de la ruta pertenezca al token. Documentado como mejora futura (fuera de
+  alcance TFM: un guardián autenticado no obtiene datos cruzados por la UI).
+- **Refresh stateless** (JWT firmado de vida larga, sin tabla en BD); el logout es de cliente
+  (descartar tokens); **sin revocación server-side** (limitación asumida).
+- **App:** el store persiste los tokens (migración de persistencia a **v2**: descarta sesiones
+  previas sin tokens); `http.ts` gana un puerto `SessionStore` (cableado en el composition root sobre
+  el store) que adjunta `Authorization: Bearer`, renueva ante 401 con el refresh y reintenta una vez,
+  y hace `logout` si la renovación falla. La narración descarga el MP3 con `fetch`, así que adjunta el
+  Bearer y degrada a voz nativa ante 401.
+- **Cumplimiento (C-13, refuerzo no desviación):** JWT es una librería local de tokens, **sin red
+  externa ni terceros** → no afecta a C-2/C-5; las rutas de datos dejan de ser anónimas. Secreto en
+  env (`JWT_SECRET`), nunca en BD.

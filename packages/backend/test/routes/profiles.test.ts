@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 describe('rutas de profiles', () => {
   let app: FastifyInstance;
@@ -42,7 +42,12 @@ describe('rutas de profiles', () => {
 
   it('crea un perfil (201) y registra la acción en el audit log', async () => {
     const guardianId = await altaAdulto();
-    const res = await app.inject({ method: 'POST', url: '/profiles', payload: perfil(guardianId) });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/profiles',
+      headers: authHeaders(app),
+      payload: perfil(guardianId),
+    });
 
     expect(res.statusCode).toBe(201);
     expect(res.json().edad).toBe(4);
@@ -53,6 +58,7 @@ describe('rutas de profiles', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: perfil('inexistente'),
     });
     expect(res.statusCode).toBe(404);
@@ -63,6 +69,7 @@ describe('rutas de profiles', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: { ...perfil(guardianId), edad: 9 },
     });
     expect(res.statusCode).toBe(400);
@@ -73,6 +80,7 @@ describe('rutas de profiles', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: { ...perfil(guardianId), intereses: ['dinosaurios'] },
     });
     expect(res.statusCode).toBe(400);

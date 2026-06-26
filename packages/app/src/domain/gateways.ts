@@ -12,18 +12,22 @@ import type {
   ChildProfile,
   CreateChildProfileInput,
   GenerateStoryRequest,
-  Guardian,
+  GuardianSession,
   History,
   LoginGuardianInput,
   RecommendActivitiesRequest,
   RegisterGuardianInput,
+  SessionTokens,
   Story,
 } from './types';
 
 export interface GuardianGateway {
-  register(input: RegisterGuardianInput): Promise<Guardian>;
-  /** Identifica al adulto por su email (login ligero, US-19). */
-  login(input: LoginGuardianInput): Promise<Guardian>;
+  /** Da de alta al adulto y abre sesión (auto-login): devuelve guardián + tokens. */
+  register(input: RegisterGuardianInput): Promise<GuardianSession>;
+  /** Identifica al adulto por su email (login ligero, US-19) y abre sesión (US-45). */
+  login(input: LoginGuardianInput): Promise<GuardianSession>;
+  /** Renueva el access token a partir del refresh token (US-45). */
+  refresh(refreshToken: string): Promise<SessionTokens>;
 }
 
 export interface ProfileGateway {

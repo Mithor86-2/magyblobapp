@@ -39,6 +39,10 @@ services:
       PORT: 3000
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DATABASE_URL: postgresql://${POSTGRES_USER:-magyblob}:${POSTGRES_PASSWORD:-magyblob}@postgres:5432/${POSTGRES_DB:-magyblob}?schema=public
+      # Sesión / JWT (US-45). Secreto de firma; vacío = secreto de desarrollo inseguro.
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
       AI_PROVIDER: ${AI_PROVIDER:-mock}
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma:2b}

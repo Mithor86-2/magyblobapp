@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 /**
  * Test de integración de `POST /activities/recommend`: genera actividades para un
@@ -37,6 +37,7 @@ describe('POST /activities/recommend (integración)', () => {
     const profile = await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: {
         guardianId,
         nombre: 'Mateo',
@@ -55,6 +56,7 @@ describe('POST /activities/recommend (integración)', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/activities/recommend',
+      headers: authHeaders(app),
       payload: { profileId, cantidad: 3 },
     });
 
@@ -73,6 +75,7 @@ describe('POST /activities/recommend (integración)', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/activities/recommend',
+      headers: authHeaders(app),
       payload: { profileId: 'inexistente' },
     });
     expect(res.statusCode).toBe(404);
@@ -84,6 +87,7 @@ describe('POST /activities/recommend (integración)', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/activities/recommend',
+      headers: authHeaders(app),
       payload: { profileId, categoria: 'deportes' },
     });
     expect(res.statusCode).toBe(400);

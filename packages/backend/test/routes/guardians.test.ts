@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 describe('rutas de guardians', () => {
   let app: FastifyInstance;
@@ -103,10 +103,15 @@ describe('rutas de guardians', () => {
     await app.inject({
       method: 'POST',
       url: '/profiles',
+      headers: authHeaders(app),
       payload: { guardianId, nombre: 'Leo', edad: 3, avatar: 'a2', intereses: ['espacio'] },
     });
 
-    const res = await app.inject({ method: 'GET', url: `/guardians/${guardianId}/profiles` });
+    const res = await app.inject({
+      method: 'GET',
+      url: `/guardians/${guardianId}/profiles`,
+      headers: authHeaders(app),
+    });
     expect(res.statusCode).toBe(200);
     const perfiles = res.json();
     expect(perfiles).toHaveLength(1);
