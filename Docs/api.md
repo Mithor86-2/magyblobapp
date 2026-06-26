@@ -6,6 +6,8 @@ defecto: **`http://localhost:3000`**.
 - Formato de entrada/salida: **JSON** (`Content-Type: application/json`).
 - Errores: cuerpo uniforme `{ "error": { "tipo": "...", "mensaje": "..." } }`.
 - Idioma de la app: bilingüe **ES/EN**; el cuento se genera en el idioma del perfil.
+- **Autenticación (JWT, US-45):** las rutas de datos exigen un **access token** en la cabecera
+  `Authorization: Bearer <token>` (ver [Autenticación](#autenticación-jwt)).
 
 > Flujo típico (vertical slice): **alta de adulto → crear perfil → generar cuento**.
 > El alta del adulto con consentimiento es obligatoria antes de crear perfiles
@@ -30,9 +32,34 @@ Validados en la entrada (un valor fuera de la lista devuelve `400`):
 | `200`  | OK (consultas)                                                 |
 | `201`  | Recurso creado                                                 |
 | `400`  | Datos inválidos (regla de dominio o validación de esquema)     |
+| `401`  | No autorizado: falta el access token o es inválido/expirado    |
 | `404`  | Recurso no encontrado (`NotFoundError`)                        |
 | `409`  | Conflicto, p. ej. email ya registrado (`ConflictError`)        |
 | `500`  | Error inesperado (se registra en el log; sin filtrar detalles) |
+
+---
+
+## Autenticación (JWT)
+
+La sesión del adulto se autentica con **JSON Web Tokens** (US-45). El alta (`POST /guardians`) y el
+login (`POST /guardians/login`) **emiten** un par de tokens:
+
+- **`accessToken`** — vida corta (def. `15m`), se envía en cada petición a una ruta protegida como
+  `Authorization: Bearer <accessToken>`.
+- **`refreshToken`** — vida larga (def. `7d`), sirve para obtener un access nuevo en
+  `POST /guardians/refresh` sin volver a iniciar sesión.
+
+Es una **identificación ligera** (sin contraseña; ver [cumplimiento-menores.md](cumplimiento-menores.md),
+C-13). El secreto de firma va en la variable de entorno `JWT_SECRET` (nunca en BD). El refresh es
+_stateless_: no hay revocación en servidor; el "logout" lo hace el cliente descartando los tokens.
+
+| Rutas                                                                                                | Auth                                  |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `GET /health`, `POST /guardians`, `POST /guardians/login`, `POST /guardians/refresh`                 | **Públicas**                          |
+| Resto (`/profiles`, `/stories…`, `/activities…`, `/guardians/:id/profiles`, `/profiles/:id/history`) | **Requieren** `Authorization: Bearer` |
+
+Una ruta protegida sin token o con un token inválido/expirado responde **`401`** con el cuerpo de
+error uniforme (`{ "error": { "tipo": "UnauthorizedError", ... } }`).
 
 ---
 
@@ -53,7 +80,9 @@ curl http://localhost:3000/health
 ## `POST /guardians`
 
 Da de alta al **adulto responsable** y registra su consentimiento. Escribe un
-`AuditLog` de tipo `consentimiento`.
+`AuditLog` de tipo `consentimiento`. **Pública** y con **auto-login**: además del
+guardián, devuelve la sesión JWT (`accessToken` + `refreshToken`) para no exigir un
+login extra en el onboarding.
 
 **Body**
 
@@ -82,7 +111,7 @@ curl -X POST http://localhost:3000/guardians \
   }'
 ```
 
-**Respuesta `201`**
+**Respuesta `201`** — el guardián + la sesión JWT:
 
 ```json
 {
@@ -91,7 +120,9 @@ curl -X POST http://localhost:3000/guardians \
   "apellidos": "García",
   "email": "ana@example.com",
   "parentesco": "madre",
-  "consentimientoDado": true
+  "consentimientoDado": true,
+  "accessToken": "eyJhbGciOi...",
+  "refreshToken": "eyJhbGciOi..."
 }
 ```
 
@@ -121,7 +152,7 @@ curl -X POST http://localhost:3000/guardians/login \
   -d '{ "email": "ana@example.com" }'
 ```
 
-**Respuesta `200`** — misma forma que `POST /guardians` (la cuenta del adulto):
+**Respuesta `200`** — la cuenta del adulto + la sesión JWT (mismas claves que `POST /guardians`):
 
 ```json
 {
@@ -130,7 +161,9 @@ curl -X POST http://localhost:3000/guardians/login \
   "apellidos": "García",
   "email": "ana@example.com",
   "parentesco": "madre",
-  "consentimientoDado": true
+  "consentimientoDado": true,
+  "accessToken": "eyJhbGciOi...",
+  "refreshToken": "eyJhbGciOi..."
 }
 ```
 
@@ -138,12 +171,40 @@ curl -X POST http://localhost:3000/guardians/login \
 
 ---
 
-## `GET /guardians/:guardianId/profiles`
+## `POST /guardians/refresh`
 
-Lista los perfiles de niño que tutela un adulto (soporte multi-niño).
+Renueva la sesión a partir de un **refresh token** válido (US-45). **Pública** (no requiere access
+token). El refresh viaja en el cuerpo (la app es React Native/Expo, no usa cookies).
+
+**Body**
+
+| Campo          | Tipo   | Req. | Notas                          |
+| -------------- | ------ | ---- | ------------------------------ |
+| `refreshToken` | string | sí   | el `refreshToken` de la sesión |
 
 ```bash
-curl http://localhost:3000/guardians/b3eca48e-d77f-4869-951b-92dbce221c11/profiles
+curl -X POST http://localhost:3000/guardians/refresh \
+  -H "Content-Type: application/json" \
+  -d '{ "refreshToken": "eyJhbGciOi..." }'
+```
+
+**Respuesta `200`** — un par de tokens nuevo:
+
+```json
+{ "accessToken": "eyJhbGciOi...", "refreshToken": "eyJhbGciOi..." }
+```
+
+**Errores:** `401` el refresh token es inválido, ha expirado o no es de tipo refresh · `400` body inválido.
+
+---
+
+## `GET /guardians/:guardianId/profiles` 🔒
+
+Lista los perfiles de niño que tutela un adulto (soporte multi-niño). **Requiere** `Authorization: Bearer`.
+
+```bash
+curl http://localhost:3000/guardians/b3eca48e-d77f-4869-951b-92dbce221c11/profiles \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 **Respuesta `200`** — array de perfiles (ver forma en `POST /profiles`):
@@ -164,7 +225,7 @@ curl http://localhost:3000/guardians/b3eca48e-d77f-4869-951b-92dbce221c11/profil
 
 ---
 
-## `POST /profiles`
+## `POST /profiles` 🔒
 
 Crea el perfil de un niño asociado a un adulto que **ya ha consentido**. Escribe
 un `AuditLog` de tipo `crear`.
@@ -214,7 +275,7 @@ de rango o interés inválido.
 
 ---
 
-## `POST /stories`
+## `POST /stories` 🔒
 
 Genera (vía `AIProvider`) y **persiste** un cuento para un perfil, en el idioma del
 perfil. Escribe un `InteractionEvent` de tipo `cuento_generado`.
@@ -266,7 +327,7 @@ curl -X POST http://localhost:3000/stories \
 
 ---
 
-## `POST /activities/recommend`
+## `POST /activities/recommend` 🔒
 
 Recomienda (vía `AIProvider`) y **persiste** actividades para un perfil. Aplica un dedup
 simple por título: no devuelve actividades cuyo título ya exista para ese perfil.
@@ -310,7 +371,7 @@ existían ya.)
 
 ---
 
-## `POST /activities/:id/complete`
+## `POST /activities/:id/complete` 🔒
 
 Registra que una actividad se completó con una valoración de 1 a 3 estrellas (US-10).
 Escribe un `InteractionEvent` de tipo `actividad_completada`.
@@ -320,7 +381,7 @@ Escribe un `InteractionEvent` de tipo `actividad_completada`.
 
 ---
 
-## `POST /stories/:id/read`
+## `POST /stories/:id/read` 🔒
 
 Marca un cuento como leído (US-07). Idempotente.
 
@@ -328,7 +389,7 @@ Marca un cuento como leído (US-07). Idempotente.
 
 ---
 
-## `GET /profiles/:profileId/history`
+## `GET /profiles/:profileId/history` 🔒
 
 Devuelve el historial del perfil: sus cuentos y actividades, cada lista por fecha desc (US-08).
 
@@ -340,20 +401,29 @@ Devuelve el historial del perfil: sus cuentos y actividades, cada lista por fech
 
 Encadena las tres llamadas extrayendo los ids con [`jq`](https://jqlang.github.io/jq/):
 
+El alta devuelve el `accessToken`, que se adjunta como `Authorization: Bearer` en las rutas protegidas:
+
 ```bash
 BASE=http://localhost:3000
 
-GID=$(curl -s -X POST $BASE/guardians -H "Content-Type: application/json" -d '{
+# Alta (pública): captura id + accessToken de la sesión
+ALTA=$(curl -s -X POST $BASE/guardians -H "Content-Type: application/json" -d '{
   "nombre":"Ana","apellidos":"García","email":"ana@example.com",
   "parentesco":"madre","consentimientoAceptado":true,"consentimientoVersion":"v1"
-}' | jq -r .id)
+}')
+GID=$(echo "$ALTA" | jq -r .id)
+TOKEN=$(echo "$ALTA" | jq -r .accessToken)
 
-PID=$(curl -s -X POST $BASE/profiles -H "Content-Type: application/json" -d "{
+# Crear perfil (protegida): requiere el Bearer
+PID=$(curl -s -X POST $BASE/profiles \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d "{
   \"guardianId\":\"$GID\",\"nombre\":\"Mateo\",\"edad\":4,\"idioma\":\"es\",
   \"avatar\":\"a1\",\"intereses\":[\"animales\"]
 }" | jq -r .id)
 
-curl -s -X POST $BASE/stories -H "Content-Type: application/json" -d "{
+# Generar cuento (protegida)
+curl -s -X POST $BASE/stories \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d "{
   \"profileId\":\"$PID\",\"tema\":\"animales\",\"estilo\":\"aventura\"
 }" | jq
 ```

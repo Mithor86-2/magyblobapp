@@ -2,7 +2,8 @@
 
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
-**US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**. Volver al [índice](README.md).
+**US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**.
+Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
 
@@ -789,3 +790,61 @@ el JSON Schema de cada ruta y los DTOs.
 - (Tests) Dado cada esquema nuevo, Cuando se ejercitan sus casos límite (válido, inválido, saneable),
   Entonces los tests co-localizados verifican el mismo comportamiento que la validación manual sustituida
   y `pnpm check` queda verde.
+
+## US-45 — Sesión autenticada del adulto con JWT · Should (Fase 6)
+
+Como **padre/tutor** quiero que mi sesión quede **autenticada con un token** tras identificarme, y que
+los endpoints que manejan mis datos y los de mis hijos **solo respondan con una credencial válida**, para
+que la información del perfil del niño no sea accesible sin haber iniciado sesión.
+
+**Contexto.** Hoy el "login" es una **identificación ligera por email sin contraseña** (Fase 5.5,
+[US-19](epic-a-perfil.md#us-19)): `POST /guardians/login` devuelve el `Guardian` pero **no emite ninguna
+credencial**, y **ningún endpoint está protegido** (cualquiera puede llamar a `POST /stories`,
+`GET /profiles/:id/history`, etc.). Esta historia añade **autenticación basada en JWT** con
+[`@fastify/jwt`](https://github.com/fastify/fastify-jwt): el login emite un **access token de vida corta**
+(p. ej. 15 min) y un **refresh token de vida larga** (p. ej. 7 días), el backend protege las rutas de
+datos con un _preHandler_ (`onRequest`) que verifica el access token, y la app guarda los tokens y
+envía `Authorization: Bearer` en cada petición, renovando el access ante un `401` mediante el refresh.
+El **alta (`POST /guardians`) también abre sesión** (auto-login) para no exigir un login extra en el
+onboarding. **No se añade contraseña** (se conserva la identificación ligera declarada en cumplimiento);
+JWT solo aporta gestión de sesión/credencial sobre el login existente. **Decisiones (YAGNI):** se usa
+**un único secreto** y se distingue access vs refresh por el claim `type` (no se separan
+secretos/namespaces; la augmentación de tipos del patrón namespaced es frágil y el secreto único cumple
+igual los criterios); el refresh es **stateless** (JWT firmado, sin tabla en BD) y el _logout_ es de
+cliente (descartar tokens); la **revocación server-side queda fuera de alcance** (limitación asumida).
+Los **secretos van en variables de entorno**, nunca en BD ni en el repo (coherente con [US-18](#us-18)).
+La app es **React Native/Expo** (no navegador): los tokens viajan en el **cuerpo JSON**, no en cookie
+httpOnly. **Backend + app.** Ver el plan [48-jwt-sesion](../planes/feature-48-jwt-sesion.md).
+
+> **Cumplimiento.** JWT es una librería de utilidades de token **sin red externa ni SDKs de terceros** →
+> **no afecta** a C-2/C-5 ([cumplimiento-menores.md](../cumplimiento-menores.md)). Refuerza la protección
+> de los datos del menor (los endpoints dejan de ser anónimos), manteniendo la privacidad por diseño.
+
+**Criterios de aceptación**
+
+- Dado un adulto registrado, Cuando hace `POST /guardians/login` con un email válido, Entonces la
+  respuesta incluye el `Guardian` y **un `accessToken` (corto) y un `refreshToken` (largo)** JWT
+  firmados, y se sigue registrando el `AuditLog`/evento de login.
+- Dado un **access token válido** en la cabecera `Authorization: Bearer`, Cuando se llama a una ruta
+  protegida (`GET /guardians/:id/profiles`, `POST /profiles`, `POST /stories`,
+  `POST /activities/recommend`, `GET /profiles/:id/history`, `POST /stories/:id/read`,
+  `POST /activities/:id/complete`, narración), Entonces responde con normalidad (200/201).
+- Dada una ruta protegida, Cuando se llama **sin token o con un token inválido/expirado**, Entonces
+  responde **401** con el cuerpo de error uniforme y **no** ejecuta la operación.
+- Dadas las rutas **públicas** (`GET /health`, `POST /guardians`, `POST /guardians/login`,
+  `POST /guardians/refresh`), Cuando se llaman sin token, Entonces siguen respondiendo (no se protegen).
+- Dado un **refresh token válido**, Cuando se llama a `POST /guardians/refresh`, Entonces se emite un
+  **nuevo access token** (200); con un refresh inválido/expirado, Entonces **401**.
+- Dado que la app tiene sesión iniciada, Cuando hace cualquier petición autenticada, Entonces adjunta
+  `Authorization: Bearer <accessToken>`; y ante un **401**, intenta **una** renovación con el refresh y
+  reintenta la petición; si la renovación falla, **cierra la sesión** y vuelve al onboarding.
+- Dado el cierre de sesión, Cuando el adulto hace _logout_, Entonces la app **descarta access y refresh**
+  tokens del almacenamiento persistido (el _logout_ es de cliente; no hay revocación server-side).
+- (Seguridad) Dado el secreto de firma, Cuando se configura, Entonces va en **variables de entorno**
+  (`JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET`), **nunca** en BD ni versionado, con defaults solo de
+  desarrollo (coherente con [US-18](#us-18)).
+- (No-funcional) Dado JWT, Entonces **no** introduce red externa ni SDKs de terceros (no afecta a
+  C-2/C-5) y el arranque reproducible ([US-06](#us-06)) sigue funcionando con los secretos por defecto.
+- (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: emisión de tokens en login,
+  refresh (200/401), rutas protegidas (401 sin token / OK con token), y en la app que `http.ts` adjunta
+  la cabecera y hace refresh-on-401, y que el store persiste/limpia los tokens.

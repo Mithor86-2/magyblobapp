@@ -129,31 +129,42 @@ SMOKE_CLOUD_TARGET=gemini SMOKE_CLOUD_MODEL=gemini-2.0-flash pnpm ai:smoke:cloud
 
 ## Probar la API
 
-Los endpoints, parámetros y ejemplos `curl` están en **[Docs/api.md](Docs/api.md)**.
-Flujo mínimo (alta de adulto → crear perfil → generar cuento):
+Los endpoints, parámetros y ejemplos `curl` están en **[Docs/api.md](Docs/api.md)**. Las rutas de
+datos exigen un **access token JWT** (US-45): el alta y el login lo emiten y se envía como
+`Authorization: Bearer`. Flujo mínimo (alta → crear perfil → generar cuento):
 
 ```bash
 BASE=http://localhost:3000
-GID=$(curl -s -X POST $BASE/guardians -H "Content-Type: application/json" -d '{
+# El alta es pública y devuelve la sesión (auto-login): capturamos id y accessToken.
+ALTA=$(curl -s -X POST $BASE/guardians -H "Content-Type: application/json" -d '{
   "nombre":"Ana","apellidos":"García","email":"ana@example.com",
   "parentesco":"madre","consentimientoAceptado":true,"consentimientoVersion":"v1"
-}' | jq -r .id)
-PID=$(curl -s -X POST $BASE/profiles -H "Content-Type: application/json" -d "{
+}')
+GID=$(echo "$ALTA" | jq -r .id); TOKEN=$(echo "$ALTA" | jq -r .accessToken)
+PID=$(curl -s -X POST $BASE/profiles \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d "{
   \"guardianId\":\"$GID\",\"nombre\":\"Mateo\",\"edad\":4,\"idioma\":\"es\",
   \"avatar\":\"a1\",\"intereses\":[\"animales\"]
 }" | jq -r .id)
-curl -s -X POST $BASE/stories -H "Content-Type: application/json" -d "{
+curl -s -X POST $BASE/stories \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d "{
   \"profileId\":\"$PID\",\"tema\":\"animales\",\"estilo\":\"aventura\"
 }" | jq
 ```
 
-| Método y ruta                 | Descripción                                    |
-| ----------------------------- | ---------------------------------------------- |
-| `GET /health`                 | Estado del servicio                            |
-| `POST /guardians`             | Alta del adulto responsable (+ consentimiento) |
-| `GET /guardians/:id/profiles` | Lista los perfiles de un adulto                |
-| `POST /profiles`              | Crea el perfil de un niño                      |
-| `POST /stories`               | Genera y persiste un cuento para un perfil     |
+| Método y ruta                 | Auth | Descripción                                  |
+| ----------------------------- | ---- | -------------------------------------------- |
+| `GET /health`                 | —    | Estado del servicio                          |
+| `POST /guardians`             | —    | Alta del adulto (+ consentimiento) + sesión  |
+| `POST /guardians/login`       | —    | Login por email → sesión (access + refresh)  |
+| `POST /guardians/refresh`     | —    | Renueva el access token con el refresh token |
+| `GET /guardians/:id/profiles` | 🔒   | Lista los perfiles de un adulto              |
+| `POST /profiles`              | 🔒   | Crea el perfil de un niño                    |
+| `POST /stories`               | 🔒   | Genera y persiste un cuento para un perfil   |
+
+> **Secreto JWT:** se firma con `JWT_SECRET` (env). Si se deja vacío hay un secreto **solo de
+> desarrollo** (arranque reproducible sin pasos extra); en producción fíjalo a un valor aleatorio.
+> Vida de tokens: `JWT_ACCESS_TTL` (def. `15m`) / `JWT_REFRESH_TTL` (def. `7d`).
 
 ## Desarrollo local (sin Docker)
 

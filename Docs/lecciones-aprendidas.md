@@ -703,3 +703,45 @@ diferencias que costaron iteración:
   `infrastructure` (rutas, adaptador HTTP) y en `application` solo si no cruzan hacia dentro. La
   duplicación que sí se elimina con `fastify-type-provider-zod` es la del **literal JSON Schema** vs
   el genérico `app.post<{ Body }>` (el body se infiere del esquema), no la de los DTOs.
+
+## Feature 48 — Sesión autenticada con JWT (US-45)
+
+### El patrón dual-namespace de `@fastify/jwt` es frágil para el gate de TypeScript
+
+- **Síntoma:** registrar dos instancias de `@fastify/jwt` (namespaces `access`/`refresh`, secretos
+  separados) no añade los métodos `accessJwtSign`/`refreshJwtVerify`… al tipo global de Fastify. Hay
+  que augmentar a mano con el helper `FastifyJwtNamespace`, que **bundlea** sign+verify+decode en un
+  solo `Record` y los cuelga de `FastifyInstance`/`Reply`/`Request` cruzando métodos donde no existen
+  en runtime. Mucho ruido de tipos y riesgo de romper `tsc --noEmit` (el gate).
+- **Solución:** **un único registro con un secreto** y un claim `type: 'access' | 'refresh'` en el
+  payload. Tipado limpio (default `jwtSign`/`jwtVerify`/`request.user` + un `declare module` mínimo),
+  cumple igual los criterios (access corto, refresh largo, refresh endpoint, 401) y es más simple
+  (YAGNI). Para el alcance del TFM la seguridad efectiva es la misma.
+
+### `return await fetch()` dentro de un `try`/`finally` deja una rama sin cubrir (v8)
+
+- **Síntoma:** con cobertura `v8`, un `try { return await fetch(...) } catch {…} finally { clearTimeout }`
+  reporta una **rama imposible** sin cubrir en el `} finally {` (el `http.ts` es tier CORE 100%, así
+  que rompía el umbral). El `return` dentro del `try` con `finally` genera un branch que ningún test
+  puede ejercitar.
+- **Solución:** asignar a una variable dentro del `try` y **`return` después** del bloque
+  (`let response; try { response = await fetch(...) } catch {…} finally {…} return response;`). Mismo
+  comportamiento, sin la rama fantasma → 100% de cobertura.
+
+### Proteger rutas rompe los tests de rutas existentes (y el orden `onRequest` vs validación)
+
+- **Síntoma:** al exigir token con un hook `onRequest`, los tests de integración que llamaban a rutas
+  ahora protegidas pasaban a **401**. Además, una petición sin token a una ruta con esquema da 401
+  (no 400): `onRequest` corre **antes** que la validación del cuerpo.
+- **Solución:** helper de test `authHeaders(app)` que firma un access token con `app.jwt.sign(...)` y
+  se adjunta en cada `inject` a rutas protegidas. El alta (`POST /guardians`) se dejó **pública** y
+  con auto-login (emite sesión), para que el onboarding no necesite un login extra.
+
+### Emulador Android: `localhost` no es el host — usar `10.0.2.2`
+
+- **Síntoma:** la app en el **emulador Android** daba "No se pudo conectar con el servidor" con
+  `EXPO_PUBLIC_API_URL=http://localhost:3000` (el backend estaba sano en el host).
+- **Solución:** en el emulador Android el host del Mac es **`10.0.2.2`**
+  (`EXPO_PUBLIC_API_URL=http://10.0.2.2:3000`); en simulador iOS vale `localhost`; en dispositivo
+  físico, la **IP LAN** del Mac. Tras cambiar `.env`, reiniciar Metro con caché limpia (`start -c`),
+  porque `EXPO_PUBLIC_*` se lee al arrancar, no en caliente.

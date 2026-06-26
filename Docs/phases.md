@@ -252,6 +252,14 @@ infantil. Plan en [planes/fase-5-5.md](planes/fase-5-5.md). Cubre **US-19** (log
       `feature/44-robustez-red-app`). Timeout con `AbortController` en `http.ts` (15 s / 30 s
       generación → `ApiError('timeout')`) y en la narración (15 s, degrada a voz nativa); botón
       «Reintentar» en el Historial. Cierra el agujero del DoD. Tests del timeout en `http.test.ts`.
+- [x] **Sesión autenticada con JWT (US-45, rama `feature/48-jwt-sesion`).** `@fastify/jwt` v10 con
+      secreto único + claim `type` (access corto ~15m / refresh largo ~7d, stateless); el alta y el
+      login emiten la sesión, `POST /guardians/refresh` la renueva y un decorador `authenticate`
+      (`onRequest`) protege las rutas de datos (401 sin token; públicas: health, alta, login,
+      refresh). La app persiste los tokens en el store (migración v2), adjunta `Authorization:
+Bearer`, renueva ante 401 y cierra sesión si el refresh falla. Sin contraseña (identificación
+      ligera intacta); JWT no añade terceros ni red externa (no afecta C-2/C-5). `pnpm check` verde
+      (203 backend + 98 app); `http.ts`/`auth.ts` 100% cobertura.
 - [x] Revisión de acoplamiento, nombres y separación de capas — **auditoría 2026-06-25**: backend sin
       violaciones (ESLint de capas activo, `/domain` sin dependencias externas), vocabulario ES/EN
       coherente. La app usa Clean Arch _ligera_ (el store importa infra a propósito; mejora opcional).
