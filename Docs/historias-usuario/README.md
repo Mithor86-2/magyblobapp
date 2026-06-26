@@ -73,6 +73,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-41 | Degradación elegante (ErrorBoundary)   | Could     | 6       | Toda la app / pant. contenido       | [F](epic-f-plataforma.md#us-41)  |
 | US-42 | Telemetría del recorrido (breadcrumbs) | Could     | 6       | — (app, runtime)                    | [F](epic-f-plataforma.md#us-42)  |
 | US-43 | Robustez de red/IA: timeouts y errores | Should    | 6       | http.ts / CreateProfile / Historial | [F](epic-f-plataforma.md#us-43)  |
+| US-44 | Validación de fronteras con Zod        | Should    | Mejoras | parseResponse / settings / http.ts  | [F](epic-f-plataforma.md#us-44)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

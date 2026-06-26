@@ -751,3 +751,41 @@ reproducible (US-06), sin red externa ni SDKs de terceros nuevos.
   degrada a la **voz nativa** del dispositivo sin colgarse ni mostrar error técnico.
 - (Tests) Dado el camino de error (petición que falla/expira), Cuando se ejercita en test, Entonces se
   verifica que la UI muestra el error/reintento y no rompe.
+
+## US-44 — Validación de fronteras de datos con Zod · Should (Mejoras)
+
+Como **responsable del producto** quiero que los **datos que entran al sistema desde fuentes no
+fiables** (salida del LLM, settings persistidos, respuestas del backend en la app) se **validen y
+saneen en su frontera** con esquemas declarativos, para que un dato malformado se rechace o normalice
+de forma predecible en lugar de propagarse y romper más adentro.
+
+**Contexto.** Hoy ese saneo es **imperativo y disperso**: la salida del LLM se valida a mano en
+[`parseResponse.ts`](../../packages/backend/src/infrastructure/ai/parseResponse.ts) (un modelo pequeño
+alucina categorías inexistentes o números fuera de rango), los settings en JSON se validan con
+`JSON.parse` + chequeos manuales en [`cloudSettings.ts`](../../packages/backend/src/infrastructure/ai/cloudSettings.ts)
+y [`storyParams.ts`](../../packages/backend/src/infrastructure/ai/storyParams.ts), y la app **confía
+ciegamente** en las respuestas del backend (`as TResponse` en
+[`http.ts`](../../packages/app/src/infrastructure/http.ts)). Se introduce **Zod** como librería de
+validación en las capas **application/infrastructure** (backend) y en la app, manteniendo el
+comportamiento actual de **sanear, no solo rechazar**. **Restricción de arquitectura:** Zod **no** entra
+en `/domain` (el invariante de capas ESLint prohíbe dependencias externas ahí); los value-objects
+(`Edad`, `Idioma`) **no se tocan**. **Cumplimiento:** Zod es una librería pura sin red/SDK/telemetría →
+**no afecta** a C-2/C-5 ([cumplimiento-menores](../cumplimiento-menores.md)). Fase 2 **opcional**:
+migrar la validación de rutas Fastify a `fastify-type-provider-zod` para eliminar la duplicación entre
+el JSON Schema de cada ruta y los DTOs.
+
+**Criterios de aceptación**
+
+- Dado un JSON de salida del LLM con campos inválidos (categoría inexistente, `nivel` fuera de rango),
+  Cuando se parsea con el esquema Zod, Entonces los valores no válidos se **descartan o sanean** igual
+  que hoy y el resultado conserva el mismo contrato (`GeneratedStory`/`GeneratedActivity[]`).
+- Dado un setting (`ai.cloud` / `prompt.story.params`) ausente, no-JSON o con forma incorrecta, Cuando
+  se valida con Zod, Entonces se devuelve `null` (privacidad/seguridad por defecto: ante la duda, no se
+  activa) sin lanzar.
+- Dado que la app recibe una respuesta del backend, Cuando no cumple el esquema esperado, Entonces se
+  produce un `ApiError` controlado en lugar de propagar un objeto malformado por un cast `as`.
+- Dado el invariante de capas, Cuando se ejecuta el lint, Entonces **ningún** import de `zod` aparece en
+  `/domain` (la regla `no-restricted-imports` sigue verde).
+- (Tests) Dado cada esquema nuevo, Cuando se ejercitan sus casos límite (válido, inválido, saneable),
+  Entonces los tests co-localizados verifican el mismo comportamiento que la validación manual sustituida
+  y `pnpm check` queda verde.
