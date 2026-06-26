@@ -107,38 +107,44 @@ está sonando vía `expo-speech`), algo que el render web no puede ejercitar.
 
 ### Cómo ejecutar el E2E nativo (Maestro) en local
 
-Requiere un **development build** de Expo (no Expo Go, por los módulos nativos) y un simulador/emulador
-arrancado. Desde `packages/app` salvo donde se indique:
+**Validado con Expo Go** (no hace falta development build): la narración degrada a la voz nativa del
+dispositivo (`expo-speech`), incluida en Expo Go, así que el happy path se ejercita igual. Hay **dos
+flows hermanos** porque el `appId` y algunos selectores difieren por plataforma:
+
+- iOS: [`.maestro/onboarding.yaml`](../packages/app/.maestro/onboarding.yaml) (`host.exp.Exponent`).
+- Android: [`.maestro/onboarding.android.yaml`](../packages/app/.maestro/onboarding.android.yaml) (`host.exp.exponent`).
 
 ```bash
 # 1. Instalar el CLI de Maestro (una vez)
 curl -fsSL https://get.maestro.mobile.dev | bash
 
-# 2. Backend en modo mock (desde la raíz del repo; sin red ni IA externa)
-docker compose up        # AI_PROVIDER=mock por defecto
+# 2. Backend mock DETERMINISTA (desde la raíz; Postgres efímero, AI_PROVIDER=mock, :3100)
+#    Importante: el mock empieza "Había una vez {nombre}"; con cloud activo el texto NO es
+#    determinista y el flow falla. e2e-serve fuerza mock con claves cloud vacías.
+pnpm --filter @magyblob/backend exec tsx scripts/e2e-serve.ts
 
-# 3. Development build de Expo + instalación en el simulador/emulador
-#    (apuntando la app al backend mock vía EXPO_PUBLIC_API_URL)
-npx expo run:ios         # iOS Simulator (requiere macOS + Xcode)
-#   ó
-npx expo run:android     # Android Emulator (requiere Android SDK + un AVD arrancado)
-
-# 4. Ejecutar el flow (con el simulador/emulador arrancado y la app dev instalada)
+# 3a. iOS Simulator (macOS + Xcode): localhost del simulador = host
+pnpm --filter @magyblob/app exec expo start --ios
 maestro test packages/app/.maestro/onboarding.yaml
+
+# 3b. Android Emulator (Android SDK + AVD arrancado): OJO con la red
+#     en Android `localhost` es el emulador; el host se alcanza por 10.0.2.2
+EXPO_PUBLIC_API_URL=http://10.0.2.2:3100 pnpm --filter @magyblob/app exec expo start --android
+maestro test packages/app/.maestro/onboarding.android.yaml
 ```
 
-El _flow_ ([`.maestro/onboarding.yaml`](../packages/app/.maestro/onboarding.yaml)) recorre el happy
-path del MVP: bienvenida → puerta parental → alta del adulto → consentimiento → crear perfil → generar
-cuento (mock) → narrarlo. Lleva en cabecera los requisitos y la nota sobre el `appId` del development
-build (Expo lo deriva del slug si `app.json` no declara `bundleIdentifier`/`package`).
+Ambos flows recorren el happy path del MVP: bienvenida → puerta parental → alta del adulto →
+consentimiento → crear perfil → generar cuento (mock) → **narrarlo** → actividades → historial. Llevan
+en cabecera sus requisitos y las diferencias por plataforma (red `10.0.2.2`, entrada Unicode no
+soportada en Android, etiquetas de pestañas, dev-menu de Expo Go).
 
-### Job de CI propuesto (E2E nativo)
+### Job de CI (E2E nativo)
 
-Pendiente de un **runner con simulador** (macOS para iOS). El esqueleto vive en
-[`.github/workflows/e2e-native.yml`](../.github/workflows/e2e-native.yml): se dispara **manual
-(`workflow_dispatch`) y/o nocturno (`schedule`)**, **nunca** en push/PR. Es un esqueleto con pasos
-`# TODO` a completar (build dev de Expo + arranque de simulador + `maestro test`), no una integración
-terminada.
+[`.github/workflows/e2e-native.yml`](../.github/workflows/e2e-native.yml) se dispara **manual
+(`workflow_dispatch`) y/o nocturno (`schedule`)**, **nunca** en push/PR. Los dos flows están
+**validados en local** (iOS Simulator y Android Emulator, ambos con Expo Go); en el workflow quedan los
+pasos del runner (arranque de simulador/emulador + `maestro test`) documentados con la receta validada,
+pendientes de cablear el emulador en el runner.
 
 ### Git hooks locales (Husky)
 
