@@ -36,8 +36,8 @@ describe('OllamaProvider', () => {
     const fetchFn = fakeFetch({ titulo: 'El bosque', cuerpo: 'Un cuento bonito.' });
     const story = await provider(fetchFn).generateStory({
       perfil: perfil(),
-      tema: 'animales',
-      estilo: 'aventura',
+      temas: ['animales'],
+      estilos: ['aventura'],
     });
     expect(story).toEqual({
       titulo: 'El bosque',
@@ -48,7 +48,11 @@ describe('OllamaProvider', () => {
 
   it('llama a /api/generate con el modelo configurado y sin streaming', async () => {
     const fetchFn = fakeFetch({ titulo: 'T', cuerpo: 'C' });
-    await provider(fetchFn).generateStory({ perfil: perfil(), tema: 'magia', estilo: 'divertido' });
+    await provider(fetchFn).generateStory({
+      perfil: perfil(),
+      temas: ['magia'],
+      estilos: ['divertido'],
+    });
     const [url, opciones] = (fetchFn as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toBe('http://ollama:11434/api/generate');
     const body = JSON.parse((opciones as RequestInit).body as string);
@@ -60,7 +64,11 @@ describe('OllamaProvider', () => {
   it('lanza si el cuento llega sin título o cuerpo', async () => {
     const fetchFn = fakeFetch({ titulo: '', cuerpo: '' });
     await expect(
-      provider(fetchFn).generateStory({ perfil: perfil(), tema: 'animales', estilo: 'aventura' }),
+      provider(fetchFn).generateStory({
+        perfil: perfil(),
+        temas: ['animales'],
+        estilos: ['aventura'],
+      }),
     ).rejects.toThrow();
   });
 
@@ -69,7 +77,11 @@ describe('OllamaProvider', () => {
       async () => new Response('boom', { status: 500 }),
     ) as unknown as typeof fetch;
     await expect(
-      provider(fetchFn).generateStory({ perfil: perfil(), tema: 'animales', estilo: 'aventura' }),
+      provider(fetchFn).generateStory({
+        perfil: perfil(),
+        temas: ['animales'],
+        estilos: ['aventura'],
+      }),
     ).rejects.toThrow(/500/);
   });
 

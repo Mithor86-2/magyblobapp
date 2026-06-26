@@ -82,6 +82,53 @@ function listaIntereses(intereses: readonly string[], idioma: CodigoIdioma): str
   return intereses.join(', ');
 }
 
+/**
+ * Traducción id→palabra legible de temas y estilos para el prompt (US-47). El
+ * vocabulario del dominio son identificadores ASCII en español (`animales`,
+ * `espacio`); aquí se traduce a la forma natural de cada idioma para que el prompt
+ * en inglés diga "animals and space" y no "animales and espacio". Si un valor no
+ * está en el mapa (no debería: el caso de uso valida el vocabulario), se usa tal cual.
+ */
+const TEMA_PALABRA: Record<CodigoIdioma, Record<string, string>> = {
+  es: {
+    animales: 'animales',
+    espacio: 'espacio',
+    magia: 'magia',
+    aventuras: 'aventuras',
+    musica: 'música',
+  },
+  en: {
+    animales: 'animals',
+    espacio: 'space',
+    magia: 'magic',
+    aventuras: 'adventures',
+    musica: 'music',
+  },
+};
+
+const ESTILO_PALABRA: Record<CodigoIdioma, Record<string, string>> = {
+  es: { aventura: 'aventura', divertido: 'divertido', educativo: 'educativo' },
+  en: { aventura: 'adventure', divertido: 'fun', educativo: 'educational' },
+};
+
+/**
+ * Une una lista en una enumeración legible para el prompt (US-47): traduce cada
+ * elemento al idioma con el mapa dado, deja un solo elemento tal cual y une varios
+ * con comas + conjunción final "y" (ES) / "and" (EN). P. ej. ["animales","espacio"]
+ * → "animales y espacio" / "animals and space".
+ */
+function listaLegible(
+  items: readonly string[],
+  idioma: CodigoIdioma,
+  diccionario: Record<CodigoIdioma, Record<string, string>>,
+): string {
+  const palabras = items.map((it) => diccionario[idioma][it] ?? it);
+  if (palabras.length <= 1) return palabras[0] ?? '';
+  const conjuncion = idioma === 'es' ? 'y' : 'and';
+  const previos = palabras.slice(0, -1).join(', ');
+  return `${previos} ${conjuncion} ${palabras[palabras.length - 1]}`;
+}
+
 /** Etiqueta del formato narrativo en cada idioma. */
 const FORMATO_LABEL: Record<CodigoIdioma, Record<FormatoCuento, string>> = {
   es: {
@@ -147,6 +194,10 @@ export function buildStoryPrompt(
   const tono = tonoPorEdad(edad.value, idioma);
   const gustos = listaIntereses(intereses, idioma);
   const apertura = aperturaFormato(params, idioma);
+  // US-47: temas y estilos son listas; se interpolan como enumeración legible,
+  // traducida a la forma natural del idioma del perfil.
+  const temas = listaLegible(input.temas, idioma, TEMA_PALABRA);
+  const estilos = listaLegible(input.estilos, idioma, ESTILO_PALABRA);
   // Longitud: la marcan los params si existen; si no, el "corto (4 a 6 frases)" de siempre.
   const longitud = params
     ? instruccionFormato(params, idioma)
@@ -156,8 +207,12 @@ export function buildStoryPrompt(
   const valores = {
     nombre,
     edad: edad.value,
-    tema: input.tema,
-    estilo: input.estilo,
+    // US-47: listas legibles. Se conservan `{tema}`/`{estilo}` como alias de la lista
+    // para no romper plantillas configuradas con los placeholders antiguos.
+    temas,
+    estilos,
+    tema: temas,
+    estilo: estilos,
     idioma,
     // Nombre legible del idioma para las plantillas configurables: evita que
     // `{idioma}` quede como "en"/"es" en el prompt (p. ej. "Escríbelo en inglés").
@@ -173,10 +228,10 @@ export function buildStoryPrompt(
   const prompt = overrides.template
     ? rellenar(overrides.template, valores)
     : idioma === 'es'
-      ? `${apertura} para ${nombre}, de ${edad.value} años, sobre "${input.tema}" con un estilo ` +
-        `${input.estilo}. ${nombre} es protagonista y le gustan ${gustos}. ${tono}${longitud} ` +
+      ? `${apertura} para ${nombre}, de ${edad.value} años, sobre "${temas}" con un estilo ` +
+        `${estilos}. ${nombre} es protagonista y le gustan ${gustos}. ${tono}${longitud} ` +
         `Devuelve un título breve y el cuerpo.`
-      : `${apertura} for ${nombre}, aged ${edad.value}, about "${input.tema}" in a ${input.estilo} ` +
+      : `${apertura} for ${nombre}, aged ${edad.value}, about "${temas}" in a ${estilos} ` +
         `style. ${nombre} is the main character and likes ${gustos}. ${tono}${longitud} ` +
         `Return a short title and the body.`;
 

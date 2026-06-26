@@ -30,7 +30,11 @@ function perfil(): ChildProfile {
   });
 }
 
-const story = { perfil: perfil(), tema: 'animales' as const, estilo: 'aventura' as const };
+const story = {
+  perfil: perfil(),
+  temas: ['animales' as const],
+  estilos: ['aventura' as const],
+};
 
 afterEach(() => {
   vi.unstubAllGlobals();

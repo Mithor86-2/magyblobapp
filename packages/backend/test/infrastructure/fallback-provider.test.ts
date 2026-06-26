@@ -55,8 +55,8 @@ describe('FallbackProvider', () => {
     const provider = new FallbackProvider(new OkProvider(), new MockProvider());
     const story = await provider.generateStory({
       perfil: perfil(),
-      tema: 'animales',
-      estilo: 'aventura',
+      temas: ['animales'],
+      estilos: ['aventura'],
     });
     expect(story.titulo).toBe('PRIMARY');
     expect(story.proveedor).toBe('local');
@@ -67,8 +67,8 @@ describe('FallbackProvider', () => {
     const provider = new FallbackProvider(new BrokenProvider(), new MockProvider(), logger);
     const story = await provider.generateStory({
       perfil: perfil(),
-      tema: 'animales',
-      estilo: 'aventura',
+      temas: ['animales'],
+      estilos: ['aventura'],
     });
     expect(story.titulo).toContain('Lola');
     expect(story.proveedor).toBe('mock'); // el proveedor efectivo es mock (US-25)
@@ -92,8 +92,8 @@ describe('FallbackProvider', () => {
     const provider = new FallbackProvider(lanzaString, new MockProvider(), logger);
     const story = await provider.generateStory({
       perfil: perfil(),
-      tema: 'animales',
-      estilo: 'aventura',
+      temas: ['animales'],
+      estilos: ['aventura'],
     });
     expect(story.proveedor).toBe('mock');
     expect(logger.warn).toHaveBeenCalledWith(

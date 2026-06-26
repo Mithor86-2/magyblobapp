@@ -110,7 +110,7 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
     const genera = await http(
       'POST',
       '/stories',
-      { profileId: perfil.id, tema: 'animales', estilo: 'aventura' },
+      { profileId: perfil.id, temas: ['animales'], estilos: ['aventura'] },
       token,
     );
     expect(genera.status).toBe(201);
@@ -182,7 +182,7 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
     const storyRes = await http(
       'POST',
       '/stories',
-      { profileId: perfil.id, tema: 'magia', estilo: 'divertido' },
+      { profileId: perfil.id, temas: ['magia'], estilos: ['divertido'] },
       token,
     );
     const story = (await storyRes.json()) as { id: string };

@@ -6,7 +6,8 @@ import { PrismaClient } from '../src/generated/prisma/index.js';
  * (las claves de API y el DATABASE_URL siguen en variables de entorno).
  *
  * Las plantillas usan placeholders `{clave}` que resuelve la capa de IA:
- * cuento → {nombre} {edad} {tema} {estilo} {idiomaNombre}; actividad → {n} {categoria} {nombre} {edad}.
+ * cuento → {nombre} {edad} {temas} {estilos} {idiomaNombre} (US-47: listas legibles;
+ * {tema}/{estilo} siguen aceptándose como alias); actividad → {n} {categoria} {nombre} {edad}.
  * Idempotente (upsert por `key`): se puede reejecutar sin duplicar.
  */
 const SETTINGS: { key: string; value: string; descripcion: string }[] = [
@@ -40,8 +41,11 @@ const SETTINGS: { key: string; value: string; descripcion: string }[] = [
     // clave falta o es inválida, se usa el comportamiento por defecto (sin bloque).
     key: 'prompt.story.params',
     value: JSON.stringify({
-      palabrasMin: 150,
-      palabrasMax: 200,
+      // US-47: se sube el límite de palabras para un cuento más desarrollado (antes
+      // 150-200). 200-350 da margen a varios párrafos sin agotar el contexto del
+      // modelo local (gemma:2b) ni alargar en exceso la lectura para 2-6 años.
+      palabrasMin: 200,
+      palabrasMax: 350,
       rima: false,
       formatos: ['cuento', 'fabula', 'poema'],
     }),

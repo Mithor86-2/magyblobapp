@@ -23,7 +23,9 @@ export class MockProvider implements AIProvider {
   async generateStory(input: GenerateStoryInput): Promise<GeneratedStory> {
     const idioma = input.perfil.idioma.value;
     const { nombre } = input.perfil;
-    const tema = input.tema;
+    // US-47: el tema puede ser una lista; la mock usa el primero como representante
+    // para mantener una salida determinista y legible. El caso de uso garantiza ≥1.
+    const tema = input.temas[0] ?? 'aventuras';
     if (idioma === 'es') {
       return {
         titulo: `${nombre} y la aventura de ${tema}`,

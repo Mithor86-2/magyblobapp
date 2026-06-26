@@ -60,7 +60,7 @@ describe('POST /stories (integración)', () => {
       method: 'POST',
       url: '/stories',
       headers: authHeaders(app),
-      payload: { profileId, tema: 'animales', estilo: 'aventura' },
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'] },
     });
 
     expect(res.statusCode).toBe(201);
@@ -86,7 +86,7 @@ describe('POST /stories (integración)', () => {
       method: 'POST',
       url: '/stories',
       headers: authHeaders(app),
-      payload: { profileId: 'inexistente', tema: 'animales', estilo: 'aventura' },
+      payload: { profileId: 'inexistente', temas: ['animales'], estilos: ['aventura'] },
     });
     expect(res.statusCode).toBe(404);
     expect(res.json().error.tipo).toBe('NotFoundError');
@@ -98,7 +98,37 @@ describe('POST /stories (integración)', () => {
       method: 'POST',
       url: '/stories',
       headers: authHeaders(app),
-      payload: { profileId, tema: 'piratas', estilo: 'aventura' },
+      payload: { profileId, temas: ['piratas'], estilos: ['aventura'] },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('acepta varios temas y estilos (multi-selección, US-47)', async () => {
+    const profileId = await crearPerfil();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: {
+        profileId,
+        temas: ['animales', 'espacio'],
+        estilos: ['aventura', 'divertido'],
+      },
+    });
+    expect(res.statusCode).toBe(201);
+    const body = res.json();
+    // Persistencia sin migración: se guarda el primero de cada lista (US-47).
+    expect(body.tema).toBe('animales');
+    expect(body.estilo).toBe('aventura');
+  });
+
+  it('devuelve 400 ante una lista de temas vacía', async () => {
+    const profileId = await crearPerfil();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: { profileId, temas: [], estilos: ['aventura'] },
     });
     expect(res.statusCode).toBe(400);
   });

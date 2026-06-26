@@ -9,7 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Cuentos mejorados (US-47): `POST /stories` acepta **listas** `temas`/`estilos` (multi-selección)
+  validadas en frontera con Zod (`z.array(z.enum(...)).min(1)`) y en el caso de uso `GenerateStory`
+  (no vacío, sin duplicados, vocabulario cerrado). El prompt (`buildStoryPrompt`) interpola la lista
+  legible de temas y estilos en español ("animales y espacio") e inglés ("animals and space"),
+  conservando reglas narrativas (US-28), tono por edad e intereses (US-26).
+
 ### Changed
+
+- Firma de la capa de IA a arrays (US-47): `GenerateStoryInput` pasa de `tema`/`estilo` a
+  `temas: Tema[]`/`estilos: Estilo[]`, igual que `GenerateStoryRequest`. Se sube el límite de
+  longitud del cuento en el seed `prompt.story.params` de `150-200` a **`200-350`** palabras (cuento
+  más desarrollado, en varios párrafos). **Sin migración Prisma**: la entidad `Story` mantiene sus
+  columnas singulares `tema`/`estilo` y se persiste un valor representativo (el primero de cada
+  lista). Las plantillas configurables siguen aceptando `{tema}`/`{estilo}` como alias de la lista.
 
 ### Deprecated
 
