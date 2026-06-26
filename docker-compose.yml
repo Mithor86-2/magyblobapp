@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-magyblob}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-magyblob}
+      POSTGRES_DB: ${POSTGRES_DB:-magyblob}
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-magyblob}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollamadata:/root/.ollama
+
+  backend:
+    build:
+      context: .
+      dockerfile: packages/backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-magyblob}:${POSTGRES_PASSWORD:-magyblob}@postgres:5432/${POSTGRES_DB:-magyblob}?schema=public
+      # Sesión / JWT (US-45). Secreto de firma; vacío = secreto de desarrollo inseguro.
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma:2b}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-60000}
+      # Modo cloud (opt-in, activado desde la BD en AppSetting `ai.cloud`).
+      # Solo secretos: la key del target que se vaya a usar. Vacías = sin ese target.
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      # Narración de cuentos (ElevenLabs, US-22). Secreto: la xi-api-key. Sin ella,
+      # la app degrada a la voz nativa del dispositivo.
+      ELEVENT_LABS_API: ${ELEVENT_LABS_API:-}
+      ELEVENLABS_MODEL: ${ELEVENLABS_MODEL:-eleven_multilingual_v2}
+      ELEVENLABS_VOICE_ID_ES: ${ELEVENLABS_VOICE_ID_ES:-}
+      ELEVENLABS_VOICE_ID_EN: ${ELEVENLABS_VOICE_ID_EN:-}
+      ELEVENLABS_TIMEOUT_MS: ${ELEVENLABS_TIMEOUT_MS:-30000}
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  ollamadata:

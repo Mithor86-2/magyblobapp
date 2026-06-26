@@ -1,0 +1,12 @@
+# Estrategias de merge para trabajo en paralelo (ver Docs/trabajo-en-paralelo.md).
+#
+# Los CHANGELOG son append-only bajo "## [Unreleased]": dos features que cierran en
+# paralelo solo añaden bullets. `merge=union` (driver nativo de git) conserva las líneas
+# de ambos lados sin marcadores de conflicto, así que el merge a develop no se bloquea.
+# Trade-off: puede dejar algún bullet duplicado/desordenado si dos ramas tocan la misma
+# línea — se revisa al integrar; nunca es un conflicto bloqueante.
+CHANGELOG.md            merge=union
+packages/*/CHANGELOG.md merge=union
+
+# NOTA: pnpm-lock.yaml NO usa union (corrompería el árbol de dependencias). Ante un
+# conflicto en el lockfile, ejecuta `pnpm install` y commitea: pnpm lo reconcilia solo.

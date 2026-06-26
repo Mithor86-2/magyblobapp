@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aprendizaje Mágico - Actividades</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-surface": "#382e2a", "on-tertiary-container": "#00485e", "secondary-fixed": "#c5eae5", "on-tertiary-fixed-variant": "#004d65", "primary-fixed-dim": "#ffb3b2", "secondary-fixed-dim": "#a9cec9", "error-container": "#ffdad6", "on-background": "#221a16", outline: "#887271", "surface-container-lowest": "#ffffff", background: "#fff8f6", "surface-variant": "#f0dfd8", "surface-dim": "#e8d7d0", "on-secondary-container": "#476965", "surface-container-highest": "#f0dfd8", "outline-variant": "#dbc0bf", "on-error": "#ffffff", "on-error-container": "#93000a", "surface-container": "#fceae3", "tertiary-fixed-dim": "#8ad0f1", "on-primary-fixed-variant": "#7e2a2d", surface: "#fff8f6", "primary-container": "#ff8e8e", tertiary: "#0d6683", "on-tertiary-fixed": "#001f2a", secondary: "#426561", "on-surface": "#221a16", error: "#ba1a1a", "secondary-container": "#c2e7e2", "on-secondary-fixed": "#00201e", "surface-tint": "#9c4143", "inverse-on-surface": "#ffede6", "on-primary": "#ffffff", "tertiary-fixed": "#bee9ff", primary: "#9c4143", "surface-container-low": "#fff1eb", "tertiary-container": "#72b8d8", "inverse-primary": "#ffb3b2", "on-tertiary": "#ffffff", "surface-bright": "#fff8f6", "surface-container-high": "#f6e5de", "on-primary-container": "#772529", "on-primary-fixed": "#410008", "on-surface-variant": "#554242", "on-secondary-fixed-variant": "#2b4d49", "primary-fixed": "#ffdad8", "on-secondary": "#ffffff"}, borderRadius: {DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px"}, spacing: {xs: "4px", "element-gap": "16px", sm: "12px", lg: "40px", xl: "64px", base: "8px", md: "24px", "container-padding": "24px"}, fontFamily: {"display-lg-mobile": ["Quicksand"], "body-md": ["Quicksand"], "button-text": ["Quicksand"], "label-bold": ["Quicksand"], "display-lg": ["Quicksand"], "headline-md": ["Quicksand"], "body-lg": ["Quicksand"], headline: ["Quicksand"], display: ["Quicksand"], body: ["Quicksand"], label: ["Quicksand"]}, fontSize: {"display-lg-mobile": ["32px", {lineHeight: "38px", fontWeight: "700"}], "body-md": ["18px", {lineHeight: "26px", fontWeight: "500"}], "button-text": ["22px", {lineHeight: "24px", fontWeight: "700"}], "label-bold": ["16px", {lineHeight: "20px", fontWeight: "700"}], "display-lg": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["28px", {lineHeight: "34px", fontWeight: "700"}], "body-lg": ["20px", {lineHeight: "30px", fontWeight: "500"}]}}}};</script>
+<style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bubbly-button {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.1);
+        }
+        .bubbly-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+        }
+        .card-shadow {
+            box-shadow: 0px 12px 24px -4px rgba(156, 65, 67, 0.12);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky z-40 bg-background dark:bg-background shadow-[0px_8px_20px_rgba(156,65,67,0.1)] flex justify-between items-center px-container-padding py-md">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim">Aprendizaje Mágico</h1>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:opacity-80 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-[32px]">account_circle</span>
+</button>
+</div>
+</header>
+<main class="px-container-padding pt-md max-w-2xl mx-auto">
+<!-- Title Section -->
+<div class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-primary mb-xs">Actividades para hoy</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">¡Es hora de jugar y aprender juntos!</p>
+</div>
+<!-- Activity Feed -->
+<div class="flex flex-col gap-lg">
+<!-- Card: Juego de colores -->
+<article class="bg-surface-container-low rounded-lg p-md border-b-4 border-tertiary-container card-shadow transition-all hover:scale-[1.02] active:scale-[0.98]">
+<div class="flex items-start justify-between mb-md">
+<div class="w-16 h-16 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[40px] icon-fill">brush</span>
+</div>
+<span class="bg-tertiary-container text-on-tertiary-container px-sm py-xs rounded-full font-label-bold text-label-bold">Arte</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-xs">Juego de colores</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Explora el arcoíris y descubre qué pasa cuando mezclas rojo y azul.</p>
+<div class="flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-primary-container"></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-secondary-container"></div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-tertiary-container"></div>
+</div>
+<button class="bubbly-button bg-tertiary text-on-tertiary px-lg py-sm rounded-lg font-button-text text-button-text">Ver más</button>
+</div>
+</article>
+<!-- Card: Canción de animales -->
+<article class="bg-surface-container-low rounded-lg p-md border-b-4 border-primary-container card-shadow transition-all hover:scale-[1.02] active:scale-[0.98]">
+<div class="flex items-start justify-between mb-md">
+<div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[40px] icon-fill">music_note</span>
+</div>
+<span class="bg-primary-container text-on-primary-container px-sm py-xs rounded-full font-label-bold text-label-bold">Música</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-xs">Canción de animales</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Canta y baila mientras aprendemos los sonidos que hacen tus animales favoritos.</p>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-xs text-primary">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-bold text-label-bold">3 min</span>
+</div>
+<button class="bubbly-button bg-primary text-on-primary px-lg py-sm rounded-lg font-button-text text-button-text">Ver más</button>
+</div>
+</article>
+<!-- Card: Rompecabezas simple -->
+<article class="bg-surface-container-low rounded-lg p-md border-b-4 border-secondary-container card-shadow transition-all hover:scale-[1.02] active:scale-[0.98]">
+<div class="flex items-start justify-between mb-md">
+<div class="w-16 h-16 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[40px] icon-fill">extension</span>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded-full font-label-bold text-label-bold">Lógica</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-xs">Rompecabezas simple</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Arma piezas grandes y coloridas para descubrir una sorpresa mágica.</p>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-xs text-secondary">
+<span class="material-symbols-outlined">star</span>
+<span class="font-label-bold text-label-bold">Nivel 1</span>
+</div>
+<button class="bubbly-button bg-secondary text-on-secondary px-lg py-sm rounded-lg font-button-text text-button-text">Ver más</button>
+</div>
+</article>
+<!-- Card: Aventura de Formas (Extra) -->
+<article class="bg-surface-container-low rounded-lg p-md border-b-4 border-outline-variant card-shadow opacity-90">
+<div class="relative h-48 mb-md overflow-hidden rounded-lg">
+<img class="w-full h-full object-cover" data-alt="A vibrant and playful scene of wooden geometric blocks in bright primary colors like red, blue, and yellow scattered on a soft cream-colored floor. The lighting is warm and natural, casting soft shadows. The overall aesthetic is whimsical and educational, matching a toddler's learning environment with a clean, professional, and tactile design style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBac6p0aFstSSp8ceKJPIbyS56xUWHWKGDOmndp3LT2cAPIRoSMerUSIivj1GNUemQgGftiQeBwvwkZFFvokpU1YBMzOATA5HVlg9wlmrYZv8mU6H2B_CUEJ2MNqhhYKLBNjJZ6EueJn2ehTaxhGp_UcrEtVF1Fx9yREpNjdZWCm5kR7PAUmLK8CMMZh9SkFZWu5cZxkAq-AWOoFGv-sE4tH8t7LIw42MCwNJAeP01T8tDzkP3M7oz-4WAw9SCGYmkOjn4WRzr8ksA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<div class="absolute bottom-md left-md">
+<span class="bg-white/90 text-primary px-sm py-xs rounded-full font-label-bold text-label-bold">Próximamente</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md mb-xs">Aventura de Formas</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Un viaje espacial para encontrar círculos, cuadrados y triángulos.</p>
+</article>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container dark:bg-inverse-surface shadow-[0px_-8px_20px_rgba(0,0,0,0.05)] z-50 rounded-t-lg">
+<!-- Inicio -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined text-[28px]">home</span>
+<span class="font-label-bold text-label-bold">Inicio</span>
+</a>
+<!-- Actividades (ACTIVE) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl p-sm scale-110 transition-all active:scale-90 duration-300 shadow-md" href="#">
+<span class="material-symbols-outlined text-[28px] icon-fill">smart_toy</span>
+<span class="font-label-bold text-label-bold">Actividades</span>
+</a>
+<!-- Cuentos -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined text-[28px]">auto_stories</span>
+<span class="font-label-bold text-label-bold">Cuentos</span>
+</a>
+<!-- Historial -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined text-[28px]">history</span>
+<span class="font-label-bold text-label-bold">Historial</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for cards
+        document.querySelectorAll('article').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+
+        // Simple bounce effect for buttons
+        document.querySelectorAll('.bubbly-button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                this.classList.add('animate-ping');
+                setTimeout(() => this.classList.remove('animate-ping'), 150);
+            });
+        });
+    </script>
+</body></html>

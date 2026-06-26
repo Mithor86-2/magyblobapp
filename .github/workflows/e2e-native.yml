@@ -1,0 +1,128 @@
+# =============================================================================
+# E2E NATIVO (Maestro) sobre simuladores — job SEPARADO (US-38, ADR 0005)
+# =============================================================================
+#
+# Este workflow NO corre en push/PR a propósito: levantar simuladores/emuladores
+# es lento y caro (iOS exige runner macOS). Corre manual (workflow_dispatch) y/o
+# nocturno (schedule). El gate de PR (.github/workflows/ci.yml) sigue cubriendo
+# unitarios + integración + E2E web (Playwright); este nivel lo COMPLEMENTA, no
+# lo sustituye. Ver Docs/estrategia-pruebas.md ("E2E web vs E2E nativo").
+#
+# ESTADO: ESQUELETO. Varios pasos quedan como `# TODO` hasta validarlos en un
+# runner con simulador real (no disponible en el entorno de desarrollo actual).
+# No se inventan acciones inexistentes: los pasos de build dev + simulador +
+# `maestro test` se dejan documentados/placeholder para completar al ejecutarlo.
+# =============================================================================
+
+name: E2E nativo (Maestro)
+
+on:
+  # Disparo manual desde la pestaña Actions.
+  workflow_dispatch:
+  # Nocturno: 03:00 UTC cada día. Ajusta o elimina según el coste que asumas.
+  schedule:
+    - cron: '0 3 * * *'
+
+# Deliberadamente SIN `push:` ni `pull_request:` — no debe correr en el gate de PR.
+
+concurrency:
+  group: e2e-native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # iOS: requiere runner macOS (Xcode + iOS Simulator).
+  # ---------------------------------------------------------------------------
+  e2e-ios:
+    name: E2E nativo iOS (Maestro + iOS Simulator)
+    runs-on: macos-latest # macOS trae Xcode; necesario para el iOS Simulator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Instalar el CLI de Maestro.
+      - name: Instalar Maestro CLI
+        run: |
+          curl -fsSL https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # TODO: construir un DEVELOPMENT BUILD de Expo e instalarlo en el iOS
+      # Simulator. No basta Expo Go (la app usa expo-audio/expo-speech).
+      # Boceto (a validar en runner real):
+      #   - run: pnpm --filter @magyblob/app exec expo prebuild --platform ios
+      #   - run: |
+      #       cd packages/app/ios
+      #       xcodebuild -scheme magyblobapp -configuration Debug \
+      #         -sdk iphonesimulator -derivedDataPath build
+      #   - run: xcrun simctl boot "iPhone 15"   # arrancar un simulador concreto
+      #   - run: xcrun simctl install booted <ruta-al-.app>
+
+      # TODO: el backend debe estar en modo mock y accesible desde el simulador
+      # (EXPO_PUBLIC_API_URL). Decidir si se levanta con docker compose en el
+      # runner macOS o se mockea a nivel de app.
+
+      # TODO: ejecutar el flow una vez la app dev esté instalada y el simulador
+      # arrancado:
+      #   - run: maestro test packages/app/.maestro/onboarding.yaml
+
+      - name: Placeholder (pendiente de runner con simulador)
+        run: |
+          echo "Esqueleto de E2E nativo iOS: completar build dev de Expo,"
+          echo "arranque del simulador y 'maestro test' (ver TODOs)."
+          echo "Ver Docs/estrategia-pruebas.md y packages/app/.maestro/onboarding.yaml"
+
+      # TODO: subir artefactos de Maestro (capturas/jerarquía de vistas) tras la
+      # ejecución para depurar fallos:
+      #   - uses: actions/upload-artifact@v4
+      #     if: ${{ !cancelled() }}
+      #     with:
+      #       name: maestro-ios-report
+      #       path: ~/.maestro/tests/
+      #       if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Android: puede correr en ubuntu con un emulador (p. ej.
+  # reactivecircus/android-emulator-runner). Paridad de plataformas (US-38).
+  # ---------------------------------------------------------------------------
+  e2e-android:
+    name: E2E nativo Android (Maestro + Android Emulator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Instalar Maestro CLI
+        run: |
+          curl -fsSL https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # VALIDADO EN LOCAL (2026-06-25, Pixel_9_Pro / Android 16, Expo Go, Maestro
+      # 2.6.1): pasada completa en verde (56 pasos, exit 0) con el flow
+      # packages/app/.maestro/onboarding.android.yaml. Receta (a portar a un runner
+      # con emulador, p. ej. reactivecircus/android-emulator-runner):
+      #   1. Backend mock determinista en el host:
+      #        pnpm --filter @magyblob/backend exec tsx scripts/e2e-serve.ts  # :3100
+      #   2. Metro APUNTANDO AL HOST DESDE EL EMULADOR (clave en Android):
+      #        EXPO_PUBLIC_API_URL=http://10.0.2.2:3100 \
+      #          pnpm --filter @magyblob/app exec expo start --android
+      #      (`localhost` en el emulador es el guest; el host se alcanza por 10.0.2.2.
+      #      `expo start --android` instala Expo Go en el emulador y carga la app.)
+      #   3. Esperar la bienvenida y ejecutar el flow Android:
+      #        maestro test packages/app/.maestro/onboarding.android.yaml
+      # No basta `assembleDebug`/dev build: con Expo Go alcanza (la narración degrada
+      # a la voz nativa, expo-speech, incluida en Expo Go). appId = host.exp.exponent.
+
+      - name: Placeholder (pendiente de runner con emulador en CI)
+        run: |
+          echo "E2E nativo Android validado en LOCAL (ver receta en los comentarios)."
+          echo "Falta cablear el emulador en el runner de CI."

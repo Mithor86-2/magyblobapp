@@ -19,3 +19,22 @@ node_modules/
 # Build output
 dist/
 build/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Prisma generated client
+packages/backend/src/generated/
+
+# Test / coverage
+coverage/
+
+# Playwright E2E (informes y artefactos de la app; no se versionan)
+packages/app/playwright-report/
+packages/app/test-results/
+
+# Worktrees integrados de Claude Code (trabajo en paralelo; no se versionan)
+.claude/worktrees/

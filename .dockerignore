@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.git
+**/*.tsbuildinfo
+**/coverage
+# Cliente Prisma generado: se regenera dentro de la imagen (engine linux/musl),
+# nunca se copia el del host (engine de la máquina de desarrollo).
+**/generated
+.env
+.env.*
+!.env.example
+packages/app

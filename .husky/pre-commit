@@ -1,0 +1,2 @@
+echo "🔍 pre-commit: lint-staged sobre lo staged…"
+pnpm exec lint-staged

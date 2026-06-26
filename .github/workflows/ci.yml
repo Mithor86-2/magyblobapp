@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+# Cancela ejecuciones anteriores en curso para la misma rama/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Gate del DoD: typecheck + lint + format:check + tests unitarios. No necesita
+  # Docker (las suites que lo requieren se excluyen del `pnpm test`). Además hace
+  # cumplir los umbrales de Strategic Coverage por tier (US-35) con `pnpm coverage`:
+  # el `pnpm check` local sigue rápido (sin coverage) y el umbral lo fuerza el CI.
+  gate:
+    name: Gate (typecheck + lint + format + unit + coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm coverage
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: coverage-report
+          path: |
+            packages/backend/coverage/
+            packages/app/coverage/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # Integración de persistencia (Prisma ↔ Postgres real) + E2E del backend por
+  # HTTP. Ambas usan Testcontainers; ubuntu-latest trae Docker disponible.
+  integration-e2e-backend:
+    name: Integración + E2E backend (Testcontainers)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @magyblob/backend test:integration
+      - run: pnpm --filter @magyblob/backend test:e2e
+
+  # E2E de la app sobre Expo web con Playwright (Chromium) contra el backend real
+  # en modo mock. Requiere navegador + Docker (Testcontainers).
+  e2e-app:
+    name: E2E app (Playwright / Expo web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @magyblob/app exec playwright install --with-deps chromium webkit
+      - run: pnpm --filter @magyblob/app test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: packages/app/playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore

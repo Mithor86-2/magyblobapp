@@ -1,0 +1,203 @@
+# =============================================================================
+# E2E NATIVO (Maestro) — Happy path del MVP (US-38, ADR 0005)
+# =============================================================================
+#
+# Recorre el flujo de la app NATIVA sobre el simulador iOS (Expo Go):
+#   bienvenida -> puerta parental -> alta del adulto -> consentimiento ->
+#   crear perfil de niño -> generar cuento (modo mock) -> narrarlo (expo-speech)
+#   -> actividades (US-09/US-10) -> historial (US-08).
+#
+# Complementa (no sustituye) al E2E web de Playwright (US-32/US-37/US-39): aquí
+# se ejercita lo que SOLO existe en nativo (lectura en voz alta / navegación
+# nativa). Localiza por id (testID), texto accesible ES y regex —coherente con el
+# E2E web (onboarding.spec.ts, actividades-historial.spec.ts)—, no por estructura.
+#
+# VALIDADO en iOS Simulator (iPhone 17 Pro, iOS 26.4) sobre EXPO GO el 2026-06-25:
+# pasada completa en verde, incluida la narración nativa (expo-speech). Los
+# selectores/timeout de abajo reflejan correcciones halladas en esa ejecución
+# (ver Docs/planes/feature-38-e2e-nativo-maestro.md y lecciones-aprendidas.md).
+#
+# -----------------------------------------------------------------------------
+# REQUISITOS (no automatizables en CI headless; ver Docs/estrategia-pruebas.md)
+# -----------------------------------------------------------------------------
+#   1. Maestro CLI instalado:
+#        curl -fsSL https://get.maestro.mobile.dev | bash
+#   2. EXPO GO instalado en el simulador y la app cargada vía Metro:
+#        pnpm --filter @magyblob/app exec expo start --ios
+#      (La app usa expo-audio/expo-speech, pero la narración DEGRADA a la voz
+#      nativa del dispositivo —expo-speech— que Expo Go SÍ incluye; no hace falta
+#      development build para este flow. Para un dev build, ver la nota de appId.)
+#   3. Sesión LIMPIA antes de correr (este flow NO usa launchApp/clearState en
+#      Expo Go: clearState borra los datos de Expo Go y dispara su dev menu, que
+#      tapa la UI. Arranca la app recién cargada, sin sesión, en la bienvenida.
+#      Para resetear: en Expo Go, menú de desarrollo o recargar tras limpiar
+#      datos; en un dev build, usa launchApp.clearState como en la nota de abajo).
+#   4. Backend en modo mock REAL (AI_PROVIDER=mock Y sin proveedor cloud activo):
+#      por US-14 el HotSwap usa cloud si la AppSetting `ai.cloud` está activa y hay
+#      API key en env. Para E2E determinista, levanta el backend con las claves
+#      cloud vacías (o ai.cloud desactivada). El cuento mock empieza por "Había una
+#      vez {nombre}"; con cloud activo el texto NO es determinista y este flow falla.
+#      La app apunta al backend por EXPO_PUBLIC_API_URL (por defecto localhost:3000).
+#
+# -----------------------------------------------------------------------------
+# appId
+# -----------------------------------------------------------------------------
+#   Validado sobre EXPO GO => appId = host.exp.Exponent (la app corre dentro de
+#   Expo Go). Si en su lugar usas un DEVELOPMENT BUILD (npx expo run:ios), cambia
+#   el appId al del build (deriva del slug; confírmalo con `xcrun simctl listapps
+#   booted`, p.ej. com.magyblob.app) y puedes anteponer un reset limpio:
+#       - launchApp:
+#           clearState: true
+#   (en dev build no aparece el dev menu de Expo Go, así que clearState es fiable).
+#
+# Re-ejecución: el backend persiste el alta. Si repites con el MISMO email, el
+# alta falla por "email ya registrado"; usa un email único por corrida (como el
+# E2E web) o limpia la BD del backend.
+#
+# CÓMO EJECUTAR (simulador arrancado, app en la bienvenida, backend mock):
+#   maestro test packages/app/.maestro/onboarding.yaml
+#
+# =============================================================================
+
+appId: host.exp.Exponent # Expo Go (ver nota de appId para development build)
+---
+# --- Bienvenida -------------------------------------------------------------
+- assertVisible: 'Aprendizaje Mágico'
+- tapOn: 'Crear cuenta'
+
+# --- Puerta parental (suma aleatoria a + b = ?) -----------------------------
+# El reto es ALEATORIO y la respuesta son tres CHIPS (respuesta + 2 distractores
+# barajados). En iOS el testID de un <Text> NO se expone como id, así que la
+# pregunta se localiza por TEXTO (regex), no por `id: parental-pregunta`:
+#   1) copyTextFrom por regex "\d+ \+ \d+ = \?" copia "a + b = ?".
+#   2) evalScript parsea los dos operandos y calcula la suma.
+#   3) tapOn el CHIP cuyo texto es esa suma.
+- assertVisible: 'Zona de personas adultas'
+- copyTextFrom:
+    text: '\d+ \+ \d+ = \?'
+- evalScript: ${output.ops = maestro.copiedText.match(/\d+/g)}
+- evalScript: ${output.suma = String(Number(output.ops[0]) + Number(output.ops[1]))}
+- tapOn: ${output.suma}
+
+# --- Alta del adulto (3 campos por testID) ----------------------------------
+# hideKeyboard NO funciona en iOS ("Couldn't hide the keyboard"). El teclado se
+# cierra tocando un texto no interactivo (el título), porque el ScrollView usa
+# keyboardShouldPersistTaps="handled". Sin cerrarlo, el campo Email (el más bajo)
+# queda tapado y el texto se concatena en el campo anterior.
+- tapOn:
+    id: 'alta-nombre'
+- inputText: 'Ana'
+- tapOn: 'Crea tu cuenta'
+- tapOn:
+    id: 'alta-apellidos'
+- inputText: 'García'
+- tapOn: 'Crea tu cuenta'
+- tapOn:
+    id: 'alta-email'
+- inputText: 'ana.app.e2e@example.com' # email único por corrida (ver nota de re-ejecución)
+- tapOn: 'Crea tu cuenta'
+# Parentesco (chip) + consentimiento (chip): están bajo el footer fijo. Hay que
+# bajar y CENTRAR el elemento (si no, el tap lo intercepta el botón del footer).
+- scrollUntilVisible:
+    element:
+      text: 'Madre'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Madre'
+- scrollUntilVisible:
+    element:
+      text: 'Acepto'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Acepto'
+- tapOn: 'Aceptar y continuar'
+
+# --- Selección de perfil (sin perfiles aún) -> crear el primero -------------
+# Tras navegar hay llamada de red + transición: usa extendedWaitUntil (no
+# assertVisible, que tiene timeout corto) en los puntos de navegación.
+- extendedWaitUntil:
+    visible: 'Crear nuevo perfil'
+    timeout: 15000
+- tapOn: 'Crear nuevo perfil'
+
+# --- Crear perfil de niño ---------------------------------------------------
+- extendedWaitUntil:
+    visible: '¿Cómo te llamas?'
+    timeout: 15000
+- tapOn: 'Tu nombre' # placeholder del TextField de nombre
+- inputText: 'Mateo'
+- tapOn: '¿Cómo te llamas?' # cierra el teclado tocando el título
+- tapOn: '4' # edad (SelectableChip)
+- tapOn: 'zorro' # avatar (accessibilityLabel = id del avatar)
+# El interés está bajo la rejilla de avatares: bajar y centrar antes de tocarlo
+# (si no se selecciona, el botón "¡Listo!" queda deshabilitado).
+- scrollUntilVisible:
+    element:
+      text: 'Animales'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Animales' # interés (TEMA_LABEL.animales)
+- tapOn: '¡Listo!'
+
+# --- Pestaña "Cuentos" -> generar cuento (mock determinista) ----------------
+# En iOS las pestañas se exponen como "Cuentos, tab, 3 of 4" y Maestro hace match
+# COMPLETO del texto: hay que usar regex "Cuentos, tab.*" (no el texto exacto).
+- extendedWaitUntil:
+    visible: 'Cuentos, tab.*'
+    timeout: 15000
+- tapOn: 'Cuentos, tab.*'
+- extendedWaitUntil:
+    visible: 'Generar cuento'
+    timeout: 15000
+- tapOn: 'Generar cuento'
+# El botón pasa a "Generar otro" cuando el cuento está listo (margen por la red).
+- extendedWaitUntil:
+    visible: 'Generar otro'
+    timeout: 30000
+# El cuerpo del cuento (mock) empieza por "Había una vez {nombre}". Es un párrafo
+# completo, así que se asevera por subcadena con regex (.* ... .*) y se baja a él.
+- scrollUntilVisible:
+    element:
+      text: '.*Había una vez.*'
+    direction: DOWN
+    centerElement: true
+- assertVisible: '.*Mateo.*'
+
+# --- Narración (capacidad SOLO nativa: expo-speech) -------------------------
+# Efecto observable que el E2E web no cubre: al tocar "Escuchar", el botón pasa a
+# "Pausar" (estado playing) y aparece "Parar". El control está bajo el cuento.
+- scrollUntilVisible:
+    element:
+      text: 'Escuchar'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Escuchar'
+- extendedWaitUntil:
+    visible: 'Pausar' # el control cambió de estado: la voz está sonando
+    timeout: 10000
+- assertVisible: 'Parar' # botón de detener (accessibilityLabel="Parar")
+- tapOn: 'Parar'
+- assertVisible: 'Escuchar' # vuelve a reposo
+
+# --- Actividades (US-09 generar / US-10 marcar realizada) -------------------
+- tapOn: 'Actividades, tab.*'
+- extendedWaitUntil:
+    visible: 'Actividades para hoy'
+    timeout: 15000
+- tapOn: 'Generar actividades'
+- extendedWaitUntil:
+    visible: 'Realizado' # ya hay tarjetas de actividad del mock
+    timeout: 30000
+- tapOn: 'Realizado' # marca la primera actividad
+- tapOn: '3 estrellas' # valoración (StarRating, accessibilityLabel="N estrellas")
+- assertVisible: '¡Hecha!' # efecto observable: la tarjeta pasa a hecha
+
+# --- Historial (US-08): el cuento generado aparece -------------------------
+- tapOn: 'Historial, tab.*'
+- extendedWaitUntil:
+    visible: 'Tu historial'
+    timeout: 15000
+- assertVisible: 'Cuentos mágicos'
+# El cuento del mock se titula "{nombre} y la aventura de {tema}"; basta con
+# comprobar que el nombre del niño aparece (subcadena -> regex).
+- assertVisible: '.*Mateo.*'

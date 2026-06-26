@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Historial - Aprendizaje Mágico</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-surface": "#382e2a", "on-tertiary-container": "#00485e", "secondary-fixed": "#c5eae5", "on-tertiary-fixed-variant": "#004d65", "primary-fixed-dim": "#ffb3b2", "secondary-fixed-dim": "#a9cec9", "error-container": "#ffdad6", "on-background": "#221a16", outline: "#887271", "surface-container-lowest": "#ffffff", background: "#fff8f6", "surface-container-high": "#f6e5de", "on-primary-container": "#772529", "on-secondary": "#ffffff", "on-surface-variant": "#554242", "on-primary-fixed": "#410008", "primary-fixed": "#ffdad8", "on-secondary-fixed-variant": "#2b4d49", "surface-variant": "#f0dfd8", "surface-dim": "#e8d7d0", "on-secondary-container": "#476965", "surface-container-highest": "#f0dfd8", "outline-variant": "#dbc0bf", "on-error": "#ffffff", "on-error-container": "#93000a", "surface-container": "#fceae3", "tertiary-fixed-dim": "#8ad0f1", "on-primary-fixed-variant": "#7e2a2d", surface: "#fff8f6", "primary-container": "#ff8e8e", tertiary: "#0d6683", "on-tertiary-fixed": "#001f2a", secondary: "#426561", "on-surface": "#221a16", error: "#ba1a1a", "secondary-container": "#c2e7e2", "on-secondary-fixed": "#00201e", "surface-tint": "#9c4143", "inverse-on-surface": "#ffede6", "on-primary": "#ffffff", "tertiary-fixed": "#bee9ff", primary: "#9c4143", "surface-container-low": "#fff1eb", "tertiary-container": "#72b8d8", "inverse-primary": "#ffb3b2", "on-tertiary": "#ffffff", "surface-bright": "#fff8f6"}, borderRadius: {DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px"}, spacing: {xs: "4px", "element-gap": "16px", sm: "12px", lg: "40px", xl: "64px", base: "8px", md: "24px", "container-padding": "24px"}, fontFamily: {"display-lg-mobile": ["Quicksand"], "body-md": ["Quicksand"], "button-text": ["Quicksand"], "label-bold": ["Quicksand"], "display-lg": ["Quicksand"], "headline-md": ["Quicksand"], "body-lg": ["Quicksand"], headline: ["Quicksand"], display: ["Quicksand"], body: ["Quicksand"], label: ["Quicksand"]}, fontSize: {"display-lg-mobile": ["32px", {lineHeight: "38px", fontWeight: "700"}], "body-md": ["18px", {lineHeight: "26px", fontWeight: "500"}], "button-text": ["22px", {lineHeight: "24px", fontWeight: "700"}], "label-bold": ["16px", {lineHeight: "20px", fontWeight: "700"}], "display-lg": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["28px", {lineHeight: "34px", fontWeight: "700"}], "body-lg": ["20px", {lineHeight: "30px", fontWeight: "500"}]}}}};</script>
+<style>
+        .bubbly-button {
+            border-bottom: 4px solid rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+        .bubbly-button:active {
+            border-bottom-width: 0px;
+            transform: translateY(4px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom Scrollbar for Whimsical feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fff8f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffdad8;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- Top AppBar -->
+<header class="w-full top-0 sticky z-40 bg-background shadow-[0px_8px_20px_rgba(156,65,67,0.1)] flex justify-between items-center px-container-padding py-md">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary">Aprendizaje Mágico</h1>
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined text-primary text-3xl hover:opacity-80 active:scale-95 transition-transform" data-icon="account_circle">account_circle</button>
+</div>
+</header>
+<main class="px-container-padding pt-md max-w-2xl mx-auto">
+<!-- Header Section -->
+<section class="mb-lg">
+<h2 class="font-headline-md-mobile text-headline-md-mobile text-on-surface mb-xs">Tu Historial</h2>
+<p class="text-on-surface-variant font-body-md opacity-80">Mira todo lo que has aprendido y creado.</p>
+</section>
+<!-- Tabs Section (Visual Only for context) -->
+<div class="flex gap-sm mb-md">
+<button class="px-md py-sm bg-primary text-on-primary rounded-full font-label-bold bubbly-button">Todo</button>
+<button class="px-md py-sm bg-surface-container text-on-surface-variant rounded-full font-label-bold hover:bg-surface-variant transition-colors">Cuentos</button>
+<button class="px-md py-sm bg-surface-container text-on-surface-variant rounded-full font-label-bold hover:bg-surface-variant transition-colors">Retos</button>
+</div>
+<!-- History Grid -->
+<div class="grid gap-md">
+<!-- Category: Cuentos Generados -->
+<div class="flex items-center gap-base mb-xs">
+<span class="material-symbols-outlined text-tertiary" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-bold text-tertiary">Cuentos mágicos</span>
+</div>
+<!-- Card 1 -->
+<article class="bg-surface-container-low rounded-lg p-md border-2 border-tertiary-container shadow-[0px_8px_20px_rgba(0,0,0,0.05)] flex gap-md items-center">
+<div class="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-tertiary-fixed">
+<img class="w-full h-full object-cover" data-alt="A whimsical children's book illustration of a brave little bear wearing a tiny red cape, standing atop a soft green hill under a glowing golden sun. The style is painterly with soft edges and vibrant pastel colors, fitting a magical educational app for toddlers. High-key lighting creates a warm and safe atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuZ5lLnw_NNUV-_NCv893puFWjDWduxO9SnXp2fp8SEM7H5_u3NUann9U6RH0ICDsU4xkYgxh8HjIAMlUqphdNGkva9UivEt7ZESiRVzcvGc_qCn3URNFzX-Tsg_O505AJ6_NdK1aayZUX4T4XpkVAM4DV43ol4wKtRB_QFqZvSg9G2gBAle2g0rkdotHdYKGyfWdEqALQJip0oBoyyuapTqrd_eWdoi1lAqsd51_DCPlTbzHvUMaDJhWRsva78AngneS08xURIVU"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md-mobile text-lg text-on-surface leading-tight">El Oso Valiente</h3>
+<span class="text-xs font-label-bold bg-secondary-container text-on-secondary-container px-sm py-1 rounded-full">Leído</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-sm">Creado el 12 de Octubre</p>
+<button class="bubbly-button bg-tertiary text-on-tertiary px-md py-xs rounded-full font-label-bold text-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm" data-icon="play_arrow">play_arrow</span>
+                        Ver de nuevo
+                    </button>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-low rounded-lg p-md border-2 border-tertiary-container shadow-[0px_8px_20px_rgba(0,0,0,0.05)] flex gap-md items-center">
+<div class="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-tertiary-fixed">
+<img class="w-full h-full object-cover" data-alt="A charming digital illustration of a small wooden rocket ship flying through a sky filled with smiling stars and a crescent moon. The aesthetic is tactile and playful, with thick outlines and a vibrant palette of deep blues and bright yellows. Soft ambient shadows provide depth, making the scene feel like a 3D pop-up book." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8R1qS9IllLZ3gXr0xhgzFZvvlh4EdJVw67w-37gtFDFfHCRnKHcI6zKEi91WoxQw3WDylAzf72oPe1RtY-ujHQbiPknHA4sFJ6GIzdtmFvpcHz2uCwNJ0OMeTOQVl3dGLRN7nrVmK6YjxbgkNe0EYaF037Jytu2Z5MHtpbHPM7gRPtHGx6P0yb2kXKoqrOoWE1fN99-gxsbE4zoQjo9IKLoOK2nhOGkrv-OuKOihuGiY3SUOPYfvf5KlOdH0fzHMnDO87r6_A4l8"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md-mobile text-lg text-on-surface leading-tight">Viaje Estelar</h3>
+<span class="text-xs font-label-bold bg-tertiary-container text-on-tertiary-container px-sm py-1 rounded-full">Nuevo</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-sm">Creado el 10 de Octubre</p>
+<button class="bubbly-button bg-tertiary text-on-tertiary px-md py-xs rounded-full font-label-bold text-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm" data-icon="play_arrow">play_arrow</span>
+                        Ver de nuevo
+                    </button>
+</div>
+</article>
+<!-- Category: Actividades Completadas -->
+<div class="flex items-center gap-base mt-md mb-xs">
+<span class="material-symbols-outlined text-secondary" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-bold text-secondary">Actividades hechas</span>
+</div>
+<!-- Card 3 -->
+<article class="bg-surface-container-low rounded-lg p-md border-2 border-secondary-container shadow-[0px_8px_20px_rgba(0,0,0,0.05)] flex gap-md items-center">
+<div class="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-5xl" data-icon="calculate">calculate</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md-mobile text-lg text-on-surface leading-tight">Contar Manzanas</h3>
+<div class="flex gap-xs">
+<span class="material-symbols-outlined text-primary fill-icon text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary fill-icon text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary fill-icon text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm mb-sm">Completado ayer</p>
+<button class="bubbly-button bg-secondary text-on-secondary px-md py-xs rounded-full font-label-bold text-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm" data-icon="replay">replay</span>
+                        Repetir
+                    </button>
+</div>
+</article>
+<!-- Card 4 -->
+<article class="bg-surface-container-low rounded-lg p-md border-2 border-secondary-container shadow-[0px_8px_20px_rgba(0,0,0,0.05)] flex gap-md items-center">
+<div class="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-5xl" data-icon="palette">palette</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md-mobile text-lg text-on-surface leading-tight">Mezcla de Colores</h3>
+<div class="flex gap-xs">
+<span class="material-symbols-outlined text-primary fill-icon text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary fill-icon text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-outline-variant text-sm" data-icon="star">star</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm mb-sm">Completado el 8 de Octubre</p>
+<button class="bubbly-button bg-secondary text-on-secondary px-md py-xs rounded-full font-label-bold text-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm" data-icon="replay">replay</span>
+                        Repetir
+                    </button>
+</div>
+</article>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container shadow-[0px_-8px_20px_rgba(0,0,0,0.05)] rounded-t-lg z-50">
+<!-- Inicio -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="home">home</span>
+<span class="font-label-bold text-label-bold mt-1">Inicio</span>
+</a>
+<!-- Actividades -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-bold text-label-bold mt-1">Actividades</span>
+</a>
+<!-- Cuentos -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-sm hover:bg-surface-variant transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-bold text-label-bold mt-1">Cuentos</span>
+</a>
+<!-- Historial (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-sm scale-110 transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined text-2xl fill-icon" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-bold text-label-bold mt-1">Historial</span>
+</a>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('.bubbly-button').forEach(button => {
+            button.addEventListener('touchstart', () => {
+                button.style.transform = 'scale(0.95) translateY(2px)';
+            });
+            button.addEventListener('touchend', () => {
+                button.style.transform = 'scale(1) translateY(0px)';
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,173 @@
+# =============================================================================
+# E2E NATIVO (Maestro) — Happy path del MVP en ANDROID (US-38, ADR 0005)
+# =============================================================================
+#
+# Variante Android del flow `onboarding.yaml` (validado en iOS). Recorre el mismo
+# happy path sobre el Android Emulator con Expo Go:
+#   bienvenida -> puerta parental -> alta del adulto -> consentimiento ->
+#   crear perfil de niño -> generar cuento (mock) -> narrarlo (expo-speech)
+#   -> actividades (US-09/US-10) -> historial (US-08).
+#
+# Por qué un fichero aparte y no uno compartido: el `appId` difiere por plataforma
+# (Expo Go iOS = host.exp.Exponent; Android = host.exp.exponent) y Maestro fija el
+# appId en la cabecera del flow. Además algunos selectores de accesibilidad
+# difieren entre iOS y Android (pestañas). El flow iOS queda intacto.
+#
+# -----------------------------------------------------------------------------
+# REQUISITOS (ver Docs/estrategia-pruebas.md)
+# -----------------------------------------------------------------------------
+#   1. Maestro CLI instalado (curl -fsSL https://get.maestro.mobile.dev | bash).
+#   2. Android Emulator arrancado (AVD con Play o AOSP) y Expo Go instalado.
+#   3. App cargada vía Metro APUNTANDO AL HOST DESDE EL EMULADOR:
+#        EXPO_PUBLIC_API_URL=http://10.0.2.2:3100 \
+#          pnpm --filter @magyblob/app exec expo start --android
+#      (En el emulador Android `localhost` es el propio guest; el host se alcanza
+#      por 10.0.2.2. El backend mock determinista de Playwright sirve en :3100.)
+#   4. Backend en modo mock REAL (e2e-serve.ts: AI_PROVIDER=mock, Postgres
+#      efímero). El cuento mock empieza por "Había una vez {nombre}"; con cloud
+#      activo el texto NO es determinista y este flow falla.
+#   5. Sesión LIMPIA: con Expo Go no se usa launchApp/clearState (clearState borra
+#      datos de Expo Go y abre su dev menu). Arranca la app recién cargada en la
+#      bienvenida.
+#
+# Re-ejecución: el backend persiste el alta. Con el backend efímero (e2e-serve)
+# cada arranque parte de BD limpia, así que el email fijo no colisiona.
+#
+# CÓMO EJECUTAR (emulador arrancado, app en la bienvenida, backend mock):
+#   maestro test packages/app/.maestro/onboarding.android.yaml
+# =============================================================================
+
+appId: host.exp.exponent # Expo Go en Android
+---
+# --- Bienvenida -------------------------------------------------------------
+# Tras una carga fresca, Expo Go puede mostrar su "developer menu"; lo descartamos
+# si aparece (opcional, no rompe si no está). Es específico de Expo Go en dev.
+- tapOn:
+    text: 'Continue'
+    optional: true
+# Espera el BOTÓN de bienvenida (no el título): el splash de Expo también muestra
+# "Aprendizaje Mágico", así que asertar solo el título daría un falso positivo
+# mientras la app aún bundlea. "Crear cuenta" solo existe ya en la bienvenida.
+- extendedWaitUntil:
+    visible: 'Crear cuenta'
+    timeout: 30000
+- tapOn: 'Crear cuenta'
+
+# --- Puerta parental (suma aleatoria a + b = ?) -----------------------------
+# El reto es ALEATORIO y la respuesta son tres CHIPS (respuesta + 2 distractores).
+# Se localiza la pregunta por TEXTO (regex) y se calcula la suma.
+- assertVisible: 'Zona de personas adultas'
+- copyTextFrom:
+    text: '\d+ \+ \d+ = \?'
+- evalScript: ${output.ops = maestro.copiedText.match(/\d+/g)}
+- evalScript: ${output.suma = String(Number(output.ops[0]) + Number(output.ops[1]))}
+- tapOn: ${output.suma}
+
+# --- Alta del adulto (3 campos por testID) ----------------------------------
+# El teclado se cierra tocando el título (el ScrollView usa
+# keyboardShouldPersistTaps="handled"), evitando que tape el campo Email.
+- tapOn:
+    id: 'alta-nombre'
+- inputText: 'Ana'
+- tapOn: 'Crea tu cuenta'
+# Apellidos en ASCII: Maestro en Android NO soporta entrada Unicode (issue #146),
+# así que "García" se escribe sin tilde. No afecta a la validación del alta.
+- tapOn:
+    id: 'alta-apellidos'
+- inputText: 'Garcia'
+- tapOn: 'Crea tu cuenta'
+- tapOn:
+    id: 'alta-email'
+- inputText: 'ana.app.e2e@example.com'
+- tapOn: 'Crea tu cuenta'
+# Parentesco (chip) + consentimiento (chip): bajo el footer fijo. Bajar y CENTRAR.
+- scrollUntilVisible:
+    element:
+      text: 'Madre'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Madre'
+- scrollUntilVisible:
+    element:
+      text: 'Acepto'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Acepto'
+- tapOn: 'Aceptar y continuar'
+
+# --- Selección de perfil (sin perfiles aún) -> crear el primero -------------
+- extendedWaitUntil:
+    visible: 'Crear nuevo perfil'
+    timeout: 15000
+- tapOn: 'Crear nuevo perfil'
+
+# --- Crear perfil de niño ---------------------------------------------------
+- extendedWaitUntil:
+    visible: '¿Cómo te llamas?'
+    timeout: 15000
+- tapOn: 'Tu nombre' # placeholder del TextField de nombre
+- inputText: 'Mateo'
+- tapOn: '¿Cómo te llamas?' # cierra el teclado tocando el título
+- tapOn: '4' # edad (SelectableChip)
+- tapOn: 'zorro' # avatar (accessibilityLabel = id del avatar)
+- scrollUntilVisible:
+    element:
+      text: 'Animales'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Animales' # interés (TEMA_LABEL.animales)
+- tapOn: '¡Listo!'
+
+# --- Pestaña "Cuentos" -> generar cuento (mock determinista) ----------------
+- extendedWaitUntil:
+    visible: 'Cuentos'
+    timeout: 15000
+- tapOn: 'Cuentos'
+- extendedWaitUntil:
+    visible: 'Generar cuento'
+    timeout: 15000
+- tapOn: 'Generar cuento'
+- extendedWaitUntil:
+    visible: 'Generar otro'
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: '.*Había una vez.*'
+    direction: DOWN
+    centerElement: true
+- assertVisible: '.*Mateo.*'
+
+# --- Narración (capacidad SOLO nativa: expo-speech) -------------------------
+- scrollUntilVisible:
+    element:
+      text: 'Escuchar'
+    direction: DOWN
+    centerElement: true
+- tapOn: 'Escuchar'
+- extendedWaitUntil:
+    visible: 'Pausar' # el control cambió de estado: la voz está sonando
+    timeout: 10000
+- assertVisible: 'Parar'
+- tapOn: 'Parar'
+- assertVisible: 'Escuchar' # vuelve a reposo
+
+# --- Actividades (US-09 generar / US-10 marcar realizada) -------------------
+- tapOn: 'Actividades'
+- extendedWaitUntil:
+    visible: 'Actividades para hoy'
+    timeout: 15000
+- tapOn: 'Generar actividades'
+- extendedWaitUntil:
+    visible: 'Realizado'
+    timeout: 30000
+- tapOn: 'Realizado' # marca la primera actividad
+- tapOn: '3 estrellas' # valoración (StarRating, accessibilityLabel="N estrellas")
+- assertVisible: '¡Hecha!'
+
+# --- Historial (US-08): el cuento generado aparece -------------------------
+- tapOn: 'Historial'
+- extendedWaitUntil:
+    visible: 'Tu historial'
+    timeout: 15000
+- assertVisible: 'Cuentos mágicos'
+- assertVisible: '.*Mateo.*'
