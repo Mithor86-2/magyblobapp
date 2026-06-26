@@ -647,3 +647,21 @@ diferencias que costaron iteración:
   del `version` del `package.json`. El gate (SemVer + CHANGELOG) solo tocaba `package.json`.
 - **Solución:** mantener **ambos en sync** (`app.json` `expo.version` = `package.json` `version`) y
   subir los dos en cada cierre de feature del app. Si no, la release del dashboard queda desfasada.
+
+## Feature 44 — Observabilidad de errores (US-41/US-42)
+
+### Cerrar dos features en paralelo colisiona en la versión (hay que re-bumpear al mergear)
+
+- **Síntoma:** al cerrar `feature/44` (ErrorBoundary + breadcrumbs) se subió a app `0.18.0` / raíz
+  `0.25.0`, pero `develop` ya tenía esos mismos números: otra sesión había cerrado `feature/38`
+  (E2E Android, US-38) en paralelo y tomó `0.18.0`/`0.25.0` primero. El merge a `develop` dio
+  conflictos en `package.json`, `packages/app/package.json`, `app.json` y `CHANGELOG.md`.
+- **Causa:** ambas ramas partieron de `develop` **antes** de que la otra cerrara, así que cada una
+  eligió la "siguiente" versión sin saber de la otra. La versión y el `## [x.y.z]` del CHANGELOG son
+  un recurso compartido que no se reserva hasta el merge.
+- **Solución:** la versión se elige **al mergear**, no al empezar. Si al cerrar la versión ya está
+  tomada en `develop`, **re-bumpear** a la siguiente libre (aquí app `0.19.0` / raíz `0.26.0`),
+  ajustar el encabezado del CHANGELOG y resolver el conflicto **conservando ambas secciones**
+  (la nueva encima de la ya existente). Conviene `git fetch`/mirar `develop` justo antes de fijar
+  la versión, y —si se trabaja en paralelo— cerrar las features de una en una para minimizar el
+  solape. Ver también [worktree por feature](#worktree-con-enlace-git-roto-ruta-con-espacio-vs-guion).
