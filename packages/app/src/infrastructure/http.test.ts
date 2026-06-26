@@ -158,14 +158,14 @@ describe('createApiGateways (adaptador HTTP)', () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse(STORY));
     vi.stubGlobal('fetch', fetchMock);
 
-    await api.stories.generate({ profileId: 'p1', tema: 'magia', estilo: 'aventura' });
+    await api.stories.generate({ profileId: 'p1', temas: ['magia'], estilos: ['aventura'] });
 
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe(`${BASE}/stories`);
     expect(JSON.parse(options.body)).toEqual({
       profileId: 'p1',
-      tema: 'magia',
-      estilo: 'aventura',
+      temas: ['magia'],
+      estilos: ['aventura'],
     });
   });
 
@@ -237,7 +237,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
     );
 
     await expect(
-      api.stories.generate({ profileId: 'x', tema: 'magia', estilo: 'aventura' }),
+      api.stories.generate({ profileId: 'x', temas: ['magia'], estilos: ['aventura'] }),
     ).rejects.toMatchObject({
       name: 'ApiError',
       status: 404,
@@ -311,7 +311,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const pending = api.stories
-      .generate({ profileId: 'p1', tema: 'magia', estilo: 'aventura' })
+      .generate({ profileId: 'p1', temas: ['magia'], estilos: ['aventura'] })
       .catch((e) => e);
     // generación usa 30 s de timeout; al vencer, el controller aborta el fetch.
     await vi.advanceTimersByTimeAsync(30_000);
@@ -330,8 +330,8 @@ describe('createApiGateways (adaptador HTTP)', () => {
 
     const story = await api.stories.generate({
       profileId: 'p1',
-      tema: 'magia',
-      estilo: 'aventura',
+      temas: ['magia'],
+      estilos: ['aventura'],
     });
 
     expect(story).toEqual(STORY);
@@ -344,7 +344,7 @@ describe('createApiGateways (adaptador HTTP)', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(okResponse({ id: 's1', titulo: 'Hola' })));
 
     const error = await api.stories
-      .generate({ profileId: 'p1', tema: 'magia', estilo: 'aventura' })
+      .generate({ profileId: 'p1', temas: ['magia'], estilos: ['aventura'] })
       .catch((e) => e);
 
     expect(error).toBeInstanceOf(ApiError);

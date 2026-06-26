@@ -80,69 +80,77 @@ Leyenda: ❌ pendiente · 🔄 en curso · ✅ hecha. Cada fase: **crear/ajustar
 - ✅ `## [Unreleased]` con los 6 grupos Keep a Changelog en `packages/backend/CHANGELOG.md` y
   `packages/app/CHANGELOG.md` (la feature toca ambos paquetes).
 
-### Fase 1 — Dominio + contrato a arrays (backend) ❌
+### Fase 1 — Dominio + contrato a arrays (backend) ✅
 
-- ❌ `GenerateStoryInput` en [AIProvider.ts](../../packages/backend/src/domain/ai/AIProvider.ts):
+- ✅ `GenerateStoryInput` en [AIProvider.ts](../../packages/backend/src/domain/ai/AIProvider.ts):
   `tema: Tema` → `temas: Tema[]`; `estilo: Estilo` → `estilos: Estilo[]` (ambos no vacíos por
   contrato; el caso de uso valida).
-- ❌ DTO `GenerateStoryRequest` en [dto.ts](../../packages/backend/src/application/dto.ts): `temas`,
+- ✅ DTO `GenerateStoryRequest` en [dto.ts](../../packages/backend/src/application/dto.ts): `temas`,
   `estilos` (arrays de string que el caso de uso valida contra el vocabulario).
-- ❌ `bodySchema` en [routes/stories.ts](../../packages/backend/src/routes/stories.ts):
+- ✅ `bodySchema` en [routes/stories.ts](../../packages/backend/src/routes/stories.ts):
   `temas: z.array(z.enum(TEMAS)).min(1)`, `estilos: z.array(z.enum(ESTILOS)).min(1)` (rechaza lista
   vacía y valores fuera de vocabulario).
-- ❌ `GenerateStory` ([GenerateStory.ts](../../packages/backend/src/application/use-cases/GenerateStory.ts)):
-  valida cada elemento (`esTema`/`esEstilo`), invoca `ai.generateStory({ perfil, temas, estilos })` y
-  **persiste un valor representativo** en `Story.tema`/`Story.estilo` (el primero de cada lista) —
-  sin migración.
-- **Tests (caso de uso):** `GenerateStory.test.ts` — genera con varios temas/estilos (in-memory + mock
-  provider); rechaza listas vacías o valores inválidos (`DomainError`); persiste el representativo.
+- ✅ `GenerateStory` ([GenerateStory.ts](../../packages/backend/src/application/use-cases/GenerateStory.ts)):
+  valida cada elemento (no vacío, sin duplicados, `esTema`/`esEstilo`), invoca
+  `ai.generateStory({ perfil, temas, estilos })` y **persiste un valor representativo** en
+  `Story.tema`/`Story.estilo` (el primero de cada lista) — sin migración.
+- ✅ **Tests (caso de uso):** `generate-story.test.ts` — genera con varios temas/estilos (in-memory +
+  fake provider); rechaza listas vacías, duplicados o valores inválidos (`DomainError`); persiste el
+  representativo (primero de cada lista).
 
-### Fase 2 — Prompt con lista legible + longitud (backend) ❌
+### Fase 2 — Prompt con lista legible + longitud (backend) ✅
 
-- ❌ `buildStoryPrompt` en [prompts.ts](../../packages/backend/src/infrastructure/ai/prompts.ts):
-  interpolar **lista legible** de `input.temas` y `input.estilos` (helper tipo `listaLegible(items,
-  idioma)` → "animales y magia" / "animals and magic"); placeholders `{tema}`/`{estilo}` →
-  `{temas}`/`{estilos}` en los valores de plantilla; conservar reglas narrativas (US-28),
-  `tonoPorEdad`, intereses (US-26) y el bloque de `instruccionFormato`.
-- ❌ Subir `palabrasMax` (más desarrollo narrativo) en
-  [storyParams.ts](../../packages/backend/src/infrastructure/ai/storyParams.ts) (default en código) y
-  en el seed `prompt.story.params` de [prisma/seed.ts](../../packages/backend/prisma/seed.ts). **Sin
-  migración Prisma** (no se reescribe `20260623010000_*`).
-- ❌ Ajustar `MockProvider`/`Ollama`/`Cloud` y `FallbackProvider` a la nueva firma `temas`/`estilos`
-  (la mock mantiene salida determinista válida).
-- **Tests (prompt + provider/gateway de IA):** `prompts.test.ts` — el prompt ES/EN incluye la lista
-  legible de varios temas/estilos y respeta `palabrasMin/Max`; `MockProvider.test.ts` /
-  `fallback-provider.test.ts` siguen verdes con la firma de arrays.
+- ✅ `buildStoryPrompt` en [prompts.ts](../../packages/backend/src/infrastructure/ai/prompts.ts):
+  nuevo helper `listaLegible(items, idioma)` → "animales y espacio" / "animals and space";
+  interpola `input.temas`/`input.estilos`; añade los valores `{temas}`/`{estilos}` y conserva
+  `{tema}`/`{estilo}` como **alias** de la lista (compatibilidad de plantillas configuradas).
+  Conserva reglas narrativas (US-28), `tonoPorEdad`, intereses (US-26) y `instruccionFormato`.
+- ✅ Subido `palabrasMax` en el seed `prompt.story.params`
+  ([prisma/seed.ts](../../packages/backend/prisma/seed.ts)): de `150-200` a **`200-350`** (cuento más
+  desarrollado, en varios párrafos, sin saturar el contexto de `gemma:2b` ni alargar en exceso la
+  lectura para 2-6 años). `storyParams.ts` no fija default en código (los límites solo aplican si la
+  clave existe), así que el cambio vive en el seed. **Sin migración Prisma** (no se reescribe
+  `20260623010000_*`; el seed se aplica con `pnpm db:seed`).
+- ✅ `MockProvider` usa `temas[0]` como representante (salida determinista). `Ollama`/`Cloud` y
+  `FallbackProvider` no cambian de firma (delegan el `input` en `buildStoryPrompt`).
+- ✅ **Tests (prompt + providers de IA):** `prompts.test.ts` — el prompt ES/EN incluye la lista
+  legible de varios temas/estilos y respeta `palabrasMin/Max`; `mock/ollama/cloud/fallback`-provider
+  y `ai-logging` migrados a la firma de arrays y verdes.
 
-### Fase 3 — Endpoint ❌
+### Fase 3 — Endpoint ✅
 
-- ❌ Test de integración de `POST /stories`
-  ([test/](../../packages/backend/test/)): acepta `temas`/`estilos` (arrays), 201 con cuento;
-  400 ante lista vacía o valor fuera de vocabulario (validación Zod en frontera).
+- ✅ Test de integración de `POST /stories`
+  ([test/routes/stories.integration.test.ts](../../packages/backend/test/routes/stories.integration.test.ts)):
+  acepta `temas`/`estilos` (arrays), 201 con cuento y persiste el representativo (primero de cada
+  lista); 400 ante lista vacía o valor fuera de vocabulario (validación Zod en frontera). E2E
+  `flujo-mvp` migrado a arrays.
 
-### Fase 4 — App: chips multi-selección + gateway ❌
+### Fase 4 — App: chips multi-selección + gateway ✅
 
-- ❌ Tipos/gateway app: `api.stories.generate` pasa `temas: Tema[]` / `estilos: Estilo[]`
-  ([domain/types.ts](../../packages/app/src/domain/types.ts),
-  [domain/gateways.ts](../../packages/app/src/domain/gateways.ts)); adaptador
-  [infrastructure/http.ts](../../packages/app/src/infrastructure/http.ts) y validación de respuesta
-  [infrastructure/schemas.ts](../../packages/app/src/infrastructure/schemas.ts).
-- ❌ [StoryGeneratorScreen.tsx](../../packages/app/src/presentation/screens/StoryGeneratorScreen.tsx):
-  `useState<Tema[]>`/`useState<Estilo[]>` con toggle por chip (`SelectableChip` ya soporta
-  `selected`); botón "Generar" deshabilitado / con aviso si no hay ≥1 tema y ≥1 estilo; `trackAction`
-  con los arrays.
-- **Tests (componente/gateway app):** test user-centric de `StoryGeneratorScreen` (toggle de varios
-  chips, no genera sin selección) y del gateway `stories.generate` (envía arrays).
+- ✅ Tipos/gateway app: `GenerateStoryRequest` pasa a `temas: Tema[]` / `estilos: Estilo[]`
+  ([domain/types.ts](../../packages/app/src/domain/types.ts)); el gateway
+  ([domain/gateways.ts](../../packages/app/src/domain/gateways.ts)) y el adaptador
+  ([infrastructure/http.ts](../../packages/app/src/infrastructure/http.ts)) reenvían el request tal
+  cual. La **respuesta** `storySchema`
+  ([infrastructure/schemas.ts](../../packages/app/src/infrastructure/schemas.ts)) NO cambia: el
+  backend devuelve el representativo singular `tema`/`estilo`.
+- ✅ [StoryGeneratorScreen.tsx](../../packages/app/src/presentation/screens/StoryGeneratorScreen.tsx):
+  `useState<Tema[]>`/`useState<Estilo[]>` con toggle por chip; botón "Generar" **deshabilitado** y
+  con aviso si no hay ≥1 tema y ≥1 estilo; `trackAction` con los arrays unidos por coma (la
+  telemetría solo admite escalares).
+- ✅ **Tests (componente/gateway app):** test user-centric de `StoryGeneratorScreen` (toggle de
+  varios chips → envía arrays; sin tema no genera) y del gateway `stories.generate` (envía
+  `temas`/`estilos`).
 
-### Fase 5 — Docs + cierre ❌
+### Fase 5 — Docs + cierre 🔄
 
-- ❌ Marcar fases en este plan y `phases.md` si procede; nota en
-  [memory.md](../memory.md)/[lecciones-aprendidas.md](../lecciones-aprendidas.md) si surge un gotcha.
-- ❌ **No** se toca `modelo-datos.md` (sin cambios de esquema) ni `cumplimiento-menores.md` (sin
+- ✅ Fases 1-4 marcadas en este plan; entradas en `## [Unreleased]` de los CHANGELOG de backend y
+  app.
+- ✅ **No** se toca `modelo-datos.md` (sin cambios de esquema) ni `cumplimiento-menores.md` (sin
   red/SDK/dato nuevo del menor: el cuento sigue minimizado).
 - ❌ Cierre con la skill `cerrar-feature` (gate verde → versionado **diferido** vía `versionar` al
   integrar en `develop`, CHANGELOG en ambos paquetes, pruebas con el usuario → confirmación →
-  `finish`).
+  `finish`). **Pendiente: no se cierra la feature en esta sesión.**
 
 ## Definition of Done
 

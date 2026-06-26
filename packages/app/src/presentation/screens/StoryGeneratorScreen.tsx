@@ -22,20 +22,36 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   // El perfil siempre existe al llegar aquí (se navega tras crearlo); guarda defensiva.
   const temasDisponibles: Tema[] = profile?.intereses.length ? profile.intereses : ['magia'];
 
-  const [tema, setTema] = useState<Tema>(temasDisponibles[0] ?? 'magia');
-  const [estilo, setEstilo] = useState<Estilo>('aventura');
+  // US-47: selección múltiple de temas y estilos (toggle por chip). Arranca con un
+  // tema y un estilo preseleccionados para que "Generar" funcione sin tocar nada.
+  const [temas, setTemas] = useState<Tema[]>([temasDisponibles[0] ?? 'magia']);
+  const [estilos, setEstilos] = useState<Estilo[]>(['aventura']);
   const [loading, setLoading] = useState(false);
   const [story, setStory] = useState<Story | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const puedeGenerar = temas.length > 0 && estilos.length > 0;
+
+  function toggleTema(t: Tema) {
+    setTemas((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+  }
+
+  function toggleEstilo(s: Estilo) {
+    setEstilos((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  }
+
   async function onGenerate() {
     if (!profile) return;
+    if (!puedeGenerar) {
+      setError('Elige al menos un tema y un estilo.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setStory(null);
-    trackAction('story.generate', { tema, estilo });
+    trackAction('story.generate', { temas: temas.join(','), estilos: estilos.join(',') });
     try {
-      const result = await api.stories.generate({ profileId: profile.id, tema, estilo });
+      const result = await api.stories.generate({ profileId: profile.id, temas, estilos });
       setStory(result);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'No se pudo generar el cuento.');
@@ -51,6 +67,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
           label={story ? 'Generar otro' : 'Generar cuento'}
           onPress={onGenerate}
           loading={loading}
+          disabled={!puedeGenerar}
         />
       }
     >
@@ -59,26 +76,26 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
         <Text style={styles.title}>Un cuento para {profile?.nombre ?? 'ti'}</Text>
       </View>
 
-      <Text style={styles.fieldLabel}>Tema</Text>
+      <Text style={styles.fieldLabel}>Temas</Text>
       <View style={styles.chips}>
         {temasDisponibles.map((t) => (
           <SelectableChip
             key={t}
             label={TEMA_LABEL[t]}
-            selected={tema === t}
-            onPress={() => setTema(t)}
+            selected={temas.includes(t)}
+            onPress={() => toggleTema(t)}
           />
         ))}
       </View>
 
-      <Text style={styles.fieldLabel}>Estilo</Text>
+      <Text style={styles.fieldLabel}>Estilos</Text>
       <View style={styles.chips}>
         {ESTILOS.map((s) => (
           <SelectableChip
             key={s}
             label={ESTILO_LABEL[s]}
-            selected={estilo === s}
-            onPress={() => setEstilo(s)}
+            selected={estilos.includes(s)}
+            onPress={() => toggleEstilo(s)}
           />
         ))}
       </View>
