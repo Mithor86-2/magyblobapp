@@ -18,8 +18,10 @@ import type { RootScreenProps } from '../navigation';
 export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfile'>) {
   const guardian = useAppStore((s) => s.guardian);
   const setProfile = useAppStore((s) => s.setProfile);
+  // Lista de hijos en el store: fuente única para la pantalla y para el arranque (US-49).
+  const profiles = useAppStore((s) => s.profiles);
+  const setProfiles = useAppStore((s) => s.setProfiles);
 
-  const [profiles, setProfiles] = useState<ChildProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfi
     } finally {
       setLoading(false);
     }
-  }, [guardian]);
+  }, [guardian, setProfiles]);
 
   useEffect(() => {
     void load();

@@ -9,7 +9,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Selección de perfil al arrancar (US-49, amplía US-02): el store guarda la lista de hijos del
+  guardián (`profiles` + `setProfiles`) como fuente única, y `SelectProfileScreen` la alimenta en
+  lugar de un `useState` local. Función pura `resolveInitialRoute` (en
+  `presentation/initialRoute.ts`) que decide la ruta inicial del app, con tests de los cuatro
+  caminos.
+
 ### Changed
+
+- Lógica de arranque del app (US-49): al recuperar la sesión, si el guardián tiene **un único**
+  perfil y ninguno activo, se **auto-selecciona** y entra directo a `Main` (antes siempre paraba en
+  «Elegir perfil»); con varios o ninguno va a `SelectProfile`, con perfil activo a `Main` y sin
+  sesión a `Welcome`. Migración de persistencia del store a **v3** (el shape persistido incorpora
+  `profiles`; el estado previo se descarta y el adulto se identifica una vez).
 
 ### Deprecated
 

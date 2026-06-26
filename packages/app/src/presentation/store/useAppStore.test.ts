@@ -41,6 +41,16 @@ const profile: ChildProfile = {
   intereses: ['animales'],
 };
 
+const otroProfile: ChildProfile = {
+  id: 'p-2',
+  guardianId: 'g-1',
+  nombre: 'Lucía',
+  edad: 5,
+  idioma: 'es',
+  avatar: 'a2',
+  intereses: ['espacio'],
+};
+
 const session: GuardianSession = { ...guardian, accessToken: 'at-1', refreshToken: 'rt-1' };
 
 beforeEach(() => {
@@ -49,6 +59,7 @@ beforeEach(() => {
     guardian: null,
     consentVersion: null,
     currentProfile: null,
+    profiles: [],
     accessToken: null,
     refreshToken: null,
   });
@@ -86,6 +97,24 @@ describe('useAppStore', () => {
     expect(useAppStore.getState().currentProfile).toEqual(profile);
   });
 
+  it('arranca con la lista de perfiles vacía', () => {
+    expect(useAppStore.getState().profiles).toEqual([]);
+  });
+
+  it('setProfiles guarda la lista de hijos del guardián (fuente única del arranque)', () => {
+    useAppStore.getState().setProfiles([profile, otroProfile]);
+    expect(useAppStore.getState().profiles).toEqual([profile, otroProfile]);
+  });
+
+  it('clearProfile conserva la lista de perfiles (solo limpia el activo)', () => {
+    useAppStore.getState().setSession(session, 'v1.0');
+    useAppStore.getState().setProfiles([profile, otroProfile]);
+    useAppStore.getState().setProfile(profile);
+    useAppStore.getState().clearProfile();
+    expect(useAppStore.getState().currentProfile).toBeNull();
+    expect(useAppStore.getState().profiles).toEqual([profile, otroProfile]);
+  });
+
   it('clearProfile borra el perfil pero conserva la sesión y los tokens', () => {
     useAppStore.getState().setSession(session, 'v1.0');
     useAppStore.getState().setProfile(profile);
@@ -96,24 +125,39 @@ describe('useAppStore', () => {
     expect(s.accessToken).toBe('at-1');
   });
 
-  it('logout borra toda la sesión, incluidos los tokens', () => {
+  it('logout borra toda la sesión, incluidos los tokens y la lista de perfiles', () => {
     useAppStore.getState().setSession(session, 'v1.0');
+    useAppStore.getState().setProfiles([profile, otroProfile]);
     useAppStore.getState().setProfile(profile);
     useAppStore.getState().logout();
     const s = useAppStore.getState();
     expect(s.guardian).toBeNull();
     expect(s.consentVersion).toBeNull();
     expect(s.currentProfile).toBeNull();
+    expect(s.profiles).toEqual([]);
     expect(s.accessToken).toBeNull();
     expect(s.refreshToken).toBeNull();
   });
 
-  it('migra el estado v0 descartando la sesión (el adulto vuelve a identificarse)', async () => {
-    // Estado persistido en el formato antiguo (v0): no se puede reconstruir.
-    mem.set('magyblob-app', JSON.stringify({ state: { guardianId: 'g-viejo' }, version: 0 }));
+  it('persiste la lista de perfiles (partialize incluye `profiles`)', async () => {
+    useAppStore.getState().setSession(session, 'v1.0');
+    useAppStore.getState().setProfiles([profile, otroProfile]);
+    // Espera a que el middleware persist vuelque el estado a AsyncStorage.
+    await Promise.resolve();
+    const persisted = JSON.parse(mem.get('magyblob-app') ?? '{}');
+    expect(persisted.state.profiles).toEqual([profile, otroProfile]);
+  });
+
+  it('migra el estado v2 descartando la sesión (cambia el shape persistido, v3)', async () => {
+    // Estado persistido sin la lista de perfiles (v2): no se rehidrata.
+    mem.set(
+      'magyblob-app',
+      JSON.stringify({ state: { guardian, accessToken: 'at-viejo' }, version: 2 }),
+    );
     await useAppStore.persist.rehydrate();
     const s = useAppStore.getState();
     expect(s.guardian).toBeNull();
     expect(s.currentProfile).toBeNull();
+    expect(s.profiles).toEqual([]);
   });
 });
