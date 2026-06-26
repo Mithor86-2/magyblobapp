@@ -5,7 +5,7 @@ import { startTestDb, type TestDb } from '../test/support/db.js';
 /**
  * Lanzador del backend para el E2E de la app (Playwright): arranca un PostgreSQL
  * efímero (Testcontainers), aplica migraciones y levanta el servidor Fastify real
- * en el puerto 3000 en modo `AI_PROVIDER=mock` (sin red ni IA externa). Queda a la
+ * en el puerto 3100 en modo `AI_PROVIDER=mock` (sin red ni IA externa). Queda a la
  * escucha hasta recibir SIGINT/SIGTERM (cuando Playwright cierra el `webServer`),
  * momento en que para el contenedor.
  */

@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * E2E de la app sobre **Expo web** con Playwright (US-32). Dos `webServer`:
- *  1. el backend real (Fastify + Postgres efímero, mock) en `:3000`, y
+ *  1. el backend real (Fastify + Postgres efímero, mock) en `:3100`, y
  *  2. un servidor estático que sirve el export web de Expo en `:4173` y proxea la
  *     API al backend (mismo origen → sin CORS).
  *
