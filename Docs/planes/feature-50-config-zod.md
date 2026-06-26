@@ -50,6 +50,22 @@ Qué falta (❌):
 - **Invariante de capas**: el esquema vive en config/infraestructura, **nunca** en `/domain`
   (`no-restricted-imports` debe seguir verde).
 
+#### Decisión: preservar `docker compose up` (requisito duro del DoD)
+
+El `docker-compose.yml` arranca el backend con `NODE_ENV=production` y `JWT_SECRET` **vacío por
+defecto** (`${JWT_SECRET:-}`). Si la validación tratara un `JWT_SECRET` ausente/inseguro como **error
+fatal** en producción, la pila **no levantaría en limpio** (`clone → cp .env.example .env →
+docker compose up`), rompiendo el requisito reproducible.
+
+Por eso la regla estricta de producción se aplica **solo a `DATABASE_URL`** (genuinamente requerida:
+sin BD el backend no funciona y `docker-compose` siempre la inyecta). El **secreto JWT inseguro/vacío
+sigue degradando al default de desarrollo con un WARNING** (no aborta) — exactamente el comportamiento
+previo, ahora con aviso explícito. `loadConfig(env, warn?)` recibe un sumidero de avisos inyectable
+(`ConfigWarn`, por defecto `console.warn` con prefijo `WARNING`) para no acoplar la config a pino y
+para poder espiarlo en los tests. La validación estricta se reserva, pues, a **variables genuinamente
+requeridas** (`DATABASE_URL`) y a los **formatos** (enums, números coaccionados), no a los secretos
+que tienen un default de arranque.
+
 ## Historias cubiertas
 
 - **US-46 — Configuración del backend validada con Zod**
@@ -69,37 +85,42 @@ Leyenda: ❌ pendiente · 🔄 en curso · ✅ hecha. Cada fase incluye **crear 
 - [x] ✅ Este **plan** en `Docs/planes/feature-50-config-zod.md`.
 - [x] ✅ `CHANGELOG` backend con `## [Unreleased]` y los 6 grupos Keep a Changelog listos.
 
-### Fase 1 — Esquema Zod y reescritura de `loadConfig()` ❌
+### Fase 1 — Esquema Zod y reescritura de `loadConfig()` ✅
 
-- [ ] ❌ Definir el **esquema Zod** de la config en `config.ts` (o módulo adyacente de config):
-      modela cada variable (`NODE_ENV`, `PORT`, `LOG_LEVEL`, `AI_PROVIDER`, `OLLAMA_*`,
-      `AI_TIMEOUT_MS`, `DATABASE_URL`, claves cloud, TTS, `JWT_*`) con coerción/normalización
-      (`z.coerce.number()` para puertos/timeouts, `z.enum([...])` para `AI_PROVIDER`, etc.) y defaults
-      de desarrollo donde hoy los hay.
-- [ ] ❌ **Regla condicional por entorno** (`superRefine`): si `NODE_ENV === 'production'`, exigir
-      `DATABASE_URL` y `JWT_SECRET` (y demás críticos) presentes y no-vacíos, y **prohibir** el
-      `JWT_SECRET` de desarrollo (`dev-insecure-…`).
-- [ ] ❌ Reescribir `loadConfig(env)` para parsear con el esquema y **derivar** el mismo contrato
-      `Config` (mantener la forma actual: `auth`, `tts`, `cloudApiKeys`, …). Conservar/absorber los
-      _helpers_ que sigan aportando (o sustituirlos por el esquema).
-- [ ] ❌ **Mensaje claro de fallo**: al fallar la validación, agregar los `issues` de Zod en un
-      `Error` legible (qué variable falta o está mal). Considerar `z.prettifyError`/`flatten`.
-- [ ] ❌ **Test:** ampliar [config.test.ts](../../packages/backend/test/config.test.ts) (hoy solo
-      JWT): defaults de desarrollo, override por env, **fallo en producción** por `DATABASE_URL`/
-      `JWT_SECRET` ausente (espera `toThrow`), y **normalización de tipos** (`PORT` no numérico cae al
-      default; `AI_PROVIDER` inválido cae a `mock`).
-- [ ] ❌ **Ejecutar test** (`pnpm check` verde) + verificar que `no-restricted-imports` sigue verde
-      (Zod no entra en `/domain`).
+- [x] ✅ Definir el **esquema Zod** de la config en `config.ts` (`envSchema`): modela cada variable
+      (`NODE_ENV`, `PORT`, `LOG_LEVEL`, `AI_PROVIDER`, `OLLAMA_*`, `AI_TIMEOUT_MS`, `DATABASE_URL`,
+      claves cloud, TTS, `JWT_*`) con coerción/normalización (`z.coerce.number().int().positive()`
+      tolerante para puertos/timeouts vía helper `enteroPositivoConDefecto`, `z.enum(['mock','local'])`
+      para `AI_PROVIDER`, `cadenaConDefecto`/`cadenaOpcional` para el resto) y defaults de desarrollo
+      donde hoy los hay.
+- [x] ✅ **Regla condicional por entorno** (`superRefine`): si `NODE_ENV === 'production'`, exigir
+      `DATABASE_URL` presente y no-vacía (fallo fatal con mensaje claro). **Matiz de diseño** (ver
+      "Decisión: preservar `docker compose up`" abajo): `JWT_SECRET` ausente/inseguro **no** es fatal
+      ni en producción — degrada al secreto de desarrollo con **WARNING**, para no romper el arranque
+      reproducible. Lo estrictamente requerido en producción es `DATABASE_URL`.
+- [x] ✅ Reescribir `loadConfig(env, warn?)` para parsear con el esquema y **derivar** el mismo
+      contrato `Config` (forma intacta: `auth`, `tts`, `cloudApiKeys`, …). Helpers imperativos
+      (`parsePort`, `parseAiProvider`, `loadCloudApiKeys`, `loadAuthConfig`, `loadTtsConfig`) sustituidos
+      por el esquema + `leerClavesCloud`/`resolverSecretoJwt`.
+- [x] ✅ **Mensaje claro de fallo**: `ConfigError` envuelve el detalle agregado de
+      `z.prettifyError(result.error)` (qué variable falta o está mal, con `path`).
+- [x] ✅ **Test:** ampliado [config.test.ts](../../packages/backend/test/config.test.ts) (19 casos):
+      defaults de desarrollo, override por env, recorte, claves cloud, **normalización de tipos**
+      (`PORT`/`AI_TIMEOUT_MS` inválido cae al default; `AI_PROVIDER` fuera de `mock|local` cae a
+      `mock`), auth JWT, y **producción**: `DATABASE_URL` ausente/vacía ⇒ `toThrow(ConfigError)`;
+      degradación de `JWT_SECRET` con WARNING (espía `warn`); no aborta fuera de producción.
+- [x] ✅ **`pnpm check` verde** (typecheck + lint + format:check + 219 tests backend / 98 app);
+      `no-restricted-imports` sigue verde (Zod vive en config/infraestructura, no en `/domain`).
 
-### Fase 2 — Fallo al arrancar en `index.ts` ❌
+### Fase 2 — Fallo al arrancar en `index.ts` ✅
 
-- [ ] ❌ En [index.ts](../../packages/backend/src/index.ts), envolver `loadConfig()` para que, si
-      lanza, el proceso **aborte** (`process.exit(1)`) imprimiendo el mensaje de error agregado
-      **antes** de intentar levantar el servidor.
-- [ ] ❌ Verificar manualmente que `NODE_ENV=production` sin `DATABASE_URL`/`JWT_SECRET` aborta con
-      mensaje claro, y que el modo por defecto (`AI_PROVIDER=mock`) arranca igual que hoy.
-- [ ] ❌ **Test/verificación** del arranque (si procede, test del agregador de errores; el arranque
-      como tal se valida a mano / en el E2E existente).
+- [x] ✅ En [index.ts](../../packages/backend/src/index.ts), `loadConfigOrExit()` envuelve
+      `loadConfig()`: si lanza `ConfigError`, imprime el mensaje agregado por `console.error` y
+      **aborta** (`process.exit(1)`) **antes** de construir el servidor; cualquier otro error se
+      re-lanza.
+- [x] ✅ Comportamiento verificado por los tests de producción de `config.test.ts` (la validación que
+      dispara el `exit` se prueba a nivel de `loadConfig`); el arranque real en `mock` se cubre con el
+      E2E existente y el `docker compose up`.
 
 ### Fase 3 — Docs + cierre con `cerrar-feature` ❌
 
