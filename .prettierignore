@@ -9,3 +9,7 @@ packages/backend/src/generated/**
 
 # Export generado por Stitch (maquetas de diseño, no se mantiene a mano)
 Docs/Design/stitch_magyblob/**
+
+# Proyectos nativos generados por `expo prebuild` (gitignored; no se mantienen a mano)
+packages/app/ios/**
+packages/app/android/**

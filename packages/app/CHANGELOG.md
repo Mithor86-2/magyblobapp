@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Icono de la app y splash de marca (US-52): icono **adaptativo** de Android bien separado
+  (`foreground` con el logo en la zona segura sobre transparente, `background` de color plano
+  `#fff8f6`, `monochrome` como silueta para Android 13+) e `icon.png` recompuesto sobre **fondo
+  sólido** `#fff8f6` (sin transparencia → sin esquinas negras en iOS). Splash con `expo-splash-screen`
+  y **fondo `#ccc4b9`** (logo centrado, `contain`). Respaldo del logo transparente en `logo-source.png`.
+
 ### Changed
 
 ### Deprecated
