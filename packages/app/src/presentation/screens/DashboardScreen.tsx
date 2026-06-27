@@ -108,7 +108,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
         <Text style={styles.subtitle}>
           Cuentos y actividades personalizados para tus peques. Pruébalo gratis sin registrarte:
           hasta {LIMITE_GRATIS} cuentos y {LIMITE_GRATIS} actividades. Crea una cuenta para guardar
-          el progreso de tu peque.
+          el progreso de tu peque y generar cuentos y actividades todos los dias.
         </Text>
       </View>
 
