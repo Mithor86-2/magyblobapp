@@ -6,6 +6,7 @@ import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { StoryCover } from '../components/StoryCover';
 import { TEMAS, ESTILOS } from '../../domain/types';
 import type { AnonymousActivity, AnonymousStory, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -156,6 +157,11 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
 
       {story ? (
         <View style={styles.storyCard}>
+          <StoryCover
+            tema={story.tema}
+            style={styles.storyCover}
+            accessibilityLabel={story.titulo}
+          />
           <Text style={styles.storyTitle}>{story.titulo}</Text>
           <Text style={styles.storyBody}>{story.cuerpo}</Text>
           <AuthorBadge proveedor={story.proveedor} />
@@ -263,6 +269,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
     ...softShadow,
+  },
+  storyCover: {
+    width: '100%',
+    height: 180,
+    borderRadius: radius.md,
   },
   storyTitle: {
     ...typography.headlineMd,
