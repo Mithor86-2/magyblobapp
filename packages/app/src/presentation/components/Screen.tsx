@@ -6,6 +6,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,10 +38,17 @@ const headerImages: Record<HeaderImageName, ImageSourcePropType> = {
  * `headerImageName` (US-58): si se pasa, pinta la imagen de cabecera correspondiente
  * arriba del contenido, dentro del área segura y por encima del `ScrollView` (se
  * desplaza con el contenido), conservando el footer fijo y el `KeyboardAvoidingView`.
- * La imagen se muestra **completa** (`resizeMode="contain"`, feature 64): el contenedor
- * toma la proporción del origen (~1000×1026, casi cuadrada) para que se vea entera y bien
- * encuadrada, sin recorte; si sobra espacio, el fondo es el del theme (`colors.surface`).
+ * La imagen se muestra **completa** (`resizeMode="contain"`) dentro de una **banda de alto
+ * proporcional** al alto de pantalla (~22 %, acotado a `[HEADER_MIN, HEADER_MAX]`, feature 65),
+ * centrada, con el fondo del theme (`colors.surface`) rellenando el espacio sobrante: queda
+ * entera y bien encuadrada sin la banda gigante que dejaba el `aspectRatio` cuadrado del origen.
  */
+
+/** Banda de cabecera (US-58, ajuste feature 65): proporción del alto de pantalla y cota. */
+const HEADER_RATIO = 0.22;
+const HEADER_MIN = 170;
+const HEADER_MAX = 200;
+
 export function Screen({
   children,
   footer,
@@ -50,6 +58,10 @@ export function Screen({
   footer?: ReactNode;
   headerImageName?: HeaderImageName;
 }) {
+  const { height } = useWindowDimensions();
+  // Alto proporcional acotado: ni minúscula en pantallas bajas ni gigante en altas.
+  const headerHeight = Math.max(HEADER_MIN, Math.min(HEADER_MAX, height * HEADER_RATIO));
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
@@ -64,7 +76,7 @@ export function Screen({
           {headerImageName ? (
             <Image
               source={headerImages[headerImageName]}
-              style={styles.header}
+              style={[styles.header, { height: headerHeight }]}
               resizeMode="contain"
               accessibilityRole="image"
             />
@@ -90,10 +102,9 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    // Proporción del origen (~1000×1026, casi cuadrada): con `resizeMode="contain"`
-    // muestra la imagen completa sin recorte y bien encuadrada (feature 64). El fondo
-    // del theme cubre cualquier franja si el ancho real no casa exactamente.
-    aspectRatio: 1000 / 1026,
+    // El alto (banda proporcional acotada) se inyecta en línea (feature 65). Con
+    // `resizeMode="contain"` la imagen se ve completa y centrada dentro de la banda; el
+    // fondo del theme rellena de forma equilibrada el espacio sobrante a los lados.
     backgroundColor: colors.surface,
     borderBottomLeftRadius: radius.lg,
     borderBottomRightRadius: radius.lg,

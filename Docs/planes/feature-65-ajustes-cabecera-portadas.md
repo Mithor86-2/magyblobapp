@@ -31,9 +31,9 @@ portadas a los cuentos.
 ### (1) Cabecera proporcionada (app) ✅
 
 - [x] `Screen.tsx`: sustituir el `aspectRatio: 1000/1026` por una **banda de alto proporcional**
-  (~22% del alto de pantalla con `useWindowDimensions`, acotado a `[170, 200]`), centrada, con
-  `resizeMode="contain"` y `backgroundColor: colors.surface` rellenando el espacio sobrante. La
-  imagen se ve **completa y encuadrada**, sin recorte y sin banda gigante.
+      (~22% del alto de pantalla con `useWindowDimensions`, acotado a `[170, 200]`), centrada, con
+      `resizeMode="contain"` y `backgroundColor: colors.surface` rellenando el espacio sobrante. La
+      imagen se ve **completa y encuadrada**, sin recorte y sin banda gigante.
 - [x] Ajustar el test de `Screen` si hace falta (sigue verificando render/no-render de cabecera).
 
 ### (2) Portadas solo para cuentos ✅
@@ -41,19 +41,19 @@ portadas a los cuentos.
 **App:**
 
 - [x] `ActivityCard.tsx`: quitar `<StoryCover>` y volver al aspecto previo (icono por categoría).
-  Quitar imports y estilo `cover` ya no usados.
+      Quitar imports y estilo `cover` ya no usados.
 - [x] No tocar `StoryCover` ni su uso en `StoryReaderScreen` / `StoryGeneratorScreen` (cuentos sí
-  llevan portada por tema).
+      llevan portada por tema).
 - [x] Dejar de leer `activity.imagen` en la tarjeta (queda sin render en el app). El campo del tipo
-  `Activity` puede permanecer pero ya no se consume en la UI.
+      `Activity` puede permanecer pero ya no se consume en la UI.
 
 **Backend:**
 
 - [x] `RecommendActivities.ts`: quitar la llamada best-effort a `generateImage` (y el helper
-  `generarImagen`); ya no se rellena `imagen` en las actividades. Los cuentos (`GenerateStory`)
-  siguen generando `portada`.
+      `generarImagen`); ya no se rellena `imagen` en las actividades. Los cuentos (`GenerateStory`)
+      siguen generando `portada`.
 - [x] La columna `Activity.imagen` queda **nullable y en desuso** (documentado; sin migración nueva
-  para no acumular cambios de esquema). `Story.portada` intacto.
+      para no acumular cambios de esquema). `Story.portada` intacto.
 
 **Tests:**
 
@@ -64,5 +64,5 @@ portadas a los cuentos.
 
 - [x] `pnpm install` + `pnpm check` verde (exit 0).
 - [x] Entradas `## [Unreleased]` (Fixed) en ambos CHANGELOG, **sin** tocar `version` (versionado
-  diferido).
+      diferido).
 - [ ] **NO** `git flow feature finish` / merge — se difiere a confirmación del usuario.
