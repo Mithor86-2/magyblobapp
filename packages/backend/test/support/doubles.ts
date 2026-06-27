@@ -1,5 +1,6 @@
 import type {
   AIProvider,
+  GenerateImageInput,
   GenerateStoryInput,
   RecommendActivitiesInput,
 } from '../../src/domain/ai/AIProvider.js';
@@ -135,8 +136,20 @@ export class InMemorySettingsRepository implements SettingsRepository {
   }
 }
 
+/**
+ * Comportamiento configurable de `generateImage` en `FakeAIProvider` (US-59): por
+ * defecto no genera portada (`null`, como el modo sin clave); se puede inyectar una
+ * data URL fija o una función (que puede lanzar) para probar el best-effort.
+ */
+export type FakeImagen = string | null | ((input: GenerateImageInput) => string | null);
+
 /** AIProvider falso, determinista: no necesita Ollama. */
 export class FakeAIProvider implements AIProvider {
+  /** Registra las entradas recibidas por `generateImage` (para asertar el prompt). */
+  imagenCalls: GenerateImageInput[] = [];
+
+  constructor(private readonly imagen: FakeImagen = null) {}
+
   async generateStory(input: GenerateStoryInput) {
     return {
       titulo: `Cuento de ${input.perfil.nombre} sobre ${input.temas.join(', ')}`,
@@ -152,6 +165,11 @@ export class FakeAIProvider implements AIProvider {
       descripcion: `Para ${input.perfil.nombre}.`,
       proveedor: 'mock' as const,
     }));
+  }
+
+  async generateImage(input: GenerateImageInput): Promise<string | null> {
+    this.imagenCalls.push(input);
+    return typeof this.imagen === 'function' ? this.imagen(input) : this.imagen;
   }
 }
 

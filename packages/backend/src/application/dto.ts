@@ -84,6 +84,8 @@ export interface StoryOutput {
   idioma: CodigoIdioma;
   estado: EstadoStory;
   proveedor: ProveedorIa;
+  /** Portada generada (data URL, US-59); ausente si no se generó (la app usa respaldo). */
+  portada?: string;
 }
 
 // --- GenerateStoryAnonymous (US-50, modo efímero sin sesión) ---
@@ -169,6 +171,8 @@ export interface ActivityOutput {
   completadaEn?: string;
   valoracion?: number;
   proveedor: ProveedorIa;
+  /** Imagen generada (data URL, US-59); ausente si no se generó (la app usa respaldo). */
+  imagen?: string;
 }
 
 // --- GetHistory ---

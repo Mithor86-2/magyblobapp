@@ -31,6 +31,9 @@ class BrokenProvider implements AIProvider {
   async recommendActivities(_input: RecommendActivitiesInput): Promise<never> {
     throw new Error('Ollama caído');
   }
+  async generateImage(): Promise<never> {
+    throw new Error('Ollama caído');
+  }
 }
 
 /** Proveedor que responde con contenido marcado, para detectar que se usó el primary. */
@@ -47,6 +50,9 @@ class OkProvider implements AIProvider {
         proveedor: 'local' as const,
       },
     ];
+  }
+  async generateImage(): Promise<string | null> {
+    return 'data:image/png;base64,PRIMARY';
   }
 }
 

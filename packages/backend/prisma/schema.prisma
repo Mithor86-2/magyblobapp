@@ -63,6 +63,7 @@ model Story {
   idioma    String
   estado    String       @default("nuevo")
   proveedor String       @default("mock")
+  portada   String?
   creadoEn  DateTime     @default(now())
   narration StoryNarration?
 
@@ -96,6 +97,7 @@ model Activity {
   duracionMin  Int?
   nivel        Int?
   proveedor    String       @default("mock")
+  imagen       String?
   completadaEn DateTime?
   valoracion   Int?
   creadoEn     DateTime     @default(now())

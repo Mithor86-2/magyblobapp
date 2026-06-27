@@ -2,6 +2,7 @@ import type {
   AIProvider,
   GeneratedActivity,
   GeneratedStory,
+  GenerateImageInput,
   GenerateStoryInput,
   RecommendActivitiesInput,
 } from '../../domain/ai/AIProvider.js';
@@ -44,6 +45,15 @@ export class FallbackProvider implements AIProvider {
       this.logger.warn({ error: descripcion(error), op: 'recommendActivities' }, MENSAJE_FALLBACK);
       return this.fallback.recommendActivities(input);
     }
+  }
+
+  /**
+   * La portada (US-59) es best-effort en el propio generador de imagen (devuelve
+   * `null` ante fallo), así que aquí basta delegar en `primary` sin caer al mock
+   * (que tampoco genera imágenes).
+   */
+  generateImage(input: GenerateImageInput): Promise<string | null> {
+    return this.primary.generateImage(input);
   }
 }
 

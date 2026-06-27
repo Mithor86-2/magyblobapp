@@ -118,6 +118,15 @@ export class CloudProvider implements AIProvider {
     return parseActivities(data, input.cantidad, 'CloudProvider', 'cloud');
   }
 
+  /**
+   * El proveedor cloud de **texto** no genera imágenes (US-59): la portada se
+   * genera con Gemini/Imagen vía el decorador `ImageCapableProvider`. Aquí se
+   * devuelve `null` para cumplir la interfaz.
+   */
+  async generateImage(): Promise<string | null> {
+    return null;
+  }
+
   /** Lee de AppSetting los textos de prompt; null/ausente => default en código. */
   private async leerOverrides(
     claveSystem: string,

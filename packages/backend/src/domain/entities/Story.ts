@@ -20,6 +20,11 @@ export interface StoryProps {
   idioma: CodigoIdioma;
   /** Proveedor de IA que generó realmente el cuento (mock | local | cloud). */
   proveedor: ProveedorIa;
+  /**
+   * Portada ilustrada (US-59): data URL de la imagen generada con Gemini/Imagen, o
+   * `undefined` si no se generó (sin clave o fallo); la app cae al respaldo local.
+   */
+  portada?: string;
   estado?: EstadoStory;
   creadoEn: Date;
 }
@@ -37,6 +42,7 @@ export class Story {
   readonly cuerpo: string;
   readonly idioma: CodigoIdioma;
   readonly proveedor: ProveedorIa;
+  readonly portada?: string;
   estado: EstadoStory;
   readonly creadoEn: Date;
 
@@ -56,6 +62,7 @@ export class Story {
     this.cuerpo = props.cuerpo;
     this.idioma = props.idioma;
     this.proveedor = props.proveedor;
+    this.portada = props.portada;
     this.estado = props.estado ?? 'nuevo';
     this.creadoEn = props.creadoEn;
   }
