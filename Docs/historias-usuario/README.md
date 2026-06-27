@@ -82,6 +82,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-48 | Contraseña en el alta y login real     | Should    | Mejoras | Alta / Login                        | [A](epic-a-perfil.md#us-48)      |
 | US-50 | Dashboard/Home sin sesión (efímero)    | Should    | Mejoras | Inicio sin sesión                   | [F](epic-f-plataforma.md#us-50)  |
 | US-52 | Icono de la app y splash de marca      | Could     | Mejoras | Launcher / Splash                   | [F](epic-f-plataforma.md#us-52)  |
+| US-55 | Voz de la narración por idioma (ES/EN) | Could     | Mejoras | Narración                           | [B](epic-b-cuentos.md#us-55)     |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

@@ -9,7 +9,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Endpoint `GET /settings/tts/voices`: expone la voz de narración configurada por idioma (ES/EN), el
+  modelo y si hay clave de ElevenLabs, sin revelar la `xi-api-key` ni llamar al proveedor (US-55).
+- Test del `ElevenLabsProvider` que verifica la selección de voz por idioma del cuento (US-55).
+
 ### Changed
+
+- Documentadas las variables `ELEVENLABS_VOICE_ID_ES`/`_EN` en `.env.example` (cómo obtener un
+  `voice_id` y qué voz _premade_ multilingüe se usa por defecto en cada idioma) y aclarados los
+  defaults en `config.ts` (US-55).
 
 ### Deprecated
 
