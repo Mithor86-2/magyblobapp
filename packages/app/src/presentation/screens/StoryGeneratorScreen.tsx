@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ESTILOS, TEMAS } from '../../domain/types';
 import type { Estilo, Story, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
-import { ESTILO_LABEL, TEMA_LABEL } from '../labels';
+import { estiloLabel, temaLabel } from '../labels';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { NarrationControls } from '../components/NarrationControls';
@@ -17,6 +18,7 @@ import { colors, radius, softShadow, spacing, typography } from '../theme/tokens
 import type { TabScreenProps } from '../navigation';
 
 export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
+  const { t } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);
 
   // US-54: el generador ofrece TODOS los temas del vocabulario (antes se limitaba a
@@ -46,7 +48,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   async function onGenerate() {
     if (!profile) return;
     if (!puedeGenerar) {
-      setError('Elige al menos un tema y un estilo.');
+      setError(t('storyGenerator.needThemeStyle'));
       return;
     }
     setLoading(true);
@@ -57,7 +59,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
       const result = await api.stories.generate({ profileId: profile.id, temas, estilos });
       setStory(result);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'No se pudo generar el cuento.');
+      setError(e instanceof ApiError ? e.message : t('storyGenerator.errorGenerate'));
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
       headerImageName="cuentos"
       footer={
         <BubblyButton
-          label={story ? 'Generar otro' : 'Generar cuento'}
+          label={story ? t('storyGenerator.generateAnother') : t('storyGenerator.generate')}
           onPress={onGenerate}
           loading={loading}
           disabled={!puedeGenerar}
@@ -77,27 +79,31 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
     >
       <View style={styles.header}>
         <Text style={styles.avatar}>{profile ? avatarEmoji(profile.avatar) : '🦊'}</Text>
-        <Text style={styles.title}>Un cuento para {profile?.nombre ?? 'ti'}</Text>
+        <Text style={styles.title}>
+          {t('storyGenerator.title', {
+            nombre: profile?.nombre ?? t('storyGenerator.youFallback'),
+          })}
+        </Text>
       </View>
 
-      <Text style={styles.fieldLabel}>Temas</Text>
+      <Text style={styles.fieldLabel}>{t('storyGenerator.themes')}</Text>
       <View style={styles.chips}>
-        {temasDisponibles.map((t) => (
+        {temasDisponibles.map((tema) => (
           <SelectableChip
-            key={t}
-            label={TEMA_LABEL[t]}
-            selected={temas.includes(t)}
-            onPress={() => toggleTema(t)}
+            key={tema}
+            label={temaLabel(tema)}
+            selected={temas.includes(tema)}
+            onPress={() => toggleTema(tema)}
           />
         ))}
       </View>
 
-      <Text style={styles.fieldLabel}>Estilos</Text>
+      <Text style={styles.fieldLabel}>{t('storyGenerator.styles')}</Text>
       <View style={styles.chips}>
         {ESTILOS.map((s) => (
           <SelectableChip
             key={s}
-            label={ESTILO_LABEL[s]}
+            label={estiloLabel(s)}
             selected={estilos.includes(s)}
             onPress={() => toggleEstilo(s)}
           />
@@ -107,14 +113,14 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
       {loading ? (
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>Creando un cuento mágico…</Text>
+          <Text style={styles.statusText}>{t('storyGenerator.creating')}</Text>
         </View>
       ) : null}
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>
           <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.statusText}>Toca «Generar cuento» para reintentar.</Text>
+          <Text style={styles.statusText}>{t('storyGenerator.retryHint')}</Text>
         </View>
       ) : null}
 

@@ -1,11 +1,15 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
+import { SelectableChip } from '../components/SelectableChip';
 import { ParentalGate } from '../components/ParentalGate';
 import { useDialog } from '../components/DialogProvider';
 import { useAppStore } from '../store/useAppStore';
 import { isSentryEnabled } from '../../infrastructure/sentry';
+import { IDIOMAS_APP } from '../../i18n';
+import { idiomaLabel } from '../labels';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
@@ -16,9 +20,12 @@ import type { RootScreenProps } from '../navigation';
  * llegan en fases posteriores (US-20/US-21).
  */
 export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
+  const { t } = useTranslation();
   const guardian = useAppStore((s) => s.guardian);
   const clearProfile = useAppStore((s) => s.clearProfile);
   const logout = useAppStore((s) => s.logout);
+  const appLanguage = useAppStore((s) => s.appLanguage);
+  const setAppLanguage = useAppStore((s) => s.setAppLanguage);
   const dialog = useDialog();
 
   function onCambiarPerfil() {
@@ -28,9 +35,9 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
 
   function onCerrarSesion() {
     dialog.confirm({
-      title: 'Cerrar sesión',
-      message: '¿Seguro que quieres cerrar la sesión de esta cuenta?',
-      confirmLabel: 'Cerrar sesión',
+      title: t('parental.logoutConfirmTitle'),
+      message: t('parental.logoutConfirmMessage'),
+      confirmLabel: t('parental.logout'),
       destructive: true,
       onConfirm: () => {
         logout();
@@ -46,19 +53,17 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
       new Error('Evento de prueba de Sentry (dev-only) desde ParentalScreen'),
     );
     dialog.alert({
-      title: 'Sentry',
-      message: isSentryEnabled()
-        ? 'Evento de prueba enviado. Revisa el dashboard de Sentry (Issues).'
-        : 'Sentry no está activo (sin DSN): el evento no se ha enviado.',
+      title: t('parental.sentryTitle'),
+      message: isSentryEnabled() ? t('parental.sentrySent') : t('parental.sentryInactive'),
     });
   }
 
   return (
-    <ParentalGate intro="Esta es la zona de personas adultas. Resuelve la operación para gestionar la cuenta.">
+    <ParentalGate intro={t('parental.gateIntro')}>
       <Screen>
         {guardian ? (
           <View style={styles.card}>
-            <Text style={styles.cardLabel}>Cuenta</Text>
+            <Text style={styles.cardLabel}>{t('parental.account')}</Text>
             <Text style={styles.cardName}>
               {guardian.nombre} {guardian.apellidos}
             </Text>
@@ -66,12 +71,24 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
           </View>
         ) : null}
 
+        <Text style={styles.cardLabel}>{t('parental.language')}</Text>
+        <View style={styles.chips}>
+          {IDIOMAS_APP.map((code) => (
+            <SelectableChip
+              key={code}
+              label={idiomaLabel(code)}
+              selected={appLanguage === code}
+              onPress={() => setAppLanguage(code)}
+            />
+          ))}
+        </View>
+
         <View style={styles.actions}>
-          <BubblyButton label="Cambiar de perfil" onPress={onCambiarPerfil} />
-          <BubblyButton label="Cerrar sesión" onPress={onCerrarSesion} variant="secondary" />
+          <BubblyButton label={t('parental.changeProfile')} onPress={onCambiarPerfil} />
+          <BubblyButton label={t('parental.logout')} onPress={onCerrarSesion} variant="secondary" />
           {__DEV__ ? (
             <BubblyButton
-              label="Probar Sentry (dev)"
+              label={t('parental.sentryTest')}
               onPress={onProbarSentry}
               variant="secondary"
             />
@@ -100,6 +117,11 @@ const styles = StyleSheet.create({
   cardEmail: {
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
   actions: {
     gap: spacing.elementGap,

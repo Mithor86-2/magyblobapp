@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from './Screen';
 import { SelectableChip } from './SelectableChip';
 import { useDialog } from './DialogProvider';
@@ -15,6 +16,7 @@ import { colors, spacing, typography } from '../theme/tokens';
  * Mientras no se resuelve, muestra el reto; al acertar, renderiza `children`.
  */
 export function ParentalGate({ children, intro }: { children: ReactNode; intro?: string }) {
+  const { t } = useTranslation();
   const [passed, setPassed] = useState(false);
   const [reto, setReto] = useState<RetoParental>(crearReto);
   const dialog = useDialog();
@@ -23,13 +25,10 @@ export function ParentalGate({ children, intro }: { children: ReactNode; intro?:
 
   return (
     <Screen>
-      <Text style={styles.title}>Zona de personas adultas</Text>
-      <Text style={styles.body}>
-        {intro ??
-          'Para continuar, resuelve esta operación. Así nos aseguramos de que hay una persona adulta.'}
-      </Text>
+      <Text style={styles.title}>{t('parentalGate.title')}</Text>
+      <Text style={styles.body}>{intro ?? t('parentalGate.bodyDefault')}</Text>
       <Text testID="parental-pregunta" style={styles.question}>
-        {reto.a} + {reto.b} = ?
+        {t('parentalGate.question', { a: reto.a, b: reto.b })}
       </Text>
       <View style={styles.options}>
         {reto.opciones.map((option) => (
@@ -41,7 +40,10 @@ export function ParentalGate({ children, intro }: { children: ReactNode; intro?:
               if (option === reto.respuesta) {
                 setPassed(true);
               } else {
-                dialog.alert({ title: 'Casi', message: 'Esa no es. Prueba con otra operación.' });
+                dialog.alert({
+                  title: t('parentalGate.wrongTitle'),
+                  message: t('parentalGate.wrongMessage'),
+                });
                 setReto(crearReto());
               }
             }}

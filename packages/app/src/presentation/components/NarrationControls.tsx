@@ -1,15 +1,9 @@
 import { StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { BubblyButton } from './BubblyButton';
 import { useNarration } from '../hooks/useNarration';
 import { spacing } from '../theme/tokens';
 import type { Story } from '../../domain/types';
-
-const LABEL = {
-  idle: 'Escuchar',
-  loading: 'Preparando…',
-  playing: 'Pausar',
-  paused: 'Reanudar',
-} as const;
 
 /**
  * Controles de narración de un cuento (US-22): un botón principal que alterna
@@ -17,6 +11,7 @@ const LABEL = {
  * ElevenLabs + fallback a voz nativa + limpieza) vive en `useNarration`.
  */
 export function NarrationControls({ story }: { story: Story }) {
+  const { t } = useTranslation();
   const { estado, escuchar, pausar, parar } = useNarration(story);
   const sonando = estado === 'playing' || estado === 'paused';
 
@@ -24,7 +19,7 @@ export function NarrationControls({ story }: { story: Story }) {
     <View style={styles.row}>
       <View style={styles.principal}>
         <BubblyButton
-          label={LABEL[estado]}
+          label={t(`narration.${estado}`)}
           icon={estado === 'playing' ? 'pause' : 'play'}
           variant="secondary"
           loading={estado === 'loading'}
@@ -32,7 +27,12 @@ export function NarrationControls({ story }: { story: Story }) {
         />
       </View>
       {sonando ? (
-        <BubblyButton icon="stop" accessibilityLabel="Parar" variant="secondary" onPress={parar} />
+        <BubblyButton
+          icon="stop"
+          accessibilityLabel={t('narration.stop')}
+          variant="secondary"
+          onPress={parar}
+        />
       ) : null}
     </View>
   );

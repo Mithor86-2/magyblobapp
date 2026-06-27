@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
@@ -9,7 +10,7 @@ import { useDialog } from '../components/DialogProvider';
 import { IDIOMAS, TEMAS } from '../../domain/types';
 import type { CodigoIdioma, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
-import { IDIOMA_LABEL, TEMA_LABEL } from '../labels';
+import { idiomaLabel, temaLabel } from '../labels';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
@@ -19,6 +20,7 @@ import type { RootScreenProps } from '../navigation';
 const EDADES = [2, 3, 4, 5, 6] as const;
 
 export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfile'>) {
+  const { t } = useTranslation();
   const guardianId = useAppStore((s) => s.guardian?.id ?? null);
   const setProfile = useAppStore((s) => s.setProfile);
   const dialog = useDialog();
@@ -61,8 +63,8 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
       setProfile(profile);
       navigation.navigate('Main');
     } catch (error) {
-      const mensaje = error instanceof ApiError ? error.message : 'No se pudo crear el perfil.';
-      dialog.alert({ title: 'Ups', message: mensaje });
+      const mensaje = error instanceof ApiError ? error.message : t('createProfile.errorGeneric');
+      dialog.alert({ title: t('common.ups'), message: mensaje });
     } finally {
       setSubmitting(false);
     }
@@ -72,7 +74,7 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
     <Screen
       footer={
         <BubblyButton
-          label="¡Listo!"
+          label={t('createProfile.submit')}
           onPress={onSubmit}
           disabled={!canSubmit}
           loading={submitting}
@@ -80,14 +82,14 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
       }
     >
       <TextField
-        label="¿Cómo te llamas?"
+        label={t('createProfile.name')}
         value={nombre}
         onChangeText={setNombre}
-        placeholder="Tu nombre"
+        placeholder={t('createProfile.namePlaceholder')}
         autoCapitalize="words"
       />
 
-      <Text style={styles.fieldLabel}>¿Cuántos años tienes?</Text>
+      <Text style={styles.fieldLabel}>{t('createProfile.age')}</Text>
       <View style={styles.chips}>
         {EDADES.map((e) => (
           <SelectableChip
@@ -99,27 +101,27 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
         ))}
       </View>
 
-      <Text style={styles.fieldLabel}>Idioma</Text>
+      <Text style={styles.fieldLabel}>{t('createProfile.language')}</Text>
       <View style={styles.chips}>
         {IDIOMAS.map((code) => (
           <SelectableChip
             key={code}
-            label={IDIOMA_LABEL[code]}
+            label={idiomaLabel(code)}
             selected={idioma === code}
             onPress={() => setIdioma(code)}
           />
         ))}
       </View>
 
-      <Text style={styles.fieldLabel}>Elige tu avatar</Text>
+      <Text style={styles.fieldLabel}>{t('createProfile.avatar')}</Text>
       <AvatarPicker value={avatar} onChange={setAvatar} />
 
-      <Text style={styles.fieldLabel}>¿Qué te gusta?</Text>
+      <Text style={styles.fieldLabel}>{t('createProfile.interests')}</Text>
       <View style={styles.chips}>
         {TEMAS.map((tema) => (
           <SelectableChip
             key={tema}
-            label={TEMA_LABEL[tema]}
+            label={temaLabel(tema)}
             selected={intereses.includes(tema)}
             onPress={() => toggleInteres(tema)}
           />

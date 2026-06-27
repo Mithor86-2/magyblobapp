@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { BubblyButton } from './BubblyButton';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 
@@ -15,12 +16,13 @@ interface ErrorFallbackProps {
  * ruido para el usuario, C-12). El detalle técnico va a Sentry, no a la pantalla.
  */
 export function ErrorFallback({ onRetry }: ErrorFallbackProps) {
+  const { t } = useTranslation();
   return (
     <View style={styles.container} accessibilityRole="alert">
       <Text style={styles.emoji}>🌈</Text>
-      <Text style={styles.title}>¡Vaya! Algo se ha despistado</Text>
-      <Text style={styles.body}>No pasa nada. Vamos a intentarlo otra vez.</Text>
-      <BubblyButton label="Reintentar" onPress={onRetry} />
+      <Text style={styles.title}>{t('errorFallback.title')}</Text>
+      <Text style={styles.body}>{t('errorFallback.body')}</Text>
+      <BubblyButton label={t('errorFallback.retry')} onPress={onRetry} />
     </View>
   );
 }

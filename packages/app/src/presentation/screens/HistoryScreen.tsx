@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
@@ -15,6 +16,7 @@ import { colors, radius, softShadow, spacing, typography } from '../theme/tokens
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
+  const { t } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);
 
   // El lector de cuentos vive en el stack raíz (sobre las pestañas).
@@ -34,11 +36,11 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     try {
       setHistory(await api.history.get(profile.id));
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'No se pudo cargar el historial.');
+      setError(e instanceof ApiError ? e.message : t('history.errorLoad'));
     } finally {
       setLoading(false);
     }
-  }, [profile]);
+  }, [profile, t]);
 
   // Recarga cada vez que la pestaña recibe foco (refleja cuentos leídos / actividades hechas).
   useFocusEffect(
@@ -51,20 +53,20 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
 
   return (
     <Screen>
-      <Text style={styles.title}>Tu historial</Text>
-      <Text style={styles.subtitle}>Mira todo lo que has aprendido y creado.</Text>
+      <Text style={styles.title}>{t('history.title')}</Text>
+      <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
 
       {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
       {error ? (
         <View style={styles.errorBox}>
           <Text style={styles.error}>{error}</Text>
-          <BubblyButton label="Reintentar" onPress={() => void load()} variant="secondary" />
+          <BubblyButton label={t('common.retry')} onPress={() => void load()} variant="secondary" />
         </View>
       ) : null}
 
-      <Text style={styles.section}>Cuentos mágicos</Text>
+      <Text style={styles.section}>{t('history.sectionStories')}</Text>
       {history.stories.length === 0 ? (
-        <Text style={styles.vacio}>Aún no hay cuentos. ¡Crea el primero!</Text>
+        <Text style={styles.vacio}>{t('history.emptyStories')}</Text>
       ) : (
         history.stories.map((story) => (
           <Pressable
@@ -72,7 +74,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
             style={styles.storyCard}
             onPress={() => openReader(story)}
             accessibilityRole="button"
-            accessibilityLabel={`Leer el cuento ${story.titulo}`}
+            accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
           >
             <View style={styles.storyHeader}>
               <Text style={styles.storyTitle} numberOfLines={1}>
@@ -85,12 +87,12 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
                 ]}
               >
                 <Text style={styles.estadoText}>
-                  {story.estado === 'leido' ? 'Leído' : 'Nuevo'}
+                  {story.estado === 'leido' ? t('history.read') : t('history.new')}
                 </Text>
               </View>
             </View>
             <View style={styles.accionRow}>
-              <Text style={styles.accion}>Leer cuento</Text>
+              <Text style={styles.accion}>{t('history.readStory')}</Text>
               <Icon name="arrow-right" size="sm" color={colors.primary} />
             </View>
             <AuthorBadge proveedor={story.proveedor} />
@@ -98,9 +100,9 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
         ))
       )}
 
-      <Text style={styles.section}>Actividades hechas</Text>
+      <Text style={styles.section}>{t('history.sectionActivities')}</Text>
       {hechas.length === 0 ? (
-        <Text style={styles.vacio}>Todavía no has completado actividades.</Text>
+        <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
       ) : (
         hechas.map((activity) => <ActivityCard key={activity.id} activity={activity} />)
       )}

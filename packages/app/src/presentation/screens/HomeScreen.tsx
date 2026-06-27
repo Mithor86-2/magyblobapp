@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
@@ -10,6 +11,7 @@ import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /** Pantalla de bienvenida: saluda al niño actual y lleva a Cuentos / Actividades. */
 export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
+  const { t } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);
 
   // La zona de adultos vive en el stack raíz (sobre las pestañas), tras la puerta parental.
@@ -20,16 +22,19 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
     <Screen headerImageName="home">
       <View style={styles.hero}>
         <Text style={styles.avatar}>{profile ? avatarEmoji(profile.avatar) : '✨'}</Text>
-        <Text style={styles.title}>¡Hola{profile ? `, ${profile.nombre}` : ''}!</Text>
-        <Text style={styles.subtitle}>
-          Vamos a aprender y jugar juntos. Elige un cuento mágico o una actividad para hoy.
+        <Text style={styles.title}>
+          {t('home.greeting', { nombre: profile ? `, ${profile.nombre}` : '' })}
         </Text>
+        <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
       </View>
 
       <View style={styles.actions}>
-        <BubblyButton label="Crear un cuento" onPress={() => navigation.navigate('Cuentos')} />
         <BubblyButton
-          label="Ver actividades"
+          label={t('home.createStory')}
+          onPress={() => navigation.navigate('Cuentos')}
+        />
+        <BubblyButton
+          label={t('home.seeActivities')}
           onPress={() => navigation.navigate('Actividades')}
           variant="secondary"
         />
@@ -39,10 +44,10 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         style={styles.adultLink}
         onPress={openParental}
         accessibilityRole="button"
-        accessibilityLabel="Zona de personas adultas"
+        accessibilityLabel={t('home.adultsZone')}
       >
         <Icon name="adults" size="sm" color={colors.onSurfaceVariant} />
-        <Text style={styles.adultLinkText}>Zona de personas adultas</Text>
+        <Text style={styles.adultLinkText}>{t('home.adultsZone')}</Text>
       </Pressable>
     </Screen>
   );
