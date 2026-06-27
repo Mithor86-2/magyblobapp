@@ -1007,3 +1007,18 @@ actividades por cliente (IP), con **429** al superarlo. El cliente lleva su prop
 - (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: los casos de uso anónimos
   **no persisten** (repos sin escrituras), las rutas responden **200/201** dentro del límite y **429**
   al superarlo, y en la app que el Dashboard llama a los gateways anónimos y respeta el contador efímero.
+
+## US-52 — Icono de la app y splash de marca · Could (Mejoras)
+
+Como **adulto** quiero que la app tenga un **icono propio** y una **pantalla de carga (splash)** con la
+identidad visual del producto, para que se reconozca en el dispositivo y la primera impresión sea cuidada.
+
+- Dado el dispositivo, Cuando instalo la app, Entonces en el launcher aparece el **icono propio**: en
+  Android un **icono adaptativo** (logo en la zona segura sobre fondo de marca `#fff8f6`) y en iOS un
+  icono con **fondo sólido** (sin transparencia → sin esquinas negras).
+- Dado el arranque, Cuando se muestra el **splash**, Entonces el **fondo es `#ccc4b9`** con el logo
+  centrado (`expo-splash-screen`, `resizeMode: contain`).
+- (No-funcional) Dado Android 13+, Entonces existe un **icono monocromo** (silueta del logo) para el
+  tema del sistema.
+- (No-funcional) Dado el cumplimiento, Entonces los recursos van **empaquetados en build-time** (sin
+  descargas en runtime ni SDKs de terceros), coherente con [cumplimiento-menores.md](../cumplimiento-menores.md).
