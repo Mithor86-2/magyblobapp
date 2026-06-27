@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { NarrationControls } from '../components/NarrationControls';
+import { StoryCover } from '../components/StoryCover';
 import { api } from '../../composition';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
@@ -25,6 +26,12 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
   return (
     <Screen>
       <View style={styles.card}>
+        <StoryCover
+          generada={story.portada}
+          tema={story.tema}
+          style={styles.cover}
+          accessibilityLabel={story.titulo}
+        />
         <Text style={styles.title}>{story.titulo}</Text>
         <Text style={styles.body}>{story.cuerpo}</Text>
         <NarrationControls story={story} />
@@ -41,6 +48,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
     ...softShadow,
+  },
+  cover: {
+    width: '100%',
+    height: 180,
+    borderRadius: radius.md,
   },
   title: {
     ...typography.headlineMd,
