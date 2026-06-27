@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -22,6 +23,7 @@ import { DialogProvider } from './src/presentation/components/DialogProvider';
 import { AppErrorBoundary } from './src/presentation/components/AppErrorBoundary';
 import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
+import './src/i18n';
 import { resolveInitialRoute } from './src/presentation/initialRoute';
 import { trackNavigation } from './src/infrastructure/telemetry';
 import type {
@@ -93,6 +95,7 @@ function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
 }
 
 function MainTabs() {
+  const { t } = useTranslation();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -106,22 +109,34 @@ function MainTabs() {
       <Tab.Screen
         name="Inicio"
         component={HomeScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} /> }}
+        options={{
+          tabBarLabel: t('tabs.inicio'),
+          tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="Actividades"
         component={ActividadesScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon name="activities" focused={focused} /> }}
+        options={{
+          tabBarLabel: t('tabs.actividades'),
+          tabBarIcon: ({ focused }) => <TabIcon name="activities" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="Cuentos"
         component={CuentosScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon name="story" focused={focused} /> }}
+        options={{
+          tabBarLabel: t('tabs.cuentos'),
+          tabBarIcon: ({ focused }) => <TabIcon name="story" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="Historial"
         component={HistoryScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon name="library" focused={focused} /> }}
+        options={{
+          tabBarLabel: t('tabs.historial'),
+          tabBarIcon: ({ focused }) => <TabIcon name="library" focused={focused} />,
+        }}
       />
     </Tab.Navigator>
   );
@@ -139,6 +154,7 @@ function useStoreHydrated(): boolean {
 }
 
 export default function App() {
+  const { t } = useTranslation();
   const [fontsLoaded] = useFonts({ Quicksand_500Medium, Quicksand_700Bold });
   const hydrated = useStoreHydrated();
   const guardian = useAppStore((s) => s.guardian);
@@ -199,33 +215,33 @@ export default function App() {
               <Stack.Screen
                 name="Consent"
                 component={ConsentScreen}
-                options={{ title: 'Crear cuenta' }}
+                options={{ title: t('nav.consent') }}
               />
               <Stack.Screen
                 name="Login"
                 component={LoginScreen}
-                options={{ title: 'Iniciar sesión' }}
+                options={{ title: t('nav.login') }}
               />
               <Stack.Screen
                 name="SelectProfile"
                 component={SelectProfileScreen}
-                options={{ title: 'Elegir perfil' }}
+                options={{ title: t('nav.selectProfile') }}
               />
               <Stack.Screen
                 name="CreateProfile"
                 component={CreateProfileScreen}
-                options={{ title: 'Crear perfil' }}
+                options={{ title: t('nav.createProfile') }}
               />
               <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
               <Stack.Screen
                 name="Parental"
                 component={ParentalScreen}
-                options={{ title: 'Zona de adultos' }}
+                options={{ title: t('nav.parental') }}
               />
               <Stack.Screen
                 name="StoryReader"
                 component={LecturaScreen}
-                options={{ title: 'Cuento' }}
+                options={{ title: t('nav.storyReader') }}
               />
             </Stack.Navigator>
           </NavigationContainer>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
@@ -9,7 +10,7 @@ import { useDialog } from '../components/DialogProvider';
 import { PARENTESCOS } from '../../domain/types';
 import type { Parentesco } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
-import { PARENTESCO_LABEL } from '../labels';
+import { parentescoLabel } from '../labels';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { colors, spacing, typography } from '../theme/tokens';
@@ -30,6 +31,7 @@ export function passwordValida(password: string): boolean {
 }
 
 export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
+  const { t } = useTranslation();
   const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
 
@@ -66,61 +68,57 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
       setSession(session, CONSENT_VERSION);
       navigation.replace('SelectProfile');
     } catch (error) {
-      const mensaje =
-        error instanceof ApiError ? error.message : 'No se pudo completar el registro.';
-      dialog.alert({ title: 'Ups', message: mensaje });
+      const mensaje = error instanceof ApiError ? error.message : t('consent.errorGeneric');
+      dialog.alert({ title: t('common.ups'), message: mensaje });
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <ParentalGate intro="Para crear la cuenta, resuelve esta operación. Así nos aseguramos de que hay una persona adulta configurando la app.">
+    <ParentalGate intro={t('consent.gateIntro')}>
       <Screen
         footer={
           <BubblyButton
-            label="Aceptar y continuar"
+            label={t('consent.submit')}
             onPress={onSubmit}
             disabled={!canSubmit}
             loading={submitting}
           />
         }
       >
-        <Text style={styles.title}>Crea tu cuenta</Text>
-        <Text style={styles.body}>
-          Eres la persona responsable del menor. Necesitamos tus datos para asociar los perfiles y
-          registrar tu consentimiento.
-        </Text>
+        <Text style={styles.title}>{t('consent.title')}</Text>
+        <Text style={styles.body}>{t('consent.body')}</Text>
 
         <TextField
           testID="alta-nombre"
-          label="Nombre"
+          label={t('consent.nombre')}
           value={nombre}
           onChangeText={setNombre}
           autoCapitalize="words"
         />
         <TextField
           testID="alta-apellidos"
-          label="Apellidos"
+          label={t('consent.apellidos')}
           value={apellidos}
           onChangeText={setApellidos}
           autoCapitalize="words"
         />
         <TextField
           testID="alta-email"
-          label="Email"
+          label={t('common.email')}
           value={email}
           onChangeText={setEmail}
-          placeholder="tu@email.com"
+          placeholder={t('common.emailPlaceholder')}
           keyboardType="email-address"
           autoCapitalize="none"
         />
         <TextField
           testID="alta-password"
-          label="Contraseña"
+          label={t('common.password')}
           value={password}
           onChangeText={setPassword}
-          placeholder="Crea una contraseña"
+          placeholder={t('consent.passwordPlaceholder')}
           autoCapitalize="none"
           secureTextEntry
         />
@@ -129,15 +127,15 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
           style={[styles.passwordHint, passwordValida(password) && styles.passwordHintOk]}
         >
           {passwordValida(password) ? '✓ ' : ''}
-          Mínimo {PASSWORD_MIN_LENGTH} caracteres, con al menos una letra y un número.
+          {t('consent.passwordHint', { min: PASSWORD_MIN_LENGTH })}
         </Text>
 
-        <Text style={styles.fieldLabel}>Parentesco</Text>
+        <Text style={styles.fieldLabel}>{t('consent.parentesco')}</Text>
         <View style={styles.chips}>
           {PARENTESCOS.map((p) => (
             <SelectableChip
               key={p}
-              label={PARENTESCO_LABEL[p]}
+              label={parentescoLabel(p)}
               selected={parentesco === p}
               onPress={() => setParentesco(p)}
             />
@@ -146,14 +144,12 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
 
         <View style={styles.consentBox}>
           <SelectableChip
-            label={aceptado ? '✓ Acepto' : 'Acepto'}
+            label={aceptado ? `✓ ${t('consent.accept')}` : t('consent.accept')}
             selected={aceptado}
             onPress={() => setAceptado((v) => !v)}
           />
           <Text style={styles.consentText}>
-            Doy mi consentimiento para tratar los datos del menor con la única finalidad de generar
-            cuentos y actividades. Los datos no se comparten con terceros y el contenido se genera
-            en local. (Versión {CONSENT_VERSION})
+            {t('consent.consentText', { version: CONSENT_VERSION })}
           </Text>
         </View>
       </Screen>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { avatarEmoji } from '../components/AvatarPicker';
@@ -16,6 +17,7 @@ import type { RootScreenProps } from '../navigation';
  * pestañas. Si el guardián aún no tiene hijos, invita a crear el primero.
  */
 export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfile'>) {
+  const { t } = useTranslation();
   const guardian = useAppStore((s) => s.guardian);
   const setProfile = useAppStore((s) => s.setProfile);
   // Lista de hijos en el store: fuente única para la pantalla y para el arranque (US-49).
@@ -32,11 +34,11 @@ export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfi
     try {
       setProfiles(await api.profiles.list(guardian.id));
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'No se pudieron cargar los perfiles.');
+      setError(e instanceof ApiError ? e.message : t('selectProfile.errorLoad'));
     } finally {
       setLoading(false);
     }
-  }, [guardian, setProfiles]);
+  }, [guardian, setProfiles, t]);
 
   useEffect(() => {
     void load();
@@ -51,31 +53,31 @@ export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfi
     <Screen
       footer={
         <BubblyButton
-          label="Crear nuevo perfil"
+          label={t('selectProfile.createNew')}
           onPress={() => navigation.navigate('CreateProfile')}
           variant={profiles.length === 0 ? 'primary' : 'secondary'}
         />
       }
     >
-      <Text style={styles.title}>¿Quién va a jugar?</Text>
-      <Text style={styles.subtitle}>Elige un perfil para continuar.</Text>
+      <Text style={styles.title}>{t('selectProfile.title')}</Text>
+      <Text style={styles.subtitle}>{t('selectProfile.subtitle')}</Text>
 
       {loading ? (
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>Cargando perfiles…</Text>
+          <Text style={styles.statusText}>{t('selectProfile.loading')}</Text>
         </View>
       ) : null}
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>
           <Text style={styles.errorText}>{error}</Text>
-          <BubblyButton label="Reintentar" onPress={() => void load()} variant="secondary" />
+          <BubblyButton label={t('common.retry')} onPress={() => void load()} variant="secondary" />
         </View>
       ) : null}
 
       {!loading && !error && profiles.length === 0 ? (
-        <Text style={styles.statusText}>Aún no tienes perfiles. Crea el primero para empezar.</Text>
+        <Text style={styles.statusText}>{t('selectProfile.empty')}</Text>
       ) : null}
 
       {profiles.map((profile) => (
@@ -84,12 +86,14 @@ export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfi
           style={styles.profileRow}
           onPress={() => onSelect(profile)}
           accessibilityRole="button"
-          accessibilityLabel={`Elegir a ${profile.nombre}`}
+          accessibilityLabel={t('selectProfile.chooseA11y', { nombre: profile.nombre })}
         >
           <Text style={styles.avatar}>{avatarEmoji(profile.avatar)}</Text>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{profile.nombre}</Text>
-            <Text style={styles.profileMeta}>{profile.edad} años</Text>
+            <Text style={styles.profileMeta}>
+              {t('selectProfile.years', { edad: profile.edad })}
+            </Text>
           </View>
         </Pressable>
       ))}

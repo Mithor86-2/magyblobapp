@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { TextField } from '../components/TextField';
@@ -20,6 +21,7 @@ import type { RootScreenProps } from '../navigation';
  * inexistente y contraseña errónea; la UI muestra el mismo mensaje genérico.
  */
 export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
+  const { t } = useTranslation();
   const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
 
@@ -42,12 +44,12 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
       if (error instanceof ApiError && error.status === 401) {
         // Credencial inválida: mensaje genérico (no revela si el email existe).
         dialog.alert({
-          title: 'No pudimos iniciar sesión',
-          message: 'El email o la contraseña no son correctos. Revísalos e inténtalo de nuevo.',
+          title: t('login.failTitle'),
+          message: t('login.failMessage'),
         });
       } else {
-        const mensaje = error instanceof ApiError ? error.message : 'No se pudo iniciar sesión.';
-        dialog.alert({ title: 'Ups', message: mensaje });
+        const mensaje = error instanceof ApiError ? error.message : t('login.errorGeneric');
+        dialog.alert({ title: t('common.ups'), message: mensaje });
       }
     } finally {
       setSubmitting(false);
@@ -58,33 +60,30 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
     <Screen
       footer={
         <BubblyButton
-          label="Entrar"
+          label={t('login.submit')}
           onPress={onSubmit}
           disabled={!canSubmit}
           loading={submitting}
         />
       }
     >
-      <Text style={styles.body}>
-        Escribe el email y la contraseña con los que creaste tu cuenta. Te llevaremos a tus
-        perfiles.
-      </Text>
+      <Text style={styles.body}>{t('login.body')}</Text>
 
       <TextField
         testID="login-email"
-        label="Email"
+        label={t('common.email')}
         value={email}
         onChangeText={setEmail}
-        placeholder="tu@email.com"
+        placeholder={t('common.emailPlaceholder')}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <TextField
         testID="login-password"
-        label="Contraseña"
+        label={t('common.password')}
         value={password}
         onChangeText={setPassword}
-        placeholder="Tu contraseña"
+        placeholder={t('login.passwordPlaceholder')}
         autoCapitalize="none"
         secureTextEntry
       />
@@ -93,9 +92,9 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
         style={styles.link}
         onPress={irACrearCuenta}
         accessibilityRole="button"
-        accessibilityLabel="Crear una cuenta"
+        accessibilityLabel={t('login.createAccountA11y')}
       >
-        <Text style={styles.linkText}>¿No tienes cuenta? Crear una</Text>
+        <Text style={styles.linkText}>{t('login.noAccount')}</Text>
       </Pressable>
     </Screen>
   );

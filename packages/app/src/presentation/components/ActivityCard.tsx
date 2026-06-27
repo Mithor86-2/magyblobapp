@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import type { Activity, Categoria } from '../../domain/types';
-import { CATEGORIA_LABEL } from '../labels';
+import { categoriaLabel } from '../labels';
 import { StarRating } from './StarRating';
 import { AuthorBadge } from './AuthorBadge';
 import { BubblyButton } from './BubblyButton';
@@ -23,12 +24,13 @@ interface ActivityCardProps {
 
 /** Tarjeta de actividad: emoji + categoría + título + descripción + progreso. */
 export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
+  const { t } = useTranslation();
   // Flujo del botón "Realizado" (US-10 ampliada): pedir la valoración al pulsarlo.
   const [valorando, setValorando] = useState(false);
   const color = CATEGORIA_COLOR[activity.categoria];
   const meta = [
-    activity.duracionMin ? `${activity.duracionMin} min` : null,
-    activity.nivel ? `Nivel ${activity.nivel}` : null,
+    activity.duracionMin ? t('activityCard.minutes', { min: activity.duracionMin }) : null,
+    activity.nivel ? t('activityCard.level', { nivel: activity.nivel }) : null,
   ].filter(Boolean);
   const completada = activity.valoracion != null;
 
@@ -37,14 +39,14 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
       <View style={styles.header}>
         <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
         <View style={[styles.badge, { backgroundColor: color }]}>
-          <Text style={styles.badgeText}>{CATEGORIA_LABEL[activity.categoria]}</Text>
+          <Text style={styles.badgeText}>{categoriaLabel(activity.categoria)}</Text>
         </View>
       </View>
       <Text style={styles.titulo}>{activity.titulo}</Text>
       <Text style={styles.descripcion}>{activity.descripcion}</Text>
       {activity.instrucciones ? (
         <View style={styles.instrucciones}>
-          <Text style={styles.instruccionesTitulo}>Cómo hacerlo</Text>
+          <Text style={styles.instruccionesTitulo}>{t('activityCard.howTo')}</Text>
           <Text style={styles.instruccionesTexto}>{activity.instrucciones}</Text>
         </View>
       ) : null}
@@ -52,17 +54,21 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
 
       {completada ? (
         <View style={styles.progreso}>
-          <Text style={styles.meta}>¡Hecha!</Text>
+          <Text style={styles.meta}>{t('activityCard.done')}</Text>
           <StarRating value={activity.valoracion ?? 0} />
         </View>
       ) : onComplete ? (
         valorando ? (
           <View style={styles.progreso}>
-            <Text style={styles.meta}>¿Qué tal estuvo?</Text>
+            <Text style={styles.meta}>{t('activityCard.howWasIt')}</Text>
             <StarRating value={0} onChange={onComplete} />
           </View>
         ) : (
-          <BubblyButton label="Realizado" onPress={() => setValorando(true)} variant="accent" />
+          <BubblyButton
+            label={t('activityCard.markDone')}
+            onPress={() => setValorando(true)}
+            variant="accent"
+          />
         )
       ) : null}
 

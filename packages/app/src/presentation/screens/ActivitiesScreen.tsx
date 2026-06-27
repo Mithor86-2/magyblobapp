@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
@@ -8,7 +9,7 @@ import { useDialog } from '../components/DialogProvider';
 import { CATEGORIAS } from '../../domain/types';
 import type { Activity, Categoria } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
-import { CATEGORIA_LABEL } from '../labels';
+import { categoriaLabel } from '../labels';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
@@ -16,6 +17,7 @@ import { colors, radius, spacing, typography } from '../theme/tokens';
 import type { TabScreenProps } from '../navigation';
 
 export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
+  const { t } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);
   const dialog = useDialog();
 
@@ -38,7 +40,7 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
       setActivities(result);
       setGenerado(true);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'No se pudieron generar las actividades.');
+      setError(e instanceof ApiError ? e.message : t('activities.errorGenerate'));
     } finally {
       setLoading(false);
     }
@@ -51,8 +53,8 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
       setActivities((prev) => prev.map((a) => (a.id === activityId ? updated : a)));
     } catch (e) {
       dialog.alert({
-        title: 'Ups',
-        message: e instanceof ApiError ? e.message : 'No se pudo guardar la valoración.',
+        title: t('common.ups'),
+        message: e instanceof ApiError ? e.message : t('activities.errorRating'),
       });
     }
   }
@@ -62,29 +64,29 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
       headerImageName="actividades"
       footer={
         <BubblyButton
-          label={generado ? 'Generar más' : 'Generar actividades'}
+          label={generado ? t('activities.generateMore') : t('activities.generate')}
           onPress={onGenerate}
           loading={loading}
           variant="secondary"
         />
       }
     >
-      <Text style={styles.title}>Actividades para hoy</Text>
+      <Text style={styles.title}>{t('activities.title')}</Text>
       <Text style={styles.subtitle}>
-        ¡Es hora de jugar y aprender, {profile?.nombre ?? 'peque'}!
+        {t('activities.subtitle', { nombre: profile?.nombre ?? t('activities.pequeFallback') })}
       </Text>
 
-      <Text style={styles.fieldLabel}>Categoría</Text>
+      <Text style={styles.fieldLabel}>{t('activities.category')}</Text>
       <View style={styles.chips}>
         <SelectableChip
-          label="Todas"
+          label={t('activities.all')}
           selected={categoria === null}
           onPress={() => setCategoria(null)}
         />
         {CATEGORIAS.map((c) => (
           <SelectableChip
             key={c}
-            label={CATEGORIA_LABEL[c]}
+            label={categoriaLabel(c)}
             selected={categoria === c}
             onPress={() => setCategoria(c)}
           />
@@ -94,19 +96,19 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
       {loading ? (
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>Preparando actividades…</Text>
+          <Text style={styles.statusText}>{t('activities.preparing')}</Text>
         </View>
       ) : null}
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>
           <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.statusText}>Toca «Generar actividades» para reintentar.</Text>
+          <Text style={styles.statusText}>{t('activities.retryHint')}</Text>
         </View>
       ) : null}
 
       {!loading && generado && activities.length === 0 && !error ? (
-        <Text style={styles.statusText}>No hay actividades nuevas. Prueba otra categoría.</Text>
+        <Text style={styles.statusText}>{t('activities.emptyNew')}</Text>
       ) : null}
 
       {activities.map((activity) => (
