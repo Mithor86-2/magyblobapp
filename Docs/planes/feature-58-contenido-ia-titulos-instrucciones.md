@@ -31,35 +31,39 @@ esquema Prisma, por lo que van juntas en una feature (ver mapa de conflictos del
 
 ### Fase 2 — Implementación
 
-**(4) Títulos variados**
+**(4) Títulos variados** ✅
 
-- [ ] `infrastructure/ai/prompts.ts`: el prompt del cuento (ES/EN) pide variar el título en cada
+- [x] `infrastructure/ai/prompts.ts`: el prompt del cuento (ES/EN) pide variar el título en cada
       generación.
-- [ ] `infrastructure/ai/MockProvider.ts`: array de plantillas de título elegido por índice
-      derivado del prompt (determinista por contenido, variado entre temas/perfiles).
-- [ ] Test: varios cuentos del mismo perfil con temas distintos → títulos distintos.
+- [x] `infrastructure/ai/MockProvider.ts`: repertorio de plantillas de título elegido por índice
+      derivado del contenido (determinista por entrada, variado entre temas/perfiles).
+- [x] Test: varios temas del mismo perfil → títulos distintos (`mock-provider.test.ts`) +
+      el prompt pide variar el título (`prompts.test.ts`).
 
-**(5) Instrucciones de actividad**
+**(5) Instrucciones de actividad** ✅
 
-- [ ] `domain/entities/Activity.ts`: campo `instrucciones`.
-- [ ] `prisma/schema.prisma`: `instrucciones String?` en `Activity` + migración SQL manual
-      (`ADD COLUMN ... NULL`, sin shadow DB).
-- [ ] `Docs/modelo-datos.md`: reflejar el campo (regla schema↔modelo).
-- [ ] `infrastructure/ai/AIProvider.ts`: `GeneratedActivity.instrucciones`.
-- [ ] `infrastructure/ai/parseResponse.ts`: schema Zod del campo.
-- [ ] `application` `dto.ts`: `ActivityOutput.instrucciones`.
-- [ ] `mappers.ts`: propagar `instrucciones`.
-- [ ] `application/RecommendActivities`: propagar `instrucciones`.
-- [ ] `prompts.ts`: el prompt de actividades pide un paso a paso.
-- [ ] `MockProvider`: rellena `instrucciones` mock.
-- [ ] App `ActivityCard.tsx`: muestra las instrucciones; botón "Realizado" con color de acento.
-- [ ] Tests: caso de uso, prompt, ruta de integración, componente de la app.
+- [x] `domain/entities/Activity.ts`: campo `instrucciones`.
+- [x] `prisma/schema.prisma`: `instrucciones String?` en `Activity` + migración SQL manual
+      (`ADD COLUMN ... NULL`, sin shadow DB) + `prisma generate`.
+- [x] `Docs/modelo-datos.md`: campo reflejado en el `erDiagram`.
+- [x] `domain/ai/AIProvider.ts`: `GeneratedActivity.instrucciones`.
+- [x] `infrastructure/ai/parseResponse.ts`: schema Zod (`textoOpcional`) + specs JSON de
+      Ollama/Cloud.
+- [x] `application/dto.ts`: `ActivityOutput.instrucciones` + `AnonymousActivityOutput`.
+- [x] `mappers.ts` + `RecommendActivities` + `RecommendActivitiesAnonymous` + `PrismaActivityRepository`:
+      propagan `instrucciones`.
+- [x] `prompts.ts`: el prompt de actividades pide un paso a paso (ES/EN).
+- [x] `MockProvider`: rellena `instrucciones` mock.
+- [x] App `ActivityCard.tsx`: muestra las instrucciones; botón "Realizado" con variante `accent`
+      (token `tertiary`). App `types.ts` + `schemas.ts` + `BubblyButton` (variante `accent`).
+- [x] Tests: caso de uso/parseo (`parse-response.test.ts`), prompt, ruta de integración
+      (`activities.integration.test.ts`), componente de la app (`ActivityCard.test.tsx`).
 
-**(fix) Temas del generador**
+**(fix) Temas del generador** ✅
 
-- [ ] `StoryGeneratorScreen.tsx`: `temasDisponibles` = todos los temas del vocabulario, con los
-      `intereses` del perfil pre-seleccionados.
-- [ ] Test del componente: aparecen magia y música.
+- [x] `StoryGeneratorScreen.tsx`: `temasDisponibles` = todos los temas del vocabulario (`TEMAS`),
+      con los `intereses` del perfil pre-seleccionados.
+- [x] Test del componente: aparecen magia y música (`StoryGeneratorScreen.test.tsx`).
 
 ## Definition of Done
 
