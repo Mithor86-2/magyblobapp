@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { Activity } from '../../domain/types';
-import { ActivityCard } from './ActivityCard';
+import { ActivityCard, pasosDeInstrucciones } from './ActivityCard';
 
 /**
  * Tests user-centric de la tarjeta de actividad (US-09/US-10/US-30). Recorre el
@@ -33,11 +33,13 @@ describe('ActivityCard', () => {
     expect(screen.getByText('Autor: IA local')).toBeVisible();
   });
 
-  it('US-54: muestra las instrucciones paso a paso cuando existen', () => {
+  it('US-54: muestra las instrucciones como lista de pasos cuando existen', () => {
     render(<ActivityCard activity={{ ...base, instrucciones: '1. Coge el papel. 2. Pinta.' }} />);
 
     expect(screen.getByText('Cómo hacerlo')).toBeVisible();
-    expect(screen.getByText('1. Coge el papel. 2. Pinta.')).toBeVisible();
+    // Cada paso es un elemento propio (lista), no un párrafo único.
+    expect(screen.getByText('Coge el papel.')).toBeVisible();
+    expect(screen.getByText('Pinta.')).toBeVisible();
   });
 
   it('US-54: si no hay instrucciones, no muestra la sección "Cómo hacerlo"', () => {
@@ -62,5 +64,22 @@ describe('ActivityCard', () => {
 
     expect(screen.getByText('¡Hecha!')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Realizado' })).not.toBeInTheDocument();
+  });
+});
+
+describe('pasosDeInstrucciones', () => {
+  it('parte un texto numerado "1. … 2. …" en pasos sin el marcador', () => {
+    expect(pasosDeInstrucciones('1. Coge el papel. 2. Pinta. 3. Limpia.')).toEqual([
+      'Coge el papel.',
+      'Pinta.',
+      'Limpia.',
+    ]);
+  });
+
+  it('parte por líneas si no hay numeración', () => {
+    expect(pasosDeInstrucciones('Primero esto\nLuego lo otro')).toEqual([
+      'Primero esto',
+      'Luego lo otro',
+    ]);
   });
 });

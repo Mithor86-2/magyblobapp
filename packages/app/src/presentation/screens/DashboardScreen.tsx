@@ -6,6 +6,7 @@ import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { StoryCover } from '../components/StoryCover';
 import { TEMAS, ESTILOS } from '../../domain/types';
 import type { AnonymousActivity, AnonymousStory, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -69,7 +70,14 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
       setStory(result);
       setCuentosUsados((n) => n + 1);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('dashboard.errorStory'));
+      // 429 = el backend ya agotó el cupo anónimo de esta IP (puede pasar tras recargar
+      // la app, que reinicia el contador local pero no el del servidor): refleja el
+      // límite poniendo el contador al máximo → botón deshabilitado + mensaje visible.
+      if (e instanceof ApiError && e.status === 429) {
+        setCuentosUsados(LIMITE_GRATIS);
+      } else {
+        setError(e instanceof ApiError ? e.message : t('dashboard.errorStory'));
+      }
     } finally {
       setLoadingStory(false);
     }
@@ -85,7 +93,11 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
       setActivities(result);
       setActividadesUsadas((n) => n + 1);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('dashboard.errorActivities'));
+      if (e instanceof ApiError && e.status === 429) {
+        setActividadesUsadas(LIMITE_GRATIS);
+      } else {
+        setError(e instanceof ApiError ? e.message : t('dashboard.errorActivities'));
+      }
     } finally {
       setLoadingActivities(false);
     }
@@ -137,15 +149,18 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
           />
         ))}
       </View>
+      <Text style={styles.usos}>
+        {t('dashboard.storiesUsed', { usados: cuentosUsados, limite: LIMITE_GRATIS })}
+      </Text>
+      {!quedanCuentos ? (
+        <Text style={styles.limitMsg}>{t('dashboard.storyLimit', { limite: LIMITE_GRATIS })}</Text>
+      ) : null}
       <BubblyButton
         label={quedanCuentos ? t('dashboard.generateStory') : t('dashboard.limitReached')}
         onPress={onGenerateStory}
         loading={loadingStory}
         disabled={!puedeGenerarCuento}
       />
-      <Text style={styles.usos}>
-        {t('dashboard.storiesUsed', { usados: cuentosUsados, limite: LIMITE_GRATIS })}
-      </Text>
 
       {loadingStory ? (
         <View style={styles.statusBox}>
@@ -156,6 +171,11 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
 
       {story ? (
         <View style={styles.storyCard}>
+          <StoryCover
+            tema={story.tema}
+            style={styles.storyCover}
+            accessibilityLabel={story.titulo}
+          />
           <Text style={styles.storyTitle}>{story.titulo}</Text>
           <Text style={styles.storyBody}>{story.cuerpo}</Text>
           <AuthorBadge proveedor={story.proveedor} />
@@ -163,6 +183,14 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
       ) : null}
 
       <Text style={styles.sectionTitle}>{t('dashboard.tryActivities')}</Text>
+      <Text style={styles.usos}>
+        {t('dashboard.activitiesUsed', { usadas: actividadesUsadas, limite: LIMITE_GRATIS })}
+      </Text>
+      {!quedanActividades ? (
+        <Text style={styles.limitMsg}>
+          {t('dashboard.activityLimit', { limite: LIMITE_GRATIS })}
+        </Text>
+      ) : null}
       <BubblyButton
         label={quedanActividades ? t('dashboard.generateActivities') : t('dashboard.limitReached')}
         onPress={onGenerateActivities}
@@ -170,9 +198,6 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
         disabled={!quedanActividades}
         variant="secondary"
       />
-      <Text style={styles.usos}>
-        {t('dashboard.activitiesUsed', { usadas: actividadesUsadas, limite: LIMITE_GRATIS })}
-      </Text>
 
       {loadingActivities ? (
         <View style={styles.statusBox}>
@@ -237,6 +262,12 @@ const styles = StyleSheet.create({
     color: colors.onSurfaceVariant,
     textAlign: 'center',
   },
+  limitMsg: {
+    ...typography.bodyMd,
+    color: colors.primary,
+    textAlign: 'center',
+    fontWeight: '700',
+  },
   statusBox: {
     alignItems: 'center',
     gap: spacing.sm,
@@ -263,6 +294,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
     ...softShadow,
+  },
+  storyCover: {
+    width: '100%',
+    height: 180,
+    borderRadius: radius.md,
   },
   storyTitle: {
     ...typography.headlineMd,

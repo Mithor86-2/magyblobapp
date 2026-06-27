@@ -19,6 +19,40 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.2.5] - 2026-06-27
+
+### Fixed
+
+- Dashboard sin sesión, UX del límite (US-50): al recibir **429** del backend (cupo anónimo agotado
+  por IP, p. ej. tras recargar la app) el contador se pone al máximo, así el botón queda **deshabilitado**
+  con "Límite alcanzado" y se muestra un **mensaje visible justo encima del botón** (antes el aviso solo
+  salía como un error al final de la pantalla, fuera de vista). El contador y el mensaje van ahora sobre
+  cada botón de generar (cuentos y actividades).
+
+## [1.2.4] - 2026-06-27
+
+### Changed
+
+- Las **instrucciones** de las tarjetas de actividad ("Cómo hacerlo") se muestran como **lista
+  numerada** (un paso por línea) en vez de un párrafo; helper `pasosDeInstrucciones` que parte el
+  texto por los marcadores "1. / 2. …" o por líneas (US-54).
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.3] - 2026-06-27
+
+### Fixed
+
+- Portada en el **Dashboard sin sesión** (US-50/US-59): la tarjeta del cuento de prueba (modo anónimo)
+  no mostraba portada; ahora pinta el **respaldo local por tema** con `StoryCover` (el modo anónimo no
+  genera imagen, así que siempre usa el respaldo), igual que el generador con sesión y la lectura.
+
 ## [1.2.2] - 2026-06-27
 
 ### Fixed
