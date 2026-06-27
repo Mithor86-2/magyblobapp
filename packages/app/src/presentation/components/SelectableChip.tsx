@@ -17,7 +17,13 @@ export function SelectableChip({ label, selected, onPress }: SelectableChipProps
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={[styles.base, selected ? styles.selected : styles.unselected]}
+      // Feedback táctil Material 3 (Android); en iOS/web el estado `pressed` atenúa el chip.
+      android_ripple={{ color: colors.primary + '33', borderless: false }}
+      style={({ pressed }) => [
+        styles.base,
+        selected ? styles.selected : styles.unselected,
+        pressed && styles.pressed,
+      ]}
     >
       <Text style={[styles.label, selected ? styles.labelSelected : styles.labelUnselected]}>
         {label}
@@ -34,6 +40,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
+    // Recorta el android_ripple a la forma de píldora.
+    overflow: 'hidden',
+  },
+  pressed: {
+    opacity: 0.85,
   },
   selected: {
     backgroundColor: colors.primary,

@@ -1,4 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Icon, type IconName } from './Icon';
 import { colors, radius, tapTarget, typography } from '../theme/tokens';
 
@@ -38,13 +39,24 @@ export function BubblyButton({
   const bg = VARIANT_BG[variant];
   const isDisabled = disabled || loading;
 
+  // Confirmación táctil (Material 3 / HIG): háptico suave al pulsar el botón principal.
+  // `impactAsync` es no-op en plataformas sin motor háptico (p. ej. web), así que degrada
+  // de forma segura. No se espera la promesa: el efecto táctil no debe bloquear el onPress.
+  const handlePress = () => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    onPress();
+  };
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={isDisabled}
+      // Ripple Material 3 en Android (centrado en el botón-píldora); el "hundido"
+      // (translateY) sigue dando feedback en iOS/web vía el estado `pressed`.
+      android_ripple={{ color: colors.onPrimary + '33', borderless: false }}
       style={({ pressed }) => [
         styles.base,
         { backgroundColor: bg, borderBottomColor: colors.primaryBorder },
@@ -75,6 +87,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 4,
     justifyContent: 'center',
     paddingHorizontal: 24,
+    // Recorta el android_ripple a la forma de píldora (sin esto desborda el radio).
+    overflow: 'hidden',
   },
   pressed: {
     borderBottomWidth: 1,
