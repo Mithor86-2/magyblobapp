@@ -39,22 +39,29 @@ el contenido/strings de `presentation/screens/*`, para no chocar con **F5 (i18n,
 - [x] ✅ `## [Unreleased]` listo en [packages/app/CHANGELOG.md](../../packages/app/CHANGELOG.md).
 - [x] ✅ Commit: `docs(planes): plan y US-56 de la feature 60 (estándares de diseño)`.
 
-### Fase 2 — Implementación (Material 3 / HIG, bajo riesgo) ❌
+### Fase 2 — Implementación (Material 3 / HIG, bajo riesgo) 🔄
 
-- [ ] ❌ **Feedback táctil:** `android_ripple` + estado `pressed` en los `Pressable` de los componentes
-      base (`BubblyButton`, `SelectableChip`).
-- [ ] ❌ **Háptica:** instalar `expo-haptics` (`expo install expo-haptics`) y disparar un háptico suave
-      (`ImpactFeedbackStyle.Light`) al pulsar `BubblyButton` (no deshabilitado/cargando). Degradación
-      segura en web (sin háptica).
-- [ ] ❌ **Contraste:** auditar pares de color de [tokens.ts](../../packages/app/src/presentation/theme/tokens.ts)
-      contra WCAG 2.1 AA (4.5:1 texto normal / 3:1 grande) y ajustar los que no cumplan, documentando
-      el cambio en el CHANGELOG y aquí.
-- [ ] ❌ **iOS back / cabecera:** revisar `stackScreenOptions` en `App.tsx` (etiqueta/título atrás) y
-      dejar una navegación conforme; cambios mínimos.
-- [ ] ❌ **Tests:** ampliar/ajustar las pruebas user-centric de los componentes tocados
-      (`BubblyButton.test.tsx`, `SelectableChip.test.tsx`), sin probar estilos.
-- [ ] ❌ Gate (`pnpm install` + `pnpm check`) verde (exit 0).
-- [ ] ❌ Entradas en `## [Unreleased]` del CHANGELOG del app (sin tocar `version`).
+- [x] ✅ **Feedback táctil:** `android_ripple` + estado `pressed` en los `Pressable` de los componentes
+      base (`BubblyButton`, `SelectableChip`), recortado a la píldora con `overflow: 'hidden'`.
+- [x] ✅ **Háptica:** instalado `expo-haptics` (`expo install expo-haptics` → `~56.0.3`); `BubblyButton`
+      dispara `Haptics.impactAsync(ImpactFeedbackStyle.Light)` al pulsar (no deshabilitado/cargando).
+      Degradación segura en web (la promesa se ignora con `.catch(() => {})`).
+- [x] ✅ **Contraste:** auditados los pares de color de [tokens.ts](../../packages/app/src/presentation/theme/tokens.ts)
+      contra WCAG 2.1 AA. **Resultado:** todos los pares de **texto** en uso cumplen con holgura
+      (mínimo `onPrimary` sobre `primary`/`secondary`/`error` ≈ 6.4:1; texto sobre superficies ≥ 6:1).
+      El icono activo de pestaña (`primary` sobre `secondaryContainer` ≈ 4.87:1) supera el 3:1 no-textual.
+      El token `outline` sobre `surface` (1.63:1) queda por debajo de 3:1, pero se usa como **borde
+      decorativo redundante** (el chip/pestaña ya transmiten estado por relleno/etiqueta/icono), exento
+      por WCAG 1.4.11; no se cambia para no alterar el pastel deliberado. **Sin cambios de color.**
+- [x] ✅ **iOS back / cabecera:** `stackScreenOptions` en `App.tsx` pasa a
+      `headerBackButtonDisplayMode: 'default'` (HIG iOS: título de la pantalla previa cuando cabe,
+      consistente entre versiones de iOS); Android sin etiqueta (Material). Cambio mínimo.
+- [x] ✅ **Tests:** ampliadas las pruebas user-centric de `BubblyButton` (háptico al pulsar; no dispara
+      deshabilitado/cargando), con `vi.mock('expo-haptics')`. `SelectableChip` sigue verde por rol/texto.
+      Stub global de `expo-haptics` en `vitest.config.ts` (alias) + `test/expo-haptics-stub.ts` para que
+      `expo-modules-core` no rompa los tests que renderizan `BubblyButton` de forma transitiva.
+- [x] ✅ Gate (`pnpm install` + `pnpm check`) verde (exit 0).
+- [x] ✅ Entradas en `## [Unreleased]` del CHANGELOG del app (sin tocar `version`).
 - [ ] ❌ Pruebas con el usuario → confirmación → cierre con `cerrar-feature` (versión + merge).
 
 ## Verificación (DoD)
