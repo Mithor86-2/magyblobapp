@@ -11,6 +11,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Validación más estricta de la entrada del alta (US-53): el **email** se valida con
+  `z.string().email()` (rechazo `400` temprano ante formato inválido; el `409` por email duplicado se
+  mantiene) y la **contraseña** exige **≥8 caracteres con al menos una letra y un número**,
+  sincronizada con la validación de la app.
+
 ### Deprecated
 
 ### Removed
