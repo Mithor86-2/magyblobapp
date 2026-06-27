@@ -92,6 +92,7 @@ model Activity {
   categoria    String
   titulo       String
   descripcion  String
+  instrucciones String?
   duracionMin  Int?
   nivel        Int?
   proveedor    String       @default("mock")

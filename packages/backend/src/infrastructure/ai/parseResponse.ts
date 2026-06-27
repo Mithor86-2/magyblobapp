@@ -20,6 +20,12 @@ const textoNoVacio = z.preprocess(
   z.string().min(1),
 );
 
+/** Texto opcional saneado: recorta; lo no-string o vacío queda como `undefined`. */
+const textoOpcional = z.preprocess((v) => {
+  const t = typeof v === 'string' ? v.trim() : '';
+  return t === '' ? undefined : t;
+}, z.string().optional());
+
 /**
  * Entero dentro de `[min, max]`, o `undefined` si no lo es (descarta basura del LLM).
  * Clave opcional: si falta, `undefined`; si está con basura, también `undefined`.
@@ -50,6 +56,8 @@ const actividadSchema = z.object({
   categoria: z.enum(CATEGORIAS),
   titulo: textoNoVacio,
   descripcion: textoNoVacio,
+  // Paso a paso opcional (US-54): si el LLM no lo da, queda undefined.
+  instrucciones: textoOpcional,
   // El LLM a veces inventa números fuera de rango (p. ej. nivel 1000):
   // saneamos a rangos sensatos y descartamos lo no válido.
   duracionMin: enteroEnRango(1, 60),

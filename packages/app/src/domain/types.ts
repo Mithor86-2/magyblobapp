@@ -143,6 +143,8 @@ export interface AnonymousActivity {
   categoria: Categoria;
   titulo: string;
   descripcion: string;
+  /** Paso a paso para realizar la actividad (US-54); opcional. */
+  instrucciones?: string;
   duracionMin?: number;
   nivel?: number;
   proveedor: ProveedorIa;
@@ -161,6 +163,8 @@ export interface Activity {
   categoria: Categoria;
   titulo: string;
   descripcion: string;
+  /** Paso a paso para realizar la actividad (US-54); opcional. */
+  instrucciones?: string;
   duracionMin?: number;
   nivel?: number;
   completadaEn?: string;

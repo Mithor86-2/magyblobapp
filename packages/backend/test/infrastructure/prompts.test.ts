@@ -125,6 +125,56 @@ describe('prompts — reglas narrativas / prompt maestro (US-28)', () => {
   });
 });
 
+describe('prompts — contenido IA (US-54)', () => {
+  it('el prompt del cuento pide variar el título (ES)', () => {
+    const { prompt } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(prompt).toContain('título original y distinto');
+  });
+
+  it('el prompt del cuento pide variar el título (EN)', () => {
+    const perfilEn = new ChildProfile({
+      id: 'p-en2',
+      guardianId: 'g-1',
+      nombre: 'Leo',
+      edad: Edad.create(5),
+      idioma: Idioma.create('en'),
+      avatar: 'a1',
+      intereses: ['animales'],
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    const { prompt } = buildStoryPrompt({
+      perfil: perfilEn,
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(prompt).toContain('original, different title');
+  });
+
+  it('el prompt de actividades pide un paso a paso (ES)', () => {
+    const { prompt } = buildActivitiesPrompt({ perfil: perfil(4), cantidad: 3 });
+    expect(prompt).toContain('paso a paso');
+  });
+
+  it('el prompt de actividades pide un paso a paso (EN)', () => {
+    const perfilEn = new ChildProfile({
+      id: 'p-en3',
+      guardianId: 'g-1',
+      nombre: 'Leo',
+      edad: Edad.create(5),
+      idioma: Idioma.create('en'),
+      avatar: 'a1',
+      intereses: ['animales'],
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    const { prompt } = buildActivitiesPrompt({ perfil: perfilEn, cantidad: 3 });
+    expect(prompt).toContain('step-by-step');
+  });
+});
+
 describe('prompts — multi-tema / multi-estilo (US-47)', () => {
   it('interpola la lista legible de temas y estilos en español ("y")', () => {
     const { prompt } = buildStoryPrompt({

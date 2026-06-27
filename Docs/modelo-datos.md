@@ -73,6 +73,7 @@ erDiagram
         string   categoria   "arte | musica | logica"
         string   titulo
         string   descripcion
+        string   instrucciones "opcional — paso a paso"
         int      duracionMin "opcional"
         int      nivel       "opcional"
         string   proveedor   "IA efectiva: mock | local | cloud"

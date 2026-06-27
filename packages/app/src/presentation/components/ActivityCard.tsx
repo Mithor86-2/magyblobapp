@@ -42,6 +42,12 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
       </View>
       <Text style={styles.titulo}>{activity.titulo}</Text>
       <Text style={styles.descripcion}>{activity.descripcion}</Text>
+      {activity.instrucciones ? (
+        <View style={styles.instrucciones}>
+          <Text style={styles.instruccionesTitulo}>Cómo hacerlo</Text>
+          <Text style={styles.instruccionesTexto}>{activity.instrucciones}</Text>
+        </View>
+      ) : null}
       {meta.length > 0 ? <Text style={styles.meta}>{meta.join(' · ')}</Text> : null}
 
       {completada ? (
@@ -56,7 +62,7 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
             <StarRating value={0} onChange={onComplete} />
           </View>
         ) : (
-          <BubblyButton label="Realizado" onPress={() => setValorando(true)} variant="secondary" />
+          <BubblyButton label="Realizado" onPress={() => setValorando(true)} variant="accent" />
         )
       ) : null}
 
@@ -93,6 +99,21 @@ const styles = StyleSheet.create({
     color: colors.onSurface,
   },
   descripcion: {
+    ...typography.bodyMd,
+    color: colors.onSurfaceVariant,
+  },
+  instrucciones: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.sm,
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  instruccionesTitulo: {
+    ...typography.labelBold,
+    color: colors.onSurface,
+  },
+  instruccionesTexto: {
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,
   },

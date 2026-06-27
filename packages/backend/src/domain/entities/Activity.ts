@@ -7,6 +7,8 @@ export interface ActivityProps {
   categoria: Categoria;
   titulo: string;
   descripcion: string;
+  /** Paso a paso para realizar la actividad (US-54); opcional (el LLM puede omitirlo). */
+  instrucciones?: string;
   duracionMin?: number;
   nivel?: number;
   /** Proveedor de IA que generó realmente la actividad (mock | local | cloud). */
@@ -25,6 +27,7 @@ export class Activity {
   readonly categoria: Categoria;
   readonly titulo: string;
   readonly descripcion: string;
+  readonly instrucciones?: string;
   readonly duracionMin?: number;
   readonly nivel?: number;
   readonly proveedor: ProveedorIa;
@@ -46,6 +49,7 @@ export class Activity {
     this.categoria = props.categoria;
     this.titulo = props.titulo;
     this.descripcion = props.descripcion;
+    this.instrucciones = props.instrucciones;
     this.duracionMin = props.duracionMin;
     this.nivel = props.nivel;
     this.proveedor = props.proveedor;

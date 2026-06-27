@@ -53,6 +53,20 @@ describe('MockProvider', () => {
     expect(a).toEqual(b);
   });
 
+  it('US-54: varía el título según el tema (no usa siempre la misma fórmula)', async () => {
+    const temasDistintos: Tema[] = ['animales', 'espacio', 'magia', 'aventuras', 'musica'];
+    const titulos = await Promise.all(
+      temasDistintos.map((t) =>
+        provider
+          .generateStory({ perfil: perfil('es'), temas: [t], estilos: ['aventura'] })
+          .then((s) => s.titulo),
+      ),
+    );
+    // Al menos dos plantillas distintas aparecen entre los temas (no es siempre la misma fórmula).
+    const sinTema = titulos.map((t, i) => t.replace(temasDistintos[i]!, '·'));
+    expect(new Set(sinTema).size).toBeGreaterThan(1);
+  });
+
   it('devuelve la cantidad de actividades pedida con categorías válidas', async () => {
     const actividades = await provider.recommendActivities({ perfil: perfil('es'), cantidad: 4 });
     expect(actividades).toHaveLength(4);
@@ -60,6 +74,9 @@ describe('MockProvider', () => {
       expect(CATEGORIAS).toContain(a.categoria);
       expect(a.titulo.length).toBeGreaterThan(0);
       expect(a.descripcion.length).toBeGreaterThan(0);
+      // US-54: la mock rellena un paso a paso no vacío.
+      expect(a.instrucciones?.length ?? 0).toBeGreaterThan(0);
+      expect(a.instrucciones).toContain('1.');
     }
   });
 

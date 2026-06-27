@@ -203,7 +203,8 @@ function instruccionJsonActividades(): string {
   return (
     ' Responde ÚNICAMENTE con un objeto JSON con esta forma exacta: ' +
     `{"actividades": [{"categoria": "una de [${categorias}]", "titulo": "string", ` +
-    '"descripcion": "string", "duracionMin": entero, "nivel": entero entre 1 y 3}]}. ' +
+    '"descripcion": "string", "instrucciones": "paso a paso en una cadena", ' +
+    '"duracionMin": entero, "nivel": entero entre 1 y 3}]}. ' +
     'No añadas texto fuera del JSON.'
   );
 }

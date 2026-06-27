@@ -54,6 +54,7 @@ const ESQUEMA_ACTIVIDADES = {
           categoria: { type: 'string', enum: [...CATEGORIAS] },
           titulo: { type: 'string' },
           descripcion: { type: 'string' },
+          instrucciones: { type: 'string' },
           duracionMin: { type: 'integer' },
           nivel: { type: 'integer' },
         },

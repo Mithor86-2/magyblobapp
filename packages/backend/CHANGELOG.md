@@ -22,6 +22,17 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Documentadas las variables `ELEVENLABS_VOICE_ID_ES`/`_EN` en `.env.example` (cómo obtener un
   `voice_id` y qué voz _premade_ multilingüe se usa por defecto en cada idioma) y aclarados los
   defaults en `config.ts` (US-55).
+- Contenido IA (US-54): campo de dominio **`Activity.instrucciones`** (paso a paso de la actividad)
+  que recorre entidad → `prisma/schema.prisma` (columna `instrucciones TEXT NULL` + migración) →
+  `parseResponse` (schema Zod) → `GeneratedActivity` → `ActivityOutput` (DTO) → `mappers` →
+  `RecommendActivities`. El `MockProvider` rellena instrucciones deterministas y el prompt de
+  actividades pide un paso a paso.
+
+### Changed
+
+- Contenido IA (US-54): el prompt del cuento (ES/EN) pide **variar el título** en cada generación y
+  el `MockProvider` deja de usar el título fijo `"{nombre} y la aventura de {tema}"` por una
+  variación elegida de forma determinista según el contenido del cuento.
 
 ### Deprecated
 
