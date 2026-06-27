@@ -9,13 +9,23 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Contenido IA (US-54): `ActivityCard` muestra las **instrucciones paso a paso** de la actividad
+  cuando existen.
+
 ### Changed
+
+- Contenido IA (US-54): el botón **"Realizado"** de `ActivityCard` usa un **color de acento** propio
+  del theme (en lugar del color de la categoría).
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- Contenido IA (US-54): el generador de cuentos (`StoryGeneratorScreen`) ofrece **todos** los temas
+  del vocabulario (`animales · espacio · magia · aventuras · musica`) con los intereses del perfil
+  **pre-seleccionados**; antes la lista se limitaba a los intereses y ocultaba magia y música.
 
 ### Security
 

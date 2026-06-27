@@ -20,7 +20,7 @@ Should = HITO 2 · Could = si hay margen.
 | Épica | Documento                                           | Historias                                                                                                                                                                                                 |
 | ----- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02, US-48, US-49                                                                                                                                                    |
-| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28, US-47                                                                                                                                                    |
+| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28, US-47, US-54                                                                                                                                             |
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                                                                                                              |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                                                                                                                     |
 | E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                                                                                                                                                                       |
@@ -82,6 +82,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-48 | Contraseña en el alta y login real     | Should    | Mejoras | Alta / Login                        | [A](epic-a-perfil.md#us-48)      |
 | US-50 | Dashboard/Home sin sesión (efímero)    | Should    | Mejoras | Inicio sin sesión                   | [F](epic-f-plataforma.md#us-50)  |
 | US-52 | Icono de la app y splash de marca      | Could     | Mejoras | Launcher / Splash                   | [F](epic-f-plataforma.md#us-52)  |
+| US-54 | Contenido IA: títulos/instruc./temas   | Should    | Mejoras | Generador / Actividades             | [B](epic-b-cuentos.md#us-54)     |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

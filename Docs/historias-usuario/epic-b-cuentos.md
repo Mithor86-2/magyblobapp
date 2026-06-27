@@ -1,6 +1,6 @@
 # Epic B — Generación de cuentos (núcleo)
 
-Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**, **US-26**, **US-28**, **US-47**.
+Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**, **US-26**, **US-28**, **US-47**, **US-54**.
 Volver al [índice](README.md).
 
 ## US-03 — Generar cuento personalizado · Must
@@ -195,3 +195,41 @@ una salida determinista válida.
 - (No funcional) Dado el cambio de pipeline y prompts, Cuando se ejecuta el gate, Entonces los tests
   (caso de uso, endpoint, gateway de la app y `mock`/`local`) siguen en verde y la salida
   estructurada (`titulo`/`cuerpo`) se mantiene parseable.
+
+## US-54 — Contenido IA: títulos variados, instrucciones de actividad y temas completos · Should (Mejoras)
+
+Como **padre/tutor** quiero que los cuentos tengan **títulos variados** (no siempre la misma
+plantilla), que las actividades incluyan **instrucciones paso a paso** y que el generador ofrezca
+**todos los temas** disponibles, para que el contenido se sienta más rico y la app no oculte
+opciones.
+
+**Contexto.** Tres mejoras que comparten el pipeline de IA (`prompts.ts`, `MockProvider`) y el
+esquema Prisma, por lo que van en una sola feature (ver [coordinación del lote nº 2](../planes/coordinacion-mejoras-paralelo-2.md),
+F2). **Afecta también a la épica C** (actividades): se añade el campo de dominio
+`Activity.instrucciones` (migración Prisma) que recorre entidad → `parseResponse` → DTO → mapper →
+`RecommendActivities`, y el `MockProvider` lo rellena. En la app, `ActivityCard` muestra las
+instrucciones y el botón **"Realizado"** pasa a un color de acento propio. El **fix de temas** vive
+en `StoryGeneratorScreen` (la lista hoy se limita a los intereses del perfil). Toca **backend** y
+**app**; el contrato HTTP del cuento no cambia (solo añade `instrucciones` a la actividad).
+
+**Criterios de aceptación**
+
+- **(Títulos variados)** Dado un perfil, Cuando genero varios cuentos con temas distintos en modo
+  `mock`, Entonces los títulos varían (no siempre `"{nombre} y la aventura de {tema}"`).
+- **(Títulos variados)** Dado el prompt del cuento (ES/EN), Cuando se construye, Entonces pide
+  explícitamente **variar el título** en cada generación.
+- **(Instrucciones)** Dado un perfil, Cuando se recomiendan actividades, Entonces cada actividad
+  incluye un campo `instrucciones` con un **paso a paso**, y el prompt de actividades lo solicita.
+- **(Instrucciones · mock)** Dado `AI_PROVIDER=mock`, Cuando pido actividades, Entonces el conjunto
+  determinista incluye `instrucciones` válidas.
+- **(Instrucciones · persistencia)** Dado el campo nuevo, Cuando se persiste una actividad, Entonces
+  `instrucciones` se guarda en una columna `NULL`-able de `activities` (migración Prisma, sin romper
+  filas existentes).
+- **(Instrucciones · app)** Dada una actividad con instrucciones, Cuando la veo en `ActivityCard`,
+  Entonces se muestran; y el botón **"Realizado"** usa un **color de acento** propio del theme.
+- **(Temas)** Dado el generador de cuentos, Cuando lo abro, Entonces puedo elegir entre **todos** los
+  temas del vocabulario (`animales | espacio | magia | aventuras | musica`) con los **intereses** del
+  perfil **pre-seleccionados** (antes faltaban magia y música).
+- (No funcional) Dado el cambio de pipeline, prompts, schema y app, Cuando se ejecuta el gate,
+  Entonces los tests (caso de uso, prompt, ruta de integración y componente de la app) siguen en
+  verde y la salida estructurada se mantiene parseable.
