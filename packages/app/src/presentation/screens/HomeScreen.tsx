@@ -17,7 +17,7 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
 
   return (
-    <Screen>
+    <Screen headerImageName="home">
       <View style={styles.hero}>
         <Text style={styles.avatar}>{profile ? avatarEmoji(profile.avatar) : '✨'}</Text>
         <Text style={styles.title}>¡Hola{profile ? `, ${profile.nombre}` : ''}!</Text>

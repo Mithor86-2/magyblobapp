@@ -50,10 +50,10 @@ se respeta lo añadido por F1.
 
 - [x] ✅ **Optimizar las 5 imágenes** de `assets/images/headers/` (~2 MB → ~200-400 KB) con PIL
       (redimensionar a ancho ≤1200 + recompresión), dimensiones consistentes, sin degradación visible.
-- [x] ✅ **Variante `Screen`:** prop opcional `headerImageName?: 'welcome' | 'home' | 'dashboard' |
-      'cuentos' | 'actividades'`; cuando llega, renderiza un `<Image>` de cabecera (altura ~160-180,
-      `resizeMode` adecuado) arriba del `ScrollView`, dentro del `SafeAreaView` y respetando el
-      `KeyboardAvoidingView` (US-53) y el footer fijo. Mapa nombre → `require` **estático**.
+- [x] ✅ **Variante `Screen`:** prop opcional `headerImageName` (uno de cinco nombres lógicos:
+      welcome/home/dashboard/cuentos/actividades); cuando llega, renderiza un `<Image>` de cabecera
+      (altura ~170, `resizeMode="cover"`) arriba del `ScrollView`, dentro del `SafeAreaView` y
+      respetando el `KeyboardAvoidingView` (US-53) y el footer fijo. Mapa nombre → `require` **estático**.
 - [x] ✅ **Pasar `headerImageName`** desde cada pantalla con imagen: `WelcomeScreen` → `welcome`,
       `HomeScreen` → `home`, `DashboardScreen` → `dashboard`, `StoryGeneratorScreen` → `cuentos`,
       `ActivitiesScreen` → `actividades`. El resto sin cabecera.

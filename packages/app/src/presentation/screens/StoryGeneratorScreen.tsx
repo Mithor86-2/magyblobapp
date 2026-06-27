@@ -65,6 +65,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
 
   return (
     <Screen
+      headerImageName="cuentos"
       footer={
         <BubblyButton
           label={story ? 'Generar otro' : 'Generar cuento'}

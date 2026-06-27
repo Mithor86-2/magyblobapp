@@ -59,6 +59,7 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
 
   return (
     <Screen
+      headerImageName="actividades"
       footer={
         <BubblyButton
           label={generado ? 'Generar más' : 'Generar actividades'}

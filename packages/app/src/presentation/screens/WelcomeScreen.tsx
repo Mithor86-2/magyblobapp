@@ -10,7 +10,7 @@ import type { RootScreenProps } from '../navigation';
  */
 export function WelcomeScreen({ navigation }: RootScreenProps<'Welcome'>) {
   return (
-    <Screen>
+    <Screen headerImageName="welcome">
       <View style={styles.hero}>
         <Text style={styles.logo}>✨</Text>
         <Text style={styles.title}>Aprendizaje Mágico</Text>
