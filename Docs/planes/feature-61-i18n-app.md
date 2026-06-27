@@ -52,34 +52,41 @@ dispositivo.
 - ✅ `## [Unreleased]` de [packages/app/CHANGELOG.md](../../packages/app/CHANGELOG.md) con la entrada de
   i18n.
 
-### Fase 2 — Implementación ❌
+### Fase 2 — Implementación ✅
 
-- ❌ **Dependencias**: `expo install expo-localization`; `add i18next react-i18next`.
-- ❌ **Infra i18n** (`src/i18n/`): `index.ts` (init síncrono de i18next con `initReactI18next`, recursos
-  `es`/`en`, `lng`/`fallbackLng = 'es'`, `supportedLngs`, `compatibilityJSON: 'v4'` y sin
-  `Suspense`); `resources.ts` o `locales/{es,en}.ts` con los diccionarios; helper de detección inicial
-  con `expo-localization` (solo sugerencia).
-- ❌ **Diccionarios ES/EN**: extraer ~100-150 strings de `presentation/screens/*` (Welcome, Dashboard,
-  Home, Login, Consent, CreateProfile, SelectProfile, Activities, StoryGenerator, History, Parental,
-  StoryReader), los componentes con texto (`ActivityCard`, `AuthorBadge`, `NarrationControls`,
-  `ParentalGate`, `ErrorFallback`) y los **títulos de cabecera** de `App.tsx`. ES = texto actual idéntico.
-- ❌ **Integrar `labels.ts`**: los vocabularios cerrados (temas, estilos, parentesco, categorías,
-  proveedor) pasan por i18n manteniendo la etiqueta ES idéntica (o claves coherentes consumidas por
-  `labels`).
-- ❌ **Sustituir hardcodes por `t('clave')`** en pantallas, componentes y títulos del stack.
-- ❌ **`appLanguage` en `useAppStore`**: campo `appLanguage: 'es' | 'en'` persistido (subir `version` de
-  persistencia y `partialize`), con acción `setAppLanguage` que llama a `i18n.changeLanguage`.
-- ❌ **Selector de idioma** en `ParentalScreen` (zona de adultos).
-- ❌ **Sincronizar idioma al arrancar**: aplicar `appLanguage` persistido a i18next tras la hidratación;
-  si no hay, usar la sugerencia de `expo-localization`.
+- ✅ **Dependencias**: `expo-localization` (`~56.0.6`), `i18next` (`^26`), `react-i18next` (`^17`).
+- ✅ **Infra i18n** (`src/i18n/`): `index.ts` (init **síncrona** de i18next con `initReactI18next`,
+  recursos `es`/`en`, `lng`/`fallbackLng = 'es'`, `supportedLngs`, `compatibilityJSON: 'v4'`,
+  `initAsync: false` —antes `initImmediate`, renombrado en i18next v24— y `useSuspense: false`);
+  `locales/{es,en}.ts` con los diccionarios; `i18next.d.ts` (tipado de claves); helper
+  `detectDeviceLanguage` con `expo-localization` (solo sugerencia).
+- ✅ **Diccionarios ES/EN**: extraídos ~120 strings de `presentation/screens/*` (Welcome, Dashboard,
+  Home, Login, Consent, CreateProfile, SelectProfile, Activities, StoryGenerator, History, Parental;
+  StoryReader solo renderiza contenido del cuento, sin UI fija), los componentes con texto
+  (`ActivityCard`, `AuthorBadge`, `NarrationControls`, `ParentalGate`, `ErrorFallback`) y los
+  **títulos de cabecera** + nombres de pestañas de `App.tsx`. ES = texto actual idéntico.
+- ✅ **Integrar `labels.ts`**: los vocabularios cerrados (temas, estilos, parentesco, categorías,
+  proveedor) pasan por i18n (clave `vocab.*`) vía funciones `temaLabel`/`estiloLabel`/… que resuelven
+  en el idioma activo; los componentes se suscriben con `useTranslation` y re-renderizan al cambiar.
+- ✅ **Sustituir hardcodes por `t('clave')`** en pantallas, componentes, títulos del stack y pestañas.
+- ✅ **`appLanguage` en `useAppStore`**: campo `appLanguage: 'es' | 'en'` persistido (persist `version`
+  3→**4** y `partialize` ampliado), con acción `setAppLanguage` que llama a `cambiarIdiomaApp` →
+  `i18n.changeLanguage`. Es preferencia de UI: **no** se borra en `logout`.
+- ✅ **Selector de idioma** en `ParentalScreen` (zona de adultos).
+- ✅ **Sincronizar idioma al arrancar**: `onRehydrateStorage` aplica el `appLanguage` persistido a
+  i18next; si no hay, usa la sugerencia de `expo-localization` (`detectDeviceLanguage`).
 
-### Fase 3 — Pruebas y gate ❌
+### Fase 3 — Pruebas y gate ✅
 
-- ❌ Test del cambio de idioma (`t` devuelve ES/EN según idioma activo).
-- ❌ Test de que una pantalla renderiza el texto traducido.
-- ❌ Ajustar los tests existentes que rompan (deberían seguir verdes si el default es ES y las claves
-  devuelven el mismo texto español).
-- ❌ `pnpm install` + `pnpm check` en verde (exit 0).
+- ✅ Test del cambio de idioma (`src/i18n/i18n.test.ts`): `t` devuelve ES/EN según idioma activo,
+  interpolación y vocabularios.
+- ✅ Test de que una pantalla renderiza el texto traducido (`screens/WelcomeScreen.test.tsx`, ES y EN).
+- ✅ Tests del store (`useAppStore.test.ts`): `setAppLanguage`, persistencia y que `logout` no borra el
+  idioma.
+- ✅ Stub de `expo-localization` para Vitest (`test/expo-localization-stub.ts`) y init de i18n en
+  `vitest.setup.ts` (varios tests mockean el store, por donde se cargaba i18n).
+- ✅ Tests existentes en verde sin cambios de texto (default ES, claves con el mismo español).
+- ✅ `pnpm install` + `pnpm check` en verde (exit 0): 144 tests del app.
 - ❌ Pruebas con el usuario antes del cierre; `finish`/merge solo tras confirmación explícita.
 
 ## Notas de diseño (Clean Arch ligera)
