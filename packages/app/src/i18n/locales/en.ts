@@ -85,6 +85,9 @@ export const en: typeof es = {
     generateStory: 'Generate story',
     limitReached: 'Limit reached — create an account',
     storiesUsed: 'Trial stories: {{usados}}/{{limite}}',
+    storyLimit: 'You have used your {{limite}} trial stories. Create an account to keep creating.',
+    activityLimit:
+      'You have used your {{limite}} trial activities. Create an account to keep creating.',
     creatingStory: 'Creating a magical story…',
     tryActivities: 'Try some activities',
     generateActivities: 'Generate activities',

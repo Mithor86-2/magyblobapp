@@ -17,6 +17,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- Dashboard sin sesión, UX del límite (US-50): al recibir **429** del backend (cupo anónimo agotado
+  por IP, p. ej. tras recargar la app) el contador se pone al máximo, así el botón queda **deshabilitado**
+  con "Límite alcanzado" y se muestra un **mensaje visible justo encima del botón** (antes el aviso solo
+  salía como un error al final de la pantalla, fuera de vista). El contador y el mensaje van ahora sobre
+  cada botón de generar (cuentos y actividades).
+
 ### Security
 
 ## [1.2.4] - 2026-06-27
