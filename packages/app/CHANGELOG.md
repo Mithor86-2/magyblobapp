@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Internacionalización del app ES/EN (US-57): se introduce `i18next` + `react-i18next` (diccionarios
+  `es`/`en` empaquetados, sin red ni descarga en runtime) y `expo-localization` como sugerencia inicial
+  del idioma del dispositivo. El idioma por defecto y de respaldo es `es` (los textos en español se
+  conservan idénticos bajo claves). Los textos hardcodeados de las pantallas, los componentes con texto
+  y los títulos de cabecera del stack pasan a resolverse con `t('clave')`. El idioma del app
+  (`appLanguage`, ES/EN) se persiste en `useAppStore` y se cambia desde un selector en la zona de
+  adultos, independiente del idioma del perfil del niño (que gobierna la generación de cuentos en el
+  backend).
 - Cabeceras ilustradas por pantalla (US-58): el lienzo base `Screen` acepta una prop opcional
   `headerImageName` (`welcome | home | dashboard | cuentos | actividades`) que pinta la imagen de
   cabecera correspondiente de `assets/images/headers/` en la parte superior, dentro del área segura y

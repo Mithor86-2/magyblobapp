@@ -24,7 +24,7 @@ Should = HITO 2 · Could = si hay margen.
 | C     | [Actividades](epic-c-actividades.md)                | US-09, US-10                                                                                                                                                                                                                   |
 | D     | [Historial](epic-d-historial.md)                    | US-08                                                                                                                                                                                                                          |
 | E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13                                                                                                                                                                                                            |
-| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45, US-46, US-50, US-51, US-52, US-53, US-56, US-58 |
+| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45, US-46, US-50, US-51, US-52, US-53, US-56, US-57, US-58 |
 
 ## Trazabilidad (historia → fase → pantalla)
 
@@ -86,6 +86,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-54 | Contenido IA: títulos/instruc./temas   | Should    | Mejoras | Generador / Actividades             | [B](epic-b-cuentos.md#us-54)     |
 | US-55 | Voz de la narración por idioma (ES/EN) | Could     | Mejoras | Narración                           | [B](epic-b-cuentos.md#us-55)     |
 | US-56 | Estándares de diseño Android/iOS       | Should    | Mejoras | Toda la app                         | [F](epic-f-plataforma.md#us-56)  |
+| US-57 | i18n del app (ES/EN)                   | Should    | Mejoras | Toda la app / Zona adultos          | [F](epic-f-plataforma.md#us-57)  |
 | US-58 | Cabeceras por pantalla                 | Could     | Mejoras | Cabeceras                           | [F](epic-f-plataforma.md#us-58)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)

@@ -3,7 +3,7 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-58**.
+**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -1120,3 +1120,51 @@ resto se queda sin ella. **Solo app.** Ver el plan
 - Dado el componente `Screen` y alguna pantalla con cabecera, Cuando se ejecuta `pnpm test`, Entonces
   hay pruebas que verifican que la cabecera se renderiza cuando se pasa el nombre y **no** se renderiza
   cuando se omite.
+
+## US-57 — Internacionalización del app (ES/EN) · Should (Mejoras)
+
+Como **persona adulta que usa la app** quiero poder **cambiar el idioma de la interfaz entre español
+e inglés** para que toda la app (textos de UI, botones, títulos de pantalla, mensajes) se muestre en
+el idioma que prefiero, con independencia del idioma del perfil del niño.
+
+**Contexto.** Hasta ahora todos los textos de la UI estaban **hardcodeados en español** repartidos por
+`presentation/screens/*`, los componentes con texto (`ActivityCard`, `AuthorBadge`, `NarrationControls`,
+`ParentalGate`, `ErrorFallback`, `BubblyButton` vía `label`) y los **títulos de cabecera del stack** en
+`App.tsx`. Esta historia introduce **i18n** con `i18next` + `react-i18next` (recursos `es`/`en`
+empaquetados, sin red ni SDK de tercero en runtime, conforme a
+[cumplimiento-menores.md](../cumplimiento-menores.md)) y `expo-localization` como **sugerencia inicial**
+del idioma del dispositivo. El **idioma por defecto y de respaldo es `es`** (los textos en español se
+conservan idénticos bajo claves, de modo que las pruebas user-centric existentes que consultan por texto
+siguen verdes). Se distingue el **idioma del APP** (`appLanguage`, ES/EN, persistido en `useAppStore`,
+con selector en la **zona de adultos**) del **idioma del PERFIL** del niño (que ya existe y gobierna la
+generación de los cuentos en el backend, y **no se toca**). Los vocabularios cerrados del dominio
+(`labels.ts`: temas, estilos, parentesco, categorías, proveedor) se integran en el sistema i18n
+manteniendo su etiqueta ES idéntica. **Solo app.** Ver el plan
+[feature-61-i18n-app](../planes/feature-61-i18n-app.md).
+
+**Criterios de aceptación**
+
+- Dado el sistema i18n inicializado, Cuando no hay idioma elegido por la persona adulta, Entonces el
+  idioma activo es **`es`** por defecto (y `es` es también el `fallbackLng`), de modo que los textos
+  coinciden con los que había antes.
+- Dada una clave de traducción existente en ambos idiomas, Cuando el idioma activo es `es`, Entonces
+  `t('clave')` devuelve el texto **en español**; Cuando el idioma activo es `en`, Entonces devuelve el
+  texto **en inglés**.
+- Dada la **zona de adultos** (`ParentalScreen`), Cuando elijo el idioma del app (ES o EN), Entonces la
+  interfaz cambia de idioma de inmediato (`i18n.changeLanguage`) y la elección **persiste** entre
+  reinicios (`appLanguage` en `useAppStore`).
+- Dado el **idioma del perfil** del niño (que gobierna la generación de los cuentos), Cuando cambio el
+  idioma del **app**, Entonces el idioma del perfil **no** se ve afectado (son ajustes independientes).
+- Dados los **textos hardcodeados** de las pantallas, los componentes con texto y los **títulos de
+  cabecera** del stack (`App.tsx`), Cuando se aplica la i18n, Entonces se sustituyen por claves `t(...)`
+  resueltas desde los diccionarios `es`/`en`.
+- Dado `expo-localization`, Cuando arranca la app por primera vez (sin preferencia guardada), Entonces
+  el idioma del dispositivo se usa **solo como sugerencia inicial** si es uno de los soportados (`es`/`en`);
+  en cualquier otro caso cae a `es`.
+- Dado el conjunto de pruebas, Cuando se ejecuta `pnpm test`, Entonces hay pruebas del **cambio de
+  idioma** (`t` devuelve ES/EN según el idioma activo) y de que una pantalla **renderiza el texto
+  traducido**, y las pruebas user-centric existentes (que consultan por texto en español) **siguen en
+  verde** sin cambios de texto.
+- (No-funcional) Dadas las dependencias `i18next`, `react-i18next` y `expo-localization`, Cuando se
+  instalan, Entonces los diccionarios van **empaquetados en build-time** (sin red ni descarga de
+  traducciones en runtime), conforme a [cumplimiento-menores.md](../cumplimiento-menores.md).
