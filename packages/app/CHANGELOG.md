@@ -17,6 +17,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- Portada en el **Dashboard sin sesión** (US-50/US-59): la tarjeta del cuento de prueba (modo anónimo)
+  no mostraba portada; ahora pinta el **respaldo local por tema** con `StoryCover` (el modo anónimo no
+  genera imagen, así que siempre usa el respaldo), igual que el generador con sesión y la lectura.
+
 ### Security
 
 ## [1.2.2] - 2026-06-27
