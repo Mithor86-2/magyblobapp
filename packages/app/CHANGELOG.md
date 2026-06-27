@@ -11,6 +11,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Las **instrucciones** de las tarjetas de actividad ("Cómo hacerlo") se muestran como **lista
+  numerada** (un paso por línea) en vez de un párrafo; helper `pasosDeInstrucciones` que parte el
+  texto por los marcadores "1. / 2. …" o por líneas (US-54).
+
 ### Deprecated
 
 ### Removed
