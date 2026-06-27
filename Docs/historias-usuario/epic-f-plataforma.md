@@ -3,7 +3,7 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-50**, **US-51**.
+**US-46**, **US-50**, **US-51**, **US-52**, **US-56**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -1044,3 +1044,43 @@ escrito o una contraseña débil.
 - Dado el alta, Cuando elijo la **contraseña**, Entonces se exige un mínimo razonable de **≥8
   caracteres con al menos una letra y un número** (sin reglas agresivas), validado **en el backend y
   en la app** de forma sincronizada, con **ayuda visual** del requisito en la pantalla de alta.
+
+## US-56 — Estándares de diseño Android/iOS · Should (Mejoras)
+
+Como **usuario de la app** quiero que los componentes base sigan las pautas de diseño de cada
+plataforma (Material 3 en Android, Human Interface Guidelines en iOS) para que la interacción se sienta
+**nativa, accesible y agradable** en cualquier dispositivo.
+
+**Contexto.** El design system "Aprendizaje Mágico" (tokens en
+[theme/tokens.ts](../../packages/app/src/presentation/theme/tokens.ts)) ya fija paleta, tipografía
+Quicksand y tap targets ≥64px, pero los componentes base no daban **feedback táctil** conforme a cada
+plataforma (sin `android_ripple` ni háptica) y algunos pares de color no se habían verificado contra el
+**contraste AA** (WCAG 2.1, 4.5:1 texto normal / 3:1 texto grande). Esta historia hace de **bajo riesgo**
+mejoras conformes a Material 3 / HIG centradas en **componentes y theme** (`BubblyButton`,
+`SelectableChip`, `tokens.ts`) y en las **opciones de navegación** (`stackScreenOptions` en `App.tsx`),
+**sin tocar el contenido/strings de las pantallas** (eso lo cubren las historias de i18n y cabeceras).
+Se añade [`expo-haptics`](https://docs.expo.dev/versions/latest/sdk/haptics/) (SDK oficial de Expo,
+empaquetado en build-time: sin red ni SDK de tercero en runtime, conforme a
+[cumplimiento-menores.md](../cumplimiento-menores.md)). **Solo app.** Ver el plan
+[feature-60-estandares-diseno](../planes/feature-60-estandares-diseno.md).
+
+**Criterios de aceptación**
+
+- Dado un botón principal `BubblyButton` en **Android**, Cuando lo pulso, Entonces muestra un
+  **`android_ripple`** con el color de la plataforma (Material 3) además del estado "hundido" existente.
+- Dado el `BubblyButton` (no deshabilitado), Cuando lo pulso, Entonces dispara un **háptico suave**
+  (`expo-haptics`, `ImpactFeedbackStyle.Light`) como confirmación táctil; deshabilitado o cargando **no**
+  dispara háptico ni invoca `onPress`.
+- Dado el chip `SelectableChip` en **Android**, Cuando lo pulso, Entonces ofrece **feedback táctil**
+  (`android_ripple`) coherente con el botón.
+- Dados los pares de color del theme (texto sobre superficie), Cuando se auditan contra **WCAG 2.1 AA**,
+  Entonces cumplen el contraste mínimo (4.5:1 texto normal, 3:1 texto grande) y los que no cumplían se
+  ajustan, documentando el cambio.
+- Dada la cabecera del stack en **iOS**, Cuando navego hacia atrás, Entonces el botón "atrás" sigue la
+  HIG (etiqueta/título conforme) y la navegación queda consistente entre plataformas.
+- Dados los componentes tocados (`BubblyButton`, `SelectableChip`), Cuando se ejecuta `pnpm test`,
+  Entonces sus pruebas **user-centric** (rol/nombre accesible, sin probar estilos) siguen en verde y
+  cubren el nuevo comportamiento donde es observable.
+- (No-funcional) Dada la dependencia `expo-haptics`, Cuando se instala, Entonces va **empaquetada en
+  build-time** (sin red ni SDK de tercero en runtime) y degrada de forma segura en plataformas sin
+  háptica (web), conforme a [cumplimiento-menores.md](../cumplimiento-menores.md).

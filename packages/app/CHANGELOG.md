@@ -22,6 +22,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   longitud mínima), sincronizada con la validación del backend (US-53).
 - `Screen` envuelve su contenido en `KeyboardAvoidingView` para que el teclado no tape los campos de
   los formularios (Consent/Login/CreateProfile), conservando el scroll y el footer fijo (US-53).
+- Estándares de diseño Android/iOS (US-56): **feedback táctil** conforme a Material 3 / HIG en los
+  componentes base. `BubblyButton` y `SelectableChip` muestran **`android_ripple`** (recortado a la
+  píldora) además del estado "hundido"/atenuado existente; en plataformas sin háptica (web) degradan
+  sin error. Se añade **`expo-haptics`** (SDK de Expo, empaquetado en build-time: sin red ni SDK de
+  tercero en runtime) y `BubblyButton` dispara un **háptico suave** (`ImpactFeedbackStyle.Light`) al
+  pulsar; deshabilitado o cargando no dispara háptico.
+
+### Changed
+
+- Cabecera del stack (`stackScreenOptions` en `App.tsx`): el botón "atrás" pasa de
+  `headerBackButtonDisplayMode: 'minimal'` a `'default'` (US-56) para seguir la HIG de iOS —muestra el
+  título de la pantalla anterior cuando cabe y degrada a "Back"/solo icono según el espacio—, dejando
+  una vuelta atrás consistente entre versiones de iOS (en iOS 26+ el título de "atrás" se oculta por
+  defecto). En Android el chevron sigue sin etiqueta (Material).
 
 ### Deprecated
 

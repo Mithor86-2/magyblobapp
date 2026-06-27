@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { BubblyButton } from './BubblyButton';
 
@@ -11,7 +11,19 @@ import { BubblyButton } from './BubblyButton';
  */
 vi.mock('./Icon', () => ({ Icon: () => null }));
 
+// `expo-haptics` es un módulo nativo no importable bajo Vitest; lo sustituimos por un
+// doble. Captura el háptico para verificar la confirmación táctil (US-56) sin tocar el SO.
+const impactAsync = vi.fn((_style?: string) => Promise.resolve());
+vi.mock('expo-haptics', () => ({
+  impactAsync: (style?: string) => impactAsync(style),
+  ImpactFeedbackStyle: { Light: 'light' },
+}));
+
 describe('BubblyButton', () => {
+  beforeEach(() => {
+    impactAsync.mockClear();
+  });
+
   it('se localiza por su rol de botón y su nombre, e invoca onPress al pulsar', () => {
     const onPress = vi.fn();
     render(<BubblyButton label="Generar cuento" onPress={onPress} />);
@@ -20,6 +32,15 @@ describe('BubblyButton', () => {
     fireEvent.click(boton);
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('al pulsar dispara una confirmación háptica suave (US-56)', () => {
+    render(<BubblyButton label="Generar cuento" onPress={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
+
+    expect(impactAsync).toHaveBeenCalledTimes(1);
+    expect(impactAsync).toHaveBeenCalledWith('light');
   });
 
   it('usa accessibilityLabel como nombre accesible en botones solo-icono', () => {
@@ -37,6 +58,7 @@ describe('BubblyButton', () => {
 
     fireEvent.click(boton);
     expect(onPress).not.toHaveBeenCalled();
+    expect(impactAsync).not.toHaveBeenCalled();
   });
 
   it('cargando: muestra un indicador de progreso, queda deshabilitado y no invoca onPress', () => {
@@ -50,5 +72,6 @@ describe('BubblyButton', () => {
 
     fireEvent.click(boton);
     expect(onPress).not.toHaveBeenCalled();
+    expect(impactAsync).not.toHaveBeenCalled();
   });
 });

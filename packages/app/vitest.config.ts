@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -69,6 +70,9 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': 'react-native-web',
+      // `expo-haptics` arrastra `expo-modules-core` (no carga bajo jsdom). Lo aliasamos a un
+      // stub para los tests; el test de BubblyButton que verifica el háptico lo re-mockea.
+      'expo-haptics': fileURLToPath(new URL('./test/expo-haptics-stub.ts', import.meta.url)),
     },
   },
   define: {

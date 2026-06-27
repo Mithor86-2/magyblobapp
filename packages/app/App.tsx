@@ -35,13 +35,22 @@ import { colors, fonts, radius } from './src/presentation/theme/tokens';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-/** Cabecera del stack con el tema de la app (botón "atrás" incluido). US-24. */
+/**
+ * Cabecera del stack con el tema de la app (botón "atrás" incluido). US-24 + US-56.
+ *
+ * `headerBackButtonDisplayMode: 'default'` sigue la Human Interface Guidelines de iOS:
+ * el botón "atrás" muestra el título de la pantalla anterior cuando cabe (ayuda a
+ * orientarse), y degrada a "Back" o solo el icono según el espacio. En iOS 26+ el título
+ * de "atrás" se oculta por defecto; `'default'` recupera el comportamiento clásico y deja
+ * una vuelta atrás consistente entre versiones. En Android el chevron va siempre sin
+ * etiqueta (Material), así que el cambio es específico de iOS.
+ */
 const stackScreenOptions = {
   headerStyle: { backgroundColor: colors.surface },
   headerTintColor: colors.primary,
   headerTitleStyle: { fontFamily: fonts.bold },
   headerShadowVisible: false,
-  headerBackButtonDisplayMode: 'minimal',
+  headerBackButtonDisplayMode: 'default',
   headerTitleAlign: 'center',
 } as const;
 
