@@ -33,6 +33,19 @@ describe('ActivityCard', () => {
     expect(screen.getByText('Autor: IA local')).toBeVisible();
   });
 
+  it('US-54: muestra las instrucciones paso a paso cuando existen', () => {
+    render(<ActivityCard activity={{ ...base, instrucciones: '1. Coge el papel. 2. Pinta.' }} />);
+
+    expect(screen.getByText('Cómo hacerlo')).toBeVisible();
+    expect(screen.getByText('1. Coge el papel. 2. Pinta.')).toBeVisible();
+  });
+
+  it('US-54: si no hay instrucciones, no muestra la sección "Cómo hacerlo"', () => {
+    render(<ActivityCard activity={base} />);
+
+    expect(screen.queryByText('Cómo hacerlo')).not.toBeInTheDocument();
+  });
+
   it('con onComplete: al marcar "Realizado" pide la valoración y la notifica', () => {
     const onComplete = vi.fn();
     render(<ActivityCard activity={base} onComplete={onComplete} />);

@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
-import { ESTILOS } from '../../domain/types';
+import { ESTILOS, TEMAS } from '../../domain/types';
 import type { Estilo, Story, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { ESTILO_LABEL, TEMA_LABEL } from '../labels';
@@ -19,12 +19,15 @@ import type { TabScreenProps } from '../navigation';
 export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   const profile = useAppStore((s) => s.currentProfile);
 
-  // El perfil siempre existe al llegar aquí (se navega tras crearlo); guarda defensiva.
-  const temasDisponibles: Tema[] = profile?.intereses.length ? profile.intereses : ['magia'];
+  // US-54: el generador ofrece TODOS los temas del vocabulario (antes se limitaba a
+  // los intereses del perfil y ocultaba magia/música). Los intereses del perfil quedan
+  // pre-seleccionados; el resto se puede añadir.
+  const temasDisponibles: Tema[] = [...TEMAS];
+  const interesesPerfil: Tema[] = profile?.intereses.length ? profile.intereses : ['magia'];
 
-  // US-47: selección múltiple de temas y estilos (toggle por chip). Arranca con un
-  // tema y un estilo preseleccionados para que "Generar" funcione sin tocar nada.
-  const [temas, setTemas] = useState<Tema[]>([temasDisponibles[0] ?? 'magia']);
+  // US-47: selección múltiple de temas y estilos (toggle por chip). Arranca con los
+  // intereses del perfil preseleccionados para que "Generar" funcione sin tocar nada.
+  const [temas, setTemas] = useState<Tema[]>(interesesPerfil);
   const [estilos, setEstilos] = useState<Estilo[]>(['aventura']);
   const [loading, setLoading] = useState(false);
   const [story, setStory] = useState<Story | null>(null);
