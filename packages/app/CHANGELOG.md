@@ -17,6 +17,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+### Security
+
+## [1.2.2] - 2026-06-27
+
+### Fixed
+
 - Cabecera de pantalla (US-58): la imagen se muestra completa pero dentro de una banda de alto
   proporcional al alto de pantalla (acotada a 170–200), centrada y con el fondo del theme rellenando
   el espacio sobrante, en vez del `aspectRatio` cuadrado del origen que la hacía demasiado alta.
@@ -24,8 +30,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   icono por categoría. Las portadas por tema quedan solo para cuentos
   (`StoryReaderScreen`/`StoryGeneratorScreen`), ya que los respaldos locales se organizan por tema y
   las actividades por categoría.
-
-### Security
 
 ## [1.2.1] - 2026-06-27
 
