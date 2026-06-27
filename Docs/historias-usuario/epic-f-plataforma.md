@@ -1103,11 +1103,15 @@ disponible reciben cabecera (`Welcome`, `Home`, `Dashboard`, generador de cuento
 resto se queda sin ella. **Solo app.** Ver el plan
 [feature-62-cabeceras-pantalla](../planes/feature-62-cabeceras-pantalla.md).
 
+> **Ajuste (feature 64).** La cabecera se muestra con la **imagen completa** (`resizeMode="contain"`,
+> con la proporción del origen ~1000×1026) en vez de recortada (`cover`), para que se vea entera y bien
+> encuadrada. Ver el plan [feature-64-ajustes-prompts-doc](../planes/feature-64-ajustes-prompts-doc.md).
+
 **Criterios de aceptación**
 
 - Dada una pantalla que pasa `headerImageName` (p. ej. `welcome`), Cuando se renderiza, Entonces
-  muestra la **imagen de cabecera** correspondiente en la parte superior, dentro del área segura y por
-  encima del contenido desplazable.
+  muestra la **imagen de cabecera** correspondiente **completa** (sin recorte) en la parte superior,
+  dentro del área segura y por encima del contenido desplazable.
 - Dada una pantalla que **no** pasa `headerImageName`, Cuando se renderiza, Entonces **no** muestra
   ninguna cabecera y conserva el comportamiento anterior (contenido, scroll y footer intactos).
 - Dado el lienzo con cabecera, Cuando aparece el **teclado**, Entonces se conserva el
@@ -1142,6 +1146,12 @@ generación de los cuentos en el backend, y **no se toca**). Los vocabularios ce
 manteniendo su etiqueta ES idéntica. **Solo app.** Ver el plan
 [feature-61-i18n-app](../planes/feature-61-i18n-app.md).
 
+> **Ajuste (feature 64).** Se **retira `expo-localization`**: el idioma lo elige la persona adulta y por
+> defecto es **`es`**, así que la detección del idioma del dispositivo sobra. El criterio sobre
+> `expo-localization` (sugerencia inicial) queda **obsoleto**: el arranque sin preferencia guardada usa
+> `es` fijo y el cambio manual vía `appLanguage`/selector existente. Ver el plan
+> [feature-64-ajustes-prompts-doc](../planes/feature-64-ajustes-prompts-doc.md).
+
 **Criterios de aceptación**
 
 - Dado el sistema i18n inicializado, Cuando no hay idioma elegido por la persona adulta, Entonces el
@@ -1158,13 +1168,56 @@ manteniendo su etiqueta ES idéntica. **Solo app.** Ver el plan
 - Dados los **textos hardcodeados** de las pantallas, los componentes con texto y los **títulos de
   cabecera** del stack (`App.tsx`), Cuando se aplica la i18n, Entonces se sustituyen por claves `t(...)`
   resueltas desde los diccionarios `es`/`en`.
-- Dado `expo-localization`, Cuando arranca la app por primera vez (sin preferencia guardada), Entonces
-  el idioma del dispositivo se usa **solo como sugerencia inicial** si es uno de los soportados (`es`/`en`);
-  en cualquier otro caso cae a `es`.
+- ~~Dado `expo-localization`, Cuando arranca la app por primera vez (sin preferencia guardada),
+  Entonces el idioma del dispositivo se usa **solo como sugerencia inicial**...~~ **(obsoleto, feature
+  64).** Ahora: Cuando arranca la app sin preferencia guardada, Entonces el idioma activo es **`es`**
+  fijo (sin detección del dispositivo); el cambio es **manual** vía el selector de la zona de adultos.
 - Dado el conjunto de pruebas, Cuando se ejecuta `pnpm test`, Entonces hay pruebas del **cambio de
   idioma** (`t` devuelve ES/EN según el idioma activo) y de que una pantalla **renderiza el texto
   traducido**, y las pruebas user-centric existentes (que consultan por texto en español) **siguen en
   verde** sin cambios de texto.
-- (No-funcional) Dadas las dependencias `i18next`, `react-i18next` y `expo-localization`, Cuando se
-  instalan, Entonces los diccionarios van **empaquetados en build-time** (sin red ni descarga de
-  traducciones en runtime), conforme a [cumplimiento-menores.md](../cumplimiento-menores.md).
+- (No-funcional) Dadas las dependencias `i18next` y `react-i18next`, Cuando se instalan, Entonces los
+  diccionarios van **empaquetados en build-time** (sin red ni descarga de traducciones en runtime),
+  conforme a [cumplimiento-menores.md](../cumplimiento-menores.md). **(feature 64: `expo-localization`
+  ya no es dependencia del app.)**
+
+## US-60 — Documento de muestra de prompts (resultados reales) · Could (Mejoras)
+
+Como **autor del TFM / persona que evalúa la calidad de la IA** quiero un **documento de muestra** que
+recoja, para un conjunto representativo de combinaciones, el **prompt real** que envía el sistema y el
+**resultado real** del proveedor (cuentos y actividades con Groq, portadas con Gemini), para poder
+**auditar y documentar** el comportamiento de la capa de IA sin tener que reproducirlo a mano.
+
+**Contexto.** La capa de IA construye los prompts en
+[`prompts.ts`](../../packages/backend/src/infrastructure/ai/prompts.ts) (`buildStoryPrompt`,
+`buildActivitiesPrompt`, `buildImagePrompt`) y llama a los proveedores de infraestructura
+([`CloudProvider`](../../packages/backend/src/infrastructure/ai/CloudProvider.ts) para texto vía Groq,
+[`GeminiImageProvider`](../../packages/backend/src/infrastructure/ai/GeminiImageProvider.ts) para
+imágenes). Esta historia añade un **script on-demand** (`pnpm --filter @magyblob/backend prompts:dump`,
+al estilo de los `ai:smoke`) que recorre un conjunto **representativo** de combinaciones (cada tema una
+vez, cada estilo una vez, ambos idiomas ES/EN, 1-2 edades — **no** el producto cartesiano), construye
+los prompts reales, obtiene los resultados llamando a Groq/Gemini y escribe un **documento Markdown**
+sobrescribible ([muestra-prompts.md](../muestra-prompts.md)). Requiere `GROQ_API_KEY` y `GEMINI_API_KEY`
+y **no entra en el gate** (como `ai:smoke`); el **formateador** del documento sí tiene un test unitario
+determinista (sin red) para que haya cobertura en el gate. Para las portadas se registra **solo si
+Gemini devolvió imagen y su tamaño**, sin incrustar el base64. **Solo backend (tooling).** Ver el plan
+[feature-64-ajustes-prompts-doc](../planes/feature-64-ajustes-prompts-doc.md).
+
+**Criterios de aceptación**
+
+- Dado el script `prompts:dump`, Cuando se ejecuta con `GROQ_API_KEY` y `GEMINI_API_KEY` presentes,
+  Entonces recorre un conjunto **representativo** (cada tema y cada estilo al menos una vez, ambos
+  idiomas ES/EN, 1-2 edades) y **no** el producto cartesiano completo.
+- Dado un caso de **cuento** o **actividad**, Cuando el script lo procesa, Entonces construye el prompt
+  real con `buildStoryPrompt`/`buildActivitiesPrompt`, llama a **Groq** (vía `CloudProvider`) y registra
+  el **system+prompt enviados** y el **resultado real** (título+cuerpo / lista de actividades).
+- Dado un caso de **portada**, Cuando el script lo procesa, Entonces construye el prompt con
+  `buildImagePrompt`, llama a **Gemini** (`GeminiImageProvider`) y registra el **prompt** y si devolvió
+  imagen (**ok/tamaño**, sin incrustar el base64).
+- Dado que falta `GROQ_API_KEY` o `GEMINI_API_KEY`, Cuando se ejecuta el script, Entonces **aborta** con
+  un mensaje claro indicando qué variable falta, y **no** se ejecuta en el gate (`pnpm check`).
+- Dado el conjunto de resultados, Cuando termina el script, Entonces escribe/sobrescribe el documento
+  Markdown [muestra-prompts.md](../muestra-prompts.md) con, por cada caso: combinación, system+prompt y
+  resultado.
+- Dado el **formateador** del documento, Cuando se ejecuta `pnpm test`, Entonces hay una prueba unitaria
+  con datos deterministas en memoria (sin red) que verifica el Markdown generado.

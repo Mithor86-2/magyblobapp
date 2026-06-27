@@ -11,11 +11,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- i18n del app sin `expo-localization`: el idioma lo elige la persona adulta y por defecto es `es`; se
+  retira la detección del idioma del dispositivo (default/fallback `es` fijo + cambio manual vía el
+  selector existente). Se elimina la dependencia `expo-localization` (US-57).
+
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- Cabecera de pantalla: la imagen se muestra **completa** (`resizeMode="contain"`, con la proporción del
+  origen ~1000×1026) en vez de recortada (`cover`), para que se vea entera y bien encuadrada (US-58).
 
 ### Security
 
