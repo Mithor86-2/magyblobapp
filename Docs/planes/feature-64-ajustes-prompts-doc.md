@@ -20,8 +20,7 @@ de i18n (US-57) y un **documento de muestra de prompts** con resultados reales (
 ## Fase 1 — Andamiaje (docs) ✅
 
 - [x] Crear **US-60** en [../historias-usuario/epic-f-plataforma.md](../historias-usuario/epic-f-plataforma.md)
-      (Gherkin, ancla `#us-60`) + fila de trazabilidad en `README.md` (Could · Mejoras · "— (tooling)" · F)
-      + alta en el listado de épica F.
+      (Gherkin, ancla `#us-60`) + fila de trazabilidad en `README.md` (Could · Mejoras · "— (tooling)" · F) + alta en el listado de épica F.
 - [x] Ajustar **US-58** (nota: cabecera con imagen completa) y **US-57** (nota: sin `expo-localization`).
 - [x] Escribir este plan.
 - [x] Dejar `## [Unreleased]` listo en los CHANGELOG de backend y app.
