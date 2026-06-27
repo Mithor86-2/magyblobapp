@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.0.1] - 2026-06-26
+
+### Added
+
 - Icono de la app y splash de marca (US-52): icono **adaptativo** de Android bien separado
   (`foreground` con el logo en la zona segura sobre transparente, `background` de color plano
   `#fff8f6`, `monochrome` como silueta para Android 13+) e `icon.png` recompuesto sobre **fondo
