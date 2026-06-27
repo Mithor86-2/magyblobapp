@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Script on-demand `prompts:dump` (`pnpm --filter @magyblob/backend prompts:dump`) que recorre un
+  conjunto representativo de combinaciones (cada tema y estilo, ES/EN, 1-2 edades), construye los
+  prompts reales (`buildStoryPrompt`/`buildActivitiesPrompt`/`buildImagePrompt`) y obtiene el resultado
+  real llamando a Groq (cuentos/actividades) y Gemini (portadas), volcándolo a `Docs/muestra-prompts.md`.
+  Requiere `GROQ_API_KEY` y `GEMINI_API_KEY`; no entra en el gate (US-60).
+
 ### Changed
 
 ### Deprecated

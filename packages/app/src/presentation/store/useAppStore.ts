@@ -14,12 +14,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { persistStorage } from '../../infrastructure/storage';
 import { setActiveChildName } from '../../infrastructure/sentry';
-import {
-  cambiarIdiomaApp,
-  DEFAULT_APP_LANGUAGE,
-  detectDeviceLanguage,
-  type AppLanguage,
-} from '../../i18n';
+import { cambiarIdiomaApp, DEFAULT_APP_LANGUAGE, type AppLanguage } from '../../i18n';
 import type { ChildProfile, Guardian, GuardianSession, SessionTokens } from '../../domain/types';
 
 interface AppState {
@@ -99,17 +94,18 @@ export const useAppStore = create<AppState>()(
       // Tras rehidratar la sesión persistida, re-registra el nombre del niño activo
       // para que el scrubbing de Sentry siga protegiéndolo al reabrir la app, y
       // aplica a i18next el idioma del app persistido (US-57); si no hay (estado
-      // migrado o primer arranque), usa la sugerencia del dispositivo.
+      // migrado o primer arranque), usa el idioma por defecto `es` (feature 64: ya
+      // no se detecta el idioma del dispositivo; lo elige la persona adulta).
       onRehydrateStorage: () => (state) => {
         setActiveChildName(state?.currentProfile?.nombre);
-        cambiarIdiomaApp(state?.appLanguage ?? detectDeviceLanguage());
+        cambiarIdiomaApp(state?.appLanguage ?? DEFAULT_APP_LANGUAGE);
       },
       // v4 (US-57): el estado incorpora `appLanguage` (idioma de la interfaz). v3
       // añadió la lista de `profiles` del guardián (US-49). El estado anterior se
-      // descarta (el adulto vuelve a identificarse una vez); el idioma cae a la
-      // sugerencia del dispositivo.
+      // descarta (el adulto vuelve a identificarse una vez); el idioma cae al
+      // por defecto `es` (feature 64: sin detección del dispositivo).
       version: 4,
-      migrate: () => ({ ...SESION_VACIA, appLanguage: detectDeviceLanguage() }),
+      migrate: () => ({ ...SESION_VACIA, appLanguage: DEFAULT_APP_LANGUAGE }),
       partialize: (state) => ({
         guardian: state.guardian,
         consentVersion: state.consentVersion,

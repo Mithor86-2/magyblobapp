@@ -37,6 +37,9 @@ const headerImages: Record<HeaderImageName, ImageSourcePropType> = {
  * `headerImageName` (US-58): si se pasa, pinta la imagen de cabecera correspondiente
  * arriba del contenido, dentro del área segura y por encima del `ScrollView` (se
  * desplaza con el contenido), conservando el footer fijo y el `KeyboardAvoidingView`.
+ * La imagen se muestra **completa** (`resizeMode="contain"`, feature 64): el contenedor
+ * toma la proporción del origen (~1000×1026, casi cuadrada) para que se vea entera y bien
+ * encuadrada, sin recorte; si sobra espacio, el fondo es el del theme (`colors.surface`).
  */
 export function Screen({
   children,
@@ -62,7 +65,7 @@ export function Screen({
             <Image
               source={headerImages[headerImageName]}
               style={styles.header}
-              resizeMode="cover"
+              resizeMode="contain"
               accessibilityRole="image"
             />
           ) : null}
@@ -87,7 +90,11 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    height: 170,
+    // Proporción del origen (~1000×1026, casi cuadrada): con `resizeMode="contain"`
+    // muestra la imagen completa sin recorte y bien encuadrada (feature 64). El fondo
+    // del theme cubre cualquier franja si el ancho real no casa exactamente.
+    aspectRatio: 1000 / 1026,
+    backgroundColor: colors.surface,
     borderBottomLeftRadius: radius.lg,
     borderBottomRightRadius: radius.lg,
   },

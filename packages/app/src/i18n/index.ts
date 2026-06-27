@@ -12,10 +12,13 @@
  * conservan idénticos bajo claves, así las pruebas user-centric que consultan
  * por texto en español siguen verdes. El idioma real del app lo decide
  * `useAppStore.appLanguage` (persistido); aquí solo se fija el arranque.
+ *
+ * El idioma lo **elige la persona adulta** (selector de la zona de adultos) y por
+ * defecto es `es`; no se detecta el idioma del dispositivo (feature 64: se retiró
+ * `expo-localization`).
  */
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { getLocales } from 'expo-localization';
 import { es } from './locales/es';
 import { en } from './locales/en';
 
@@ -27,20 +30,6 @@ export const DEFAULT_APP_LANGUAGE: AppLanguage = 'es';
 /** ¿Es `code` uno de los idiomas soportados por la interfaz del app? */
 export function esIdiomaApp(code: string | null | undefined): code is AppLanguage {
   return code === 'es' || code === 'en';
-}
-
-/**
- * Sugerencia inicial del idioma a partir del dispositivo (`expo-localization`):
- * solo se usa en el primer arranque (sin preferencia guardada) y únicamente si el
- * idioma del dispositivo es uno de los soportados; en cualquier otro caso, `es`.
- */
-export function detectDeviceLanguage(): AppLanguage {
-  try {
-    const code = getLocales()[0]?.languageCode;
-    return esIdiomaApp(code) ? code : DEFAULT_APP_LANGUAGE;
-  } catch {
-    return DEFAULT_APP_LANGUAGE;
-  }
 }
 
 export const resources = {
