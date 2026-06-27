@@ -16,6 +16,25 @@ const CATEGORIA_COLOR: Record<Categoria, string> = {
   logica: colors.tertiary,
 };
 
+/**
+ * Parte las instrucciones (texto con pasos "1. … 2. … 3. …" o por líneas) en una
+ * lista de pasos, sin el marcador numérico (la UI los renumera). Exportada para tests.
+ */
+export function pasosDeInstrucciones(texto: string): string[] {
+  const porNumero = texto
+    .split(/\s*(?=\d+[.)]\s)/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const base =
+    porNumero.length > 1
+      ? porNumero
+      : texto
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+  return base.map((s) => s.replace(/^\d+[.)]\s*/, '').trim()).filter(Boolean);
+}
+
 interface ActivityCardProps {
   activity: Activity;
   /** Si se pasa y la actividad no está completada, muestra estrellas para valorarla. */
@@ -47,7 +66,12 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
       {activity.instrucciones ? (
         <View style={styles.instrucciones}>
           <Text style={styles.instruccionesTitulo}>{t('activityCard.howTo')}</Text>
-          <Text style={styles.instruccionesTexto}>{activity.instrucciones}</Text>
+          {pasosDeInstrucciones(activity.instrucciones).map((paso, i) => (
+            <View key={i} style={styles.pasoFila}>
+              <Text style={styles.pasoNum}>{i + 1}.</Text>
+              <Text style={styles.instruccionesTexto}>{paso}</Text>
+            </View>
+          ))}
         </View>
       ) : null}
       {meta.length > 0 ? <Text style={styles.meta}>{meta.join(' · ')}</Text> : null}
@@ -119,9 +143,19 @@ const styles = StyleSheet.create({
     ...typography.labelBold,
     color: colors.onSurface,
   },
+  pasoFila: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  pasoNum: {
+    ...typography.bodyMd,
+    color: colors.onSurface,
+    fontWeight: '700',
+  },
   instruccionesTexto: {
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,
+    flex: 1,
   },
   meta: {
     ...typography.labelBold,
