@@ -28,6 +28,8 @@ export interface GeneratedActivity {
   categoria: Categoria;
   titulo: string;
   descripcion: string;
+  /** Paso a paso para realizar la actividad (US-54); opcional. */
+  instrucciones?: string;
   duracionMin?: number;
   nivel?: number;
   /** Proveedor que generó realmente la actividad (lo estampa el provider concreto). */

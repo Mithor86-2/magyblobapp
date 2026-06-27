@@ -26,9 +26,14 @@ export class MockProvider implements AIProvider {
     // US-47: el tema puede ser una lista; la mock usa el primero como representante
     // para mantener una salida determinista y legible. El caso de uso garantiza ≥1.
     const tema = input.temas[0] ?? 'aventuras';
+    // US-54: el título varía entre generaciones en lugar de usar siempre la misma
+    // fórmula. Se elige de un repertorio de plantillas con un índice derivado del
+    // contenido (nombre + temas + idioma), de modo que es determinista para una
+    // misma entrada pero distinto entre temas/perfiles. El cuerpo se mantiene.
+    const titulo = tituloVariado(nombre, input.temas, idioma);
     if (idioma === 'es') {
       return {
-        titulo: `${nombre} y la aventura de ${tema}`,
+        titulo,
         cuerpo:
           `Había una vez ${nombre}, que soñaba con ${tema}. ` +
           `Un día partió en un viaje lleno de color y risas. ` +
@@ -39,7 +44,7 @@ export class MockProvider implements AIProvider {
       };
     }
     return {
-      titulo: `${nombre} and the ${tema} adventure`,
+      titulo,
       cuerpo:
         `Once upon a time there was ${nombre}, who dreamed about ${tema}. ` +
         `One day they set off on a journey full of color and laughter. ` +
@@ -65,7 +70,7 @@ export class MockProvider implements AIProvider {
   }
 }
 
-type DatosActividad = { titulo: string; descripcion: string };
+type DatosActividad = { titulo: string; descripcion: string; instrucciones: string };
 
 const PLANTILLAS_ACTIVIDAD: Record<
   CodigoIdioma,
@@ -74,9 +79,58 @@ const PLANTILLAS_ACTIVIDAD: Record<
   es: (categoria, n) => ({
     titulo: `Actividad de ${categoria} nº ${n}`,
     descripcion: `Una propuesta sencilla de ${categoria} para jugar y aprender en casa.`,
+    instrucciones:
+      `1. Prepara los materiales de ${categoria}. ` +
+      `2. Explica la actividad al niño con palabras sencillas. ` +
+      `3. Acompáñale mientras juega y anímale. ` +
+      `4. Celebrad juntos el resultado.`,
   }),
   en: (categoria, n) => ({
     titulo: `${categoria} activity #${n}`,
     descripcion: `A simple ${categoria} idea to play and learn at home.`,
+    instrucciones:
+      `1. Get the ${categoria} materials ready. ` +
+      `2. Explain the activity to the child in simple words. ` +
+      `3. Stay close while they play and cheer them on. ` +
+      `4. Celebrate the result together.`,
   }),
 };
+
+/**
+ * Repertorio de plantillas de título por idioma para variar el título del cuento
+ * (US-54). La selección es determinista: un índice derivado del contenido
+ * (nombre + temas + idioma) elige una plantilla, de modo que la misma entrada da
+ * el mismo título pero temas/perfiles distintos dan títulos distintos.
+ */
+const PLANTILLAS_TITULO: Record<CodigoIdioma, ((nombre: string, tema: string) => string)[]> = {
+  es: [
+    (nombre, tema) => `${nombre} y la aventura de ${tema}`,
+    (nombre, tema) => `El gran viaje de ${nombre} por ${tema}`,
+    (nombre, tema) => `${nombre} descubre ${tema}`,
+    (nombre, tema) => `Una sorpresa de ${tema} para ${nombre}`,
+    (nombre, tema) => `${nombre} y el secreto de ${tema}`,
+  ],
+  en: [
+    (nombre, tema) => `${nombre} and the ${tema} adventure`,
+    (nombre, tema) => `${nombre}'s great journey through ${tema}`,
+    (nombre, tema) => `${nombre} discovers ${tema}`,
+    (nombre, tema) => `A ${tema} surprise for ${nombre}`,
+    (nombre, tema) => `${nombre} and the secret of ${tema}`,
+  ],
+};
+
+/** Hash estable y simple (no criptográfico) de una cadena a entero no negativo. */
+function hashCadena(texto: string): number {
+  let h = 0;
+  for (let i = 0; i < texto.length; i++) {
+    h = (h * 31 + texto.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
+function tituloVariado(nombre: string, temas: readonly string[], idioma: CodigoIdioma): string {
+  const tema = temas[0] ?? 'aventuras';
+  const plantillas = PLANTILLAS_TITULO[idioma];
+  const idx = hashCadena(`${nombre}|${temas.join(',')}|${idioma}`) % plantillas.length;
+  return plantillas[idx]!(nombre, tema);
+}

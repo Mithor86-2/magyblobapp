@@ -230,10 +230,12 @@ export function buildStoryPrompt(
     : idioma === 'es'
       ? `${apertura} para ${nombre}, de ${edad.value} años, sobre "${temas}" con un estilo ` +
         `${estilos}. ${nombre} es protagonista y le gustan ${gustos}. ${tono}${longitud} ` +
-        `Devuelve un título breve y el cuerpo.`
+        `Devuelve un título breve y el cuerpo. Inventa un título original y distinto cada vez ` +
+        `(no repitas la fórmula "${nombre} y la aventura de ...").`
       : `${apertura} for ${nombre}, aged ${edad.value}, about "${temas}" in a ${estilos} ` +
         `style. ${nombre} is the main character and likes ${gustos}. ${tono}${longitud} ` +
-        `Return a short title and the body.`;
+        `Return a short title and the body. Invent an original, different title each time ` +
+        `(do not reuse the pattern "${nombre} and the ... adventure").`;
 
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
 }
@@ -279,12 +281,14 @@ export function buildActivitiesPrompt(
         afinidad +
         ` ${tono}` +
         ` Cada actividad necesita una categoría (${categorias}), un título, una descripción ` +
-        `breve, una duración en minutos y un nivel de dificultad de 1 a 3.`
+        `breve, unas instrucciones en un paso a paso claro (2 a 4 pasos sencillos que un ` +
+        `adulto pueda seguir con el niño), una duración en minutos y un nivel de dificultad de 1 a 3.`
       : `Suggest ${input.cantidad} simple activities for ${nombre}, aged ${edad.value}.` +
         acotacion +
         afinidad +
         ` ${tono}` +
         ` Each activity needs a category (${categorias}), a title, a short description, ` +
+        `step-by-step instructions (2 to 4 simple steps an adult can follow with the child), ` +
         `a duration in minutes and a difficulty level from 1 to 3.`;
 
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };

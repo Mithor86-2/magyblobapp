@@ -58,6 +58,7 @@ export class RecommendActivitiesAnonymous {
       categoria: g.categoria,
       titulo: g.titulo,
       descripcion: g.descripcion,
+      instrucciones: g.instrucciones,
       duracionMin: g.duracionMin,
       nivel: g.nivel,
       proveedor: g.proveedor,

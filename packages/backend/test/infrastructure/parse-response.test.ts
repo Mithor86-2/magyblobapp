@@ -83,6 +83,26 @@ describe('parseActivities', () => {
     expect(acts[0]!.duracionMin).toBeUndefined();
   });
 
+  it('US-54: conserva y recorta las instrucciones cuando vienen', () => {
+    const acts = parseActivities(
+      { actividades: [{ ...ok, instrucciones: '  1. Haz esto. 2. Luego aquello.  ' }] },
+      5,
+      'Ollama',
+      'local',
+    );
+    expect(acts[0]!.instrucciones).toBe('1. Haz esto. 2. Luego aquello.');
+  });
+
+  it('US-54: deja instrucciones en undefined si faltan o vienen vacías', () => {
+    const acts = parseActivities(
+      { actividades: [ok, { ...ok, instrucciones: '   ' }, { ...ok, instrucciones: 42 }] },
+      5,
+      'Ollama',
+      'local',
+    );
+    expect(acts.every((a) => a.instrucciones === undefined)).toBe(true);
+  });
+
   it('conserva números válidos dentro de rango', () => {
     const acts = parseActivities(
       { actividades: [{ ...ok, nivel: 2, duracionMin: 15 }] },

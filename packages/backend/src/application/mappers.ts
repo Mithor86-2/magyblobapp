@@ -25,6 +25,7 @@ export function toActivityOutput(activity: Activity): ActivityOutput {
     categoria: activity.categoria,
     titulo: activity.titulo,
     descripcion: activity.descripcion,
+    instrucciones: activity.instrucciones,
     duracionMin: activity.duracionMin,
     nivel: activity.nivel,
     completadaEn: activity.completadaEn?.toISOString(),
