@@ -54,59 +54,59 @@ Qué falta (❌):
 
 ### Backend (generación opcional con Gemini)
 
-- ❌ `generateImage(prompt: string): Promise<string | null>` en la interfaz `AIProvider` (domain).
+- ✅ `generateImage(prompt: string): Promise<string | null>` en la interfaz `AIProvider` (domain).
   Devuelve una **data URL** (`data:image/png;base64,...`) o `null` si no se pudo generar.
-- ❌ Implementaciones:
+- ✅ Implementaciones:
   - `MockProvider.generateImage` → `null` (sin red; la app usa el respaldo local).
   - `OllamaProvider.generateImage` → `null` (Ollama no genera imágenes).
   - `CloudProvider.generateImage` → delega en el adaptador de imagen Gemini.
   - `FallbackProvider`/`HotSwapAIProvider` → propagan a `generateImage` con la misma política (sin
     clave o error ⇒ `null`, **no** lanza).
-- ❌ **Adaptador `GeminiImageProvider`** (infraestructura): `POST {baseUrl}/models/{model}:predict`
+- ✅ **Adaptador `GeminiImageProvider`** (infraestructura): `POST {baseUrl}/models/{model}:predict`
   con header `x-goog-api-key`, body `{instances:[{prompt}], parameters:{sampleCount:1}}`; respuesta
   `{predictions:[{bytesBase64Encoded}]}` → data URL. `fetchFn` inyectable (tests sin red). Si no hay
   clave o la respuesta falla, devuelve `null`.
-- ❌ **Constructor del prompt de imagen** (`buildImagePrompt(tema, estilo, titulo)`): estilo de
+- ✅ **Constructor del prompt de imagen** (`buildImagePrompt(tema, estilo, titulo)`): estilo de
   ilustración infantil + sujeto por tema/estilo/título; **sin** nombre del niño.
 
 ### Persistencia y dominio
 
-- ❌ `Story.portada?: string` y `Activity.imagen?: string` (nullable) en entidades + DTOs + mappers.
-- ❌ `schema.prisma`: `portada String?` en `Story`, `imagen String?` en `Activity`.
-- ❌ **Migración SQL a mano** (`ADD COLUMN ... NULL`) + `prisma generate`.
-- ❌ Actualizar [modelo-datos.md](../modelo-datos.md) (erDiagram + nota).
+- ✅ `Story.portada?: string` y `Activity.imagen?: string` (nullable) en entidades + DTOs + mappers.
+- ✅ `schema.prisma`: `portada String?` en `Story`, `imagen String?` en `Activity`.
+- ✅ **Migración SQL a mano** (`ADD COLUMN ... NULL`) + `prisma generate`.
+- ✅ Actualizar [modelo-datos.md](../modelo-datos.md) (erDiagram + nota).
 
 ### Cableado (best-effort)
 
-- ❌ `GenerateStory`: tras crear el `Story`, intenta `ai.generateImage(...)` envuelto en try/catch;
+- ✅ `GenerateStory`: tras crear el `Story`, intenta `ai.generateImage(...)` envuelto en try/catch;
   el fallo no rompe la creación. Persistir la portada si llega.
-- ❌ `RecommendActivities`: análogo para `imagen` por actividad (sin nombre del niño).
-- ❌ Schemas de salida de ruta y schemas Zod de la app (`storySchema`, `activitySchema`) admiten
+- ✅ `RecommendActivities`: análogo para `imagen` por actividad (sin nombre del niño).
+- ✅ Schemas de salida de ruta y schemas Zod de la app (`storySchema`, `activitySchema`) admiten
   `portada`/`imagen` opcionales.
 
 ### App (SIEMPRE una portada)
 
-- ❌ Mapa estático `respaldoPorTema` (require por tema) + `default`.
-- ❌ Componente/util `portadaSource(generada?, tema)`: usa la generada si existe, si no el respaldo.
-- ❌ Render en `StoryReaderScreen`, `StoryGeneratorScreen` y `ActivityCard`.
-- ❌ Tipos `Story.portada?` / `Activity.imagen?` en `domain/types.ts`.
+- ✅ Mapa estático `respaldoPorTema` (require por tema) + `default`.
+- ✅ Componente/util `portadaSource(generada?, tema)`: usa la generada si existe, si no el respaldo.
+- ✅ Render en `StoryReaderScreen`, `StoryGeneratorScreen` y `ActivityCard`.
+- ✅ Tipos `Story.portada?` / `Activity.imagen?` en `domain/types.ts`.
 
 ### Optimización de assets
 
-- ❌ Optimizar las 7 imágenes de `story/` (~750 KB → ~200-350 KB) con PIL.
+- ✅ Optimizar las 7 imágenes de `story/` (~750 KB → ~200-350 KB) con PIL.
 
 ### Cumplimiento
 
-- ❌ Documentar en [cumplimiento-menores.md](../cumplimiento-menores.md) que la generación de portada
+- ✅ Documentar en [cumplimiento-menores.md](../cumplimiento-menores.md) que la generación de portada
   con Gemini envía tema/estilo/título (sin datos del niño) a un tercero (C-5); sin clave, solo
   respaldo local.
 
 ### Tests
 
-- ❌ Adaptador de imagen Gemini (con `fetchFn` mock, sin red): éxito → data URL; HTTP/JSON malo →
+- ✅ Adaptador de imagen Gemini (con `fetchFn` mock, sin red): éxito → data URL; HTTP/JSON malo →
   `null`; sin clave → `null`.
-- ❌ Fallback de selección por tema en la app (respaldo correcto por tema y `default`).
-- ❌ `GenerateStory` no rompe si `generateImage` lanza/devuelve `null` (cuento se crea igual).
+- ✅ Fallback de selección por tema en la app (respaldo correcto por tema y `default`).
+- ✅ `GenerateStory` no rompe si `generateImage` lanza/devuelve `null` (cuento se crea igual).
 
 ## Definition of Done
 
