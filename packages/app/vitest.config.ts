@@ -77,11 +77,6 @@ export default defineConfig({
       // `expo-haptics` arrastra `expo-modules-core` (no carga bajo jsdom). Lo aliasamos a un
       // stub para los tests; el test de BubblyButton que verifica el háptico lo re-mockea.
       'expo-haptics': fileURLToPath(new URL('./test/expo-haptics-stub.ts', import.meta.url)),
-      // `expo-localization` arrastra `expo-modules-core` igualmente; el i18n solo lo usa como
-      // sugerencia del idioma del dispositivo. El stub devuelve `es` (default del app).
-      'expo-localization': fileURLToPath(
-        new URL('./test/expo-localization-stub.ts', import.meta.url),
-      ),
     },
   },
   define: {

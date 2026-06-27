@@ -40,8 +40,7 @@
           "imageWidth": 200,
           "resizeMode": "contain"
         }
-      ],
-      "expo-localization"
+      ]
     ]
   }
 }
