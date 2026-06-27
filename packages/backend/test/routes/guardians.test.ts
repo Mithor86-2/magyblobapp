@@ -70,6 +70,33 @@ describe('rutas de guardians', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('rechaza el alta con una contraseña sin número (US-53: letra + número)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians',
+      payload: { ...altaValida, email: 'solo-letras@example.com', password: 'sololetras' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('rechaza el alta con una contraseña sin letra (US-53: letra + número)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians',
+      payload: { ...altaValida, email: 'solo-numeros@example.com', password: '12345678' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('rechaza el alta con un email de formato inválido (400, validación de esquema US-53)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians',
+      payload: { ...altaValida, email: 'no-es-email' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
   it('inicia sesión con email + contraseña correctos (200) y registra el login en el audit log', async () => {
     await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
 
