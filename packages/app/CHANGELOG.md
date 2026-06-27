@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.0] - 2026-06-27
+
+### Added
+
 - Portadas de imagen en cuentos y actividades (US-59): la app **siempre** muestra una portada con
   cero latencia. Prefiere la imagen generada por el backend (`story.portada` / `activity.imagen`) si
   existe; si no, cae a un **respaldo local empaquetado** elegido por tema

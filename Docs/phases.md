@@ -595,6 +595,25 @@ pruebas manuales del usuario al final.
 - [x] ✅ **Estándares de diseño Android/iOS (US-56, F4, rama `feature/60-estandares-diseno`).** `android_ripple` + **`expo-haptics`** (impacto suave) en `BubblyButton`/`SelectableChip`; back iOS `default`; contraste
       AA auditado (sin cambios necesarios). Sobre componentes/theme, sin tocar el cuerpo de las pantallas.
 
+### Lote de mejoras nº2 — Cola secuencial F6→F5→F7 (integrada en `develop` el 2026-06-27)
+
+Tres features que compartían ficheros de pantalla/IA, integradas en orden. Release conjunto con
+versionado diferido: **backend v1.2.0 / app v1.2.0 / raíz v1.2.0**; gate verde (backend 287 + app 151).
+
+- [x] ✅ **Cabeceras ilustradas por pantalla (US-58, F6, rama `feature/62-cabeceras-pantalla`).** `Screen`
+      acepta `headerImageName` (`welcome|home|dashboard|cuentos|actividades`) y pinta la imagen de
+      `assets/images/headers/` (require estáticos), respetando scroll, footer y `KeyboardAvoidingView`. Las
+      5 imágenes optimizadas de ~2 MB a ~200-345 KB.
+- [x] ✅ **i18n del app ES/EN (US-57, F5, rama `feature/61-i18n-app`).** `i18next` + `react-i18next` +
+      `expo-localization`; ~120 claves de UI extraídas a diccionarios `es`/`en` (default `es`, textos
+      idénticos bajo claves → tests intactos); `appLanguage` persistido en `useAppStore` con selector en la
+      zona de adultos, independiente del idioma del perfil.
+- [x] ✅ **Portadas de imagen (US-59, F7, rama `feature/63-portadas-imagen`).** La app **siempre** muestra
+      portada: la generada por backend (`Story.portada`/`Activity.imagen`, migración) si existe, o el
+      **respaldo local por tema** (`assets/images/story/`, 7 imágenes optimizadas 5.5 MB→171 KB). Adaptador
+      **Gemini/Imagen** best-effort (sin clave o ante fallo → `null`, sin romper la creación); el prompt
+      redacta el nombre del niño (cumplimiento **C-15**). Pendiente: validar con `GEMINI_API_KEY` real.
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

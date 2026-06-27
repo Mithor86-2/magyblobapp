@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.0] - 2026-06-27
+
+### Added
+
 - Portadas de imagen de cuentos y actividades (US-59): la interfaz `AIProvider` gana
   `generateImage(prompt)` y un adaptador **Gemini/Imagen** (`imagen-4.0-generate-001`, endpoint
   `:predict`) que usa `GEMINI_API_KEY` (`config.cloudApiKeys.gemini`); sin clave o ante cualquier
