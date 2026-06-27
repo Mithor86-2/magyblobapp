@@ -109,6 +109,8 @@ export interface Story {
   idioma: CodigoIdioma;
   estado: EstadoStory;
   proveedor: ProveedorIa;
+  /** Portada generada (data URL, US-59); ausente ⇒ la app usa el respaldo local por tema. */
+  portada?: string;
 }
 
 // --- Modo anónimo efímero (US-50): genera y devuelve sin persistir ni sesión ---
@@ -170,6 +172,8 @@ export interface Activity {
   completadaEn?: string;
   valoracion?: number;
   proveedor: ProveedorIa;
+  /** Imagen generada (data URL, US-59); ausente ⇒ la app usa el respaldo local. */
+  imagen?: string;
 }
 
 // --- Historial ---

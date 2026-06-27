@@ -55,6 +55,15 @@ export class MockProvider implements AIProvider {
     };
   }
 
+  /**
+   * El mock no genera imágenes (US-59): devuelve `null` para que la app use el
+   * respaldo local empaquetado. Así el modo por defecto (sin red ni clave) sigue
+   * funcionando sin GPU ni terceros.
+   */
+  async generateImage(): Promise<string | null> {
+    return null;
+  }
+
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
     const idioma = input.perfil.idioma.value;
     return Array.from({ length: input.cantidad }, (_unused, i): GeneratedActivity => {

@@ -21,6 +21,7 @@ export class PrismaActivityRepository implements ActivityRepository {
         duracionMin: activity.duracionMin ?? null,
         nivel: activity.nivel ?? null,
         proveedor: activity.proveedor,
+        imagen: activity.imagen ?? null,
         completadaEn: activity.completadaEn ?? null,
         valoracion: activity.valoracion ?? null,
       },
@@ -56,6 +57,7 @@ function toActivity(row: PrismaActivity): Activity {
     duracionMin: row.duracionMin ?? undefined,
     nivel: row.nivel ?? undefined,
     proveedor: row.proveedor as ProveedorIa,
+    imagen: row.imagen ?? undefined,
     completadaEn: row.completadaEn ?? undefined,
     valoracion: row.valoracion ?? undefined,
   });

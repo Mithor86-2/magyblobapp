@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Portadas de imagen en cuentos y actividades (US-59): la app **siempre** muestra una portada con
+  cero latencia. Prefiere la imagen generada por el backend (`story.portada` / `activity.imagen`) si
+  existe; si no, cae a un **respaldo local empaquetado** elegido por tema
+  (`assets/images/story/<tema>.png`, mapa estático con `default`), siguiendo el mismo patrón de
+  `require` estáticos que las cabeceras (US-58). Se renderiza en la lectura del cuento
+  (`StoryReaderScreen`), en el generador (`StoryGeneratorScreen`) y en `ActivityCard`, respetando el
+  layout y las cabeceras. Los tipos `Story.portada?` / `Activity.imagen?` y los esquemas Zod de
+  respuesta admiten el campo opcional.
 - Internacionalización del app ES/EN (US-57): se introduce `i18next` + `react-i18next` (diccionarios
   `es`/`en` empaquetados, sin red ni descarga en runtime) y `expo-localization` como sugerencia inicial
   del idioma del dispositivo. El idioma por defecto y de respaldo es `es` (los textos en español se

@@ -13,6 +13,11 @@ export interface ActivityProps {
   nivel?: number;
   /** Proveedor de IA que generó realmente la actividad (mock | local | cloud). */
   proveedor: ProveedorIa;
+  /**
+   * Imagen ilustrada (US-59): data URL generada con Gemini/Imagen, o `undefined` si
+   * no se generó (sin clave o fallo); la app cae al respaldo local.
+   */
+  imagen?: string;
   completadaEn?: Date;
   valoracion?: number;
 }
@@ -31,6 +36,7 @@ export class Activity {
   readonly duracionMin?: number;
   readonly nivel?: number;
   readonly proveedor: ProveedorIa;
+  readonly imagen?: string;
   completadaEn?: Date;
   valoracion?: number;
 
@@ -53,6 +59,7 @@ export class Activity {
     this.duracionMin = props.duracionMin;
     this.nivel = props.nivel;
     this.proveedor = props.proveedor;
+    this.imagen = props.imagen;
     this.completadaEn = props.completadaEn;
     this.valoracion = props.valoracion;
   }

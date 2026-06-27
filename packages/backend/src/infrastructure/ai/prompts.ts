@@ -240,6 +240,28 @@ export function buildStoryPrompt(
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
 }
 
+/**
+ * Construye el prompt de la **portada ilustrada** (US-59) a partir de
+ * tema/estilo/título. **Nunca** incluye el nombre del niño ni datos
+ * identificativos (cumplimiento C-5): solo el vocabulario del contenido y un
+ * título orientativo. El texto va en inglés porque los modelos de imagen
+ * (Gemini/Imagen) lo interpretan mejor; describe un estilo de ilustración
+ * infantil seguro y amable, coherente con la app para niños de 2 a 6 años.
+ */
+export function buildImagePrompt(tema: string, estilo: string, titulo: string): string {
+  const temaEn = TEMA_PALABRA.en[tema] ?? tema;
+  const estiloEn = ESTILO_PALABRA.en[estilo] ?? estilo;
+  const tituloLimpio = titulo.trim();
+  const sobreTitulo = tituloLimpio === '' ? '' : ` inspired by the title "${tituloLimpio}"`;
+  return (
+    `A warm, friendly children's book cover illustration about ${temaEn}, ` +
+    `in a ${estiloEn} style${sobreTitulo}. ` +
+    'Soft rounded shapes, bright cheerful colors, gentle and cozy mood, ' +
+    'suitable for toddlers aged 2 to 6. No text, no letters, no words in the image. ' +
+    'No scary, violent or dark elements. Square composition.'
+  );
+}
+
 export function buildActivitiesPrompt(
   input: RecommendActivitiesInput,
   overrides: PromptOverrides = {},

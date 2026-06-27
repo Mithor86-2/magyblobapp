@@ -9,6 +9,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Portadas de imagen de cuentos y actividades (US-59): la interfaz `AIProvider` gana
+  `generateImage(prompt)` y un adaptador **Gemini/Imagen** (`imagen-4.0-generate-001`, endpoint
+  `:predict`) que usa `GEMINI_API_KEY` (`config.cloudApiKeys.gemini`); sin clave o ante cualquier
+  fallo devuelve `null` (no lanza). Los casos de uso `GenerateStory` y `RecommendActivities` generan
+  la imagen de forma **best-effort** (try/catch): si falla o no hay clave, el campo queda `null` y la
+  creación del cuento/actividad se completa igual. Se añaden los campos nullable `Story.portada` y
+  `Activity.imagen` (entidad + DTO + mapper + `schema.prisma` + migración SQL `ADD COLUMN ... NULL`).
+  El prompt de imagen se construye con tema/estilo/título y **nunca** con el nombre del niño
+  (cumplimiento C-5).
+
 ### Changed
 
 ### Deprecated

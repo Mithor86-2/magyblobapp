@@ -22,6 +22,7 @@ export class PrismaStoryRepository implements StoryRepository {
         idioma: story.idioma,
         estado: story.estado,
         proveedor: story.proveedor,
+        portada: story.portada ?? null,
         creadoEn: story.creadoEn,
       },
       // Lo único mutable del cuento es su estado de lectura (US-07).
@@ -53,6 +54,7 @@ function toStory(row: PrismaStory): Story {
     cuerpo: row.cuerpo,
     idioma: row.idioma as CodigoIdioma,
     proveedor: row.proveedor as ProveedorIa,
+    portada: row.portada ?? undefined,
     estado: row.estado as EstadoStory,
     creadoEn: row.creadoEn,
   });

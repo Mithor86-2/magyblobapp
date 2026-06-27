@@ -135,4 +135,76 @@ describe('GenerateStory', () => {
       useCase.execute({ profileId: 'nope', temas: ['animales'], estilos: ['aventura'] }),
     ).rejects.toThrow(DomainError);
   });
+
+  // --- Portada de imagen (US-59) ---
+
+  it('persiste la portada generada cuando el proveedor la devuelve', async () => {
+    const ai = new FakeAIProvider('data:image/png;base64,ABC');
+    useCase = new GenerateStory({
+      profiles,
+      stories,
+      ai,
+      newId: secuencialIdGenerator('s'),
+      now: relojFijo(),
+    });
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(out.portada).toBe('data:image/png;base64,ABC');
+    const guardado = await stories.findById(out.id);
+    expect(guardado?.portada).toBe('data:image/png;base64,ABC');
+  });
+
+  it('construye el prompt de imagen con tema/estilo/título y SIN el nombre del niño (C-5)', async () => {
+    const ai = new FakeAIProvider('data:image/png;base64,ABC');
+    useCase = new GenerateStory({
+      profiles,
+      stories,
+      ai,
+      newId: secuencialIdGenerator('s'),
+      now: relojFijo(),
+    });
+    await useCase.execute({ profileId: 'p-1', temas: ['espacio'], estilos: ['divertido'] });
+    expect(ai.imagenCalls).toHaveLength(1);
+    const input = ai.imagenCalls[0]!;
+    expect(input.tema).toBe('espacio');
+    expect(input.estilo).toBe('divertido');
+    // El nombre del perfil ('Mateo') nunca debe aparecer en la entrada de imagen.
+    expect(JSON.stringify(input)).not.toContain('Mateo');
+  });
+
+  it('crea el cuento igual si la imagen no se genera (proveedor devuelve null)', async () => {
+    // FakeAIProvider por defecto devuelve null en generateImage.
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(out.id).toBe('s-1');
+    expect(out.portada).toBeUndefined();
+    expect(await stories.findById(out.id)).not.toBeNull();
+  });
+
+  it('crea el cuento igual aunque la generación de imagen lance (best-effort)', async () => {
+    const ai = new FakeAIProvider(() => {
+      throw new Error('imagen caída');
+    });
+    useCase = new GenerateStory({
+      profiles,
+      stories,
+      ai,
+      newId: secuencialIdGenerator('s'),
+      now: relojFijo(),
+    });
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(out.id).toBe('s-1');
+    expect(out.portada).toBeUndefined();
+    expect(await stories.findById(out.id)).not.toBeNull();
+  });
 });

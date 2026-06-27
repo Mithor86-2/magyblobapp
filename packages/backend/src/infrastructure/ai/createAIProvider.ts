@@ -3,6 +3,7 @@ import type {
   AIProvider,
   GeneratedActivity,
   GeneratedStory,
+  GenerateImageInput,
   GenerateStoryInput,
   RecommendActivitiesInput,
 } from '../../domain/ai/AIProvider.js';
@@ -11,6 +12,8 @@ import { CloudProvider } from './CloudProvider.js';
 import { CLOUD_PRESETS } from './cloudPresets.js';
 import { readCloudSetting } from './cloudSettings.js';
 import { FallbackProvider, type AILogger } from './FallbackProvider.js';
+import { GeminiImageProvider } from './GeminiImageProvider.js';
+import { ImageCapableProvider } from './ImageCapableProvider.js';
 import { MockProvider } from './MockProvider.js';
 import { OllamaProvider } from './OllamaProvider.js';
 
@@ -42,8 +45,29 @@ export function createAIProvider(
   const mock = new MockProvider();
   const base = buildBase(config, mock, logger, options.settings);
 
-  if (!options.settings) return base;
-  return new HotSwapAIProvider(base, mock, options.settings, config, logger);
+  // Proveedor de texto (con su hot-swap/fallback). El `mock` directo se devuelve sin
+  // hot-swap cuando no hay `settings` (igual que antes).
+  const text = options.settings
+    ? new HotSwapAIProvider(base, mock, options.settings, config, logger)
+    : base;
+
+  // Portadas (US-59), ortogonales al modo de texto: solo cuando hay `GEMINI_API_KEY`
+  // se envuelve el proveedor de texto en `ImageCapableProvider` para generar la
+  // imagen con Gemini/Imagen. Sin clave NO se envuelve: `generateImage` de los
+  // proveedores de texto devuelve `null` y la app usa el respaldo local (privacidad
+  // por diseño, sin red). Así el tipo devuelto en mock/local sin clave no cambia.
+  const image = buildImageProvider(config, logger);
+  return image === null ? text : new ImageCapableProvider(text, image);
+}
+
+/**
+ * Construye el generador de imágenes Gemini/Imagen si hay `GEMINI_API_KEY`
+ * (`config.cloudApiKeys.gemini`); si no, `null` (no se genera, se usa respaldo).
+ */
+function buildImageProvider(config: Config, logger: AILogger): GeminiImageProvider | null {
+  const apiKey = config.cloudApiKeys.gemini;
+  if (apiKey === undefined) return null;
+  return new GeminiImageProvider({ apiKey, timeoutMs: config.aiTimeoutMs, logger });
 }
 
 function buildBase(
@@ -85,6 +109,15 @@ class HotSwapAIProvider implements AIProvider {
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
     return (await this.resolver()).recommendActivities(input);
+  }
+
+  /**
+   * Las portadas (US-59) son ortogonales al hot-swap de texto: las añade el
+   * decorador `ImageCapableProvider` que envuelve a este proveedor. Aquí se delega
+   * en el base (devuelve `null`) para cumplir la interfaz sin duplicar lógica.
+   */
+  generateImage(input: GenerateImageInput): Promise<string | null> {
+    return this.base.generateImage(input);
   }
 
   /** Proveedor activo para esta petición; cae al base si cloud no aplica. */

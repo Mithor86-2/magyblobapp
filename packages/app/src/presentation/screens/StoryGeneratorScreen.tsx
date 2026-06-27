@@ -11,6 +11,7 @@ import { estiloLabel, temaLabel } from '../labels';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { NarrationControls } from '../components/NarrationControls';
+import { StoryCover } from '../components/StoryCover';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
@@ -126,6 +127,12 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
 
       {story ? (
         <View style={styles.storyCard}>
+          <StoryCover
+            generada={story.portada}
+            tema={story.tema}
+            style={styles.storyCover}
+            accessibilityLabel={story.titulo}
+          />
           <Text style={styles.storyTitle}>{story.titulo}</Text>
           <Text style={styles.storyBody}>{story.cuerpo}</Text>
           <NarrationControls story={story} />
@@ -184,6 +191,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
     ...softShadow,
+  },
+  storyCover: {
+    width: '100%',
+    height: 180,
+    borderRadius: radius.md,
   },
   storyTitle: {
     ...typography.headlineMd,

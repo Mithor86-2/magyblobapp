@@ -15,6 +15,7 @@ export function toStoryOutput(story: Story): StoryOutput {
     idioma: story.idioma,
     estado: story.estado,
     proveedor: story.proveedor,
+    portada: story.portada,
   };
 }
 
@@ -31,5 +32,6 @@ export function toActivityOutput(activity: Activity): ActivityOutput {
     completadaEn: activity.completadaEn?.toISOString(),
     valoracion: activity.valoracion,
     proveedor: activity.proveedor,
+    imagen: activity.imagen,
   };
 }

@@ -1,6 +1,6 @@
 # Epic B — Generación de cuentos (núcleo)
 
-Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**, **US-26**, **US-28**, **US-47**, **US-54**, **US-55**.
+Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**, **US-26**, **US-28**, **US-47**, **US-54**, **US-55**, **US-59**.
 Volver al [índice](README.md).
 
 ## US-03 — Generar cuento personalizado · Must
@@ -263,3 +263,53 @@ en `StoryGeneratorScreen` (la lista hoy se limita a los intereses del perfil). T
 - (No funcional) Dado el cambio de pipeline, prompts, schema y app, Cuando se ejecuta el gate,
   Entonces los tests (caso de uso, prompt, ruta de integración y componente de la app) siguen en
   verde y la salida estructurada se mantiene parseable.
+
+## US-59 — Portadas de imagen de cuentos y actividades · Could (Mejoras)
+
+Como **niño/a** (con ayuda del tutor) quiero ver una **portada ilustrada** en mis cuentos y
+actividades, para que la experiencia sea más visual y atractiva aunque todavía no sepa leer.
+
+**Contexto.** Mejora del lote nº 2 (ver [coordinación del lote nº 2](../planes/coordinacion-mejoras-paralelo-2.md),
+F7). **Afecta también a la épica C** (actividades): el dato de imagen recorre dos entidades
+(`Story.portada`, `Activity.imagen`), por eso la historia vive en la épica B pero su criterio de
+actividades se verifica también en C. El diseño tiene **dos piezas**:
+
+1. **La app SIEMPRE muestra una portada, con cero latencia.** Prefiere la imagen generada
+   (`story.portada` / `activity.imagen`) si existe; si no, usa un **respaldo local empaquetado**
+   (`assets/images/story/<tema>.png`, mapa estático por tema con un `default`), igual que las
+   cabeceras de F6 (selección por nombre, sin lógica extra). Se renderiza en `StoryReaderScreen`, en
+   el generador (`StoryGeneratorScreen`) y en `ActivityCard`.
+2. **Generación opcional con Gemini/Imagen (backend, best-effort).** La interfaz `AIProvider` gana
+   `generateImage(prompt)`; el adaptador **Gemini/Imagen** (infraestructura) usa `GEMINI_API_KEY`
+   (`config.cloudApiKeys.gemini`). El prompt se construye con **tema/estilo/título**, **nunca** con
+   el nombre del niño. La generación es **best-effort**: no bloquea ni rompe la creación del cuento;
+   si falla o no hay clave, el campo queda `null` y la app cae al respaldo local. Almacenamiento
+   simple: data URL / base64 en el campo (sin bucket; migrable después).
+
+> **Desviación de cumplimiento (asumida, TFM).** Generar la portada con Gemini envía a un tercero el
+> **tema/estilo/título** (sin nombre del niño ni identificadores), lo que se desvía de C-5 igual que
+> el modo `cloud` del LLM. **Sin `GEMINI_API_KEY` no se genera nada**: la app usa solo el respaldo
+> local empaquetado (privacidad por diseño, sin red). Ver
+> [cumplimiento-menores.md](../cumplimiento-menores.md) (C-5).
+
+**Criterios de aceptación**
+
+- Dado un cuento mostrado (recién generado o abierto desde el Historial), Cuando se pinta, Entonces
+  muestra una **portada**: la imagen generada (`portada`) si existe, o el **respaldo local por tema**
+  en caso contrario; nunca se queda sin imagen.
+- Dada una actividad en `ActivityCard`, Cuando se pinta, Entonces muestra una imagen análoga
+  (`imagen` generada o respaldo local por categoría/tema), respetando el layout y las cabeceras de F6.
+- Dado el caso de uso de generación, Cuando se invoca, Entonces delega en
+  `AIProvider.generateImage(prompt)` y nunca depende de una implementación concreta (Clean
+  Architecture); el adaptador Gemini/Imagen vive en infraestructura.
+- Dado el prompt de imagen, Cuando se construye, Entonces se forma con **tema/estilo/título** y
+  **nunca** incluye el nombre del niño ni datos identificativos.
+- Dado que la generación de imagen **falla** (error de red, HTTP, respuesta inválida) o **no hay
+  `GEMINI_API_KEY`**, Cuando se crea el cuento/actividad, Entonces la creación **se completa igual**
+  (el campo `portada`/`imagen` queda `null`) y la app muestra el respaldo local (best-effort, no
+  bloquea ni rompe).
+- Dado el campo nuevo, Cuando se persiste un cuento/actividad, Entonces `portada`/`imagen` se guarda
+  en una columna `NULL`-able (migración Prisma, sin romper filas existentes).
+- (No funcional) Dado el cambio de interfaz, adaptador, schema y app, Cuando se ejecuta el gate,
+  Entonces los tests (adaptador de imagen con mock sin red, fallback de selección por tema en la app,
+  y creación de cuento que no rompe si la imagen falla) siguen en verde.
