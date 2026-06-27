@@ -10,17 +10,26 @@ import type { Config } from '../config.js';
 import { signSession, verifyRefreshToken } from '../auth.js';
 
 /**
- * Robustez mínima de la contraseña (US-48): al menos 8 caracteres. Un mínimo
- * razonable sin imponer reglas de composición que penalizan la usabilidad (NIST);
- * el tope evita payloads abusivos (y el límite de bcrypt a 72 bytes).
+ * Robustez de la contraseña (US-53): al menos 8 caracteres con **una letra y un
+ * número** (regla mínima razonable, sin exigir mayúsculas ni símbolos, que penalizan
+ * la usabilidad). El tope evita payloads abusivos (y el límite de bcrypt a 72 bytes).
+ * Debe mantenerse sincronizada con la validación de la app (`ConsentScreen`).
  */
-const passwordSchema = z.string().min(8).max(128);
+const passwordSchema = z
+  .string()
+  .min(8)
+  .max(128)
+  .refine((v) => /[A-Za-z]/.test(v) && /\d/.test(v), {
+    message: 'La contraseña debe tener al menos una letra y un número.',
+  });
 
 const bodySchema = z
   .object({
     nombre: z.string().min(1),
     apellidos: z.string().min(1),
-    email: z.string().min(3),
+    // Email único: formato validado en la frontera (rechazo 400 temprano); el 409 por
+    // duplicado lo emite el caso de uso al persistir (US-53).
+    email: z.string().email(),
     parentesco: z.enum(PARENTESCOS),
     telefono: z.string().optional(),
     password: passwordSchema,

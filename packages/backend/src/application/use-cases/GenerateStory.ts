@@ -7,6 +7,7 @@ import { esEstilo, esTema } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { GenerateStoryRequest, StoryOutput } from '../dto.js';
 import { toStoryOutput } from '../mappers.js';
+import { redactarNombre } from '../redact.js';
 
 export interface GenerateStoryDeps {
   profiles: ChildProfileRepository;
@@ -36,9 +37,15 @@ export class GenerateStory {
 
     const generado = await this.deps.ai.generateStory({ perfil, temas, estilos });
 
-    // Persistencia sin migración (decisión del lote): `Story` conserva las columnas
-    // singulares `tema`/`estilo`; se guarda el primero de cada lista como valor
-    // representativo de la selección.
+    // US-59: portada ilustrada **best-effort**. El prompt se forma con tema/estilo/
+    // título, **redactando el nombre del niño** del título (que el LLM suele incluir)
+    // antes de salir a un tercero (C-5). Si no hay clave o la generación falla, queda
+    // `undefined` y la app usa el respaldo local. Nunca rompe la creación.
+    const tituloSinNombre = redactarNombre(generado.titulo, perfil.nombre);
+    const portada = await this.generarPortada(temas[0]!, estilos[0]!, tituloSinNombre);
+
+    // `Story` conserva las columnas singulares `tema`/`estilo`; se guarda el primero
+    // de cada lista como valor representativo de la selección (decisión del lote).
     const story = new Story({
       id: this.deps.newId(),
       profileId: perfil.id,
@@ -48,6 +55,7 @@ export class GenerateStory {
       cuerpo: generado.cuerpo,
       idioma: perfil.idioma.value,
       proveedor: generado.proveedor,
+      portada,
       estado: 'nuevo',
       creadoEn: this.deps.now(),
     });
@@ -55,6 +63,25 @@ export class GenerateStory {
     await this.deps.stories.save(story);
 
     return toStoryOutput(story);
+  }
+
+  /**
+   * Genera la portada (US-59) sin que un fallo rompa la creación del cuento: el
+   * `AIProvider` ya es best-effort (devuelve `null` ante fallo o sin clave), pero
+   * además se envuelve en try/catch como defensa en profundidad. Devuelve la data
+   * URL o `undefined` (la app cae al respaldo local).
+   */
+  private async generarPortada(
+    tema: string,
+    estilo: string,
+    titulo: string,
+  ): Promise<string | undefined> {
+    try {
+      const portada = await this.deps.ai.generateImage({ tema, estilo, titulo });
+      return portada ?? undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   /**

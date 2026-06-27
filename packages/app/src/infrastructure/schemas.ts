@@ -47,6 +47,8 @@ export const storySchema = z.object({
   idioma: z.enum(IDIOMAS),
   estado: z.enum(['nuevo', 'leido']),
   proveedor: z.enum(PROVEEDORES_IA),
+  // US-59: portada generada (data URL); opcional, ausente ⇒ respaldo local.
+  portada: z.string().optional(),
 });
 
 /** Cuento anónimo (US-50): sin id, profileId ni estado (no se persiste). */
@@ -65,11 +67,14 @@ export const activitySchema = z.object({
   categoria: z.enum(CATEGORIAS),
   titulo: z.string(),
   descripcion: z.string(),
+  instrucciones: z.string().optional(),
   duracionMin: z.number().optional(),
   nivel: z.number().optional(),
   completadaEn: z.string().optional(),
   valoracion: z.number().optional(),
   proveedor: z.enum(PROVEEDORES_IA),
+  // US-59: imagen generada (data URL); opcional, ausente ⇒ respaldo local.
+  imagen: z.string().optional(),
 });
 export const activityListSchema = z.array(activitySchema);
 
@@ -78,6 +83,7 @@ export const anonymousActivitySchema = z.object({
   categoria: z.enum(CATEGORIAS),
   titulo: z.string(),
   descripcion: z.string(),
+  instrucciones: z.string().optional(),
   duracionMin: z.number().optional(),
   nivel: z.number().optional(),
   proveedor: z.enum(PROVEEDORES_IA),

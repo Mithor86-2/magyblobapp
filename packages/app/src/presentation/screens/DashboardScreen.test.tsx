@@ -82,6 +82,14 @@ describe('DashboardScreen — modo anónimo efímero (US-50)', () => {
     expect(recommendAnonymousMock.mock.calls[0][0]).not.toHaveProperty('profileId');
   });
 
+  it('muestra la cabecera ilustrada del Dashboard (US-58)', () => {
+    render(<DashboardScreen {...props} />);
+
+    // El Screen pinta la imagen de cabecera (headerImageName="dashboard");
+    // react-native-web la expone con role="img".
+    expect(screen.getByRole('img')).toBeInTheDocument();
+  });
+
   it('navega a crear cuenta y a iniciar sesión desde el Dashboard', () => {
     render(<DashboardScreen {...props} />);
 

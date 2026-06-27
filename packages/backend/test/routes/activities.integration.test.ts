@@ -63,10 +63,18 @@ describe('POST /activities/recommend (integración)', () => {
     });
 
     expect(res.statusCode).toBe(201);
-    const body = res.json() as Array<{ profileId: string; categoria: string }>;
+    const body = res.json() as Array<{
+      profileId: string;
+      categoria: string;
+      instrucciones?: string;
+    }>;
     expect(body).toHaveLength(3);
     expect(body.every((a) => a.profileId === profileId)).toBe(true);
     expect(body.every((a) => ['arte', 'musica', 'logica'].includes(a.categoria))).toBe(true);
+    // US-54: cada actividad trae instrucciones (paso a paso) en la salida HTTP.
+    expect(
+      body.every((a) => typeof a.instrucciones === 'string' && a.instrucciones.length > 0),
+    ).toBe(true);
 
     // Persistidas en el repositorio de actividades.
     const guardadas = await handles.activities.findByProfile(profileId);

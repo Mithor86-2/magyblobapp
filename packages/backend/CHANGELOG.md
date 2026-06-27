@@ -19,6 +19,76 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.2.1] - 2026-06-27
+
+### Added
+
+- Script on-demand `prompts:dump` (`pnpm --filter @magyblob/backend prompts:dump`) que recorre un
+  conjunto representativo de combinaciones (cada tema y estilo, ES/EN, 1-2 edades), construye los
+  prompts reales (`buildStoryPrompt`/`buildActivitiesPrompt`/`buildImagePrompt`) y obtiene el resultado
+  real llamando a Groq (cuentos/actividades) y Gemini (portadas), volcándolo a `Docs/muestra-prompts.md`.
+  Requiere `GROQ_API_KEY` y `GEMINI_API_KEY`; no entra en el gate (US-60).
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.0] - 2026-06-27
+
+### Added
+
+- Portadas de imagen de cuentos y actividades (US-59): la interfaz `AIProvider` gana
+  `generateImage(prompt)` y un adaptador **Gemini/Imagen** (`imagen-4.0-generate-001`, endpoint
+  `:predict`) que usa `GEMINI_API_KEY` (`config.cloudApiKeys.gemini`); sin clave o ante cualquier
+  fallo devuelve `null` (no lanza). Los casos de uso `GenerateStory` y `RecommendActivities` generan
+  la imagen de forma **best-effort** (try/catch): si falla o no hay clave, el campo queda `null` y la
+  creación del cuento/actividad se completa igual. Se añaden los campos nullable `Story.portada` y
+  `Activity.imagen` (entidad + DTO + mapper + `schema.prisma` + migración SQL `ADD COLUMN ... NULL`).
+  El prompt de imagen se construye con tema/estilo/título y **nunca** con el nombre del niño
+  (cumplimiento C-5).
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.1.0] - 2026-06-26
+
+### Added
+
+- Endpoint `GET /settings/tts/voices`: expone la voz de narración configurada por idioma (ES/EN), el
+  modelo y si hay clave de ElevenLabs, sin revelar la `xi-api-key` ni llamar al proveedor (US-55).
+- Test del `ElevenLabsProvider` que verifica la selección de voz por idioma del cuento (US-55).
+
+### Changed
+
+- Validación más estricta de la entrada del alta (US-53): el **email** se valida con
+  `z.string().email()` (rechazo `400` temprano ante formato inválido; el `409` por email duplicado se
+  mantiene) y la **contraseña** exige **≥8 caracteres con al menos una letra y un número**,
+  sincronizada con la validación de la app.
+- Documentadas las variables `ELEVENLABS_VOICE_ID_ES`/`_EN` en `.env.example` (cómo obtener un
+  `voice_id` y qué voz _premade_ multilingüe se usa por defecto en cada idioma) y aclarados los
+  defaults en `config.ts` (US-55).
+- Contenido IA (US-54): campo de dominio **`Activity.instrucciones`** (paso a paso de la actividad)
+  que recorre entidad → `prisma/schema.prisma` (columna `instrucciones TEXT NULL` + migración) →
+  `parseResponse` (schema Zod) → `GeneratedActivity` → `ActivityOutput` (DTO) → `mappers` →
+  `RecommendActivities`. El `MockProvider` rellena instrucciones deterministas y el prompt de
+  actividades pide un paso a paso.
+- Contenido IA (US-54): el prompt del cuento (ES/EN) pide **variar el título** en cada generación y
+  el `MockProvider` deja de usar el título fijo `"{nombre} y la aventura de {tema}"` por una
+  variación elegida de forma determinista según el contenido del cuento.
+
 ## [1.0.0] - 2026-06-26
 
 Primer release de producción. Backend desplegado en **Render** (Docker) con PostgreSQL en **Neon** e

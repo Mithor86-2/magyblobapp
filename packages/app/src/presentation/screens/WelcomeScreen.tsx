@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { colors, spacing, typography } from '../theme/tokens';
@@ -9,21 +10,22 @@ import type { RootScreenProps } from '../navigation';
  * consentimiento) o iniciar sesión si ya tiene una (login ligero por email, US-19).
  */
 export function WelcomeScreen({ navigation }: RootScreenProps<'Welcome'>) {
+  const { t } = useTranslation();
   return (
-    <Screen>
+    <Screen headerImageName="welcome">
       <View style={styles.hero}>
         <Text style={styles.logo}>✨</Text>
-        <Text style={styles.title}>Aprendizaje Mágico</Text>
-        <Text style={styles.subtitle}>
-          Cuentos y actividades personalizados para tus peques. Empieza creando tu cuenta o entra si
-          ya tienes una.
-        </Text>
+        <Text style={styles.title}>{t('common.appName')}</Text>
+        <Text style={styles.subtitle}>{t('welcome.subtitle')}</Text>
       </View>
 
       <View style={styles.actions}>
-        <BubblyButton label="Crear cuenta" onPress={() => navigation.navigate('Consent')} />
         <BubblyButton
-          label="Ya tengo cuenta"
+          label={t('common.createAccount')}
+          onPress={() => navigation.navigate('Consent')}
+        />
+        <BubblyButton
+          label={t('common.haveAccount')}
           onPress={() => navigation.navigate('Login')}
           variant="secondary"
         />

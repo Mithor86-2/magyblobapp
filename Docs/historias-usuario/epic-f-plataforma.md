@@ -3,7 +3,7 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-50**, **US-51**.
+**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -1007,3 +1007,217 @@ actividades por cliente (IP), con **429** al superarlo. El cliente lleva su prop
 - (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: los casos de uso anónimos
   **no persisten** (repos sin escrituras), las rutas responden **200/201** dentro del límite y **429**
   al superarlo, y en la app que el Dashboard llama a los gateways anónimos y respeta el contador efímero.
+
+## US-52 — Icono de la app y splash de marca · Could (Mejoras)
+
+Como **adulto** quiero que la app tenga un **icono propio** y una **pantalla de carga (splash)** con la
+identidad visual del producto, para que se reconozca en el dispositivo y la primera impresión sea cuidada.
+
+- Dado el dispositivo, Cuando instalo la app, Entonces en el launcher aparece el **icono propio**: en
+  Android un **icono adaptativo** (logo en la zona segura sobre fondo de marca `#fff8f6`) y en iOS un
+  icono con **fondo sólido** (sin transparencia → sin esquinas negras).
+- Dado el arranque, Cuando se muestra el **splash**, Entonces el **fondo es `#ccc4b9`** con el logo
+  centrado (`expo-splash-screen`, `resizeMode: contain`).
+- (No-funcional) Dado Android 13+, Entonces existe un **icono monocromo** (silueta del logo) para el
+  tema del sistema.
+- (No-funcional) Dado el cumplimiento, Entonces los recursos van **empaquetados en build-time** (sin
+  descargas en runtime ni SDKs de terceros), coherente con [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+## US-53 — Robustez de producción y alta/login · Should (Mejoras)
+
+Como **adulto** quiero que el alta y el inicio de sesión sean **robustos en producción** (servidor
+en frío, redes lentas, teclado del móvil) y que mis credenciales tengan **garantías mínimas de
+calidad**, para no perder el flujo por un timeout, un campo tapado por el teclado, un email mal
+escrito o una contraseña débil.
+
+- Dado un backend desplegado que arranca en frío (Render), Cuando lanzo la primera petición tras
+  abrir la app, Entonces los **timeouts** son holgados (peticiones normales **30 s**, generación de
+  IA **90 s**, narración **30 s**) y, ante un fallo de **red** o **timeout**, la app **reintenta con
+  backoff** (hasta **2** reintentos) antes de mostrar error.
+- Dado el arranque de la app, Cuando se inicializa, Entonces se hace un **ping de warm-up** a
+  `/health` para despertar el servidor en frío sin bloquear la interfaz ni romper los tests.
+- Dada una pantalla de formulario (Consent/Login/CreateProfile), Cuando aparece el **teclado**,
+  Entonces el contenido se desplaza (`KeyboardAvoidingView`) y **ningún campo queda tapado**,
+  conservando el scroll y el footer fijo.
+- Dado el alta, Cuando introduzco un **email con formato inválido**, Entonces el backend lo **rechaza
+  con 400** de forma temprana (`z.string().email()`); el **409 por email duplicado** se mantiene.
+- Dado el alta, Cuando elijo la **contraseña**, Entonces se exige un mínimo razonable de **≥8
+  caracteres con al menos una letra y un número** (sin reglas agresivas), validado **en el backend y
+  en la app** de forma sincronizada, con **ayuda visual** del requisito en la pantalla de alta.
+
+## US-56 — Estándares de diseño Android/iOS · Should (Mejoras)
+
+Como **usuario de la app** quiero que los componentes base sigan las pautas de diseño de cada
+plataforma (Material 3 en Android, Human Interface Guidelines en iOS) para que la interacción se sienta
+**nativa, accesible y agradable** en cualquier dispositivo.
+
+**Contexto.** El design system "Aprendizaje Mágico" (tokens en
+[theme/tokens.ts](../../packages/app/src/presentation/theme/tokens.ts)) ya fija paleta, tipografía
+Quicksand y tap targets ≥64px, pero los componentes base no daban **feedback táctil** conforme a cada
+plataforma (sin `android_ripple` ni háptica) y algunos pares de color no se habían verificado contra el
+**contraste AA** (WCAG 2.1, 4.5:1 texto normal / 3:1 texto grande). Esta historia hace de **bajo riesgo**
+mejoras conformes a Material 3 / HIG centradas en **componentes y theme** (`BubblyButton`,
+`SelectableChip`, `tokens.ts`) y en las **opciones de navegación** (`stackScreenOptions` en `App.tsx`),
+**sin tocar el contenido/strings de las pantallas** (eso lo cubren las historias de i18n y cabeceras).
+Se añade [`expo-haptics`](https://docs.expo.dev/versions/latest/sdk/haptics/) (SDK oficial de Expo,
+empaquetado en build-time: sin red ni SDK de tercero en runtime, conforme a
+[cumplimiento-menores.md](../cumplimiento-menores.md)). **Solo app.** Ver el plan
+[feature-60-estandares-diseno](../planes/feature-60-estandares-diseno.md).
+
+**Criterios de aceptación**
+
+- Dado un botón principal `BubblyButton` en **Android**, Cuando lo pulso, Entonces muestra un
+  **`android_ripple`** con el color de la plataforma (Material 3) además del estado "hundido" existente.
+- Dado el `BubblyButton` (no deshabilitado), Cuando lo pulso, Entonces dispara un **háptico suave**
+  (`expo-haptics`, `ImpactFeedbackStyle.Light`) como confirmación táctil; deshabilitado o cargando **no**
+  dispara háptico ni invoca `onPress`.
+- Dado el chip `SelectableChip` en **Android**, Cuando lo pulso, Entonces ofrece **feedback táctil**
+  (`android_ripple`) coherente con el botón.
+- Dados los pares de color del theme (texto sobre superficie), Cuando se auditan contra **WCAG 2.1 AA**,
+  Entonces cumplen el contraste mínimo (4.5:1 texto normal, 3:1 texto grande) y los que no cumplían se
+  ajustan, documentando el cambio.
+- Dada la cabecera del stack en **iOS**, Cuando navego hacia atrás, Entonces el botón "atrás" sigue la
+  HIG (etiqueta/título conforme) y la navegación queda consistente entre plataformas.
+- Dados los componentes tocados (`BubblyButton`, `SelectableChip`), Cuando se ejecuta `pnpm test`,
+  Entonces sus pruebas **user-centric** (rol/nombre accesible, sin probar estilos) siguen en verde y
+  cubren el nuevo comportamiento donde es observable.
+- (No-funcional) Dada la dependencia `expo-haptics`, Cuando se instala, Entonces va **empaquetada en
+  build-time** (sin red ni SDK de tercero en runtime) y degrada de forma segura en plataformas sin
+  háptica (web), conforme a [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+## US-58 — Cabeceras por pantalla · Could (Mejoras)
+
+Como **usuario de la app** quiero que cada pantalla principal muestre una **imagen de cabecera**
+ilustrada para que la app se sienta más cálida, visual y reconocible, y para que cada sección tenga
+una identidad propia de un vistazo.
+
+**Contexto.** El lienzo base [Screen](../../packages/app/src/presentation/components/Screen.tsx) ya
+fija fondo crema, márgenes seguros, scroll, footer fijo y `KeyboardAvoidingView` (US-53), pero las
+pantallas no tenían cabecera ilustrada. Esta historia añade una **variante opcional** de `Screen`
+con la prop `headerImageName` que pinta la imagen correspondiente de
+[assets/images/headers/](../../packages/app/assets/images/headers/) en la parte superior, dentro del
+área segura y respetando el scroll y el footer existentes. El mapeo de nombre → imagen usa
+**`require` estáticos** (Metro no resuelve `require` dinámicos). Las imágenes se **optimizan en peso**
+antes de empaquetar (de ~2 MB a ~200-400 KB) sin degradar visiblemente. Solo las pantallas con imagen
+disponible reciben cabecera (`Welcome`, `Home`, `Dashboard`, generador de cuentos y actividades); el
+resto se queda sin ella. **Solo app.** Ver el plan
+[feature-62-cabeceras-pantalla](../planes/feature-62-cabeceras-pantalla.md).
+
+> **Ajuste (feature 64).** La cabecera se muestra con la **imagen completa** (`resizeMode="contain"`,
+> con la proporción del origen ~1000×1026) en vez de recortada (`cover`), para que se vea entera y bien
+> encuadrada. Ver el plan [feature-64-ajustes-prompts-doc](../planes/feature-64-ajustes-prompts-doc.md).
+
+**Criterios de aceptación**
+
+- Dada una pantalla que pasa `headerImageName` (p. ej. `welcome`), Cuando se renderiza, Entonces
+  muestra la **imagen de cabecera** correspondiente **completa** (sin recorte) en la parte superior,
+  dentro del área segura y por encima del contenido desplazable.
+- Dada una pantalla que **no** pasa `headerImageName`, Cuando se renderiza, Entonces **no** muestra
+  ninguna cabecera y conserva el comportamiento anterior (contenido, scroll y footer intactos).
+- Dado el lienzo con cabecera, Cuando aparece el **teclado**, Entonces se conserva el
+  `KeyboardAvoidingView` (US-53) y el **footer fijo** sigue alcanzable.
+- Dadas las imágenes de cabecera, Cuando se empaquetan, Entonces su **peso** queda en el rango
+  ~200-400 KB por imagen (optimizadas desde ~2 MB) **sin degradación visible** y con dimensiones
+  consistentes.
+- Dada la resolución del nombre a imagen, Cuando se construye la app, Entonces usa **`require`
+  estáticos** (mapa por nombre), no `require` dinámicos (requisito de Metro).
+- Dado el componente `Screen` y alguna pantalla con cabecera, Cuando se ejecuta `pnpm test`, Entonces
+  hay pruebas que verifican que la cabecera se renderiza cuando se pasa el nombre y **no** se renderiza
+  cuando se omite.
+
+## US-57 — Internacionalización del app (ES/EN) · Should (Mejoras)
+
+Como **persona adulta que usa la app** quiero poder **cambiar el idioma de la interfaz entre español
+e inglés** para que toda la app (textos de UI, botones, títulos de pantalla, mensajes) se muestre en
+el idioma que prefiero, con independencia del idioma del perfil del niño.
+
+**Contexto.** Hasta ahora todos los textos de la UI estaban **hardcodeados en español** repartidos por
+`presentation/screens/*`, los componentes con texto (`ActivityCard`, `AuthorBadge`, `NarrationControls`,
+`ParentalGate`, `ErrorFallback`, `BubblyButton` vía `label`) y los **títulos de cabecera del stack** en
+`App.tsx`. Esta historia introduce **i18n** con `i18next` + `react-i18next` (recursos `es`/`en`
+empaquetados, sin red ni SDK de tercero en runtime, conforme a
+[cumplimiento-menores.md](../cumplimiento-menores.md)) y `expo-localization` como **sugerencia inicial**
+del idioma del dispositivo. El **idioma por defecto y de respaldo es `es`** (los textos en español se
+conservan idénticos bajo claves, de modo que las pruebas user-centric existentes que consultan por texto
+siguen verdes). Se distingue el **idioma del APP** (`appLanguage`, ES/EN, persistido en `useAppStore`,
+con selector en la **zona de adultos**) del **idioma del PERFIL** del niño (que ya existe y gobierna la
+generación de los cuentos en el backend, y **no se toca**). Los vocabularios cerrados del dominio
+(`labels.ts`: temas, estilos, parentesco, categorías, proveedor) se integran en el sistema i18n
+manteniendo su etiqueta ES idéntica. **Solo app.** Ver el plan
+[feature-61-i18n-app](../planes/feature-61-i18n-app.md).
+
+> **Ajuste (feature 64).** Se **retira `expo-localization`**: el idioma lo elige la persona adulta y por
+> defecto es **`es`**, así que la detección del idioma del dispositivo sobra. El criterio sobre
+> `expo-localization` (sugerencia inicial) queda **obsoleto**: el arranque sin preferencia guardada usa
+> `es` fijo y el cambio manual vía `appLanguage`/selector existente. Ver el plan
+> [feature-64-ajustes-prompts-doc](../planes/feature-64-ajustes-prompts-doc.md).
+
+**Criterios de aceptación**
+
+- Dado el sistema i18n inicializado, Cuando no hay idioma elegido por la persona adulta, Entonces el
+  idioma activo es **`es`** por defecto (y `es` es también el `fallbackLng`), de modo que los textos
+  coinciden con los que había antes.
+- Dada una clave de traducción existente en ambos idiomas, Cuando el idioma activo es `es`, Entonces
+  `t('clave')` devuelve el texto **en español**; Cuando el idioma activo es `en`, Entonces devuelve el
+  texto **en inglés**.
+- Dada la **zona de adultos** (`ParentalScreen`), Cuando elijo el idioma del app (ES o EN), Entonces la
+  interfaz cambia de idioma de inmediato (`i18n.changeLanguage`) y la elección **persiste** entre
+  reinicios (`appLanguage` en `useAppStore`).
+- Dado el **idioma del perfil** del niño (que gobierna la generación de los cuentos), Cuando cambio el
+  idioma del **app**, Entonces el idioma del perfil **no** se ve afectado (son ajustes independientes).
+- Dados los **textos hardcodeados** de las pantallas, los componentes con texto y los **títulos de
+  cabecera** del stack (`App.tsx`), Cuando se aplica la i18n, Entonces se sustituyen por claves `t(...)`
+  resueltas desde los diccionarios `es`/`en`.
+- ~~Dado `expo-localization`, Cuando arranca la app por primera vez (sin preferencia guardada),
+  Entonces el idioma del dispositivo se usa **solo como sugerencia inicial**...~~ **(obsoleto, feature
+  64).** Ahora: Cuando arranca la app sin preferencia guardada, Entonces el idioma activo es **`es`**
+  fijo (sin detección del dispositivo); el cambio es **manual** vía el selector de la zona de adultos.
+- Dado el conjunto de pruebas, Cuando se ejecuta `pnpm test`, Entonces hay pruebas del **cambio de
+  idioma** (`t` devuelve ES/EN según el idioma activo) y de que una pantalla **renderiza el texto
+  traducido**, y las pruebas user-centric existentes (que consultan por texto en español) **siguen en
+  verde** sin cambios de texto.
+- (No-funcional) Dadas las dependencias `i18next` y `react-i18next`, Cuando se instalan, Entonces los
+  diccionarios van **empaquetados en build-time** (sin red ni descarga de traducciones en runtime),
+  conforme a [cumplimiento-menores.md](../cumplimiento-menores.md). **(feature 64: `expo-localization`
+  ya no es dependencia del app.)**
+
+## US-60 — Documento de muestra de prompts (resultados reales) · Could (Mejoras)
+
+Como **autor del TFM / persona que evalúa la calidad de la IA** quiero un **documento de muestra** que
+recoja, para un conjunto representativo de combinaciones, el **prompt real** que envía el sistema y el
+**resultado real** del proveedor (cuentos y actividades con Groq, portadas con Gemini), para poder
+**auditar y documentar** el comportamiento de la capa de IA sin tener que reproducirlo a mano.
+
+**Contexto.** La capa de IA construye los prompts en
+[`prompts.ts`](../../packages/backend/src/infrastructure/ai/prompts.ts) (`buildStoryPrompt`,
+`buildActivitiesPrompt`, `buildImagePrompt`) y llama a los proveedores de infraestructura
+([`CloudProvider`](../../packages/backend/src/infrastructure/ai/CloudProvider.ts) para texto vía Groq,
+[`GeminiImageProvider`](../../packages/backend/src/infrastructure/ai/GeminiImageProvider.ts) para
+imágenes). Esta historia añade un **script on-demand** (`pnpm --filter @magyblob/backend prompts:dump`,
+al estilo de los `ai:smoke`) que recorre un conjunto **representativo** de combinaciones (cada tema una
+vez, cada estilo una vez, ambos idiomas ES/EN, 1-2 edades — **no** el producto cartesiano), construye
+los prompts reales, obtiene los resultados llamando a Groq/Gemini y escribe un **documento Markdown**
+sobrescribible ([muestra-prompts.md](../muestra-prompts.md)). Requiere `GROQ_API_KEY` y `GEMINI_API_KEY`
+y **no entra en el gate** (como `ai:smoke`); el **formateador** del documento sí tiene un test unitario
+determinista (sin red) para que haya cobertura en el gate. Para las portadas se registra **solo si
+Gemini devolvió imagen y su tamaño**, sin incrustar el base64. **Solo backend (tooling).** Ver el plan
+[feature-64-ajustes-prompts-doc](../planes/feature-64-ajustes-prompts-doc.md).
+
+**Criterios de aceptación**
+
+- Dado el script `prompts:dump`, Cuando se ejecuta con `GROQ_API_KEY` y `GEMINI_API_KEY` presentes,
+  Entonces recorre un conjunto **representativo** (cada tema y cada estilo al menos una vez, ambos
+  idiomas ES/EN, 1-2 edades) y **no** el producto cartesiano completo.
+- Dado un caso de **cuento** o **actividad**, Cuando el script lo procesa, Entonces construye el prompt
+  real con `buildStoryPrompt`/`buildActivitiesPrompt`, llama a **Groq** (vía `CloudProvider`) y registra
+  el **system+prompt enviados** y el **resultado real** (título+cuerpo / lista de actividades).
+- Dado un caso de **portada**, Cuando el script lo procesa, Entonces construye el prompt con
+  `buildImagePrompt`, llama a **Gemini** (`GeminiImageProvider`) y registra el **prompt** y si devolvió
+  imagen (**ok/tamaño**, sin incrustar el base64).
+- Dado que falta `GROQ_API_KEY` o `GEMINI_API_KEY`, Cuando se ejecuta el script, Entonces **aborta** con
+  un mensaje claro indicando qué variable falta, y **no** se ejecuta en el gate (`pnpm check`).
+- Dado el conjunto de resultados, Cuando termina el script, Entonces escribe/sobrescribe el documento
+  Markdown [muestra-prompts.md](../muestra-prompts.md) con, por cada caso: combinación, system+prompt y
+  resultado.
+- Dado el **formateador** del documento, Cuando se ejecuta `pnpm test`, Entonces hay una prueba unitaria
+  con datos deterministas en memoria (sin red) que verifica el Markdown generado.

@@ -63,15 +63,16 @@ describe('StoryGeneratorScreen — multi-selección (US-47)', () => {
   it('permite seleccionar varios temas y estilos y los envía como listas', async () => {
     render(<StoryGeneratorScreen {...props} />);
 
-    // Arranca con un tema (primer interés) y un estilo preseleccionados; añadimos más.
-    fireEvent.click(screen.getByRole('button', { name: 'Espacio' }));
+    // Arranca con los intereses (animales, espacio) y un estilo preseleccionados;
+    // añadimos un tema más (magia, que no es interés) y un estilo más.
+    fireEvent.click(screen.getByRole('button', { name: 'Magia' }));
     fireEvent.click(screen.getByRole('button', { name: 'Divertido' }));
     fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
 
     await waitFor(() => expect(generateMock).toHaveBeenCalledTimes(1));
     expect(generateMock).toHaveBeenCalledWith({
       profileId: 'p1',
-      temas: ['animales', 'espacio'],
+      temas: ['animales', 'espacio', 'magia'],
       estilos: ['aventura', 'divertido'],
     });
   });
@@ -79,10 +80,22 @@ describe('StoryGeneratorScreen — multi-selección (US-47)', () => {
   it('al deseleccionar todos los temas no genera (botón deshabilitado)', async () => {
     render(<StoryGeneratorScreen {...props} />);
 
-    // El único tema preseleccionado es el primer interés (animales): lo quitamos.
+    // Los temas preseleccionados son los intereses del perfil (animales y espacio):
+    // los quitamos los dos para dejar la lista vacía.
     fireEvent.click(screen.getByRole('button', { name: 'Animales' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Espacio' }));
     fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
 
     expect(generateMock).not.toHaveBeenCalled();
+  });
+
+  it('US-54: ofrece todos los temas (incluidos magia y música), no solo los intereses', () => {
+    render(<StoryGeneratorScreen {...props} />);
+
+    // El perfil solo tiene intereses animales/espacio, pero el generador muestra todo
+    // el vocabulario para poder elegir libremente.
+    expect(screen.getByRole('button', { name: 'Magia' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Música' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Aventuras' })).toBeInTheDocument();
   });
 });

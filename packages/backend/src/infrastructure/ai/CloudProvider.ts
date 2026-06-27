@@ -118,6 +118,15 @@ export class CloudProvider implements AIProvider {
     return parseActivities(data, input.cantidad, 'CloudProvider', 'cloud');
   }
 
+  /**
+   * El proveedor cloud de **texto** no genera imágenes (US-59): la portada se
+   * genera con Gemini/Imagen vía el decorador `ImageCapableProvider`. Aquí se
+   * devuelve `null` para cumplir la interfaz.
+   */
+  async generateImage(): Promise<string | null> {
+    return null;
+  }
+
   /** Lee de AppSetting los textos de prompt; null/ausente => default en código. */
   private async leerOverrides(
     claveSystem: string,
@@ -203,7 +212,8 @@ function instruccionJsonActividades(): string {
   return (
     ' Responde ÚNICAMENTE con un objeto JSON con esta forma exacta: ' +
     `{"actividades": [{"categoria": "una de [${categorias}]", "titulo": "string", ` +
-    '"descripcion": "string", "duracionMin": entero, "nivel": entero entre 1 y 3}]}. ' +
+    '"descripcion": "string", "instrucciones": "paso a paso en una cadena", ' +
+    '"duracionMin": entero, "nivel": entero entre 1 y 3}]}. ' +
     'No añadas texto fuera del JSON.'
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
@@ -8,7 +9,7 @@ import { AuthorBadge } from '../components/AuthorBadge';
 import { TEMAS, ESTILOS } from '../../domain/types';
 import type { AnonymousActivity, AnonymousStory, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
-import { ESTILO_LABEL, TEMA_LABEL } from '../labels';
+import { estiloLabel, temaLabel } from '../labels';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
@@ -28,6 +29,7 @@ const LIMITE_GRATIS = 3;
 const EDAD_DEFECTO = 4;
 
 export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
+  const { t } = useTranslation();
   const [temas, setTemas] = useState<Tema[]>([TEMAS[0]]);
   const [estilos, setEstilos] = useState<Estilo[]>([ESTILOS[0]]);
   const [story, setStory] = useState<AnonymousStory | null>(null);
@@ -67,7 +69,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
       setStory(result);
       setCuentosUsados((n) => n + 1);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'No se pudo generar el cuento.');
+      setError(e instanceof ApiError ? e.message : t('dashboard.errorStory'));
     } finally {
       setLoadingStory(false);
     }
@@ -83,7 +85,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
       setActivities(result);
       setActividadesUsadas((n) => n + 1);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'No se pudieron generar las actividades.');
+      setError(e instanceof ApiError ? e.message : t('dashboard.errorActivities'));
     } finally {
       setLoadingActivities(false);
     }
@@ -91,11 +93,15 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
 
   return (
     <Screen
+      headerImageName="dashboard"
       footer={
         <View style={styles.footerActions}>
-          <BubblyButton label="Crear cuenta" onPress={() => navigation.navigate('Consent')} />
           <BubblyButton
-            label="Ya tengo cuenta"
+            label={t('common.createAccount')}
+            onPress={() => navigation.navigate('Consent')}
+          />
+          <BubblyButton
+            label={t('common.haveAccount')}
             onPress={() => navigation.navigate('Login')}
             variant="secondary"
           />
@@ -104,51 +110,47 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
     >
       <View style={styles.hero}>
         <Text style={styles.logo}>✨</Text>
-        <Text style={styles.title}>Aprendizaje Mágico</Text>
-        <Text style={styles.subtitle}>
-          Cuentos y actividades personalizados para tus peques. Pruébalo gratis sin registrarte:
-          hasta {LIMITE_GRATIS} cuentos y {LIMITE_GRATIS} actividades. Crea una cuenta para guardar
-          el progreso de tu peque.
-        </Text>
+        <Text style={styles.title}>{t('common.appName')}</Text>
+        <Text style={styles.subtitle}>{t('dashboard.subtitle', { limite: LIMITE_GRATIS })}</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Prueba un cuento</Text>
-      <Text style={styles.fieldLabel}>Temas</Text>
+      <Text style={styles.sectionTitle}>{t('dashboard.tryStory')}</Text>
+      <Text style={styles.fieldLabel}>{t('dashboard.themes')}</Text>
       <View style={styles.chips}>
-        {TEMAS.map((t) => (
+        {TEMAS.map((tema) => (
           <SelectableChip
-            key={t}
-            label={TEMA_LABEL[t]}
-            selected={temas.includes(t)}
-            onPress={() => toggleTema(t)}
+            key={tema}
+            label={temaLabel(tema)}
+            selected={temas.includes(tema)}
+            onPress={() => toggleTema(tema)}
           />
         ))}
       </View>
-      <Text style={styles.fieldLabel}>Estilos</Text>
+      <Text style={styles.fieldLabel}>{t('dashboard.styles')}</Text>
       <View style={styles.chips}>
         {ESTILOS.map((s) => (
           <SelectableChip
             key={s}
-            label={ESTILO_LABEL[s]}
+            label={estiloLabel(s)}
             selected={estilos.includes(s)}
             onPress={() => toggleEstilo(s)}
           />
         ))}
       </View>
       <BubblyButton
-        label={quedanCuentos ? 'Generar cuento' : 'Límite alcanzado — crea cuenta'}
+        label={quedanCuentos ? t('dashboard.generateStory') : t('dashboard.limitReached')}
         onPress={onGenerateStory}
         loading={loadingStory}
         disabled={!puedeGenerarCuento}
       />
       <Text style={styles.usos}>
-        Cuentos de prueba: {cuentosUsados}/{LIMITE_GRATIS}
+        {t('dashboard.storiesUsed', { usados: cuentosUsados, limite: LIMITE_GRATIS })}
       </Text>
 
       {loadingStory ? (
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>Creando un cuento mágico…</Text>
+          <Text style={styles.statusText}>{t('dashboard.creatingStory')}</Text>
         </View>
       ) : null}
 
@@ -160,22 +162,22 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
         </View>
       ) : null}
 
-      <Text style={styles.sectionTitle}>Prueba unas actividades</Text>
+      <Text style={styles.sectionTitle}>{t('dashboard.tryActivities')}</Text>
       <BubblyButton
-        label={quedanActividades ? 'Generar actividades' : 'Límite alcanzado — crea cuenta'}
+        label={quedanActividades ? t('dashboard.generateActivities') : t('dashboard.limitReached')}
         onPress={onGenerateActivities}
         loading={loadingActivities}
         disabled={!quedanActividades}
         variant="secondary"
       />
       <Text style={styles.usos}>
-        Actividades de prueba: {actividadesUsadas}/{LIMITE_GRATIS}
+        {t('dashboard.activitiesUsed', { usadas: actividadesUsadas, limite: LIMITE_GRATIS })}
       </Text>
 
       {loadingActivities ? (
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>Preparando actividades…</Text>
+          <Text style={styles.statusText}>{t('dashboard.preparingActivities')}</Text>
         </View>
       ) : null}
 

@@ -54,6 +54,7 @@ const ESQUEMA_ACTIVIDADES = {
           categoria: { type: 'string', enum: [...CATEGORIAS] },
           titulo: { type: 'string' },
           descripcion: { type: 'string' },
+          instrucciones: { type: 'string' },
           duracionMin: { type: 'integer' },
           nivel: { type: 'integer' },
         },
@@ -140,6 +141,14 @@ export class OllamaProvider implements AIProvider {
       },
     );
     return parseActivities(data, input.cantidad, 'Ollama', 'local');
+  }
+
+  /**
+   * Ollama no genera imágenes (US-59): la portada se delega a Gemini/Imagen vía el
+   * decorador `ImageCapableProvider`. Aquí se devuelve `null` para cumplir la interfaz.
+   */
+  async generateImage(): Promise<string | null> {
+    return null;
   }
 
   /** Lee de AppSetting los textos de prompt; null/ausente => default en código. */

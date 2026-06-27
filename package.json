@@ -1,6 +1,6 @@
 {
   "name": "magyblobapp",
-  "version": "1.0.0",
+  "version": "1.2.1",
   "private": true,
   "type": "module",
   "description": "App infantil bilingüe que crea perfiles y genera cuentos con IA local (TFM Máster)",
@@ -22,6 +22,7 @@
     "ollama:setup": "bash scripts/setup-ollama.sh",
     "ai:smoke": "pnpm --filter @magyblob/backend exec tsx scripts/smoke-ollama.ts",
     "ai:smoke:cloud": "pnpm --filter @magyblob/backend exec tsx scripts/smoke-cloud.ts",
+    "prompts:dump": "pnpm --filter @magyblob/backend prompts:dump",
     "up": "docker compose up",
     "up:build": "docker compose up --build",
     "up:mock": "bash scripts/up-mock.sh",

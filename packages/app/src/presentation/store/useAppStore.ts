@@ -14,6 +14,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { persistStorage } from '../../infrastructure/storage';
 import { setActiveChildName } from '../../infrastructure/sentry';
+import { cambiarIdiomaApp, DEFAULT_APP_LANGUAGE, type AppLanguage } from '../../i18n';
 import type { ChildProfile, Guardian, GuardianSession, SessionTokens } from '../../domain/types';
 
 interface AppState {
@@ -24,6 +25,14 @@ interface AppState {
   profiles: ChildProfile[];
   accessToken: string | null;
   refreshToken: string | null;
+  /**
+   * Idioma de la **interfaz** del app (US-57), distinto del idioma del PERFIL del
+   * niño (que gobierna la generación de los cuentos en el backend). Se persiste y
+   * se cambia desde la zona de adultos; al fijarlo se aplica a i18next.
+   */
+  appLanguage: AppLanguage;
+  /** Cambia el idioma de la interfaz y lo aplica a i18next (US-57). */
+  setAppLanguage: (lng: AppLanguage) => void;
   /** Abre sesión tras alta/login: guarda el guardián, el consentimiento y los tokens. */
   setSession: (session: GuardianSession, consentVersion: string) => void;
   /** Reemplaza los tokens tras una renovación (refresh-on-401). */
@@ -50,6 +59,13 @@ export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       ...SESION_VACIA,
+      // El idioma del app es una preferencia de UI: arranca con la sugerencia del
+      // dispositivo y NO se borra al cerrar sesión (a diferencia de la sesión).
+      appLanguage: DEFAULT_APP_LANGUAGE,
+      setAppLanguage: (lng) => {
+        cambiarIdiomaApp(lng);
+        set({ appLanguage: lng });
+      },
       setSession: (session, consentVersion) => {
         const { accessToken, refreshToken, ...guardian } = session;
         set({ guardian, consentVersion, accessToken, refreshToken });
@@ -76,13 +92,20 @@ export const useAppStore = create<AppState>()(
       name: 'magyblob-app',
       storage: persistStorage,
       // Tras rehidratar la sesión persistida, re-registra el nombre del niño activo
-      // para que el scrubbing de Sentry siga protegiéndolo al reabrir la app.
-      onRehydrateStorage: () => (state) => setActiveChildName(state?.currentProfile?.nombre),
-      // v3: la sesión incorpora la lista de `profiles` del guardián (US-49), que cambia
-      // el shape persistido. El estado v0/v1/v2 no la tiene, así que se descarta (el adulto
-      // vuelve a identificarse una vez para reconstruir la sesión).
-      version: 3,
-      migrate: () => ({ ...SESION_VACIA }),
+      // para que el scrubbing de Sentry siga protegiéndolo al reabrir la app, y
+      // aplica a i18next el idioma del app persistido (US-57); si no hay (estado
+      // migrado o primer arranque), usa el idioma por defecto `es` (feature 64: ya
+      // no se detecta el idioma del dispositivo; lo elige la persona adulta).
+      onRehydrateStorage: () => (state) => {
+        setActiveChildName(state?.currentProfile?.nombre);
+        cambiarIdiomaApp(state?.appLanguage ?? DEFAULT_APP_LANGUAGE);
+      },
+      // v4 (US-57): el estado incorpora `appLanguage` (idioma de la interfaz). v3
+      // añadió la lista de `profiles` del guardián (US-49). El estado anterior se
+      // descarta (el adulto vuelve a identificarse una vez); el idioma cae al
+      // por defecto `es` (feature 64: sin detección del dispositivo).
+      version: 4,
+      migrate: () => ({ ...SESION_VACIA, appLanguage: DEFAULT_APP_LANGUAGE }),
       partialize: (state) => ({
         guardian: state.guardian,
         consentVersion: state.consentVersion,
@@ -90,6 +113,7 @@ export const useAppStore = create<AppState>()(
         profiles: state.profiles,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
+        appLanguage: state.appLanguage,
       }),
     },
   ),

@@ -574,6 +574,50 @@ versionado diferido: **backend v0.21.0 / app v0.24.0 / raíz v0.32.0**; gate ver
       infra/docs: no cambia el runtime ni `docker compose up`. Plan en
       [planes/feature-55-produccion-guiada.md](planes/feature-55-produccion-guiada.md).
 
+### Lote de mejoras nº2 — Ola 1 (integrada en `develop` el 2026-06-26)
+
+Cuatro features en paralelo (plan en [planes/coordinacion-mejoras-paralelo-2.md](planes/coordinacion-mejoras-paralelo-2.md)).
+Integradas con versionado diferido: **backend v1.1.0 / app v1.1.0 / raíz v1.1.0**; gate verde
+(backend + app 129). Pendiente del lote: cola secuencial F6 cabeceras → F5 i18n → F7 portadas, y
+pruebas manuales del usuario al final.
+
+- [x] ✅ **Robustez prod + alta/login (US-53, F1, rama `feature/57-robustez-alta-login`).** Timeouts de la
+      app más holgados (15→30 s, generación 30→90 s, narración 15→30 s) + **reintento con backoff** y
+      **ping de warm-up** a `/health` para el cold start de Render; `KeyboardAvoidingView` en `Screen`;
+      email validado con `z.string().email()` (400 temprano; 409 duplicado intacto); contraseña ≥8 con
+      letra y número (front+back).
+- [x] ✅ **Contenido IA: títulos + instrucciones + temas (US-54, F2, rama `feature/58-contenido-ia-titulos-instrucciones`).**
+      El prompt pide **variar el título** (mock con variación determinista); campo `Activity.instrucciones`
+      (migración) con paso a paso en el prompt, mostrado en `ActivityCard`; botón "Realizado" con color de
+      acento; `StoryGeneratorScreen` ofrece **todos** los temas (arregla magia/música ocultos).
+- [x] ✅ **Voz ES/EN (US-55, F3, rama `feature/59-voz-es-en`).** Documentadas las voces premade por idioma
+      y endpoint `GET /settings/tts/voices` (sin exponer la key); fallback a voz nativa intacto.
+- [x] ✅ **Estándares de diseño Android/iOS (US-56, F4, rama `feature/60-estandares-diseno`).** `android_ripple` + **`expo-haptics`** (impacto suave) en `BubblyButton`/`SelectableChip`; back iOS `default`; contraste
+      AA auditado (sin cambios necesarios). Sobre componentes/theme, sin tocar el cuerpo de las pantallas.
+
+### Lote de mejoras nº2 — Cola secuencial F6→F5→F7 (integrada en `develop` el 2026-06-27)
+
+Tres features que compartían ficheros de pantalla/IA, integradas en orden. Release conjunto con
+versionado diferido: **backend v1.2.0 / app v1.2.0 / raíz v1.2.0**; gate verde (backend 287 + app 151).
+
+- [x] ✅ **Cabeceras ilustradas por pantalla (US-58, F6, rama `feature/62-cabeceras-pantalla`).** `Screen`
+      acepta `headerImageName` (`welcome|home|dashboard|cuentos|actividades`) y pinta la imagen de
+      `assets/images/headers/` (require estáticos), respetando scroll, footer y `KeyboardAvoidingView`. Las
+      5 imágenes optimizadas de ~2 MB a ~200-345 KB.
+- [x] ✅ **i18n del app ES/EN (US-57, F5, rama `feature/61-i18n-app`).** `i18next` + `react-i18next` +
+      `expo-localization`; ~120 claves de UI extraídas a diccionarios `es`/`en` (default `es`, textos
+      idénticos bajo claves → tests intactos); `appLanguage` persistido en `useAppStore` con selector en la
+      zona de adultos, independiente del idioma del perfil.
+- [x] ✅ **Portadas de imagen (US-59, F7, rama `feature/63-portadas-imagen`).** La app **siempre** muestra
+      portada: la generada por backend (`Story.portada`/`Activity.imagen`, migración) si existe, o el
+      **respaldo local por tema** (`assets/images/story/`, 7 imágenes optimizadas 5.5 MB→171 KB). Adaptador
+      **Gemini/Imagen** best-effort (sin clave o ante fallo → `null`, sin romper la creación); el prompt
+      redacta el nombre del niño (cumplimiento **C-15**). Pendiente: validar con `GEMINI_API_KEY` real.
+- [x] ✅ **Ajustes post-lote (US-60 + fixes US-57/58, rama `feature/64-ajustes-prompts-doc`, v1.2.1).**
+      Cabeceras con imagen **completa** (`contain`); i18n **sin `expo-localization`** (idioma elegido por el
+      usuario, default `es`); script on-demand `pnpm prompts:dump` que vuelca a `Docs/muestra-prompts.md`
+      los prompts de cuentos/actividades/portadas con resultados reales de **Groq + Gemini** (fuera del gate).
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

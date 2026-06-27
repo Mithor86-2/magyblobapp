@@ -109,6 +109,8 @@ export interface Story {
   idioma: CodigoIdioma;
   estado: EstadoStory;
   proveedor: ProveedorIa;
+  /** Portada generada (data URL, US-59); ausente ⇒ la app usa el respaldo local por tema. */
+  portada?: string;
 }
 
 // --- Modo anónimo efímero (US-50): genera y devuelve sin persistir ni sesión ---
@@ -143,6 +145,8 @@ export interface AnonymousActivity {
   categoria: Categoria;
   titulo: string;
   descripcion: string;
+  /** Paso a paso para realizar la actividad (US-54); opcional. */
+  instrucciones?: string;
   duracionMin?: number;
   nivel?: number;
   proveedor: ProveedorIa;
@@ -161,11 +165,15 @@ export interface Activity {
   categoria: Categoria;
   titulo: string;
   descripcion: string;
+  /** Paso a paso para realizar la actividad (US-54); opcional. */
+  instrucciones?: string;
   duracionMin?: number;
   nivel?: number;
   completadaEn?: string;
   valoracion?: number;
   proveedor: ProveedorIa;
+  /** Imagen generada (data URL, US-59); ausente ⇒ la app usa el respaldo local. */
+  imagen?: string;
 }
 
 // --- Historial ---

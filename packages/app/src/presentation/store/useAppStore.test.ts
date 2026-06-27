@@ -139,6 +139,34 @@ describe('useAppStore', () => {
     expect(s.refreshToken).toBeNull();
   });
 
+  it('arranca con el idioma del app por defecto (es)', () => {
+    expect(useAppStore.getState().appLanguage).toBe('es');
+  });
+
+  it('setAppLanguage cambia el idioma de la interfaz (US-57)', () => {
+    useAppStore.getState().setAppLanguage('en');
+    expect(useAppStore.getState().appLanguage).toBe('en');
+    useAppStore.getState().setAppLanguage('es');
+    expect(useAppStore.getState().appLanguage).toBe('es');
+  });
+
+  it('logout NO borra el idioma del app (es preferencia de UI, no de sesión)', () => {
+    useAppStore.getState().setAppLanguage('en');
+    useAppStore.getState().setSession(session, 'v1.0');
+    useAppStore.getState().logout();
+    expect(useAppStore.getState().appLanguage).toBe('en');
+    // Restaura el idioma por defecto para no contaminar otros tests.
+    useAppStore.getState().setAppLanguage('es');
+  });
+
+  it('persiste el idioma del app (partialize incluye `appLanguage`)', async () => {
+    useAppStore.getState().setAppLanguage('en');
+    await Promise.resolve();
+    const persisted = JSON.parse(mem.get('magyblob-app') ?? '{}');
+    expect(persisted.state.appLanguage).toBe('en');
+    useAppStore.getState().setAppLanguage('es');
+  });
+
   it('persiste la lista de perfiles (partialize incluye `profiles`)', async () => {
     useAppStore.getState().setSession(session, 'v1.0');
     useAppStore.getState().setProfiles([profile, otroProfile]);

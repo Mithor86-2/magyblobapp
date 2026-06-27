@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import type { ProveedorIa } from '../../domain/types';
-import { PROVEEDOR_LABEL } from '../labels';
+import { proveedorLabel } from '../labels';
 import { Icon } from './Icon';
 import { colors, spacing, typography } from '../theme/tokens';
 
@@ -10,10 +11,12 @@ import { colors, spacing, typography } from '../theme/tokens';
  * y de cada actividad, y en el Historial.
  */
 export function AuthorBadge({ proveedor }: { proveedor: ProveedorIa }) {
+  const { t } = useTranslation();
+  const texto = t('authorBadge.author', { proveedor: proveedorLabel(proveedor) });
   return (
-    <View style={styles.row} accessibilityLabel={`Autor: ${PROVEEDOR_LABEL[proveedor]}`}>
+    <View style={styles.row} accessibilityLabel={texto}>
       <Icon name={`prov-${proveedor}`} size="sm" color={colors.onSurfaceVariant} />
-      <Text style={styles.texto}>Autor: {PROVEEDOR_LABEL[proveedor]}</Text>
+      <Text style={styles.texto}>{texto}</Text>
     </View>
   );
 }

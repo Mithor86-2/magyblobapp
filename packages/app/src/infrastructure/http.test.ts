@@ -332,10 +332,12 @@ describe('createApiGateways (adaptador HTTP)', () => {
     });
   });
 
-  it('un fallo de red se convierte en ApiError de tipo network', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Network request failed')));
+  it('un fallo de red se convierte en ApiError de tipo network (tras agotar reintentos)', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockRejectedValue(new TypeError('Network request failed'));
+    vi.stubGlobal('fetch', fetchMock);
 
-    const error = await api.guardians
+    const pending = api.guardians
       .register({
         nombre: 'Ana',
         apellidos: 'Pérez',
@@ -346,10 +348,49 @@ describe('createApiGateways (adaptador HTTP)', () => {
         consentimientoVersion: '1.0',
       })
       .catch((e) => e);
+    // Backoff de los 2 reintentos (500 ms + 1000 ms) ante `network` (US-53).
+    await vi.advanceTimersByTimeAsync(2_000);
+    const error = await pending;
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.tipo).toBe('network');
     expect(error.status).toBe(0);
+    expect(fetchMock).toHaveBeenCalledTimes(3); // 1 intento + 2 reintentos
+    vi.useRealTimers();
+  });
+
+  it('reintenta tras un fallo de red transitorio y tiene éxito en el 2º intento (US-53)', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Network request failed'))
+      .mockResolvedValueOnce(okResponse(STORY));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const pending = api.stories
+      .generate({ profileId: 'p1', temas: ['magia'], estilos: ['aventura'] })
+      .catch((e) => e);
+    await vi.advanceTimersByTimeAsync(500); // primer backoff
+    const out = await pending;
+
+    expect(out).toEqual(STORY);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
+  it('no reintenta ante un error HTTP del backend (no es transitorio, US-53)', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(errorResponse(404, 'NotFoundError', 'Perfil no encontrado'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const error = await api.stories
+      .generate({ profileId: 'x', temas: ['magia'], estilos: ['aventura'] })
+      .catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(404);
+    expect(fetchMock).toHaveBeenCalledTimes(1); // sin reintentos
   });
 
   it('una petición que excede el timeout se aborta y da ApiError de tipo timeout', async () => {
@@ -366,13 +407,16 @@ describe('createApiGateways (adaptador HTTP)', () => {
     const pending = api.stories
       .generate({ profileId: 'p1', temas: ['magia'], estilos: ['aventura'] })
       .catch((e) => e);
-    // generación usa 30 s de timeout; al vencer, el controller aborta el fetch.
-    await vi.advanceTimersByTimeAsync(30_000);
+    // Generación usa 90 s de timeout; ante `timeout` se reintenta hasta 2 veces con
+    // backoff (500 ms, 1000 ms): hay que dejar correr los 3 intentos completos (US-53).
+    await vi.advanceTimersByTimeAsync(90_000 * 3 + 500 + 1000);
     const error = await pending;
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.tipo).toBe('timeout');
     expect(error.status).toBe(0);
+    // 1 intento + 2 reintentos = 3 llamadas a fetch.
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     vi.useRealTimers();
   });
 
@@ -572,7 +616,7 @@ describe('sesión autenticada (US-45)', () => {
     const pending = createApiGateways(BASE)
       .guardians.refresh('rt-1')
       .catch((e) => e);
-    await vi.advanceTimersByTimeAsync(15_000);
+    await vi.advanceTimersByTimeAsync(30_000);
     const error = await pending;
 
     expect(error).toBeInstanceOf(ApiError);

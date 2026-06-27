@@ -8,7 +8,7 @@
  * del store y, ante un 401, los renueva o cierra sesión, sin acoplarse al store.
  */
 import type { Api } from './domain/gateways';
-import { createApiGateways, getBaseUrl, type SessionStore } from './infrastructure/http';
+import { createApiGateways, getBaseUrl, warmUp, type SessionStore } from './infrastructure/http';
 import { useAppStore } from './presentation/store/useAppStore';
 
 const sessionStore: SessionStore = {
@@ -19,3 +19,7 @@ const sessionStore: SessionStore = {
 };
 
 export const api: Api = createApiGateways(getBaseUrl(), sessionStore);
+
+// Warm-up del backend en frío (US-53): se dispara al cargar el composition root, sin
+// bloquear el arranque. En tests no hay `fetch` real cableado; el ping es best-effort.
+warmUp(getBaseUrl());

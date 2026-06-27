@@ -19,6 +19,119 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.2.1] - 2026-06-27
+
+### Changed
+
+- i18n del app sin `expo-localization`: el idioma lo elige la persona adulta y por defecto es `es`; se
+  retira la detección del idioma del dispositivo (default/fallback `es` fijo + cambio manual vía el
+  selector existente). Se elimina la dependencia `expo-localization` (US-57).
+
+### Fixed
+
+- Cabecera de pantalla: la imagen se muestra **completa** (`resizeMode="contain"`, con la proporción del
+  origen ~1000×1026) en vez de recortada (`cover`), para que se vea entera y bien encuadrada (US-58).
+
+## [1.2.0] - 2026-06-27
+
+### Added
+
+- Portadas de imagen en cuentos y actividades (US-59): la app **siempre** muestra una portada con
+  cero latencia. Prefiere la imagen generada por el backend (`story.portada` / `activity.imagen`) si
+  existe; si no, cae a un **respaldo local empaquetado** elegido por tema
+  (`assets/images/story/<tema>.png`, mapa estático con `default`), siguiendo el mismo patrón de
+  `require` estáticos que las cabeceras (US-58). Se renderiza en la lectura del cuento
+  (`StoryReaderScreen`), en el generador (`StoryGeneratorScreen`) y en `ActivityCard`, respetando el
+  layout y las cabeceras. Los tipos `Story.portada?` / `Activity.imagen?` y los esquemas Zod de
+  respuesta admiten el campo opcional.
+- Internacionalización del app ES/EN (US-57): se introduce `i18next` + `react-i18next` (diccionarios
+  `es`/`en` empaquetados, sin red ni descarga en runtime) y `expo-localization` como sugerencia inicial
+  del idioma del dispositivo. El idioma por defecto y de respaldo es `es` (los textos en español se
+  conservan idénticos bajo claves). Los textos hardcodeados de las pantallas, los componentes con texto
+  y los títulos de cabecera del stack pasan a resolverse con `t('clave')`. El idioma del app
+  (`appLanguage`, ES/EN) se persiste en `useAppStore` y se cambia desde un selector en la zona de
+  adultos, independiente del idioma del perfil del niño (que gobierna la generación de cuentos en el
+  backend).
+- Cabeceras ilustradas por pantalla (US-58): el lienzo base `Screen` acepta una prop opcional
+  `headerImageName` (`welcome | home | dashboard | cuentos | actividades`) que pinta la imagen de
+  cabecera correspondiente de `assets/images/headers/` en la parte superior, dentro del área segura y
+  por encima del contenido desplazable, conservando el scroll, el footer fijo y el
+  `KeyboardAvoidingView` (US-53). El mapeo nombre → imagen usa `require` estáticos (requisito de
+  Metro). Reciben cabecera Bienvenida, Inicio, Dashboard, el generador de cuentos y Actividades; el
+  resto de pantallas se queda sin ella.
+
+### Changed
+
+- Las 5 imágenes de cabecera (`assets/images/headers/*.png`) se **optimizan** de ~2 MB a ~200-400 KB
+  cada una (redimensionado y recompresión) sin degradación visible, reduciendo el peso del bundle del
+  app (US-58).
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.1.0] - 2026-06-26
+
+### Added
+
+- Robustez en producción del alta/login (US-53): **reintento con backoff** (hasta 2) en el adaptador
+  HTTP ante fallos transitorios (`timeout`/`network`) y **ping de warm-up** a `/health` al arrancar,
+  para absorber el _cold start_ del backend en Render. Ayuda visual del requisito de contraseña en la
+  pantalla de alta (≥8 caracteres con al menos una letra y un número).
+
+### Changed
+
+- Timeouts más holgados acordes al arranque en frío del servidor (US-53): peticiones normales
+  `15 s → 30 s`, generación de IA `30 s → 90 s` y narración `15 s → 30 s`.
+- La contraseña del alta exige ahora **≥8 caracteres con al menos una letra y un número** (antes solo
+  longitud mínima), sincronizada con la validación del backend (US-53).
+- `Screen` envuelve su contenido en `KeyboardAvoidingView` para que el teclado no tape los campos de
+  los formularios (Consent/Login/CreateProfile), conservando el scroll y el footer fijo (US-53).
+- Estándares de diseño Android/iOS (US-56): **feedback táctil** conforme a Material 3 / HIG en los
+  componentes base. `BubblyButton` y `SelectableChip` muestran **`android_ripple`** (recortado a la
+  píldora) además del estado "hundido"/atenuado existente; en plataformas sin háptica (web) degradan
+  sin error. Se añade **`expo-haptics`** (SDK de Expo, empaquetado en build-time: sin red ni SDK de
+  tercero en runtime) y `BubblyButton` dispara un **háptico suave** (`ImpactFeedbackStyle.Light`) al
+  pulsar; deshabilitado o cargando no dispara háptico.
+- Cabecera del stack (`stackScreenOptions` en `App.tsx`): el botón "atrás" pasa de
+  `headerBackButtonDisplayMode: 'minimal'` a `'default'` (US-56) para seguir la HIG de iOS —muestra el
+  título de la pantalla anterior cuando cabe y degrada a "Back"/solo icono según el espacio—, dejando
+  una vuelta atrás consistente entre versiones de iOS (en iOS 26+ el título de "atrás" se oculta por
+  defecto). En Android el chevron sigue sin etiqueta (Material).
+- Contenido IA (US-54): `ActivityCard` muestra las **instrucciones paso a paso** de la actividad
+  cuando existen, y el botón **"Realizado"** usa un **color de acento** propio del theme (en lugar del
+  color de la categoría).
+
+### Fixed
+
+- Contenido IA (US-54): el generador de cuentos (`StoryGeneratorScreen`) ofrece **todos** los temas
+  del vocabulario (`animales · espacio · magia · aventuras · musica`) con los intereses del perfil
+  **pre-seleccionados**; antes la lista se limitaba a los intereses y ocultaba magia y música.
+
+## [1.0.1] - 2026-06-26
+
+### Added
+
+- Icono de la app y splash de marca (US-52): icono **adaptativo** de Android bien separado
+  (`foreground` con el logo en la zona segura sobre transparente, `background` de color plano
+  `#fff8f6`, `monochrome` como silueta para Android 13+) e `icon.png` recompuesto sobre **fondo
+  sólido** `#fff8f6` (sin transparencia → sin esquinas negras en iOS). Splash con `expo-splash-screen`
+  y **fondo `#ccc4b9`** (logo centrado, `contain`). Respaldo del logo transparente en `logo-source.png`.
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
 ## [1.0.0] - 2026-06-26
 
 Primer release de producción. App verificada contra el backend en producción (Render / Neon / Groq).

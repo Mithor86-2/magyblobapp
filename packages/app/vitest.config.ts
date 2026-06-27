@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -39,6 +40,10 @@ export default defineConfig({
         'src/domain/**',
         'src/presentation/labels.ts',
         'src/presentation/theme/**',
+        // i18n (US-57): diccionarios ES/EN e init de i18next. Son datos/cableado de
+        // presentación (como labels/theme); el comportamiento se verifica con tests
+        // dedicados de cambio de idioma y renderizado traducido.
+        'src/i18n/**',
         'src/presentation/navigation.ts',
         'src/composition.ts',
         'src/infrastructure/storage.ts',
@@ -69,6 +74,9 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': 'react-native-web',
+      // `expo-haptics` arrastra `expo-modules-core` (no carga bajo jsdom). Lo aliasamos a un
+      // stub para los tests; el test de BubblyButton que verifica el háptico lo re-mockea.
+      'expo-haptics': fileURLToPath(new URL('./test/expo-haptics-stub.ts', import.meta.url)),
     },
   },
   define: {

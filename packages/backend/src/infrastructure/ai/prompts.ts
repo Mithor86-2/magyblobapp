@@ -230,12 +230,36 @@ export function buildStoryPrompt(
     : idioma === 'es'
       ? `${apertura} para ${nombre}, de ${edad.value} años, sobre "${temas}" con un estilo ` +
         `${estilos}. ${nombre} es protagonista y le gustan ${gustos}. ${tono}${longitud} ` +
-        `Devuelve un título breve y el cuerpo.`
+        `Devuelve un título breve y el cuerpo. Inventa un título original y distinto cada vez ` +
+        `(no repitas la fórmula "${nombre} y la aventura de ...").`
       : `${apertura} for ${nombre}, aged ${edad.value}, about "${temas}" in a ${estilos} ` +
         `style. ${nombre} is the main character and likes ${gustos}. ${tono}${longitud} ` +
-        `Return a short title and the body.`;
+        `Return a short title and the body. Invent an original, different title each time ` +
+        `(do not reuse the pattern "${nombre} and the ... adventure").`;
 
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
+}
+
+/**
+ * Construye el prompt de la **portada ilustrada** (US-59) a partir de
+ * tema/estilo/título. **Nunca** incluye el nombre del niño ni datos
+ * identificativos (cumplimiento C-5): solo el vocabulario del contenido y un
+ * título orientativo. El texto va en inglés porque los modelos de imagen
+ * (Gemini/Imagen) lo interpretan mejor; describe un estilo de ilustración
+ * infantil seguro y amable, coherente con la app para niños de 2 a 6 años.
+ */
+export function buildImagePrompt(tema: string, estilo: string, titulo: string): string {
+  const temaEn = TEMA_PALABRA.en[tema] ?? tema;
+  const estiloEn = ESTILO_PALABRA.en[estilo] ?? estilo;
+  const tituloLimpio = titulo.trim();
+  const sobreTitulo = tituloLimpio === '' ? '' : ` inspired by the title "${tituloLimpio}"`;
+  return (
+    `A warm, friendly children's book cover illustration about ${temaEn}, ` +
+    `in a ${estiloEn} style${sobreTitulo}. ` +
+    'Soft rounded shapes, bright cheerful colors, gentle and cozy mood, ' +
+    'suitable for toddlers aged 2 to 6. No text, no letters, no words in the image. ' +
+    'No scary, violent or dark elements. Square composition.'
+  );
 }
 
 export function buildActivitiesPrompt(
@@ -279,12 +303,14 @@ export function buildActivitiesPrompt(
         afinidad +
         ` ${tono}` +
         ` Cada actividad necesita una categoría (${categorias}), un título, una descripción ` +
-        `breve, una duración en minutos y un nivel de dificultad de 1 a 3.`
+        `breve, unas instrucciones en un paso a paso claro (2 a 4 pasos sencillos que un ` +
+        `adulto pueda seguir con el niño), una duración en minutos y un nivel de dificultad de 1 a 3.`
       : `Suggest ${input.cantidad} simple activities for ${nombre}, aged ${edad.value}.` +
         acotacion +
         afinidad +
         ` ${tono}` +
         ` Each activity needs a category (${categorias}), a title, a short description, ` +
+        `step-by-step instructions (2 to 4 simple steps an adult can follow with the child), ` +
         `a duration in minutes and a difficulty level from 1 to 3.`;
 
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };

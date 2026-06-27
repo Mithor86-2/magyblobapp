@@ -10,8 +10,11 @@ import type { Story } from '../../domain/types';
 
 export type EstadoNarracion = 'idle' | 'loading' | 'playing' | 'paused';
 
-/** Timeout de la descarga del audio: si ElevenLabs no responde, degradamos a voz nativa sin colgarnos. */
-const NARRATION_TIMEOUT_MS = 15_000;
+/**
+ * Timeout de la descarga del audio: si ElevenLabs no responde, degradamos a voz nativa sin colgarnos.
+ * Margen holgado (US-53) acorde al cold start del backend en producción (Render).
+ */
+const NARRATION_TIMEOUT_MS = 30_000;
 
 /**
  * Narración de un cuento (US-22). Pide el audio al backend (ElevenLabs, vía
