@@ -88,6 +88,9 @@ export const es = {
     generateStory: 'Generar cuento',
     limitReached: 'Límite alcanzado — crea cuenta',
     storiesUsed: 'Cuentos de prueba: {{usados}}/{{limite}}',
+    storyLimit: 'Has usado tus {{limite}} cuentos de prueba. Crea una cuenta para seguir creando.',
+    activityLimit:
+      'Has usado tus {{limite}} actividades de prueba. Crea una cuenta para seguir creando.',
     creatingStory: 'Creando un cuento mágico…',
     tryActivities: 'Prueba unas actividades',
     generateActivities: 'Generar actividades',
