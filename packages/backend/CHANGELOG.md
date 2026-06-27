@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.1] - 2026-06-27
+
+### Added
+
 - Script on-demand `prompts:dump` (`pnpm --filter @magyblob/backend prompts:dump`) que recorre un
   conjunto representativo de combinaciones (cada tema y estilo, ES/EN, 1-2 edades), construye los
   prompts reales (`buildStoryPrompt`/`buildActivitiesPrompt`/`buildImagePrompt`) y obtiene el resultado

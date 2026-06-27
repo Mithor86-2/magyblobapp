@@ -613,6 +613,10 @@ versionado diferido: **backend v1.2.0 / app v1.2.0 / raíz v1.2.0**; gate verde 
       **respaldo local por tema** (`assets/images/story/`, 7 imágenes optimizadas 5.5 MB→171 KB). Adaptador
       **Gemini/Imagen** best-effort (sin clave o ante fallo → `null`, sin romper la creación); el prompt
       redacta el nombre del niño (cumplimiento **C-15**). Pendiente: validar con `GEMINI_API_KEY` real.
+- [x] ✅ **Ajustes post-lote (US-60 + fixes US-57/58, rama `feature/64-ajustes-prompts-doc`, v1.2.1).**
+      Cabeceras con imagen **completa** (`contain`); i18n **sin `expo-localization`** (idioma elegido por el
+      usuario, default `es`); script on-demand `pnpm prompts:dump` que vuelca a `Docs/muestra-prompts.md`
+      los prompts de cuentos/actividades/portadas con resultados reales de **Groq + Gemini** (fuera del gate).
 
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
