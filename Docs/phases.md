@@ -574,6 +574,27 @@ versionado diferido: **backend v0.21.0 / app v0.24.0 / raíz v0.32.0**; gate ver
       infra/docs: no cambia el runtime ni `docker compose up`. Plan en
       [planes/feature-55-produccion-guiada.md](planes/feature-55-produccion-guiada.md).
 
+### Lote de mejoras nº2 — Ola 1 (integrada en `develop` el 2026-06-26)
+
+Cuatro features en paralelo (plan en [planes/coordinacion-mejoras-paralelo-2.md](planes/coordinacion-mejoras-paralelo-2.md)).
+Integradas con versionado diferido: **backend v1.1.0 / app v1.1.0 / raíz v1.1.0**; gate verde
+(backend + app 129). Pendiente del lote: cola secuencial F6 cabeceras → F5 i18n → F7 portadas, y
+pruebas manuales del usuario al final.
+
+- [x] ✅ **Robustez prod + alta/login (US-53, F1, rama `feature/57-robustez-alta-login`).** Timeouts de la
+      app más holgados (15→30 s, generación 30→90 s, narración 15→30 s) + **reintento con backoff** y
+      **ping de warm-up** a `/health` para el cold start de Render; `KeyboardAvoidingView` en `Screen`;
+      email validado con `z.string().email()` (400 temprano; 409 duplicado intacto); contraseña ≥8 con
+      letra y número (front+back).
+- [x] ✅ **Contenido IA: títulos + instrucciones + temas (US-54, F2, rama `feature/58-contenido-ia-titulos-instrucciones`).**
+      El prompt pide **variar el título** (mock con variación determinista); campo `Activity.instrucciones`
+      (migración) con paso a paso en el prompt, mostrado en `ActivityCard`; botón "Realizado" con color de
+      acento; `StoryGeneratorScreen` ofrece **todos** los temas (arregla magia/música ocultos).
+- [x] ✅ **Voz ES/EN (US-55, F3, rama `feature/59-voz-es-en`).** Documentadas las voces premade por idioma
+      y endpoint `GET /settings/tts/voices` (sin exponer la key); fallback a voz nativa intacto.
+- [x] ✅ **Estándares de diseño Android/iOS (US-56, F4, rama `feature/60-estandares-diseno`).** `android_ripple` + **`expo-haptics`** (impacto suave) en `BubblyButton`/`SelectableChip`; back iOS `default`; contraste
+      AA auditado (sin cambios necesarios). Sobre componentes/theme, sin tocar el cuerpo de las pantallas.
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

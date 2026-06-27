@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.1.0] - 2026-06-26
+
+### Added
+
 - Endpoint `GET /settings/tts/voices`: expone la voz de narración configurada por idioma (ES/EN), el
   modelo y si hay clave de ElevenLabs, sin revelar la `xi-api-key` ni llamar al proveedor (US-55).
 - Test del `ElevenLabsProvider` que verifica la selección de voz por idioma del cuento (US-55).
@@ -27,20 +41,9 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   `parseResponse` (schema Zod) → `GeneratedActivity` → `ActivityOutput` (DTO) → `mappers` →
   `RecommendActivities`. El `MockProvider` rellena instrucciones deterministas y el prompt de
   actividades pide un paso a paso.
-
-### Changed
-
 - Contenido IA (US-54): el prompt del cuento (ES/EN) pide **variar el título** en cada generación y
   el `MockProvider` deja de usar el título fijo `"{nombre} y la aventura de {tema}"` por una
   variación elegida de forma determinista según el contenido del cuento.
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [1.0.0] - 2026-06-26
 
