@@ -3,7 +3,7 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-50**, **US-51**, **US-52**, **US-56**.
+**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-58**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -1084,3 +1084,39 @@ empaquetado en build-time: sin red ni SDK de tercero en runtime, conforme a
 - (No-funcional) Dada la dependencia `expo-haptics`, Cuando se instala, Entonces va **empaquetada en
   build-time** (sin red ni SDK de tercero en runtime) y degrada de forma segura en plataformas sin
   háptica (web), conforme a [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+## US-58 — Cabeceras por pantalla · Could (Mejoras)
+
+Como **usuario de la app** quiero que cada pantalla principal muestre una **imagen de cabecera**
+ilustrada para que la app se sienta más cálida, visual y reconocible, y para que cada sección tenga
+una identidad propia de un vistazo.
+
+**Contexto.** El lienzo base [Screen](../../packages/app/src/presentation/components/Screen.tsx) ya
+fija fondo crema, márgenes seguros, scroll, footer fijo y `KeyboardAvoidingView` (US-53), pero las
+pantallas no tenían cabecera ilustrada. Esta historia añade una **variante opcional** de `Screen`
+con la prop `headerImageName` que pinta la imagen correspondiente de
+[assets/images/headers/](../../packages/app/assets/images/headers/) en la parte superior, dentro del
+área segura y respetando el scroll y el footer existentes. El mapeo de nombre → imagen usa
+**`require` estáticos** (Metro no resuelve `require` dinámicos). Las imágenes se **optimizan en peso**
+antes de empaquetar (de ~2 MB a ~200-400 KB) sin degradar visiblemente. Solo las pantallas con imagen
+disponible reciben cabecera (`Welcome`, `Home`, `Dashboard`, generador de cuentos y actividades); el
+resto se queda sin ella. **Solo app.** Ver el plan
+[feature-62-cabeceras-pantalla](../planes/feature-62-cabeceras-pantalla.md).
+
+**Criterios de aceptación**
+
+- Dada una pantalla que pasa `headerImageName` (p. ej. `welcome`), Cuando se renderiza, Entonces
+  muestra la **imagen de cabecera** correspondiente en la parte superior, dentro del área segura y por
+  encima del contenido desplazable.
+- Dada una pantalla que **no** pasa `headerImageName`, Cuando se renderiza, Entonces **no** muestra
+  ninguna cabecera y conserva el comportamiento anterior (contenido, scroll y footer intactos).
+- Dado el lienzo con cabecera, Cuando aparece el **teclado**, Entonces se conserva el
+  `KeyboardAvoidingView` (US-53) y el **footer fijo** sigue alcanzable.
+- Dadas las imágenes de cabecera, Cuando se empaquetan, Entonces su **peso** queda en el rango
+  ~200-400 KB por imagen (optimizadas desde ~2 MB) **sin degradación visible** y con dimensiones
+  consistentes.
+- Dada la resolución del nombre a imagen, Cuando se construye la app, Entonces usa **`require`
+  estáticos** (mapa por nombre), no `require` dinámicos (requisito de Metro).
+- Dado el componente `Screen` y alguna pantalla con cabecera, Cuando se ejecuta `pnpm test`, Entonces
+  hay pruebas que verifican que la cabecera se renderiza cuando se pasa el nombre y **no** se renderiza
+  cuando se omite.

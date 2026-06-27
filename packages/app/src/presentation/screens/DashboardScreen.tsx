@@ -91,6 +91,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
 
   return (
     <Screen
+      headerImageName="dashboard"
       footer={
         <View style={styles.footerActions}>
           <BubblyButton label="Crear cuenta" onPress={() => navigation.navigate('Consent')} />

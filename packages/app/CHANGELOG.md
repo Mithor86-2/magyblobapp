@@ -9,7 +9,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Cabeceras ilustradas por pantalla (US-58): el lienzo base `Screen` acepta una prop opcional
+  `headerImageName` (`welcome | home | dashboard | cuentos | actividades`) que pinta la imagen de
+  cabecera correspondiente de `assets/images/headers/` en la parte superior, dentro del área segura y
+  por encima del contenido desplazable, conservando el scroll, el footer fijo y el
+  `KeyboardAvoidingView` (US-53). El mapeo nombre → imagen usa `require` estáticos (requisito de
+  Metro). Reciben cabecera Bienvenida, Inicio, Dashboard, el generador de cuentos y Actividades; el
+  resto de pantallas se queda sin ella.
+
 ### Changed
+
+- Las 5 imágenes de cabecera (`assets/images/headers/*.png`) se **optimizan** de ~2 MB a ~200-400 KB
+  cada una (redimensionado y recompresión) sin degradación visible, reduciendo el peso del bundle del
+  app (US-58).
 
 ### Deprecated
 
