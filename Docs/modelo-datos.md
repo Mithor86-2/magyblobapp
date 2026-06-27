@@ -55,6 +55,7 @@ erDiagram
         string   idioma    "heredado del perfil (es | en)"
         string   estado    "nuevo | leido"
         string   proveedor "IA efectiva: mock | local | cloud"
+        string   portada   "opcional — data URL de portada (US-59)"
         datetime creadoEn
     }
 
@@ -77,6 +78,7 @@ erDiagram
         int      duracionMin "opcional"
         int      nivel       "opcional"
         string   proveedor   "IA efectiva: mock | local | cloud"
+        string   imagen      "opcional — data URL de imagen (US-59)"
         datetime completadaEn "opcional — null = pendiente"
         int      valoracion  "opcional — 1..3 estrellas"
     }
@@ -115,6 +117,15 @@ re-sintetizar (ni gastar créditos) en cada reproducción. El audio se genera ba
 y no se persiste nada. **Aviso de privacidad:** narrar con ElevenLabs envía el `cuerpo` del cuento
 (con el nombre del niño) a un tercero — desviación de C-2/C-5 asumida para el TFM, ver
 [cumplimiento-menores.md](cumplimiento-menores.md).
+
+**Portada de imagen (US-59).** `Story.portada` y `Activity.imagen` guardan, de forma **opcional**, la
+ilustración generada como **data URL** (`data:image/png;base64,...`) — almacenamiento simple en el
+campo, sin bucket (migrable después si crece). Se generan **best-effort** con Gemini/Imagen: si no hay
+`GEMINI_API_KEY` o la generación falla, el campo queda `NULL` y la **app cae a un respaldo local
+empaquetado por tema** (cero latencia, sin red). **Aviso de privacidad:** generar la portada envía a
+un tercero el tema/estilo/título (con el **nombre del niño redactado** del título); es una desviación
+de C-5 asumida para el TFM, ver [cumplimiento-menores.md](cumplimiento-menores.md) (C-5). Sin clave no
+sale nada (privacidad por diseño).
 
 `AppSetting` es **global** (no se relaciona con otras entidades): es una tabla
 clave-valor para configuración de la app editable sin redeploy.
