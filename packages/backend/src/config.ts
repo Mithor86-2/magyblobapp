@@ -61,9 +61,14 @@ export interface TtsConfig {
   timeoutMs: number;
 }
 
-/** Voces premade de ElevenLabs por defecto (multilingual_v2); sobreescribibles por env. */
-const VOZ_DEFECTO_ES = 'JBFqnCBsd6RMkjVDRZzb';
-const VOZ_DEFECTO_EN = '21m00Tcm4TlvDq8ikWAM';
+/**
+ * Voces premade de ElevenLabs por defecto, una por idioma (US-55). Ambas hablan
+ * con `eleven_multilingual_v2`; se eligen por idioma para que el timbre encaje en
+ * cada lengua. Sobreescribibles por env (`ELEVENLABS_VOICE_ID_ES`/`_EN`) con
+ * cualquier `voice_id` de la cuenta — ver `.env.example`.
+ */
+const VOZ_DEFECTO_ES = 'JBFqnCBsd6RMkjVDRZzb'; // "George" (premade multilingüe)
+const VOZ_DEFECTO_EN = '21m00Tcm4TlvDq8ikWAM'; // "Rachel" (premade multilingüe)
 
 /**
  * Sumidero de avisos no fatales emitidos al cargar la config (p. ej. caer al

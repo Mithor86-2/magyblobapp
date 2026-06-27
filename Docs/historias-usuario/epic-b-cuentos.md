@@ -1,6 +1,6 @@
 # Epic B — Generación de cuentos (núcleo)
 
-Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**, **US-26**, **US-28**, **US-47**.
+Historias: **US-03**, **US-04**, **US-05**, **US-07**, **US-22**, **US-26**, **US-28**, **US-47**, **US-55**.
 Volver al [índice](README.md).
 
 ## US-03 — Generar cuento personalizado · Must
@@ -94,6 +94,36 @@ visible para el niño. La `xi-api-key` vive solo en el backend (env `ELEVENT_LAB
 - (Privacidad) Dado que se narra con ElevenLabs, Cuando se ejecuta, Entonces el texto del cuento
   sale del dispositivo hacia un tercero (desviación documentada arriba); el resto de la app
   mantiene los datos en local.
+
+## US-55 — Voz de la narración por idioma (ES/EN) · Could (Mejoras)
+
+Como **padre/tutor** quiero poder elegir y configurar **qué voz** narra los cuentos en español y en
+inglés para que el timbre se ajuste al gusto de mi hijo/a y suene natural en cada idioma.
+
+**Contexto.** Amplía la narración de **[US-22](#us-22)** (motor ElevenLabs con fallback a voz
+nativa). La selección de voz por idioma **ya existe** en infraestructura: el backend resuelve un mapa
+`voiceIdByLang` (`{ es, en }`) y el `ElevenLabsProvider` envía la petición a
+`POST /v1/text-to-speech/{voice_id}` con la voz del idioma del cuento. Esta historia hace esa voz
+**clara y configurable**: documenta y deja explícitas las variables `ELEVENLABS_VOICE_ID_ES` /
+`ELEVENLABS_VOICE_ID_EN` (cómo obtener un `voice_id` en ElevenLabs y qué voz _premade_ multilingüe se
+usa por defecto en cada idioma), y expone qué voces tiene configuradas el backend
+(`GET /settings/tts/voices`, sin exponer la `xi-api-key`). El fallback a la voz nativa del dispositivo
+(`expo-speech`) se conserva intacto: si la síntesis falla o falta la clave, la app narra igual.
+
+**Criterios de aceptación**
+
+- Dado un cuento en **español**, Cuando se narra con ElevenLabs, Entonces se usa la voz de
+  `ELEVENLABS_VOICE_ID_ES` (si está vacía, la voz _premade_ multilingüe por defecto en español).
+- Dado un cuento en **inglés**, Cuando se narra con ElevenLabs, Entonces se usa la voz de
+  `ELEVENLABS_VOICE_ID_EN` (si está vacía, la voz _premade_ multilingüe por defecto en inglés).
+- Dado un `voice_id` configurado por env para un idioma, Cuando se narra en ese idioma, Entonces la
+  petición a ElevenLabs usa **ese** `voice_id` (la voz es configurable sin tocar código).
+- Dado el backend en marcha, Cuando se consulta `GET /settings/tts/voices`, Entonces devuelve la voz
+  configurada por idioma (ES/EN) y el modelo, **sin** revelar la `xi-api-key`.
+- Dado un fallo de síntesis o clave ausente, Cuando se intenta narrar, Entonces se conserva el
+  **fallback a la voz nativa** del dispositivo (sin regresión respecto a US-22).
+- (Privacidad) Igual que US-22: narrar con ElevenLabs envía el texto del cuento a un tercero
+  (desviación ya documentada); el endpoint de voces no envía datos del niño a la nube.
 
 ## US-26 — Contenido más personalizado por niño · Should (Mejoras)
 

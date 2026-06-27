@@ -9,12 +9,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Endpoint `GET /settings/tts/voices`: expone la voz de narración configurada por idioma (ES/EN), el
+  modelo y si hay clave de ElevenLabs, sin revelar la `xi-api-key` ni llamar al proveedor (US-55).
+- Test del `ElevenLabsProvider` que verifica la selección de voz por idioma del cuento (US-55).
+
 ### Changed
 
 - Validación más estricta de la entrada del alta (US-53): el **email** se valida con
   `z.string().email()` (rechazo `400` temprano ante formato inválido; el `409` por email duplicado se
   mantiene) y la **contraseña** exige **≥8 caracteres con al menos una letra y un número**,
   sincronizada con la validación de la app.
+- Documentadas las variables `ELEVENLABS_VOICE_ID_ES`/`_EN` en `.env.example` (cómo obtener un
+  `voice_id` y qué voz _premade_ multilingüe se usa por defecto en cada idioma) y aclarados los
+  defaults en `config.ts` (US-55).
 
 ### Deprecated
 

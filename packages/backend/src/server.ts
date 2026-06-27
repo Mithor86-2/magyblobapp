@@ -11,6 +11,7 @@ import { storyRoutes } from './routes/stories.js';
 import { activityRoutes } from './routes/activities.js';
 import { anonymousRoutes } from './routes/anonymous.js';
 import { historyRoutes } from './routes/history.js';
+import { settingsRoutes } from './routes/settings.js';
 
 /**
  * Construye una instancia de Fastify lista para usar. No la arranca: así los
@@ -63,6 +64,9 @@ export async function buildServer(
   // rate-limit en memoria. Se registran junto al resto; no exigen sesión.
   anonymousRoutes(app, resolved);
   historyRoutes(app, resolved);
+  // Ajustes de la narración (TTS) — solo lectura, sin secretos (US-55). Público:
+  // no expone datos del niño ni la xi-api-key; informa de la voz por idioma.
+  settingsRoutes(app, config);
 
   return app;
 }
