@@ -16,11 +16,13 @@ import {
 describe('RecommendActivities', () => {
   let profiles: InMemoryChildProfileRepository;
   let activities: InMemoryActivityRepository;
+  let ai: FakeAIProvider;
   let useCase: RecommendActivities;
 
   beforeEach(async () => {
     profiles = new InMemoryChildProfileRepository();
     activities = new InMemoryActivityRepository();
+    ai = new FakeAIProvider();
     await profiles.save(
       new ChildProfile({
         id: 'p-1',
@@ -36,7 +38,7 @@ describe('RecommendActivities', () => {
     useCase = new RecommendActivities({
       profiles,
       activities,
-      ai: new FakeAIProvider(),
+      ai,
       newId: secuencialIdGenerator('act'),
       now: relojFijo(),
     });
@@ -84,5 +86,12 @@ describe('RecommendActivities', () => {
 
   it('rechaza si el perfil no existe', async () => {
     await expect(useCase.execute({ profileId: 'nope' })).rejects.toThrow(NotFoundError);
+  });
+
+  it('no genera imagen para las actividades (ajuste feature 65: portada solo en cuentos)', async () => {
+    const out = await useCase.execute({ profileId: 'p-1', cantidad: 3 });
+    // No se invoca generateImage y ninguna actividad lleva imagen.
+    expect(ai.imagenCalls).toHaveLength(0);
+    expect(out.every((a) => a.imagen === undefined)).toBe(true);
   });
 });

@@ -291,6 +291,16 @@ actividades se verifica también en C. El diseño tiene **dos piezas**:
 > el modo `cloud` del LLM. **Sin `GEMINI_API_KEY` no se genera nada**: la app usa solo el respaldo
 > local empaquetado (privacidad por diseño, sin red). Ver
 > [cumplimiento-menores.md](../cumplimiento-menores.md) (C-5).
+>
+> **Ajuste (feature 65) — la portada queda solo para cuentos.** Los respaldos locales
+> (`assets/images/story/`) están organizados por **tema** (`animales|espacio|magia|aventuras|musica`),
+> un concepto de cuentos; las actividades se organizan por **categoría** (`arte|musica|logica`), por lo
+> que la portada por tema **no les corresponde**. Se revierte la portada de `ActivityCard` (vuelve al
+> icono por categoría) y `RecommendActivities` deja de invocar `generateImage`. La columna
+> `Activity.imagen` queda **nullable y en desuso** (sin migración nueva). `Story.portada` y la portada
+> en `StoryReaderScreen`/`StoryGeneratorScreen` se conservan intactas. Ver el plan
+> [feature-65-ajustes-cabecera-portadas](../planes/feature-65-ajustes-cabecera-portadas.md). El criterio
+> de actividades de abajo deja de aplicarse.
 
 **Criterios de aceptación**
 

@@ -617,6 +617,10 @@ versionado diferido: **backend v1.2.0 / app v1.2.0 / raíz v1.2.0**; gate verde 
       Cabeceras con imagen **completa** (`contain`); i18n **sin `expo-localization`** (idioma elegido por el
       usuario, default `es`); script on-demand `pnpm prompts:dump` que vuelca a `Docs/muestra-prompts.md`
       los prompts de cuentos/actividades/portadas con resultados reales de **Groq + Gemini** (fuera del gate).
+- [x] ✅ **Ajustes finos (fixes US-58/US-59, rama `feature/65-ajustes-cabecera-portadas`, v1.2.2).**
+      Cabecera con imagen completa en banda de **alto proporcional** (~22% pantalla, acotado 170–200,
+      `contain` centrado) en vez del cuadrado; **portadas solo en cuentos** (se quita la imagen de
+      `ActivityCard` y el backend deja de generar `Activity.imagen`; los respaldos locales son por tema).
 
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"

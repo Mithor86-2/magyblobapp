@@ -19,6 +19,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.2.2] - 2026-06-27
+
+### Fixed
+
+- Portadas (US-59): `RecommendActivities` deja de generar la imagen de las actividades (se elimina la
+  llamada best-effort a `generateImage`); las portadas por imagen quedan solo para cuentos
+  (`GenerateStory`). La columna `Activity.imagen` queda nullable y en desuso (sin migración nueva).
+
 ## [1.2.1] - 2026-06-27
 
 ### Added

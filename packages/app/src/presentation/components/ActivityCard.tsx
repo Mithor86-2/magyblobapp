@@ -7,7 +7,6 @@ import { StarRating } from './StarRating';
 import { AuthorBadge } from './AuthorBadge';
 import { BubblyButton } from './BubblyButton';
 import { Icon } from './Icon';
-import { StoryCover, temaDeCategoria } from './StoryCover';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 
 /** Color por categoría (borde de tarjeta e icono según el design system). */
@@ -37,12 +36,6 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
 
   return (
     <View style={[styles.card, { borderBottomColor: color }]}>
-      <StoryCover
-        generada={activity.imagen}
-        tema={temaDeCategoria(activity.categoria)}
-        style={styles.cover}
-        accessibilityLabel={activity.titulo}
-      />
       <View style={styles.header}>
         <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
         <View style={[styles.badge, { backgroundColor: color }]}>
@@ -92,11 +85,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.xs,
     ...softShadow,
-  },
-  cover: {
-    width: '100%',
-    height: 140,
-    borderRadius: radius.md,
   },
   header: {
     flexDirection: 'row',

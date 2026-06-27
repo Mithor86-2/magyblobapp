@@ -1106,6 +1106,13 @@ resto se queda sin ella. **Solo app.** Ver el plan
 > **Ajuste (feature 64).** La cabecera se muestra con la **imagen completa** (`resizeMode="contain"`,
 > con la proporción del origen ~1000×1026) en vez de recortada (`cover`), para que se vea entera y bien
 > encuadrada. Ver el plan [feature-64-ajustes-prompts-doc](../planes/feature-64-ajustes-prompts-doc.md).
+>
+> **Ajuste (feature 65).** El `aspectRatio` cuadrado del origen hacía la cabecera demasiado alta. Ahora
+> la imagen se sigue mostrando **completa** (`resizeMode="contain"`) pero dentro de una **banda de alto
+> proporcional** (~22 % del alto de pantalla con `useWindowDimensions`, acotada a 170–200), centrada,
+> con el fondo del theme (`colors.surface`) rellenando el espacio sobrante: queda encuadrada y
+> proporcionada. Ver el plan
+> [feature-65-ajustes-cabecera-portadas](../planes/feature-65-ajustes-cabecera-portadas.md).
 
 **Criterios de aceptación**
 

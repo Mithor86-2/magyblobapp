@@ -7,7 +7,6 @@ import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { ActivityOutput, RecommendActivitiesRequest } from '../dto.js';
 import { toActivityOutput } from '../mappers.js';
-import { redactarNombre } from '../redact.js';
 
 export interface RecommendActivitiesDeps {
   profiles: ChildProfileRepository;
@@ -56,12 +55,9 @@ export class RecommendActivities {
       if (vistos.has(clave)) continue;
       vistos.add(clave);
 
-      // US-59: imagen ilustrada **best-effort**. El prompt usa la categoría como
-      // sujeto y el título, **redactando el nombre del niño** antes de salir a un
-      // tercero (C-5); si falla o no hay clave, queda `undefined` y la app usa el
-      // respaldo local. Nunca rompe la recomendación.
-      const imagen = await this.generarImagen(g.categoria, redactarNombre(g.titulo, perfil.nombre));
-
+      // Las actividades no llevan portada de imagen (ajuste feature 65): los respaldos
+      // locales de la app se organizan por tema (concepto de cuentos), no por categoría.
+      // Solo los cuentos (`GenerateStory`) generan imagen. `Activity.imagen` queda en desuso.
       const activity = new Activity({
         id: this.deps.newId(),
         profileId: perfil.id,
@@ -72,31 +68,11 @@ export class RecommendActivities {
         duracionMin: g.duracionMin,
         nivel: g.nivel,
         proveedor: g.proveedor,
-        imagen,
       });
       await this.deps.activities.save(activity);
       guardadas.push(activity);
     }
 
     return guardadas.map(toActivityOutput);
-  }
-
-  /**
-   * Genera la imagen de una actividad (US-59) sin que un fallo rompa la
-   * recomendación: el `AIProvider` ya es best-effort (devuelve `null`), pero se
-   * envuelve en try/catch como defensa en profundidad. La categoría hace de sujeto y
-   * se usa un registro ilustrado amable (`divertido`); el prompt no lleva PII del niño.
-   */
-  private async generarImagen(categoria: Categoria, titulo: string): Promise<string | undefined> {
-    try {
-      const imagen = await this.deps.ai.generateImage({
-        tema: categoria,
-        estilo: 'divertido',
-        titulo,
-      });
-      return imagen ?? undefined;
-    } catch {
-      return undefined;
-    }
   }
 }
