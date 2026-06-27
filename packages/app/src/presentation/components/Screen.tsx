@@ -1,23 +1,32 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing } from '../theme/tokens';
 
 /**
  * Lienzo base de cada pantalla: fondo crema, márgenes seguros de 24px y scroll.
  * `footer` queda fijo abajo (acción principal siempre alcanzable con el pulgar).
+ *
+ * `KeyboardAvoidingView` (US-53): al abrirse el teclado, el contenido se reacomoda
+ * para que ningún campo de los formularios (Consent/Login/CreateProfile) quede tapado
+ * (`padding` en iOS, `height` en Android). El `ScrollView` permite alcanzar el resto.
  */
 export function Screen({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {children}
-      </ScrollView>
-      {footer ? <View style={styles.footer}>{footer}</View> : null}
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {children}
+        </ScrollView>
+        {footer ? <View style={styles.footer}>{footer}</View> : null}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -26,6 +35,9 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.surface,
+  },
+  flex: {
+    flex: 1,
   },
   content: {
     padding: spacing.containerPadding,

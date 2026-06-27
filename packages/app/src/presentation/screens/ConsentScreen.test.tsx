@@ -84,6 +84,23 @@ describe('ConsentScreen (US-48)', () => {
     expect(screen.getByRole('button', { name: 'Aceptar y continuar' })).toBeDisabled();
   });
 
+  it('no permite el alta con ≥8 caracteres pero sin número (US-53)', () => {
+    renderConsent();
+    rellenarFormulario('sololetras');
+    expect(screen.getByRole('button', { name: 'Aceptar y continuar' })).toBeDisabled();
+  });
+
+  it('no permite el alta con ≥8 caracteres pero sin letra (US-53)', () => {
+    renderConsent();
+    rellenarFormulario('12345678');
+    expect(screen.getByRole('button', { name: 'Aceptar y continuar' })).toBeDisabled();
+  });
+
+  it('muestra la ayuda visual del requisito de la contraseña (US-53)', () => {
+    renderConsent();
+    expect(screen.getByTestId('alta-password-ayuda')).toBeTruthy();
+  });
+
   it('envía la contraseña al backend cuando cumple el mínimo', async () => {
     registerMock.mockResolvedValue({ id: 'g1', accessToken: 'a', refreshToken: 'r' });
     renderConsent();

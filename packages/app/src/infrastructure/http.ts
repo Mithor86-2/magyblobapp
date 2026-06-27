@@ -47,9 +47,24 @@ const DEFAULT_BASE_URL = 'http://localhost:3000';
  * Timeout por defecto de las peticiones. Sin él, `fetch` queda a merced del
  * timeout del SO (~300 s en móvil): un backend que no responde dejaría el spinner
  * indefinido. La generación de cuento/actividades usa un margen mayor (la IA tarda).
+ *
+ * Márgenes holgados para producción (US-53): el backend en Render arranca **en frío**
+ * y la primera petición tarda; 30 s de base y 90 s para la generación de IA evitan
+ * abortar una petición que sí iba a responder.
  */
-const DEFAULT_TIMEOUT_MS = 15_000;
-const GENERATION_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 30_000;
+const GENERATION_TIMEOUT_MS = 90_000;
+
+/**
+ * Reintento con backoff ante fallos transitorios (US-53): un `timeout` o un fallo
+ * de `network` puede deberse al cold start del servidor o a una red intermitente, no
+ * a un error real. Se reintenta hasta 2 veces con una espera creciente; los errores
+ * HTTP (4xx/5xx con cuerpo) y `malformed` no se reintentan (no son transitorios).
+ */
+const MAX_RETRIES = 2;
+const RETRY_BASE_DELAY_MS = 500;
+
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Puerto de sesión que el adaptador HTTP usa para leer los tokens, guardarlos tras
@@ -65,6 +80,21 @@ export interface SessionStore {
 
 export function getBaseUrl(): string {
   return process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_BASE_URL;
+}
+
+/**
+ * Ping de warm-up al arrancar (US-53): despierta el backend en frío de Render con
+ * una petición a `/health` para que la primera acción del usuario no pague el cold
+ * start. No bloquea la interfaz ni propaga errores (si falla, la petición real lo
+ * reintentará con su propio backoff); fija un timeout amplio acorde al arranque.
+ */
+export function warmUp(baseUrl: string = getBaseUrl()): void {
+  if (typeof fetch !== 'function') return;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  void fetch(`${baseUrl}/health`, { signal: controller.signal })
+    .catch(() => undefined)
+    .finally(() => clearTimeout(timer));
 }
 
 interface RequestOptions {
@@ -142,7 +172,23 @@ async function request<TResponse>(
     return response;
   }
 
-  let response = await fetchOnce(auth ? (session?.getAccessToken() ?? null) : null);
+  // Reintento con backoff (US-53) solo ante fallos transitorios (`timeout`/`network`):
+  // el cold start de Render o una red intermitente se recuperan con un segundo intento.
+  // Los errores HTTP llegan como `response` (no lanzan aquí) y no se reintentan.
+  async function fetchWithRetry(token: string | null): Promise<Response> {
+    for (let intento = 0; ; intento++) {
+      try {
+        return await fetchOnce(token);
+      } catch (error) {
+        const transitorio =
+          error instanceof ApiError && (error.tipo === 'timeout' || error.tipo === 'network');
+        if (!transitorio || intento >= MAX_RETRIES) throw error;
+        await delay(RETRY_BASE_DELAY_MS * 2 ** intento);
+      }
+    }
+  }
+
+  let response = await fetchWithRetry(auth ? (session?.getAccessToken() ?? null) : null);
 
   // Refresh-on-401 (US-45): un access token caducado → renovar una vez y reintentar;
   // si no hay refresh o la renovación falla, cerrar la sesión.

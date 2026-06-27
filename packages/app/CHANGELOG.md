@@ -9,7 +9,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Robustez en producción del alta/login (US-53): **reintento con backoff** (hasta 2) en el adaptador
+  HTTP ante fallos transitorios (`timeout`/`network`) y **ping de warm-up** a `/health` al arrancar,
+  para absorber el _cold start_ del backend en Render. Ayuda visual del requisito de contraseña en la
+  pantalla de alta (≥8 caracteres con al menos una letra y un número).
+
 ### Changed
+
+- Timeouts más holgados acordes al arranque en frío del servidor (US-53): peticiones normales
+  `15 s → 30 s`, generación de IA `30 s → 90 s` y narración `15 s → 30 s`.
+- La contraseña del alta exige ahora **≥8 caracteres con al menos una letra y un número** (antes solo
+  longitud mínima), sincronizada con la validación del backend (US-53).
+- `Screen` envuelve su contenido en `KeyboardAvoidingView` para que el teclado no tape los campos de
+  los formularios (Consent/Login/CreateProfile), conservando el scroll y el footer fijo (US-53).
 
 ### Deprecated
 

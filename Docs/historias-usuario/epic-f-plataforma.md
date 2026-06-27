@@ -1022,3 +1022,25 @@ identidad visual del producto, para que se reconozca en el dispositivo y la prim
   tema del sistema.
 - (No-funcional) Dado el cumplimiento, Entonces los recursos van **empaquetados en build-time** (sin
   descargas en runtime ni SDKs de terceros), coherente con [cumplimiento-menores.md](../cumplimiento-menores.md).
+
+## US-53 — Robustez de producción y alta/login · Should (Mejoras)
+
+Como **adulto** quiero que el alta y el inicio de sesión sean **robustos en producción** (servidor
+en frío, redes lentas, teclado del móvil) y que mis credenciales tengan **garantías mínimas de
+calidad**, para no perder el flujo por un timeout, un campo tapado por el teclado, un email mal
+escrito o una contraseña débil.
+
+- Dado un backend desplegado que arranca en frío (Render), Cuando lanzo la primera petición tras
+  abrir la app, Entonces los **timeouts** son holgados (peticiones normales **30 s**, generación de
+  IA **90 s**, narración **30 s**) y, ante un fallo de **red** o **timeout**, la app **reintenta con
+  backoff** (hasta **2** reintentos) antes de mostrar error.
+- Dado el arranque de la app, Cuando se inicializa, Entonces se hace un **ping de warm-up** a
+  `/health` para despertar el servidor en frío sin bloquear la interfaz ni romper los tests.
+- Dada una pantalla de formulario (Consent/Login/CreateProfile), Cuando aparece el **teclado**,
+  Entonces el contenido se desplaza (`KeyboardAvoidingView`) y **ningún campo queda tapado**,
+  conservando el scroll y el footer fijo.
+- Dado el alta, Cuando introduzco un **email con formato inválido**, Entonces el backend lo **rechaza
+  con 400** de forma temprana (`z.string().email()`); el **409 por email duplicado** se mantiene.
+- Dado el alta, Cuando elijo la **contraseña**, Entonces se exige un mínimo razonable de **≥8
+  caracteres con al menos una letra y un número** (sin reglas agresivas), validado **en el backend y
+  en la app** de forma sincronizada, con **ayuda visual** del requisito en la pantalla de alta.

@@ -21,6 +21,14 @@ export const CONSENT_VERSION = '1.0';
 /** Longitud mínima de la contraseña (US-48); debe coincidir con la validación del backend. */
 export const PASSWORD_MIN_LENGTH = 8;
 
+/**
+ * Regla de robustez de la contraseña (US-53): ≥8 caracteres con al menos una letra y
+ * un número. Debe mantenerse sincronizada con el backend (`routes/guardians.ts`).
+ */
+export function passwordValida(password: string): boolean {
+  return password.length >= PASSWORD_MIN_LENGTH && /[A-Za-z]/.test(password) && /\d/.test(password);
+}
+
 export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
@@ -37,7 +45,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
     nombre.trim() !== '' &&
     apellidos.trim() !== '' &&
     email.trim() !== '' &&
-    password.length >= PASSWORD_MIN_LENGTH &&
+    passwordValida(password) &&
     parentesco !== null &&
     aceptado &&
     !submitting;
@@ -109,13 +117,20 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
         />
         <TextField
           testID="alta-password"
-          label={`Contraseña (mínimo ${PASSWORD_MIN_LENGTH} caracteres)`}
+          label="Contraseña"
           value={password}
           onChangeText={setPassword}
           placeholder="Crea una contraseña"
           autoCapitalize="none"
           secureTextEntry
         />
+        <Text
+          testID="alta-password-ayuda"
+          style={[styles.passwordHint, passwordValida(password) && styles.passwordHintOk]}
+        >
+          {passwordValida(password) ? '✓ ' : ''}
+          Mínimo {PASSWORD_MIN_LENGTH} caracteres, con al menos una letra y un número.
+        </Text>
 
         <Text style={styles.fieldLabel}>Parentesco</Text>
         <View style={styles.chips}>
@@ -158,6 +173,15 @@ const styles = StyleSheet.create({
   fieldLabel: {
     ...typography.labelBold,
     color: colors.onSurfaceVariant,
+  },
+  passwordHint: {
+    ...typography.bodyMd,
+    fontSize: 14,
+    lineHeight: 18,
+    color: colors.onSurfaceVariant,
+  },
+  passwordHintOk: {
+    color: colors.secondary,
   },
   chips: {
     flexDirection: 'row',
