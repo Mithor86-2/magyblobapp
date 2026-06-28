@@ -148,7 +148,7 @@ PID=$(curl -s -X POST $BASE/profiles \
 }" | jq -r .id)
 curl -s -X POST $BASE/stories \
   -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d "{
-  \"profileId\":\"$PID\",\"tema\":\"animales\",\"estilo\":\"aventura\"
+  \"profileId\":\"$PID\",\"temas\":[\"animales\"],\"estilos\":[\"aventura\"]
 }" | jq
 ```
 
@@ -165,6 +165,45 @@ curl -s -X POST $BASE/stories \
 > **Secreto JWT:** se firma con `JWT_SECRET` (env). Si se deja vacío hay un secreto **solo de
 > desarrollo** (arranque reproducible sin pasos extra); en producción fíjalo a un valor aleatorio.
 > Vida de tokens: `JWT_ACCESS_TTL` (def. `15m`) / `JWT_REFRESH_TTL` (def. `7d`).
+
+## Validar el backend en producción
+
+El backend se despliega en **Render** (rama `main`) con PostgreSQL en **Neon** e IA cloud en **Groq**
+(guía completa en **[Docs/despliegue.md](Docs/despliegue.md)**). La forma más rápida de comprobar que un
+despliegue está sano es con los **endpoints públicos** (sin token), que ejercitan toda la pila
+(Fastify → Neon → Groq):
+
+```bash
+BASE=https://magyblobapp.onrender.com   # tu URL de Render
+
+# 1) Salud: debe responder 200. La 1ª petición tras inactividad tarda ~50 s (cold start del plan free).
+curl -s $BASE/health
+# → {"status":"ok","service":"magyblob-backend"}
+
+# 2) Cuento anónimo (texto real por Groq). 201 + proveedor "cloud" = IA cloud OK.
+curl -s -X POST $BASE/stories/anonymous -H "Content-Type: application/json" \
+  -d '{"edad":5,"idioma":"es","temas":["magia"],"estilos":["divertido"]}' | jq '{titulo, proveedor}'
+
+# 3) Actividades anónimas: deben traer "instrucciones" y proveedor "cloud".
+curl -s -X POST $BASE/activities/recommend/anonymous -H "Content-Type: application/json" \
+  -d '{"edad":5,"idioma":"es","cantidad":1}' | jq '.[0] | {titulo, instrucciones, proveedor}'
+```
+
+Señales de que **todo funciona**: `/health` → `200`; el cuento y las actividades llegan con
+`"proveedor":"cloud"` (Groq activo) y las actividades incluyen `instrucciones`. Si `proveedor` fuese
+`mock`, falta o es inválida la `GROQ_API_KEY` en Render (cae al modo base). El **rate-limit anónimo** es
+3 cuentos + 3 actividades por IP: un `429` significa que se agotó (esperado).
+
+Comprobaciones adicionales (requieren configuración):
+
+- **Migraciones:** se aplican solas al arrancar (`prisma migrate deploy` en el `CMD` del contenedor);
+  míralo en los **Logs** de Render.
+- **Flujo con sesión** (alta con contraseña → perfil → cuento con portada): igual que el ejemplo de
+  _Probar la API_ pero con `BASE` apuntando a Render.
+- **Narración (ElevenLabs, US-22):** `GET /stories/:id/narration` devuelve `audio/mpeg` solo si
+  `ELEVENT_LABS_API` está configurada en Render; si no, responde error y la app usa la voz nativa.
+- **Portadas (Gemini/Imagen, US-59):** requieren `GEMINI_API_KEY` **y un plan de pago** de Google
+  (Imagen no está en el _free tier_); sin ello la app usa el respaldo local por tema.
 
 ## Desarrollo local (sin Docker)
 
