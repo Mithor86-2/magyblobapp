@@ -399,6 +399,20 @@ npx eas-cli build -p ios --profile preview         # requiere cuenta de Apple De
 > menores). El idioma de la interfaz lo elige la persona adulta (por defecto español); no depende del
 > dispositivo.
 
+> **TODO — optimizar el tamaño del APK en el próximo compilado.** El APK `preview` actual pesa ~91 MB
+> porque es **universal** (incluye las 4 arquitecturas de CPU ×librerías nativas). Para bajarlo a
+> ~40 MB sin perder compatibilidad real:
+>
+> 1. **Solo `arm64-v8a`** (cubre los móviles modernos): pasar `reactNativeArchitectures=arm64-v8a` al
+>    build (gradle property; p. ej. `gradleCommand` en el perfil `preview` de `eas.json` o vía
+>    `gradle.properties`). Es el mayor recorte (~½).
+> 2. **R8/ProGuard + shrink de recursos**: añadir el plugin `expo-build-properties` con
+>    `android.enableProguardInReleaseBuilds: true` y `enableShrinkResources: true`.
+> 3. Para distribución real (Play Store) usar el **AAB** (perfil `production`, ya configurado): Google
+>    entrega por dispositivo y el usuario descarga bastante menos (el AAB no se sideloadea directo).
+>
+> Las imágenes (cabeceras/portadas) ya están optimizadas; el peso es código nativo, no assets.
+
 ## Comandos del monorepo
 
 | Comando                             | Qué hace                                                  |
