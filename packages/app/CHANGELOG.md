@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Fecha de generación** en el Historial (cada cuento y actividad), la **lectura** del cuento y la
+  tarjeta de actividad: se muestra `creadoEn` (ISO del backend) **formateado y localizado** según el
+  idioma del app (ES/EN); si el dato falta no se muestra nada (US-62, amplía US-08).
+- **Filtros de búsqueda en el Historial** (en cliente): cuentos por **tema** y **estilo**,
+  actividades por **categoría**, con chips y opción **"Todos"** por defecto; el estado del filtro es
+  local de la pantalla (US-62).
+
 ### Changed
 
 ### Deprecated
