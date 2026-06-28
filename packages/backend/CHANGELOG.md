@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- US-63: **favoritos** de cuentos y actividades. Campo `favorito` (booleano, por defecto `false`) en
+  las entidades `Story` y `Activity` y en el esquema Prisma (columna `favorito BOOLEAN NOT NULL
+DEFAULT false` en `stories` y `activities`, migración). Casos de uso idempotentes
+  `SetStoryFavorite` / `SetActivityFavorite` y rutas protegidas `POST /stories/:id/favorite` y
+  `POST /activities/:id/favorite` con body Zod `{ favorito: boolean }` que devuelven el
+  cuento/actividad actualizado. `favorito` se expone en `StoryOutput` / `ActivityOutput` (lo
+  consume el historial).
+
 ### Changed
 
 ### Deprecated

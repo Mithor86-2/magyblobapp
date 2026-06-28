@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { GenerateStory } from '../application/use-cases/GenerateStory.js';
 import { MarkStoryRead } from '../application/use-cases/MarkStoryRead.js';
 import { NarrateStory } from '../application/use-cases/NarrateStory.js';
+import { SetStoryFavorite } from '../application/use-cases/SetStoryFavorite.js';
 import { ESTILOS, TEMAS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
@@ -18,11 +19,15 @@ const bodySchema = z
   })
   .strict();
 
+const favoriteParamsSchema = z.object({ id: z.string().min(1) });
+const favoriteSchema = z.object({ favorito: z.boolean() }).strict();
+
 /** Genera (y persiste) un cuento para un perfil; registra el evento de uso. */
 export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
   const generateStory = new GenerateStory(deps);
   const markStoryRead = new MarkStoryRead(deps);
   const narrateStory = new NarrateStory(deps);
+  const setStoryFavorite = new SetStoryFavorite(deps);
 
   app
     .withTypeProvider<ZodTypeProvider>()
@@ -49,6 +54,17 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
     '/stories/:id/read',
     { onRequest: app.authenticate },
     async (request) => markStoryRead.execute({ storyId: request.params.id }),
+  );
+
+  // Marca/desmarca un cuento como favorito (US-63). Idempotente.
+  app.withTypeProvider<ZodTypeProvider>().post(
+    '/stories/:id/favorite',
+    {
+      schema: { body: favoriteSchema, params: favoriteParamsSchema },
+      onRequest: app.authenticate,
+    },
+    async (request) =>
+      setStoryFavorite.execute({ storyId: request.params.id, favorito: request.body.favorito }),
   );
 
   // Narra un cuento (US-22): devuelve el MP3 (ElevenLabs, cacheado). El backend

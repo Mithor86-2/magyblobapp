@@ -3,6 +3,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { RecommendActivities } from '../application/use-cases/RecommendActivities.js';
 import { CompleteActivity } from '../application/use-cases/CompleteActivity.js';
+import { SetActivityFavorite } from '../application/use-cases/SetActivityFavorite.js';
 import { CATEGORIAS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
@@ -17,10 +18,14 @@ const bodySchema = z
 const completeParamsSchema = z.object({ id: z.string().min(1) });
 const completeSchema = z.object({ valoracion: z.number().int().min(1).max(3) }).strict();
 
+const favoriteParamsSchema = z.object({ id: z.string().min(1) });
+const favoriteSchema = z.object({ favorito: z.boolean() }).strict();
+
 /** Recomienda actividades y registra su realización (progreso) para un perfil. */
 export function activityRoutes(app: FastifyInstance, deps: AppDeps): void {
   const recommendActivities = new RecommendActivities(deps);
   const completeActivity = new CompleteActivity(deps);
+  const setActivityFavorite = new SetActivityFavorite(deps);
 
   app
     .withTypeProvider<ZodTypeProvider>()
@@ -55,5 +60,19 @@ export function activityRoutes(app: FastifyInstance, deps: AppDeps): void {
 
       return activity;
     },
+  );
+
+  // Marca/desmarca una actividad como favorita (US-63). Idempotente.
+  app.withTypeProvider<ZodTypeProvider>().post(
+    '/activities/:id/favorite',
+    {
+      schema: { body: favoriteSchema, params: favoriteParamsSchema },
+      onRequest: app.authenticate,
+    },
+    async (request) =>
+      setActivityFavorite.execute({
+        activityId: request.params.id,
+        favorito: request.body.favorito,
+      }),
   );
 }

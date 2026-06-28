@@ -25,10 +25,12 @@ export class PrismaActivityRepository implements ActivityRepository {
         prompt: activity.prompt ?? null,
         completadaEn: activity.completadaEn ?? null,
         valoracion: activity.valoracion ?? null,
+        favorito: activity.favorito,
       },
       update: {
         completadaEn: activity.completadaEn ?? null,
         valoracion: activity.valoracion ?? null,
+        favorito: activity.favorito,
       },
     });
   }
@@ -62,6 +64,7 @@ function toActivity(row: PrismaActivity): Activity {
     prompt: row.prompt ?? undefined,
     completadaEn: row.completadaEn ?? undefined,
     valoracion: row.valoracion ?? undefined,
+    favorito: row.favorito,
     creadoEn: row.creadoEn,
   });
 }

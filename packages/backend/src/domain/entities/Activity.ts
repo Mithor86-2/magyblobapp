@@ -26,6 +26,8 @@ export interface ActivityProps {
   prompt?: string;
   completadaEn?: Date;
   valoracion?: number;
+  /** Marcada como favorita por el tutor (US-63); por defecto `false`. */
+  favorito?: boolean;
   /** Fecha de generación (US-61). La pone el caso de uso / la lee el repositorio. */
   creadoEn?: Date;
 }
@@ -48,6 +50,7 @@ export class Activity {
   readonly prompt?: string;
   completadaEn?: Date;
   valoracion?: number;
+  favorito: boolean;
   readonly creadoEn?: Date;
 
   constructor(props: ActivityProps) {
@@ -73,6 +76,7 @@ export class Activity {
     this.prompt = props.prompt;
     this.completadaEn = props.completadaEn;
     this.valoracion = props.valoracion;
+    this.favorito = props.favorito ?? false;
     this.creadoEn = props.creadoEn;
   }
 
@@ -83,5 +87,10 @@ export class Activity {
     }
     this.valoracion = valoracion;
     this.completadaEn = cuando;
+  }
+
+  /** Marca o desmarca la actividad como favorita (US-63). Idempotente. */
+  marcarFavorito(valor: boolean): void {
+    this.favorito = valor;
   }
 }
