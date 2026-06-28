@@ -1,19 +1,55 @@
 # magyblobapp
 
-App infantil bilingüe (ES/EN) que crea perfiles de niño y genera cuentos /
-recomienda actividades usando un LLM **local** (Ollama + Gemma 2B), con
-arquitectura limpia y modos de IA intercambiables: `mock` y `local` (el modo
-base, por env) más un modo **`cloud` opcional** (opt-in, OFF por defecto,
-conmutable desde la base de datos — ver más abajo).
+App infantil bilingüe (ES/EN) que crea perfiles de niño y genera **cuentos** y
+**actividades** personalizados con IA, con arquitectura limpia y modos de IA
+intercambiables: un **modo base por env** (`mock` | `local` con Ollama + Gemma 2B)
+más un modo **`cloud`** (proveedor compatible con OpenAI, p. ej. Groq) que viene
+**ON por defecto** y es conmutable en caliente desde la base de datos; si falta la
+API key, cae automáticamente al modo base (ver más abajo).
 
 Proyecto de TFM. El plan por fases está en
 [Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) y la guía para
 agentes en [CLAUDE.md](CLAUDE.md).
 
+## Funcionalidades
+
+- **Onboarding y sesión** — alta del adulto con consentimiento, **login** por email
+  y **sesión JWT** (access + refresh); **multi-perfil** de niños bajo un mismo adulto.
+- **Cuentos con IA** — generación personalizada por perfil (tema + estilo) en el idioma
+  del niño, con **portada** ilustrada (Gemini/Imagen, con respaldo local por tema).
+- **Actividades con IA** — recomendaciones por edad/intereses con instrucciones paso a
+  paso; marcado de "Realizado" con valoración.
+- **Narración (TTS)** — escucha del cuento con ElevenLabs (con respaldo a la voz nativa
+  del dispositivo).
+- **Historial** — cuentos leídos y actividades completadas, con fecha de generación,
+  **búsqueda de texto** (título, cuerpo, descripción, tema, estilo, categoría) y **filtros**
+  por tema/estilo/categoría y "solo favoritos"; relectura de cuentos.
+- **Favoritos** — marca cuentos y actividades con una **estrella** (desde la lectura, el
+  historial y la tarjeta de actividad).
+- **Modo anónimo** — probar cuentos y actividades sin cuenta (rate-limited por IP).
+- **Bilingüe ES/EN** — toda la interfaz; el idioma lo elige el adulto (no el dispositivo).
+- **Privacidad y menores** — gate parental, minimización de datos a terceros y modos de IA
+  que por defecto no sacan datos (ver [Docs/cumplimiento-menores.md](Docs/cumplimiento-menores.md)).
+
 ## Requisitos
 
 - Node.js ≥ 24 y pnpm (vía `corepack enable`)
 - Docker + Docker Compose
+
+## Despliegue: mapa rápido
+
+Los pasos completos están repartidos por escenario. Esta tabla es el índice; cada celda
+enlaza a la sección con el detalle paso a paso.
+
+| Componente  | Desarrollo (local)                                                                                                                 | Producción                                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Backend** | [Arranque rápido (Docker)](#arranque-rápido-docker) · [Dev con `tsx`](#desarrollo-del-backend-con-tsx-sin-la-pila-docker-completa) | [Desplegar el backend en producción](#desplegar-el-backend-en-producción-neon--render--groq) (Neon + Render + Groq) |
+| **App**     | [App móvil (Expo)](#app-móvil-expo)                                                                                                | [Desplegar la app (Expo)](#desplegar-la-app-expo) (web export / EAS Build)                                          |
+
+> **Local funciona sin nada externo:** `cp .env.example .env && docker compose up` levanta
+> backend + PostgreSQL + Ollama en modo `mock` (sin GPU, sin claves). Producción es un camino
+> aparte (BD gestionada + IA cloud). La guía de producción ampliada vive en
+> [Docs/despliegue.md](Docs/despliegue.md).
 
 ## Arranque rápido (Docker)
 
@@ -152,26 +188,93 @@ curl -s -X POST $BASE/stories \
 }" | jq
 ```
 
-| Método y ruta                 | Auth | Descripción                                  |
-| ----------------------------- | ---- | -------------------------------------------- |
-| `GET /health`                 | —    | Estado del servicio                          |
-| `POST /guardians`             | —    | Alta del adulto (+ consentimiento) + sesión  |
-| `POST /guardians/login`       | —    | Login por email → sesión (access + refresh)  |
-| `POST /guardians/refresh`     | —    | Renueva el access token con el refresh token |
-| `GET /guardians/:id/profiles` | 🔒   | Lista los perfiles de un adulto              |
-| `POST /profiles`              | 🔒   | Crea el perfil de un niño                    |
-| `POST /stories`               | 🔒   | Genera y persiste un cuento para un perfil   |
+| Método y ruta                          | Auth | Descripción                                   |
+| -------------------------------------- | ---- | --------------------------------------------- |
+| `GET /health`                          | —    | Estado del servicio                           |
+| `POST /guardians`                      | —    | Alta del adulto (+ consentimiento) + sesión   |
+| `POST /guardians/login`                | —    | Login por email → sesión (access + refresh)   |
+| `POST /guardians/refresh`              | —    | Renueva el access token con el refresh token  |
+| `GET /guardians/:id/profiles`          | 🔒   | Lista los perfiles de un adulto               |
+| `POST /profiles`                       | 🔒   | Crea el perfil de un niño                     |
+| `POST /stories`                        | 🔒   | Genera y persiste un cuento para un perfil    |
+| `POST /stories/:id/read`               | 🔒   | Marca un cuento como leído                    |
+| `POST /stories/:id/favorite`           | 🔒   | Marca/desmarca un cuento como favorito        |
+| `GET /stories/:id/narration`           | 🔒   | Narración del cuento (`audio/mpeg`, US-22)    |
+| `POST /activities/recommend`           | 🔒   | Recomienda actividades para un perfil         |
+| `POST /activities/:id/complete`        | 🔒   | Marca una actividad como hecha (+ valoración) |
+| `POST /activities/:id/favorite`        | 🔒   | Marca/desmarca una actividad como favorita    |
+| `GET /profiles/:profileId/history`     | 🔒   | Historial (cuentos + actividades) del perfil  |
+| `POST /stories/anonymous`              | —    | Cuento sin cuenta (rate-limited por IP)       |
+| `POST /activities/recommend/anonymous` | —    | Actividades sin cuenta (rate-limited por IP)  |
+| `GET /settings/tts/voices`             | —    | Voces de narración configuradas por idioma    |
+
+> Rutas principales; el detalle (parámetros, esquemas y más ejemplos) vive en Docs/api.md.
 
 > **Secreto JWT:** se firma con `JWT_SECRET` (env). Si se deja vacío hay un secreto **solo de
 > desarrollo** (arranque reproducible sin pasos extra); en producción fíjalo a un valor aleatorio.
 > Vida de tokens: `JWT_ACCESS_TTL` (def. `15m`) / `JWT_REFRESH_TTL` (def. `7d`).
 
-## Validar el backend en producción
+## Desplegar el backend en producción (Neon + Render + Groq)
 
-El backend se despliega en **Render** (rama `main`) con PostgreSQL en **Neon** e IA cloud en **Groq**
-(guía completa en **[Docs/despliegue.md](Docs/despliegue.md)**). La forma más rápida de comprobar que un
-despliegue está sano es con los **endpoints públicos** (sin token), que ejercitan toda la pila
-(Fastify → Neon → Groq):
+El backend se despliega como **web service Docker en [Render](https://render.com)** (rama `main`), con
+PostgreSQL gestionado en **[Neon](https://neon.tech)** e IA cloud en **[Groq](https://groq.com)** (todo
+en plan free). La infraestructura está declarada como código en [`render.yaml`](render.yaml). Pasos
+(guía ampliada con notas operativas en [Docs/despliegue.md](Docs/despliegue.md)):
+
+**1) Base de datos en Neon (PostgreSQL 16).** Crea un proyecto, elige PostgreSQL 16 y una región
+cercana a la del backend (Render Frankfurt → región europea). Copia la _connection string_ del rol;
+usa la variante **pooled** (host con sufijo `-pooler`) y asegúrate de que incluye `sslmode=require`:
+
+```text
+postgresql://<usuario>:<password>@ep-xxxx-pooler.<region>.aws.neon.tech/neondb?sslmode=require
+```
+
+Esa cadena es el secreto `DATABASE_URL` del paso 2. _Recomendado:_ prueba primero contra una **rama de
+Neon** (copia copy-on-write) y solo apunta producción a la base principal cuando las migraciones apliquen
+bien.
+
+**2) Backend en Render (Blueprint, IaC).** Con [`render.yaml`](render.yaml) en la raíz de `main`: en
+Render **New → Blueprint**, conecta el repo y selecciona `main`. Render propone el servicio
+`magyblob-backend` y pedirá los **secretos** marcados `sync: false`. Rellénalos y crea el Blueprint
+(build con el Dockerfile, contexto = raíz). Variables:
+
+| Variable                             | Valor                                                      | Origen              |
+| ------------------------------------ | ---------------------------------------------------------- | ------------------- |
+| `DATABASE_URL`                       | _connection string_ de Neon (`-pooler`, `sslmode=require`) | **Secreto** (panel) |
+| `JWT_SECRET`                         | valor largo y aleatorio (`openssl rand -base64 48`)        | **Secreto** (panel) |
+| `GROQ_API_KEY`                       | API key de Groq                                            | **Secreto** (panel) |
+| `ELEVENT_LABS_API`                   | API key de ElevenLabs (narración, US-22). **Opcional**     | **Secreto** (panel) |
+| `GEMINI_API_KEY`                     | API key de Gemini para portadas (US-59). **Opcional**      | **Secreto** (panel) |
+| `NODE_ENV` / `PORT` / `LOG_LEVEL`    | `production` / `3000` / `info`                             | fijos (blueprint)   |
+| `AI_PROVIDER` / `AI_TIMEOUT_MS`      | `mock` / `60000`                                           | fijos (blueprint)   |
+| `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | `15m` / `7d`                                               | fijos (blueprint)   |
+
+> En `NODE_ENV=production`, `DATABASE_URL` es **obligatoria**: la validación Zod aborta el arranque si
+> falta. `JWT_SECRET` también debe fijarse (sin él degrada a un secreto inseguro con WARNING). Ollama
+> **no** va a producción (plan free sin GPU): de ahí `AI_PROVIDER=mock` + modo cloud para la calidad real.
+> `ELEVENT_LABS_API` y `GEMINI_API_KEY` son **opcionales**: con la primera `GET /stories/:id/narration`
+> devuelve audio de ElevenLabs (sin ella, voz nativa del dispositivo); con la segunda los cuentos llevan
+> **portada** generada por Gemini/Imagen (sin ella, respaldo local por tema — además, Imagen requiere un
+> plan de pago de Google). La voz por idioma se afina con `ELEVENLABS_VOICE_ID_ES` / `ELEVENLABS_VOICE_ID_EN`
+> (ver [.env.example](.env.example)).
+
+**3) IA cloud con Groq.** Crea una API key en [console.groq.com](https://console.groq.com) y ponla como
+secreto `GROQ_API_KEY`. El modo cloud (`target` Groq) ya viene **activo por defecto** en la BD (AppSetting
+`ai.cloud`, sembrado por migración): con la key, cuentos y actividades se generan con Groq; **sin la key**,
+el backend cae al modo base (`mock`) automáticamente. Es conmutable en caliente desde la BD.
+
+**4) Migraciones.** No hay paso manual: el `CMD` del [Dockerfile](packages/backend/Dockerfile) ejecuta
+`prisma migrate deploy && node dist/index.js`, así que cada deploy aplica las migraciones pendientes al
+arrancar. Míralo en los **Logs** de Render.
+
+> _(Alternativa sin Blueprint: **New → Web Service**, runtime Docker, branch `main`, Root Directory
+> **vacío**, Dockerfile Path `packages/backend/Dockerfile`, Health Check Path `/health`, region
+> Frankfurt, plan Free, y las mismas variables a mano.)_
+
+### Validar el backend en producción
+
+La forma más rápida de comprobar que un despliegue está sano es con los **endpoints públicos** (sin
+token), que ejercitan toda la pila (Fastify → Neon → Groq):
 
 ```bash
 BASE=https://magyblobapp.onrender.com   # tu URL de Render
@@ -228,10 +331,15 @@ pnpm dev                                      # backend en watch (tsx) en :3000
 
 ## App móvil (Expo)
 
-La app `@magyblob/app` recorre el slice vertical del HITO 1:
-**consentimiento del adulto → crear perfil → ver cuento generado**. Es agnóstica del
-proveedor de IA (solo llama a `POST /stories`); la demo con IA local usa el backend en
-modo `local`.
+La app `@magyblob/app` ("Aprendizaje Mágico", Expo + React Navigation + Zustand) cubre el
+producto completo, no solo el slice del HITO 1. Navegación en dos niveles:
+
+- **Onboarding / sesión:** bienvenida → **alta o login** del adulto → selección o creación de
+  perfil. La sesión (JWT) se persiste y soporta **multi-perfil**.
+- **Pestañas principales** (con perfil activo): **Inicio · Actividades · Cuentos · Historial**.
+- **Extras:** **modo anónimo** (probar sin cuenta), **zona de adultos tras gate parental**,
+  **lector de cuentos** (relectura desde el historial), **narración** por voz, **portadas** de
+  imagen e interfaz **bilingüe ES/EN** (idioma elegido por el adulto).
 
 ```bash
 pnpm up:local                                    # backend + PostgreSQL + Ollama (AI_PROVIDER=local)
@@ -243,6 +351,9 @@ pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Androi
 
 > En simulador iOS `localhost` sirve. Desde un **móvil físico** (Expo Go) pon la IP LAN
 > del ordenador en `EXPO_PUBLIC_API_URL`. Detalle en [packages/app/README.md](packages/app/README.md).
+>
+> **Variables opcionales de la app** (`packages/app/.env`): `EXPO_PUBLIC_SENTRY_DSN` activa el
+> reporte de errores (sin DSN no se inicializa). Ver [packages/app/.env.example](packages/app/.env.example).
 
 ## Desplegar la app (Expo)
 
