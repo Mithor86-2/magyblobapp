@@ -41,6 +41,12 @@
           "resizeMode": "contain"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1ec84a76-3c8c-452d-9be5-d02210219bf5"
+      }
+    },
+    "owner": "mithor1986"
   }
 }
