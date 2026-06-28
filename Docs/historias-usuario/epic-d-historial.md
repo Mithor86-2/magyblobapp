@@ -1,6 +1,6 @@
 # Epic D — Historial
 
-Historias: **US-08**, **US-27**, **US-62**. Volver al [índice](README.md).
+Historias: **US-08**, **US-27**, **US-62**, **US-63**. Volver al [índice](README.md).
 
 ## US-08 — Ver historial de cuentos · Should
 
@@ -55,3 +55,31 @@ opción **"Todos"** por defecto. **Solo app.**
   se reduce a las de esa categoría; con **"Todos"** se muestran todas.
 - Dado un filtro activo, Cuando lo cambio, Entonces el estado del filtro es **local** de la pantalla
   (no se persiste) y las etiquetas de chips y la fecha respetan el **idioma del app**.
+
+## US-63 — Marcar cuentos y actividades como favoritos · Should (Mejoras)
+
+Como **padre/tutor** quiero marcar cuentos y actividades como **favoritos** para encontrar rápido los
+que más nos gustan desde el Historial.
+
+**Contexto.** Favorito es un **flag booleano** por cuento/actividad (que ya cuelgan de un perfil), sin
+tabla nueva: "favoritas por perfil" con coste mínimo. Esta historia cubre el **backend** (US-63):
+persistencia (`favorito` en `Story`/`Activity`), endpoints idempotentes y exposición en los DTO. La
+parte de UI (botón estrella, filtro "solo favoritos" y búsqueda en el Historial) vive en **US-64**
+(app). Se ubica en la épica de Historial por ser una funcionalidad transversal que se descubre y
+explota desde el Historial; toca cuentos (épica B) y actividades (épica C) por igual.
+
+**Criterios de aceptación**
+
+- Dado un cuento existente, Cuando hago `POST /stories/:id/favorite` con `{ favorito: true }`, Entonces
+  el cuento queda marcado como favorito y la respuesta (200) devuelve el cuento con `favorito: true`.
+- Dada una actividad existente, Cuando hago `POST /activities/:id/favorite` con `{ favorito: false }`,
+  Entonces la actividad queda desmarcada y la respuesta (200) devuelve la actividad con `favorito: false`.
+- Dado un id inexistente, Cuando llamo a cualquiera de los dos endpoints, Entonces recibo `404`
+  (`NotFoundError`).
+- Dado un body inválido (sin `favorito` o de tipo distinto a booleano), Cuando llamo al endpoint,
+  Entonces recibo `400` (validación Zod en frontera).
+- Dada la operación, Cuando la repito con el mismo valor, Entonces es **idempotente** (el estado final
+  es el mismo y no falla).
+- Dado un cuento/actividad recién generado, Cuando se crea, Entonces nace con `favorito: false` (default).
+- Dado el Historial (`GetHistory`), Cuando lo consulto, Entonces cada cuento y actividad expone su
+  campo `favorito` en el DTO.
