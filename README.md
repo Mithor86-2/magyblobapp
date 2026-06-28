@@ -11,6 +11,17 @@ Proyecto de TFM. El plan por fases está en
 [Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) y la guía para
 agentes en [CLAUDE.md](CLAUDE.md).
 
+## Descargar la app (Android)
+
+**APK lista para instalar:** [Releases → v1.4.0](https://github.com/Mithor86-2/magyblobapp/releases/latest)
+→ descarga **`magyblob-v1.4.0.apk`** ([enlace directo](https://github.com/Mithor86-2/magyblobapp/releases/download/v1.4.0/magyblob-v1.4.0.apk)).
+
+En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos»; o por cable
+`adb install magyblob-v1.4.0.apk`. La app apunta al **backend de producción**; la primera
+petición tras un rato de inactividad tarda ~50 s (_cold start_ del plan gratuito de Render).
+
+> El build se genera con **EAS Build** (perfil `preview`, ver [Desplegar la app (Expo)](#desplegar-la-app-expo)).
+
 ## Funcionalidades
 
 - **Onboarding y sesión** — alta del adulto con consentimiento, **login** por email
