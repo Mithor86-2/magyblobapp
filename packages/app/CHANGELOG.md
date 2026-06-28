@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.3.0] - 2026-06-27
+
+### Added
+
 - **Fecha de generación** en el Historial (cada cuento y actividad), la **lectura** del cuento y la
   tarjeta de actividad: se muestra `creadoEn` (ISO del backend) **formateado y localizado** según el
   idioma del app (ES/EN); si el dato falta no se muestra nada (US-62, amplía US-08).

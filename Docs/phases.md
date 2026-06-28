@@ -622,6 +622,21 @@ versionado diferido: **backend v1.2.0 / app v1.2.0 / raíz v1.2.0**; gate verde 
       `contain` centrado) en vez del cuadrado; **portadas solo en cuentos** (se quita la imagen de
       `ActivityCard` y el backend deja de generar `Activity.imagen`; los respaldos locales son por tema).
 
+### Ajustes: contenido, trazabilidad e historial (US-61/US-62, integrado el 2026-06-27, v1.3.0)
+
+Dos features en paralelo (A backend, B app; plan en
+[planes/coordinacion-ajustes-historial.md](planes/coordinacion-ajustes-historial.md)). Release unificado
+**v1.3.0** (raíz/backend/app); gate verde (backend 299 + app 168).
+
+- [x] ✅ **Backend: prompts 3–6 pasos + persistencia + fecha (US-61, rama `feature/71-prompts-pasos-persistencia`).**
+      El prompt de actividades pide **3–6 pasos**; se **persiste el prompt usado** (system+user) por
+      cuento/actividad — `GeneratedStory`/`GeneratedActivity` lo devuelven, columna `prompt` TEXT nullable
+      en `stories`/`activities` (migración), solo BD (no en DTO); `creadoEn` añadido a
+      `StoryOutput`/`ActivityOutput`.
+- [x] ✅ **App: fecha de generación + filtros del Historial (US-62, rama `feature/72-historial-fecha-filtros`).**
+      Muestra `creadoEn` formateado/localizado en Historial, lectura y `ActivityCard`; **filtros en cliente**
+      por tema/estilo (cuentos) y categoría (actividades), con "Todos" por defecto.
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.

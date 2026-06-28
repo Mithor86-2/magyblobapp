@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.3.0] - 2026-06-27
+
+### Added
+
 - US-61: `creadoEn` (ISO string) en `StoryOutput` y `ActivityOutput` (lo consumirá la app para mostrar
   la fecha de generación). La entidad `Activity` gana `creadoEn` para poder mapearlo.
 - US-61: persistencia del **prompt usado** (system + user) por cuento/actividad. `GeneratedStory` y
