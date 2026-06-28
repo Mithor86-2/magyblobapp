@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { NarrationControls } from '../components/NarrationControls';
 import { StoryCover } from '../components/StoryCover';
+import { formatearFecha } from '../formatFecha';
+import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import { api } from '../../composition';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
@@ -15,6 +18,10 @@ import type { RootScreenProps } from '../navigation';
  */
 export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
   const { story } = route.params;
+  const { t, i18n } = useTranslation();
+  // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
+  const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
+  const fecha = formatearFecha(story.creadoEn, idioma);
 
   useEffect(() => {
     if (story.estado !== 'leido') {
@@ -36,6 +43,7 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
         <Text style={styles.body}>{story.cuerpo}</Text>
         <NarrationControls story={story} />
         <AuthorBadge proveedor={story.proveedor} />
+        {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
       </View>
     </Screen>
   );
@@ -61,5 +69,9 @@ const styles = StyleSheet.create({
   body: {
     ...typography.bodyLg,
     color: colors.onSurface,
+  },
+  fecha: {
+    ...typography.labelBold,
+    color: colors.onSurfaceVariant,
   },
 });

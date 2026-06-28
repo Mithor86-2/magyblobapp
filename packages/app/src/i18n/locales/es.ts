@@ -72,6 +72,8 @@ export const es = {
     email: 'Email',
     emailPlaceholder: 'tu@email.com',
     password: 'Contraseña',
+    // Fecha de generación del contenido (US-62); {{fecha}} ya viene localizada.
+    generatedOn: 'Creado el {{fecha}}',
   },
 
   welcome: {
@@ -198,6 +200,13 @@ export const es = {
     readStory: 'Leer cuento',
     readStoryA11y: 'Leer el cuento {{titulo}}',
     errorLoad: 'No se pudo cargar el historial.',
+    // Filtros del historial (US-62).
+    filterTheme: 'Tema',
+    filterStyle: 'Estilo',
+    filterCategory: 'Categoría',
+    filterAll: 'Todos',
+    noMatchStories: 'Ningún cuento coincide con el filtro.',
+    noMatchActivities: 'Ninguna actividad coincide con el filtro.',
   },
 
   parental: {

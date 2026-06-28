@@ -111,6 +111,8 @@ export interface Story {
   proveedor: ProveedorIa;
   /** Portada generada (data URL, US-59); ausente ⇒ la app usa el respaldo local por tema. */
   portada?: string;
+  /** Fecha de generación en ISO 8601 (US-62); ausente ⇒ la UI no muestra fecha. */
+  creadoEn?: string;
 }
 
 // --- Modo anónimo efímero (US-50): genera y devuelve sin persistir ni sesión ---
@@ -174,6 +176,8 @@ export interface Activity {
   proveedor: ProveedorIa;
   /** Imagen generada (data URL, US-59); ausente ⇒ la app usa el respaldo local. */
   imagen?: string;
+  /** Fecha de generación en ISO 8601 (US-62); ausente ⇒ la UI no muestra fecha. */
+  creadoEn?: string;
 }
 
 // --- Historial ---
