@@ -16,6 +16,8 @@ export function toStoryOutput(story: Story): StoryOutput {
     estado: story.estado,
     proveedor: story.proveedor,
     portada: story.portada,
+    // US-61: fecha de generación en ISO; el `prompt` NO se expone (solo BD).
+    creadoEn: story.creadoEn.toISOString(),
   };
 }
 
@@ -33,5 +35,7 @@ export function toActivityOutput(activity: Activity): ActivityOutput {
     valoracion: activity.valoracion,
     proveedor: activity.proveedor,
     imagen: activity.imagen,
+    // US-61: fecha de generación en ISO; el `prompt` NO se expone (solo BD).
+    creadoEn: activity.creadoEn?.toISOString(),
   };
 }

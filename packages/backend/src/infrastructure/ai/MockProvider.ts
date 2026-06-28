@@ -7,6 +7,7 @@ import type {
 } from '../../domain/ai/AIProvider.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';
 import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
+import { buildActivitiesPrompt, buildStoryPrompt, joinPromptParts } from './prompts.js';
 
 /**
  * Proveedor de IA determinista que NO necesita Ollama ni red. Cumple tres papeles:
@@ -31,6 +32,8 @@ export class MockProvider implements AIProvider {
     // contenido (nombre + temas + idioma), de modo que es determinista para una
     // misma entrada pero distinto entre temas/perfiles. El cuerpo se mantiene.
     const titulo = tituloVariado(nombre, input.temas, idioma);
+    // US-61: prompt representativo (el que usarían los proveedores reales por defecto).
+    const prompt = joinPromptParts(buildStoryPrompt(input));
     if (idioma === 'es') {
       return {
         titulo,
@@ -41,6 +44,7 @@ export class MockProvider implements AIProvider {
           `Juntos descubrieron que lo más bonito de ${tema} es compartirlo. ` +
           `Y ${nombre} volvió a casa feliz, listo para soñar otra aventura.`,
         proveedor: 'mock',
+        prompt,
       };
     }
     return {
@@ -52,6 +56,7 @@ export class MockProvider implements AIProvider {
         `Together they discovered that the best part of ${tema} is sharing it. ` +
         `And ${nombre} came back home happy, ready to dream up another adventure.`,
       proveedor: 'mock',
+      prompt,
     };
   }
 
@@ -66,6 +71,8 @@ export class MockProvider implements AIProvider {
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
     const idioma = input.perfil.idioma.value;
+    // US-61: prompt representativo del lote (el que usarían los proveedores reales).
+    const prompt = joinPromptParts(buildActivitiesPrompt(input));
     return Array.from({ length: input.cantidad }, (_unused, i): GeneratedActivity => {
       const categoria: Categoria = input.categoria ?? CATEGORIAS[i % CATEGORIAS.length]!;
       return {
@@ -74,12 +81,42 @@ export class MockProvider implements AIProvider {
         duracionMin: 10 + (i % 3) * 5,
         nivel: (i % 3) + 1,
         proveedor: 'mock',
+        prompt,
       };
     });
   }
 }
 
 type DatosActividad = { titulo: string; descripcion: string; instrucciones: string };
+
+/**
+ * Pasos del paso a paso de la mock (US-61): se exige entre 3 y 6 pasos. Hay 6
+ * plantillas por idioma; cada actividad usa un número de pasos en [3, 6] derivado
+ * de `n` (determinista) para que el conjunto mock cumpla el rango sin red.
+ */
+const PASOS_ACTIVIDAD: Record<CodigoIdioma, ((categoria: Categoria) => string)[]> = {
+  es: [
+    (categoria) => `Prepara los materiales de ${categoria}.`,
+    () => 'Explica la actividad al niño con palabras sencillas.',
+    () => 'Acompáñale mientras juega y anímale.',
+    () => 'Dale tiempo para que pruebe a su ritmo.',
+    () => 'Hazle preguntas sencillas sobre lo que hace.',
+    () => 'Celebrad juntos el resultado.',
+  ],
+  en: [
+    (categoria) => `Get the ${categoria} materials ready.`,
+    () => 'Explain the activity to the child in simple words.',
+    () => 'Stay close while they play and cheer them on.',
+    () => 'Give them time to try at their own pace.',
+    () => 'Ask simple questions about what they are doing.',
+    () => 'Celebrate the result together.',
+  ],
+};
+
+/** Une los pasos en una cadena numerada "1. ... 2. ...". */
+function pasosNumerados(pasos: string[]): string {
+  return pasos.map((paso, i) => `${i + 1}. ${paso}`).join(' ');
+}
 
 const PLANTILLAS_ACTIVIDAD: Record<
   CodigoIdioma,
@@ -88,22 +125,22 @@ const PLANTILLAS_ACTIVIDAD: Record<
   es: (categoria, n) => ({
     titulo: `Actividad de ${categoria} nº ${n}`,
     descripcion: `Una propuesta sencilla de ${categoria} para jugar y aprender en casa.`,
-    instrucciones:
-      `1. Prepara los materiales de ${categoria}. ` +
-      `2. Explica la actividad al niño con palabras sencillas. ` +
-      `3. Acompáñale mientras juega y anímale. ` +
-      `4. Celebrad juntos el resultado.`,
+    instrucciones: instruccionesMock('es', categoria, n),
   }),
   en: (categoria, n) => ({
     titulo: `${categoria} activity #${n}`,
     descripcion: `A simple ${categoria} idea to play and learn at home.`,
-    instrucciones:
-      `1. Get the ${categoria} materials ready. ` +
-      `2. Explain the activity to the child in simple words. ` +
-      `3. Stay close while they play and cheer them on. ` +
-      `4. Celebrate the result together.`,
+    instrucciones: instruccionesMock('en', categoria, n),
   }),
 };
+
+/** Paso a paso mock con un número de pasos en [3, 6] derivado de `n` (US-61). */
+function instruccionesMock(idioma: CodigoIdioma, categoria: Categoria, n: number): string {
+  const plantillas = PASOS_ACTIVIDAD[idioma];
+  const cantidad = 3 + ((n - 1) % 4); // 3, 4, 5 o 6 pasos
+  const pasos = plantillas.slice(0, cantidad).map((paso) => paso(categoria));
+  return pasosNumerados(pasos);
+}
 
 /**
  * Repertorio de plantillas de título por idioma para variar el título del cuento

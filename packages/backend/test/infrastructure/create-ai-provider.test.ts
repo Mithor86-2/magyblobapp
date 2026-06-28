@@ -86,7 +86,8 @@ describe('createAIProvider', () => {
       ),
     });
     const result = await ai.generateStory(story);
-    expect(result).toEqual({ titulo: 'Nube', cuerpo: 'Cuerpo.', proveedor: 'cloud' });
+    expect(result).toMatchObject({ titulo: 'Nube', cuerpo: 'Cuerpo.', proveedor: 'cloud' });
+    expect(result.prompt).toContain('SYSTEM:'); // US-61: prompt usado presente
     const [url] = fetchSpy.mock.calls[0];
     expect(url).toBe('https://api.groq.com/openai/v1/chat/completions');
   });

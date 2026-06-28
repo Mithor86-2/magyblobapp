@@ -44,12 +44,14 @@ export function parseStory(
   data: { titulo?: unknown; cuerpo?: unknown },
   fuente: string,
   proveedor: ProveedorIa,
+  /** Prompt realmente enviado (system + user) para trazabilidad (US-61). */
+  prompt: string,
 ): GeneratedStory {
   const result = storySchema.safeParse(data);
   if (!result.success) {
     throw new Error(`${fuente} devolvió un cuento sin título o sin cuerpo.`);
   }
-  return { ...result.data, proveedor };
+  return { ...result.data, proveedor, prompt };
 }
 
 const actividadSchema = z.object({
@@ -69,10 +71,12 @@ export function parseActivities(
   cantidad: number,
   fuente: string,
   proveedor: ProveedorIa,
+  /** Prompt realmente enviado (system + user) para trazabilidad (US-61). */
+  prompt: string,
 ): GeneratedActivity[] {
   const crudas = Array.isArray(data.actividades) ? data.actividades : [];
   const actividades = crudas
-    .map((raw) => parseActividad(raw, proveedor))
+    .map((raw) => parseActividad(raw, proveedor, prompt))
     .filter((a): a is GeneratedActivity => a !== null);
   if (actividades.length === 0) {
     throw new Error(`${fuente} no devolvió ninguna actividad válida.`);
@@ -80,7 +84,11 @@ export function parseActivities(
   return actividades.slice(0, cantidad);
 }
 
-function parseActividad(raw: unknown, proveedor: ProveedorIa): GeneratedActivity | null {
+function parseActividad(
+  raw: unknown,
+  proveedor: ProveedorIa,
+  prompt: string,
+): GeneratedActivity | null {
   const result = actividadSchema.safeParse(raw);
-  return result.success ? { ...result.data, proveedor } : null;
+  return result.success ? { ...result.data, proveedor, prompt } : null;
 }

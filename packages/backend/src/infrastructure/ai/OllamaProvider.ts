@@ -14,6 +14,7 @@ import {
   AI_SETTING_KEYS,
   buildActivitiesPrompt,
   buildStoryPrompt,
+  joinPromptParts,
   type PromptOverrides,
 } from './prompts.js';
 import { readStoryParams, resolveStoryParams, type ResolvedStoryParams } from './storyParams.js';
@@ -96,7 +97,8 @@ export class OllamaProvider implements AIProvider {
       AI_SETTING_KEYS.storyTemplate,
     );
     const params = await this.leerStoryParams();
-    const { system, prompt } = buildStoryPrompt(input, overrides, params);
+    const partes = buildStoryPrompt(input, overrides, params);
+    const { system, prompt } = partes;
     const data = await this.generate<{ titulo?: unknown; cuerpo?: unknown }>(
       system,
       prompt,
@@ -110,7 +112,7 @@ export class OllamaProvider implements AIProvider {
         },
       },
     );
-    return parseStory(data, 'Ollama', 'local');
+    return parseStory(data, 'Ollama', 'local', joinPromptParts(partes));
   }
 
   /** Lee `prompt.story.params` y elige un formato al azar (variación por cuento). */
@@ -125,7 +127,8 @@ export class OllamaProvider implements AIProvider {
       AI_SETTING_KEYS.activitySystem,
       AI_SETTING_KEYS.activityTemplate,
     );
-    const { system, prompt } = buildActivitiesPrompt(input, overrides);
+    const partes = buildActivitiesPrompt(input, overrides);
+    const { system, prompt } = partes;
     const data = await this.generate<{ actividades?: unknown }>(
       system,
       prompt,
@@ -140,7 +143,7 @@ export class OllamaProvider implements AIProvider {
         },
       },
     );
-    return parseActivities(data, input.cantidad, 'Ollama', 'local');
+    return parseActivities(data, input.cantidad, 'Ollama', 'local', joinPromptParts(partes));
   }
 
   /**

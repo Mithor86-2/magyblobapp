@@ -155,6 +155,8 @@ export class FakeAIProvider implements AIProvider {
       titulo: `Cuento de ${input.perfil.nombre} sobre ${input.temas.join(', ')}`,
       cuerpo: `Había una vez una historia ${input.estilos.join(', ')} en ${input.perfil.idioma.value}.`,
       proveedor: 'mock' as const,
+      // US-61: prompt representativo para que el caso de uso lo persista.
+      prompt: `prompt-cuento:${input.temas.join(',')}|${input.estilos.join(',')}`,
     };
   }
 
@@ -164,6 +166,8 @@ export class FakeAIProvider implements AIProvider {
       titulo: `Actividad ${i + 1}`,
       descripcion: `Para ${input.perfil.nombre}.`,
       proveedor: 'mock' as const,
+      // US-61: prompt representativo del lote.
+      prompt: `prompt-actividades:${input.categoria ?? 'libre'}|${input.cantidad}`,
     }));
   }
 

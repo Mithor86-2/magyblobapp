@@ -14,6 +14,7 @@ import {
   AI_SETTING_KEYS,
   buildActivitiesPrompt,
   buildStoryPrompt,
+  joinPromptParts,
   type PromptOverrides,
   type PromptParts,
 } from './prompts.js';
@@ -76,18 +77,16 @@ export class CloudProvider implements AIProvider {
     );
     const params = await this.leerStoryParams();
     const partes = buildStoryPrompt(input, overrides, params);
-    const data = await this.chat<{ titulo?: unknown; cuerpo?: unknown }>(
-      conInstruccionJson(partes, INSTRUCCION_JSON_CUENTO),
-      {
-        op: 'generateStory',
-        config: {
-          plantilla: overrides.template ? 'appsetting' : 'defecto',
-          systemFuente: overrides.system ? 'appsetting' : 'defecto',
-          params: params ?? null,
-        },
+    const enviado = conInstruccionJson(partes, INSTRUCCION_JSON_CUENTO);
+    const data = await this.chat<{ titulo?: unknown; cuerpo?: unknown }>(enviado, {
+      op: 'generateStory',
+      config: {
+        plantilla: overrides.template ? 'appsetting' : 'defecto',
+        systemFuente: overrides.system ? 'appsetting' : 'defecto',
+        params: params ?? null,
       },
-    );
-    return parseStory(data, 'CloudProvider', 'cloud');
+    });
+    return parseStory(data, 'CloudProvider', 'cloud', joinPromptParts(enviado));
   }
 
   /** Lee `prompt.story.params` y elige un formato al azar (variación por cuento). */
@@ -103,19 +102,23 @@ export class CloudProvider implements AIProvider {
       AI_SETTING_KEYS.activityTemplate,
     );
     const partes = buildActivitiesPrompt(input, overrides);
-    const data = await this.chat<{ actividades?: unknown }>(
-      conInstruccionJson(partes, instruccionJsonActividades()),
-      {
-        op: 'recommendActivities',
-        config: {
-          plantilla: overrides.template ? 'appsetting' : 'defecto',
-          systemFuente: overrides.system ? 'appsetting' : 'defecto',
-          cantidad: input.cantidad,
-          categoria: input.categoria ?? null,
-        },
+    const enviado = conInstruccionJson(partes, instruccionJsonActividades());
+    const data = await this.chat<{ actividades?: unknown }>(enviado, {
+      op: 'recommendActivities',
+      config: {
+        plantilla: overrides.template ? 'appsetting' : 'defecto',
+        systemFuente: overrides.system ? 'appsetting' : 'defecto',
+        cantidad: input.cantidad,
+        categoria: input.categoria ?? null,
       },
+    });
+    return parseActivities(
+      data,
+      input.cantidad,
+      'CloudProvider',
+      'cloud',
+      joinPromptParts(enviado),
     );
-    return parseActivities(data, input.cantidad, 'CloudProvider', 'cloud');
   }
 
   /**

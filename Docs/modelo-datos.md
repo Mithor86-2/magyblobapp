@@ -56,6 +56,7 @@ erDiagram
         string   estado    "nuevo | leido"
         string   proveedor "IA efectiva: mock | local | cloud"
         string   portada   "opcional — data URL de portada (US-59)"
+        text     prompt    "opcional — prompt usado (system+user), solo BD (US-61)"
         datetime creadoEn
     }
 
@@ -79,8 +80,10 @@ erDiagram
         int      nivel       "opcional"
         string   proveedor   "IA efectiva: mock | local | cloud"
         string   imagen      "opcional — data URL de imagen (US-59)"
+        text     prompt      "opcional — prompt usado (system+user), solo BD (US-61)"
         datetime completadaEn "opcional — null = pendiente"
         int      valoracion  "opcional — 1..3 estrellas"
+        datetime creadoEn
     }
 
     InteractionEvent {
@@ -126,6 +129,14 @@ empaquetado por tema** (cero latencia, sin red). **Aviso de privacidad:** genera
 un tercero el tema/estilo/título (con el **nombre del niño redactado** del título); es una desviación
 de C-5 asumida para el TFM, ver [cumplimiento-menores.md](cumplimiento-menores.md) (C-5). Sin clave no
 sale nada (privacidad por diseño).
+
+**Prompt usado (US-61).** `Story.prompt` y `Activity.prompt` guardan, de forma **opcional** (`NULL`-able),
+el prompt realmente empleado para generar el contenido (texto `system` + `user` concatenado) como
+**trazabilidad técnica**. Lo devuelven los proveedores (`Mock`/`Ollama`/`Cloud`) en
+`GeneratedStory`/`GeneratedActivity` y el `FallbackProvider` propaga el del proveedor que sirvió. **No
+se expone en el DTO público** (solo BD: consultable por SQL o el `prompts:dump`); el **modo anónimo**
+(US-50) no persiste nada, así que tampoco guarda prompt. Las filas anteriores a la migración tienen el
+campo `NULL`.
 
 `AppSetting` es **global** (no se relaciona con otras entidades): es una tabla
 clave-valor para configuración de la app editable sin redeploy.
