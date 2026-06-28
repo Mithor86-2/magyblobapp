@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,17 +7,31 @@ import { Screen } from '../components/Screen';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { BubblyButton } from '../components/BubblyButton';
+import { SelectableChip } from '../components/SelectableChip';
 import { Icon } from '../components/Icon';
+import { CATEGORIAS, ESTILOS, TEMAS } from '../../domain/types';
 import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
+import { categoriaLabel, estiloLabel, temaLabel } from '../labels';
+import { formatearFecha } from '../formatFecha';
+import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
+import {
+  filtrarActividades,
+  filtrarCuentos,
+  TODOS,
+  type FiltroCategoria,
+  type FiltroEstilo,
+  type FiltroTema,
+} from './historyFilters';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);
+  const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
 
   // El lector de cuentos vive en el stack raíz (sobre las pestañas).
   const openReader = (story: Story) =>
@@ -28,6 +42,11 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const [history, setHistory] = useState<History>({ stories: [], activities: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Filtros en cliente (US-62), estado local; "Todos" por defecto.
+  const [temaFiltro, setTemaFiltro] = useState<FiltroTema>(TODOS);
+  const [estiloFiltro, setEstiloFiltro] = useState<FiltroEstilo>(TODOS);
+  const [categoriaFiltro, setCategoriaFiltro] = useState<FiltroCategoria>(TODOS);
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -50,6 +69,9 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   );
 
   const hechas = history.activities.filter((a) => a.valoracion != null);
+  // Listas filtradas en cliente (US-62) sobre lo ya cargado.
+  const cuentosVisibles = filtrarCuentos(history.stories, temaFiltro, estiloFiltro);
+  const actividadesVisibles = filtrarActividades(hechas, categoriaFiltro);
 
   return (
     <Screen>
@@ -68,43 +90,126 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       {history.stories.length === 0 ? (
         <Text style={styles.vacio}>{t('history.emptyStories')}</Text>
       ) : (
-        history.stories.map((story) => (
-          <Pressable
-            key={story.id}
-            style={styles.storyCard}
-            onPress={() => openReader(story)}
-            accessibilityRole="button"
-            accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
+        <>
+          <Text style={styles.filterLabel}>{t('history.filterTheme')}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipRow}
           >
-            <View style={styles.storyHeader}>
-              <Text style={styles.storyTitle} numberOfLines={1}>
-                {story.titulo}
-              </Text>
-              <View
-                style={[
-                  styles.estado,
-                  story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
-                ]}
-              >
-                <Text style={styles.estadoText}>
-                  {story.estado === 'leido' ? t('history.read') : t('history.new')}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.accionRow}>
-              <Text style={styles.accion}>{t('history.readStory')}</Text>
-              <Icon name="arrow-right" size="sm" color={colors.primary} />
-            </View>
-            <AuthorBadge proveedor={story.proveedor} />
-          </Pressable>
-        ))
+            <SelectableChip
+              label={t('history.filterAll')}
+              selected={temaFiltro === TODOS}
+              onPress={() => setTemaFiltro(TODOS)}
+            />
+            {TEMAS.map((tema) => (
+              <SelectableChip
+                key={tema}
+                label={temaLabel(tema)}
+                selected={temaFiltro === tema}
+                onPress={() => setTemaFiltro(tema)}
+              />
+            ))}
+          </ScrollView>
+
+          <Text style={styles.filterLabel}>{t('history.filterStyle')}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipRow}
+          >
+            <SelectableChip
+              label={t('history.filterAll')}
+              selected={estiloFiltro === TODOS}
+              onPress={() => setEstiloFiltro(TODOS)}
+            />
+            {ESTILOS.map((estilo) => (
+              <SelectableChip
+                key={estilo}
+                label={estiloLabel(estilo)}
+                selected={estiloFiltro === estilo}
+                onPress={() => setEstiloFiltro(estilo)}
+              />
+            ))}
+          </ScrollView>
+
+          {cuentosVisibles.length === 0 ? (
+            <Text style={styles.vacio}>{t('history.noMatchStories')}</Text>
+          ) : (
+            cuentosVisibles.map((story) => {
+              const fecha = formatearFecha(story.creadoEn, idioma);
+              return (
+                <Pressable
+                  key={story.id}
+                  style={styles.storyCard}
+                  onPress={() => openReader(story)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
+                >
+                  <View style={styles.storyHeader}>
+                    <Text style={styles.storyTitle} numberOfLines={1}>
+                      {story.titulo}
+                    </Text>
+                    <View
+                      style={[
+                        styles.estado,
+                        story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
+                      ]}
+                    >
+                      <Text style={styles.estadoText}>
+                        {story.estado === 'leido' ? t('history.read') : t('history.new')}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.accionRow}>
+                    <Text style={styles.accion}>{t('history.readStory')}</Text>
+                    <Icon name="arrow-right" size="sm" color={colors.primary} />
+                  </View>
+                  <AuthorBadge proveedor={story.proveedor} />
+                  {fecha ? (
+                    <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text>
+                  ) : null}
+                </Pressable>
+              );
+            })
+          )}
+        </>
       )}
 
       <Text style={styles.section}>{t('history.sectionActivities')}</Text>
       {hechas.length === 0 ? (
         <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
       ) : (
-        hechas.map((activity) => <ActivityCard key={activity.id} activity={activity} />)
+        <>
+          <Text style={styles.filterLabel}>{t('history.filterCategory')}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipRow}
+          >
+            <SelectableChip
+              label={t('history.filterAll')}
+              selected={categoriaFiltro === TODOS}
+              onPress={() => setCategoriaFiltro(TODOS)}
+            />
+            {CATEGORIAS.map((categoria) => (
+              <SelectableChip
+                key={categoria}
+                label={categoriaLabel(categoria)}
+                selected={categoriaFiltro === categoria}
+                onPress={() => setCategoriaFiltro(categoria)}
+              />
+            ))}
+          </ScrollView>
+
+          {actividadesVisibles.length === 0 ? (
+            <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
+          ) : (
+            actividadesVisibles.map((activity) => (
+              <ActivityCard key={activity.id} activity={activity} />
+            ))
+          )}
+        </>
       )}
     </Screen>
   );
@@ -126,6 +231,20 @@ const styles = StyleSheet.create({
   },
   vacio: {
     ...typography.bodyMd,
+    color: colors.onSurfaceVariant,
+  },
+  filterLabel: {
+    ...typography.labelBold,
+    color: colors.onSurfaceVariant,
+    marginTop: spacing.xs,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  fecha: {
+    ...typography.labelBold,
     color: colors.onSurfaceVariant,
   },
   errorBox: {
