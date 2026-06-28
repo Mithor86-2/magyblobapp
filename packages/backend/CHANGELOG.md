@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.4.0] - 2026-06-28
+
+### Added
+
 - US-63: **favoritos** de cuentos y actividades. Campo `favorito` (booleano, por defecto `false`) en
   las entidades `Story` y `Activity` y en el esquema Prisma (columna `favorito BOOLEAN NOT NULL
 DEFAULT false` en `stories` y `activities`, migración). Casos de uso idempotentes

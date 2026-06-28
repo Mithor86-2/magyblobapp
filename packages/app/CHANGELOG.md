@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.4.0] - 2026-06-28
+
+### Added
+
 - **Favoritos (UI) y búsqueda en el Historial (US-64).** Botón **estrella** (lucide `star`, relleno
   cuando es favorito) para alternar el favorito de un cuento o actividad en la **lectura** del cuento
   (`StoryReaderScreen`), los **ítems del Historial** y la tarjeta de actividad (`ActivityCard`), con

@@ -637,6 +637,21 @@ Dos features en paralelo (A backend, B app; plan en
       Muestra `creadoEn` formateado/localizado en Historial, lectura y `ActivityCard`; **filtros en cliente**
       por tema/estilo (cuentos) y categoría (actividades), con "Todos" por defecto.
 
+### Favoritos y búsqueda en el historial (US-63/US-64, integrado el 2026-06-28, v1.4.0)
+
+Dos features en paralelo (A backend, B app; plan en
+[planes/coordinacion-favoritos-busqueda.md](planes/coordinacion-favoritos-busqueda.md)). Release unificado
+**v1.4.0** (raíz/backend/app); gate verde (backend 311 + app 187+).
+
+- [x] ✅ **Backend: favoritos (US-63, rama `feature/73-favoritos`).** Campo `favorito` (bool, default false)
+      en `Story`/`Activity` + migración; casos de uso idempotentes `SetStoryFavorite`/`SetActivityFavorite`
+      y rutas `POST /stories/:id/favorite` y `POST /activities/:id/favorite` (body `{favorito}`); `favorito`
+      en `StoryOutput`/`ActivityOutput`.
+- [x] ✅ **App: favoritos UI + búsqueda (US-64, rama `feature/74-favoritos-busqueda-app`).** Botón **estrella**
+      (toggle optimista) en lectura, ítems del historial y `ActivityCard`; **filtro "Solo favoritos"** y
+      **campo de búsqueda** de texto (normalizada, en título/cuerpo/descripción/instrucciones/tema/estilo/
+      categoría) en `HistoryScreen`/`historyFilters.ts`, combinados con los filtros de US-62.
+
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
