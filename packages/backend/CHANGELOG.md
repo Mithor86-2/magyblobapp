@@ -9,7 +9,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- US-61: `creadoEn` (ISO string) en `StoryOutput` y `ActivityOutput` (lo consumirá la app para mostrar
+  la fecha de generación). La entidad `Activity` gana `creadoEn` para poder mapearlo.
+- US-61: persistencia del **prompt usado** (system + user) por cuento/actividad. `GeneratedStory` y
+  `GeneratedActivity` ganan `prompt`; los proveedores (`Mock`/`Ollama`/`Cloud`) lo devuelven y el
+  `FallbackProvider` propaga el del proveedor efectivo. Columna `prompt` TEXT **nullable** en `stories`
+  y `activities` (migración Prisma). **No** se expone en el DTO público (solo BD); el modo anónimo no
+  persiste nada.
+
 ### Changed
+
+- US-61: el prompt de actividades (`buildActivitiesPrompt`, ES y EN) pide ahora un paso a paso de
+  **3 a 6 pasos** numerados (antes "2 a 4"); el `MockProvider` rellena 3–6 pasos.
 
 ### Deprecated
 
