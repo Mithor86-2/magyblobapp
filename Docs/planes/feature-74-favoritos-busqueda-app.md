@@ -30,23 +30,25 @@ los tipos/esquemas del app hasta que A se integre.
 - ✅ `## [Unreleased]` en `packages/app/CHANGELOG.md`.
 - ✅ Commit `docs(planes): plan y US-64 de la feature 74`.
 
-### Fase 2 — Implementación
+### Fase 2 — Implementación ✅
 
-- ❌ `favorito?: boolean` (opcional) en `Story`/`Activity` (`domain/types.ts`) y en `storySchema`/
+- ✅ `favorito?: boolean` (opcional) en `Story`/`Activity` (`domain/types.ts`) y en `storySchema`/
   `activitySchema` (`infrastructure/schemas.ts`).
-- ❌ Gateways `stories.setFavorite(id, favorito)` y `activities.setFavorite(id, favorito)` en
+- ✅ Gateways `stories.setFavorite(id, favorito)` y `activities.setFavorite(id, favorito)` en
   `domain/gateways.ts` + implementación en `infrastructure/http.ts` (POST autenticado, devuelven el
   item validado por Zod).
-- ❌ Componente `FavoriteButton` (estrella lucide; relleno = favorito; vía wrapper `Icon`).
-- ❌ Botón estrella optimista en `StoryReaderScreen`, ítems del Historial y `ActivityCard`.
-- ❌ `historyFilters.ts`: función pura de **búsqueda normalizada** + filtro **solo favoritos**,
-  combinada con los filtros de tema/estilo/categoría de US-62; tests.
-- ❌ `HistoryScreen`: campo de búsqueda (`TextField`) + chip "Solo favoritos" cableados a la lógica
-  pura; el favorito se alterna también desde los ítems.
-- ❌ i18n: claves nuevas en `es.ts`/`en.ts` (placeholder de búsqueda, "Solo favoritos",
-  "Sin resultados", a11y de la estrella).
-- ❌ Tests: toggle de favorito (gateway llamado + estado), búsqueda (normalizada reduce; vacío =
-  todo), filtro favoritos, combinación de filtros.
+- ✅ Componente `FavoriteButton` (estrella lucide; relleno = favorito; vía wrapper `Icon`; optimista).
+- ✅ Botón estrella optimista en `StoryReaderScreen`, ítems del Historial y `ActivityCard` (la
+  estrella del ítem del Historial es un control aparte del área que abre la lectura: sin botón
+  anidado).
+- ✅ `historyFilters.ts`: función pura de **búsqueda normalizada** (`normalizar`, NFD sin diacríticos)
+  y filtro **solo favoritos**, combinados con los filtros de tema/estilo/categoría de US-62; tests.
+- ✅ `HistoryScreen`: campo de búsqueda (`TextField`) + chip "Solo favoritos" cableados a la lógica
+  pura; el favorito se alterna también desde los ítems (estado local optimista).
+- ✅ i18n: claves nuevas en `es.ts`/`en.ts` (`history.searchLabel/searchPlaceholder/onlyFavorites`,
+  `favorite.add/remove`).
+- ✅ Tests: toggle de favorito (gateway llamado + estado optimista + rollback), búsqueda (normalizada
+  reduce; vacío = todo), filtro favoritos, combinación de filtros.
 
 ## Cierre (sin finalizar)
 

@@ -42,6 +42,8 @@ const ICONS = {
   adults: UserRound,
   // Valoración (estrella; usar `fill` para el estado lleno).
   rating: Star,
+  // Favorito (estrella; relleno cuando es favorito, US-64).
+  favorite: Star,
   // Categorías de actividad.
   'cat-arte': Palette,
   'cat-musica': Music,

@@ -207,6 +207,15 @@ export const es = {
     filterAll: 'Todos',
     noMatchStories: 'Ningún cuento coincide con el filtro.',
     noMatchActivities: 'Ninguna actividad coincide con el filtro.',
+    // Favoritos y búsqueda (US-64).
+    searchLabel: 'Buscar',
+    searchPlaceholder: 'Busca por título, tema, categoría…',
+    onlyFavorites: 'Solo favoritos',
+  },
+
+  favorite: {
+    add: 'Marcar como favorito',
+    remove: 'Quitar de favoritos',
   },
 
   parental: {

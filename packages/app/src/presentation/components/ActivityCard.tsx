@@ -8,7 +8,9 @@ import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import { StarRating } from './StarRating';
 import { AuthorBadge } from './AuthorBadge';
 import { BubblyButton } from './BubblyButton';
+import { FavoriteButton } from './FavoriteButton';
 import { Icon } from './Icon';
+import { api } from '../../composition';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 
 /** Color por categoría (borde de tarjeta e icono según el design system). */
@@ -62,8 +64,14 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
     <View style={[styles.card, { borderBottomColor: color }]}>
       <View style={styles.header}>
         <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
-        <View style={[styles.badge, { backgroundColor: color }]}>
-          <Text style={styles.badgeText}>{categoriaLabel(activity.categoria)}</Text>
+        <View style={styles.headerRight}>
+          <View style={[styles.badge, { backgroundColor: color }]}>
+            <Text style={styles.badgeText}>{categoriaLabel(activity.categoria)}</Text>
+          </View>
+          <FavoriteButton
+            favorito={activity.favorito}
+            onToggle={(favorito) => api.activities.setFavorite(activity.id, favorito)}
+          />
         </View>
       </View>
       <Text style={styles.titulo}>{activity.titulo}</Text>
@@ -120,6 +128,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   badge: {
     borderRadius: radius.pill,
