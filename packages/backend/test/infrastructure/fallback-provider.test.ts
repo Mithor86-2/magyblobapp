@@ -39,7 +39,12 @@ class BrokenProvider implements AIProvider {
 /** Proveedor que responde con contenido marcado, para detectar que se usó el primary. */
 class OkProvider implements AIProvider {
   async generateStory() {
-    return { titulo: 'PRIMARY', cuerpo: 'del primary', proveedor: 'local' as const };
+    return {
+      titulo: 'PRIMARY',
+      cuerpo: 'del primary',
+      proveedor: 'local' as const,
+      prompt: 'PROMPT-PRIMARY',
+    };
   }
   async recommendActivities() {
     return [
@@ -48,6 +53,7 @@ class OkProvider implements AIProvider {
         titulo: 'PRIMARY',
         descripcion: 'del primary',
         proveedor: 'local' as const,
+        prompt: 'PROMPT-PRIMARY',
       },
     ];
   }
@@ -66,6 +72,19 @@ describe('FallbackProvider', () => {
     });
     expect(story.titulo).toBe('PRIMARY');
     expect(story.proveedor).toBe('local');
+    // US-61: el fallback propaga el prompt del proveedor que sirvió (el primary).
+    expect(story.prompt).toBe('PROMPT-PRIMARY');
+  });
+
+  it('US-61: al caer al mock, el cuento trae el prompt representativo del mock', async () => {
+    const provider = new FallbackProvider(new BrokenProvider(), new MockProvider());
+    const story = await provider.generateStory({
+      perfil: perfil(),
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(story.prompt).toContain('SYSTEM:');
+    expect(story.prompt).toContain('PROMPT:');
   });
 
   it('cae al mock cuando el primario falla y registra un warn', async () => {

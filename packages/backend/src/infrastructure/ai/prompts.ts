@@ -36,6 +36,15 @@ export interface PromptParts {
   prompt: string;
 }
 
+/**
+ * Combina `system` + `prompt` en una sola cadena legible para persistir el prompt
+ * realmente usado (US-61). Es el texto que se guarda en BD para trazabilidad; no se
+ * vuelve a enviar al LLM (cada proveedor manda `system`/`prompt` por separado).
+ */
+export function joinPromptParts(partes: PromptParts): string {
+  return `SYSTEM:\n${partes.system}\n\nPROMPT:\n${partes.prompt}`;
+}
+
 /** Textos base leídos de AppSetting; cualquiera puede faltar (se usa el default). */
 export interface PromptOverrides {
   system?: string | null;
@@ -303,14 +312,16 @@ export function buildActivitiesPrompt(
         afinidad +
         ` ${tono}` +
         ` Cada actividad necesita una categoría (${categorias}), un título, una descripción ` +
-        `breve, unas instrucciones en un paso a paso claro (2 a 4 pasos sencillos que un ` +
-        `adulto pueda seguir con el niño), una duración en minutos y un nivel de dificultad de 1 a 3.`
+        `breve, unas instrucciones en un paso a paso claro de entre 3 y 6 pasos numerados, ` +
+        `sencillos y aptos para niños de 2 a 6 años (que un adulto pueda seguir con el niño), ` +
+        `una duración en minutos y un nivel de dificultad de 1 a 3.`
       : `Suggest ${input.cantidad} simple activities for ${nombre}, aged ${edad.value}.` +
         acotacion +
         afinidad +
         ` ${tono}` +
         ` Each activity needs a category (${categorias}), a title, a short description, ` +
-        `step-by-step instructions (2 to 4 simple steps an adult can follow with the child), ` +
+        `step-by-step instructions with between 3 and 6 numbered steps that are simple and ` +
+        `suitable for children aged 2 to 6 (an adult can follow them with the child), ` +
         `a duration in minutes and a difficulty level from 1 to 3.`;
 
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };

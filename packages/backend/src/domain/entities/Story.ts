@@ -25,6 +25,12 @@ export interface StoryProps {
    * `undefined` si no se generó (sin clave o fallo); la app cae al respaldo local.
    */
   portada?: string;
+  /**
+   * Prompt (system + user) usado para generar el cuento (US-61). Trazabilidad
+   * técnica: se persiste en BD pero **no** se expone en el DTO público. Nullable
+   * (filas antiguas o modo anónimo no lo tienen).
+   */
+  prompt?: string;
   estado?: EstadoStory;
   creadoEn: Date;
 }
@@ -43,6 +49,7 @@ export class Story {
   readonly idioma: CodigoIdioma;
   readonly proveedor: ProveedorIa;
   readonly portada?: string;
+  readonly prompt?: string;
   estado: EstadoStory;
   readonly creadoEn: Date;
 
@@ -63,6 +70,7 @@ export class Story {
     this.idioma = props.idioma;
     this.proveedor = props.proveedor;
     this.portada = props.portada;
+    this.prompt = props.prompt;
     this.estado = props.estado ?? 'nuevo';
     this.creadoEn = props.creadoEn;
   }

@@ -154,12 +154,13 @@ describe('prompts — contenido IA (US-54)', () => {
     expect(prompt).toContain('original, different title');
   });
 
-  it('el prompt de actividades pide un paso a paso (ES)', () => {
+  it('el prompt de actividades pide un paso a paso de 3 a 6 pasos (ES, US-61)', () => {
     const { prompt } = buildActivitiesPrompt({ perfil: perfil(4), cantidad: 3 });
     expect(prompt).toContain('paso a paso');
+    expect(prompt).toContain('entre 3 y 6 pasos');
   });
 
-  it('el prompt de actividades pide un paso a paso (EN)', () => {
+  it('el prompt de actividades pide un paso a paso de 3 a 6 pasos (EN, US-61)', () => {
     const perfilEn = new ChildProfile({
       id: 'p-en3',
       guardianId: 'g-1',
@@ -172,6 +173,7 @@ describe('prompts — contenido IA (US-54)', () => {
     });
     const { prompt } = buildActivitiesPrompt({ perfil: perfilEn, cantidad: 3 });
     expect(prompt).toContain('step-by-step');
+    expect(prompt).toContain('between 3 and 6 numbered steps');
   });
 });
 

@@ -45,11 +45,15 @@ describe('CloudProvider', () => {
       temas: ['animales'],
       estilos: ['aventura'],
     });
-    expect(story).toEqual({
+    expect(story).toMatchObject({
       titulo: 'El bosque',
       cuerpo: 'Un cuento bonito.',
       proveedor: 'cloud',
     });
+    // US-61: el prompt usado (system + user, con la instrucción JSON) se devuelve.
+    expect(story.prompt).toContain('SYSTEM:');
+    expect(story.prompt).toContain('PROMPT:');
+    expect(story.prompt).toContain('JSON');
   });
 
   it('llama a /chat/completions con Bearer, modelo y response_format json_object', async () => {

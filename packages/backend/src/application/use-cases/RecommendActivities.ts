@@ -68,6 +68,9 @@ export class RecommendActivities {
         duracionMin: g.duracionMin,
         nivel: g.nivel,
         proveedor: g.proveedor,
+        // US-61: prompt usado (solo BD) y fecha de generación (la consumirá el DTO).
+        prompt: g.prompt,
+        creadoEn: this.deps.now(),
       });
       await this.deps.activities.save(activity);
       guardadas.push(activity);

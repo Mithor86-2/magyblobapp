@@ -80,6 +80,17 @@ describe('MockProvider', () => {
     }
   });
 
+  it('US-61: las instrucciones mock tienen entre 3 y 6 pasos numerados', async () => {
+    // Pedimos 6 para cubrir los distintos tamaños (3, 4, 5, 6) del repertorio.
+    const actividades = await provider.recommendActivities({ perfil: perfil('es'), cantidad: 6 });
+    for (const a of actividades) {
+      // Cuenta los marcadores "N." (cuantificador acotado: 1-2 dígitos, sin backtracking).
+      const pasos = (a.instrucciones ?? '').match(/\d{1,2}\./g)?.length ?? 0;
+      expect(pasos).toBeGreaterThanOrEqual(3);
+      expect(pasos).toBeLessThanOrEqual(6);
+    }
+  });
+
   it('respeta la categoría cuando se acota', async () => {
     const actividades = await provider.recommendActivities({
       perfil: perfil('es'),

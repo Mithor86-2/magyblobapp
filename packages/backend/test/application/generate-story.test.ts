@@ -76,6 +76,28 @@ describe('GenerateStory', () => {
     expect(guardado?.profileId).toBe('p-1');
   });
 
+  it('US-61: persiste el prompt usado (solo BD) y NO lo expone en el DTO', async () => {
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    // El prompt se guarda en la entidad pero no aparece en el DTO público.
+    expect((out as Record<string, unknown>).prompt).toBeUndefined();
+    const guardado = await stories.findById(out.id);
+    expect(guardado?.prompt).toContain('prompt-cuento:animales|aventura');
+  });
+
+  it('US-61: el DTO incluye creadoEn en ISO mapeado desde la entidad', async () => {
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    // relojFijo() = 2026-06-10T12:00:00.000Z
+    expect(out.creadoEn).toBe('2026-06-10T12:00:00.000Z');
+  });
+
   it('persiste el primero de cada lista como valor representativo (sin migración)', async () => {
     const out = await useCase.execute({
       profileId: 'p-1',

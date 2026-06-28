@@ -15,6 +15,13 @@ export interface GeneratedStory {
   cuerpo: string;
   /** Proveedor que generó realmente el contenido (lo estampa el provider concreto). */
   proveedor: ProveedorIa;
+  /**
+   * Prompt realmente usado para generar el contenido (system + user), para
+   * trazabilidad técnica (US-61). Lo estampa el provider concreto: Ollama/Cloud el
+   * que enviaron, Mock uno representativo, Fallback el del proveedor que sirvió. Se
+   * persiste solo en BD (no se expone en el DTO público).
+   */
+  prompt: string;
 }
 
 export interface RecommendActivitiesInput {
@@ -34,6 +41,13 @@ export interface GeneratedActivity {
   nivel?: number;
   /** Proveedor que generó realmente la actividad (lo estampa el provider concreto). */
   proveedor: ProveedorIa;
+  /**
+   * Prompt realmente usado para generar la actividad (system + user), para
+   * trazabilidad técnica (US-61). Lo estampa el provider concreto. Todas las
+   * actividades de una misma petición comparten el prompt del lote. Se persiste solo
+   * en BD (no se expone en el DTO público).
+   */
+  prompt: string;
 }
 
 /**

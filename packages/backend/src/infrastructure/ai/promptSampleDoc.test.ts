@@ -20,7 +20,12 @@ const cuento: StorySample = {
   tipo: 'cuento',
   combinacion: { tema: 'animales', estilo: 'aventura', idioma: 'es', edad: 5 },
   partes: { system: 'SYS cuento', prompt: 'PROMPT cuento' },
-  resultado: { titulo: 'El zorro valiente', cuerpo: 'Érase una vez...', proveedor: 'cloud' },
+  resultado: {
+    titulo: 'El zorro valiente',
+    cuerpo: 'Érase una vez...',
+    proveedor: 'cloud',
+    prompt: 'SYSTEM:\nSYS cuento\n\nPROMPT:\nPROMPT cuento',
+  },
 };
 
 const actividades: ActivitiesSample = {
@@ -36,6 +41,7 @@ const actividades: ActivitiesSample = {
       duracionMin: 15,
       nivel: 1,
       proveedor: 'cloud',
+      prompt: 'SYSTEM:\nSYS act\n\nPROMPT:\nPROMPT act',
     },
   ],
 };
