@@ -32,6 +32,8 @@ export interface StoryProps {
    */
   prompt?: string;
   estado?: EstadoStory;
+  /** Marcado como favorito por el tutor (US-63); por defecto `false`. */
+  favorito?: boolean;
   creadoEn: Date;
 }
 
@@ -51,6 +53,7 @@ export class Story {
   readonly portada?: string;
   readonly prompt?: string;
   estado: EstadoStory;
+  favorito: boolean;
   readonly creadoEn: Date;
 
   constructor(props: StoryProps) {
@@ -72,10 +75,16 @@ export class Story {
     this.portada = props.portada;
     this.prompt = props.prompt;
     this.estado = props.estado ?? 'nuevo';
+    this.favorito = props.favorito ?? false;
     this.creadoEn = props.creadoEn;
   }
 
   marcarLeido(): void {
     this.estado = 'leido';
+  }
+
+  /** Marca o desmarca el cuento como favorito (US-63). Idempotente. */
+  marcarFavorito(valor: boolean): void {
+    this.favorito = valor;
   }
 }

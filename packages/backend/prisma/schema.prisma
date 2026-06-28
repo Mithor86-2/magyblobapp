@@ -65,6 +65,7 @@ model Story {
   proveedor String       @default("mock")
   portada   String?
   prompt    String?
+  favorito  Boolean      @default(false)
   creadoEn  DateTime     @default(now())
   narration StoryNarration?
 
@@ -102,6 +103,7 @@ model Activity {
   prompt       String?
   completadaEn DateTime?
   valoracion   Int?
+  favorito     Boolean      @default(false)
   creadoEn     DateTime     @default(now())
 
   @@index([profileId])

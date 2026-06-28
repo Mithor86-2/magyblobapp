@@ -24,10 +24,11 @@ export class PrismaStoryRepository implements StoryRepository {
         proveedor: story.proveedor,
         portada: story.portada ?? null,
         prompt: story.prompt ?? null,
+        favorito: story.favorito,
         creadoEn: story.creadoEn,
       },
-      // Lo único mutable del cuento es su estado de lectura (US-07).
-      update: { estado: story.estado },
+      // Mutable del cuento: estado de lectura (US-07) y favorito (US-63).
+      update: { estado: story.estado, favorito: story.favorito },
     });
   }
 
@@ -58,6 +59,7 @@ function toStory(row: PrismaStory): Story {
     portada: row.portada ?? undefined,
     prompt: row.prompt ?? undefined,
     estado: row.estado as EstadoStory,
+    favorito: row.favorito,
     creadoEn: row.creadoEn,
   });
 }
