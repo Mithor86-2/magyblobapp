@@ -205,10 +205,11 @@ Comprobaciones adicionales (requieren configuración):
 - **Portadas (Gemini/Imagen, US-59):** requieren `GEMINI_API_KEY` **y un plan de pago** de Google
   (Imagen no está en el _free tier_); sin ello la app usa el respaldo local por tema.
 
-## Desarrollo local (sin Docker)
+## Desarrollo del backend con `tsx` (sin la pila Docker completa)
 
-Necesitas una base de datos PostgreSQL. Lo más cómodo es levantar solo ese servicio
-con Docker y correr el backend con `tsx`:
+Para iterar el backend sin levantar toda la pila en contenedores, córrelo con `tsx` en watch y usa
+**solo un PostgreSQL**. Lo más cómodo es levantar **únicamente ese servicio** con Docker (también vale
+un Postgres instalado en local o el de Neon, ajustando `DATABASE_URL`):
 
 ```bash
 pnpm install                                  # instala y genera el cliente Prisma (postinstall)
@@ -242,6 +243,39 @@ pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Androi
 
 > En simulador iOS `localhost` sirve. Desde un **móvil físico** (Expo Go) pon la IP LAN
 > del ordenador en `EXPO_PUBLIC_API_URL`. Detalle en [packages/app/README.md](packages/app/README.md).
+
+## Desplegar la app (Expo)
+
+La app es un cliente que apunta al backend por **`EXPO_PUBLIC_API_URL`** (se _inlinea_ en build-time).
+Para producción, en `packages/app/.env` apúntala a tu backend de Render:
+
+```bash
+EXPO_PUBLIC_API_URL=https://magyblobapp.onrender.com
+```
+
+**Web** (lo más simple para una demo) — export estático que se sube a cualquier hosting
+(Vercel / Netlify / Render Static / GitHub Pages):
+
+```bash
+pnpm --filter @magyblob/app exec expo export --platform web   # genera packages/app/dist
+```
+
+**APK / IPA nativo con EAS Build** (incluye el icono y el splash propios):
+
+```bash
+cd packages/app
+npx eas-cli login                                  # una vez
+npx eas-cli build:configure                        # una vez (crea eas.json)
+npx eas-cli build -p android --profile preview     # APK instalable en el emulador/dispositivo
+npx eas-cli build -p ios --profile preview         # requiere cuenta de Apple Developer
+```
+
+**Ver el icono/splash en un build local** (sin EAS): `npx expo prebuild --clean && npx expo run:android`.
+
+> Fija `EXPO_PUBLIC_API_URL` **antes** de exportar/compilar: el valor se incrusta en el bundle. La app
+> no descarga recursos en runtime; iconos, imágenes y traducciones van empaquetados (cumplimiento de
+> menores). El idioma de la interfaz lo elige la persona adulta (por defecto español); no depende del
+> dispositivo.
 
 ## Comandos del monorepo
 
