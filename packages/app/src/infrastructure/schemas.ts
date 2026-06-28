@@ -51,6 +51,8 @@ export const storySchema = z.object({
   portada: z.string().optional(),
   // US-62: fecha de generación (ISO); opcional para no romper si el backend aún no la envía.
   creadoEn: z.string().optional(),
+  // US-64: favorito; opcional para no romper hasta integrar el backend (feature A, US-63).
+  favorito: z.boolean().optional(),
 });
 
 /** Cuento anónimo (US-50): sin id, profileId ni estado (no se persiste). */
@@ -79,6 +81,8 @@ export const activitySchema = z.object({
   imagen: z.string().optional(),
   // US-62: fecha de generación (ISO); opcional para no romper si el backend aún no la envía.
   creadoEn: z.string().optional(),
+  // US-64: favorito; opcional para no romper hasta integrar el backend (feature A, US-63).
+  favorito: z.boolean().optional(),
 });
 export const activityListSchema = z.array(activitySchema);
 

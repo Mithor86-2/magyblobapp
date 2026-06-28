@@ -5,11 +5,17 @@ import type { Activity } from '../../domain/types';
 import { ActivityCard, pasosDeInstrucciones } from './ActivityCard';
 
 /**
- * Tests user-centric de la tarjeta de actividad (US-09/US-10/US-30). Recorre el
- * flujo de la persona usuaria: ver los datos, marcar "Realizado" y valorar. El
- * icono (lucide/SVG) se sustituye por un doble; `StarRating` se usa real.
+ * Tests user-centric de la tarjeta de actividad (US-09/US-10/US-30/US-64). Recorre
+ * el flujo de la persona usuaria: ver los datos, marcar "Realizado", valorar y
+ * marcar favorito. El icono (lucide/SVG) se sustituye por un doble; `StarRating` se
+ * usa real. El `api` del composition root se mockea (la tarjeta llama a
+ * `activities.setFavorite` al pulsar la estrella, US-64).
  */
 vi.mock('./Icon', () => ({ Icon: () => null }));
+const { setFavoriteMock } = vi.hoisted(() => ({ setFavoriteMock: vi.fn() }));
+vi.mock('../../composition', () => ({
+  api: { activities: { setFavorite: setFavoriteMock } },
+}));
 
 const base = {
   id: 'a1',
@@ -64,6 +70,15 @@ describe('ActivityCard', () => {
 
     expect(screen.getByText('¡Hecha!')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Realizado' })).not.toBeInTheDocument();
+  });
+
+  it('US-64: al pulsar la estrella marca la actividad como favorita vía el gateway', () => {
+    setFavoriteMock.mockReset();
+    setFavoriteMock.mockResolvedValue({ ...base, favorito: true });
+    render(<ActivityCard activity={base} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Marcar como favorito' }));
+    expect(setFavoriteMock).toHaveBeenCalledWith('a1', true);
   });
 });
 

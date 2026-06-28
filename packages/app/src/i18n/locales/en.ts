@@ -204,6 +204,15 @@ export const en: typeof es = {
     filterAll: 'All',
     noMatchStories: 'No story matches the filter.',
     noMatchActivities: 'No activity matches the filter.',
+    // Favorites and search (US-64).
+    searchLabel: 'Search',
+    searchPlaceholder: 'Search by title, theme, category…',
+    onlyFavorites: 'Only favorites',
+  },
+
+  favorite: {
+    add: 'Add to favorites',
+    remove: 'Remove from favorites',
   },
 
   parental: {

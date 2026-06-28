@@ -248,6 +248,19 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(options.method).toBe('POST');
   });
 
+  it('stories.setFavorite hace POST /stories/:id/favorite con { favorito } (US-64)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...STORY, favorito: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.stories.setFavorite('s1', true);
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/stories/s1/favorite`);
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body)).toEqual({ favorito: true });
+    expect(out.favorito).toBe(true);
+  });
+
   it('stories.narrationUrl construye la URL del audio sin hacer red', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
@@ -268,6 +281,19 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(url).toBe(`${BASE}/activities/a1/complete`);
     expect(options.method).toBe('POST');
     expect(JSON.parse(options.body)).toEqual({ valoracion: 3 });
+  });
+
+  it('activities.setFavorite hace POST /activities/:id/favorite con { favorito } (US-64)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...ACTIVITY, favorito: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.activities.setFavorite('a1', true);
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/activities/a1/favorite`);
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body)).toEqual({ favorito: true });
+    expect(out.favorito).toBe(true);
   });
 
   it('history.get hace GET /profiles/:id/history', async () => {

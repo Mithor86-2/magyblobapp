@@ -7,7 +7,9 @@ import { Screen } from '../components/Screen';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { BubblyButton } from '../components/BubblyButton';
+import { FavoriteButton } from '../components/FavoriteButton';
 import { SelectableChip } from '../components/SelectableChip';
+import { TextField } from '../components/TextField';
 import { Icon } from '../components/Icon';
 import { CATEGORIAS, ESTILOS, TEMAS } from '../../domain/types';
 import type { History, Story } from '../../domain/types';
@@ -47,6 +49,9 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const [temaFiltro, setTemaFiltro] = useState<FiltroTema>(TODOS);
   const [estiloFiltro, setEstiloFiltro] = useState<FiltroEstilo>(TODOS);
   const [categoriaFiltro, setCategoriaFiltro] = useState<FiltroCategoria>(TODOS);
+  // Favoritos + búsqueda de texto (US-64), también local.
+  const [soloFavoritos, setSoloFavoritos] = useState(false);
+  const [busqueda, setBusqueda] = useState('');
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -68,15 +73,48 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     }, [load]),
   );
 
+  // Alterna el favorito de un cuento en el estado local (US-64) para que el chip
+  // "Solo favoritos" y la estrella reflejen el cambio; el FavoriteButton ya es optimista.
+  const toggleFavoritoCuento = (storyId: string, favorito: boolean) => {
+    setHistory((h) => ({
+      ...h,
+      stories: h.stories.map((s) => (s.id === storyId ? { ...s, favorito } : s)),
+    }));
+    return api.stories.setFavorite(storyId, favorito);
+  };
+
   const hechas = history.activities.filter((a) => a.valoracion != null);
-  // Listas filtradas en cliente (US-62) sobre lo ya cargado.
-  const cuentosVisibles = filtrarCuentos(history.stories, temaFiltro, estiloFiltro);
-  const actividadesVisibles = filtrarActividades(hechas, categoriaFiltro);
+  // Listas filtradas en cliente (US-62 + US-64) sobre lo ya cargado.
+  const cuentosVisibles = filtrarCuentos(
+    history.stories,
+    temaFiltro,
+    estiloFiltro,
+    soloFavoritos,
+    busqueda,
+  );
+  const actividadesVisibles = filtrarActividades(hechas, categoriaFiltro, soloFavoritos, busqueda);
 
   return (
     <Screen>
       <Text style={styles.title}>{t('history.title')}</Text>
       <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
+
+      {/* Búsqueda de texto + filtro favoritos (US-64): afectan a cuentos y actividades. */}
+      <TextField
+        label={t('history.searchLabel')}
+        value={busqueda}
+        onChangeText={setBusqueda}
+        placeholder={t('history.searchPlaceholder')}
+        autoCapitalize="none"
+        testID="history-search"
+      />
+      <View style={styles.chipRow}>
+        <SelectableChip
+          label={t('history.onlyFavorites')}
+          selected={soloFavoritos}
+          onPress={() => setSoloFavoritos((v) => !v)}
+        />
+      </View>
 
       {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
       {error ? (
@@ -138,14 +176,10 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
           ) : (
             cuentosVisibles.map((story) => {
               const fecha = formatearFecha(story.creadoEn, idioma);
+              // La estrella de favorito es un control aparte: el área pulsable que
+              // abre la lectura no la envuelve (evita un botón anidado en otro).
               return (
-                <Pressable
-                  key={story.id}
-                  style={styles.storyCard}
-                  onPress={() => openReader(story)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
-                >
+                <View key={story.id} style={styles.storyCard}>
                   <View style={styles.storyHeader}>
                     <Text style={styles.storyTitle} numberOfLines={1}>
                       {story.titulo}
@@ -160,16 +194,25 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
                         {story.estado === 'leido' ? t('history.read') : t('history.new')}
                       </Text>
                     </View>
+                    <FavoriteButton
+                      favorito={story.favorito}
+                      onToggle={(favorito) => toggleFavoritoCuento(story.id, favorito)}
+                    />
                   </View>
-                  <View style={styles.accionRow}>
+                  <Pressable
+                    onPress={() => openReader(story)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
+                    style={styles.accionRow}
+                  >
                     <Text style={styles.accion}>{t('history.readStory')}</Text>
                     <Icon name="arrow-right" size="sm" color={colors.primary} />
-                  </View>
+                  </Pressable>
                   <AuthorBadge proveedor={story.proveedor} />
                   {fecha ? (
                     <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text>
                   ) : null}
-                </Pressable>
+                </View>
               );
             })
           )}

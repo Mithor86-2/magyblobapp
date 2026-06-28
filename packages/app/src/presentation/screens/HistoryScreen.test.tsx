@@ -12,8 +12,13 @@ import type { Activity, ChildProfile, History, Story } from '../../domain/types'
  * transforma; `ActivityCard` se reduce a su título + categoría para asertar el
  * filtrado.
  */
-const { getHistoryMock } = vi.hoisted(() => ({ getHistoryMock: vi.fn() }));
-vi.mock('../../composition', () => ({ api: { history: { get: getHistoryMock } } }));
+const { getHistoryMock, setStoryFavoriteMock } = vi.hoisted(() => ({
+  getHistoryMock: vi.fn(),
+  setStoryFavoriteMock: vi.fn(),
+}));
+vi.mock('../../composition', () => ({
+  api: { history: { get: getHistoryMock }, stories: { setFavorite: setStoryFavoriteMock } },
+}));
 vi.mock('../components/AuthorBadge', () => ({ AuthorBadge: () => null }));
 vi.mock('../components/Icon', () => ({ Icon: () => null }));
 vi.mock('../components/ActivityCard', async () => {
@@ -125,5 +130,46 @@ describe('HistoryScreen — fecha y filtros (US-62)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Arte' }));
     expect(screen.getByText('Actividad a')).toBeVisible();
     expect(screen.queryByText('Actividad b')).not.toBeInTheDocument();
+  });
+});
+
+describe('HistoryScreen — favoritos y búsqueda (US-64)', () => {
+  beforeEach(() => {
+    getHistoryMock.mockReset();
+    setStoryFavoriteMock.mockReset();
+    setStoryFavoriteMock.mockResolvedValue(undefined);
+  });
+
+  it('la búsqueda de texto reduce las listas (normalizada) y vacía muestra todo', async () => {
+    getHistoryMock.mockResolvedValue(HISTORY);
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Cuento 1')).toBeVisible());
+
+    const buscador = screen.getByPlaceholderText('Busca por título, tema, categoría…');
+    // "espacio" coincide con el tema del Cuento 2 (id del vocabulario).
+    fireEvent.change(buscador, { target: { value: 'espacio' } });
+    expect(screen.queryByText('Cuento 1')).not.toBeInTheDocument();
+    expect(screen.getByText('Cuento 2')).toBeVisible();
+
+    // Vaciar el campo restaura todo.
+    fireEvent.change(buscador, { target: { value: '' } });
+    expect(screen.getByText('Cuento 1')).toBeVisible();
+    expect(screen.getByText('Cuento 2')).toBeVisible();
+  });
+
+  it('el chip "Solo favoritos" deja solo los marcados, combinándose con la búsqueda', async () => {
+    getHistoryMock.mockResolvedValue({
+      stories: [
+        story('1', 'animales', 'aventura'),
+        { ...story('2', 'espacio', 'educativo'), favorito: true },
+      ],
+      activities: [activity('a', 'arte')],
+    });
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Cuento 1')).toBeVisible());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Solo favoritos' }));
+    expect(screen.queryByText('Cuento 1')).not.toBeInTheDocument();
+    expect(screen.getByText('Cuento 2')).toBeVisible();
   });
 });
