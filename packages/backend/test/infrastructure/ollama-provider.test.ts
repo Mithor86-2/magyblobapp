@@ -39,11 +39,14 @@ describe('OllamaProvider', () => {
       temas: ['animales'],
       estilos: ['aventura'],
     });
-    expect(story).toEqual({
+    expect(story).toMatchObject({
       titulo: 'El bosque',
       cuerpo: 'Un cuento bonito.',
       proveedor: 'local',
     });
+    // US-61: el prompt usado (system + user) se devuelve para persistirlo.
+    expect(story.prompt).toContain('SYSTEM:');
+    expect(story.prompt).toContain('PROMPT:');
   });
 
   it('llama a /api/generate con el modelo configurado y sin streaming', async () => {

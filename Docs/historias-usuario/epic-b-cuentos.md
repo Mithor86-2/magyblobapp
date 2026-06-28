@@ -323,3 +323,47 @@ actividades se verifica también en C. El diseño tiene **dos piezas**:
 - (No funcional) Dado el cambio de interfaz, adaptador, schema y app, Cuando se ejecuta el gate,
   Entonces los tests (adaptador de imagen con mock sin red, fallback de selección por tema en la app,
   y creación de cuento que no rompe si la imagen falla) siguen en verde.
+
+## US-61 — Prompts de actividad (3–6 pasos), persistir el prompt usado y fecha de generación en el DTO · Should (Mejoras)
+
+Como **padre/tutor** quiero que las actividades traigan un paso a paso de **3 a 6 pasos**, que el
+sistema **guarde el prompt** que se usó para generar cada cuento/actividad (trazabilidad técnica) y
+que la respuesta incluya la **fecha de generación**, para que el contenido sea más útil, el proyecto
+sea auditable y la app pueda mostrar cuándo se creó cada pieza.
+
+**Contexto.** Tres ajustes backend del lote de mejoras de historial (ver
+[coordinación del lote](../planes/coordinacion-ajustes-historial.md), feature A; el plan de detalle
+vive en [feature-71-prompts-pasos-persistencia](../planes/feature-71-prompts-pasos-persistencia.md)).
+**Afecta también a la épica C** (actividades): el campo de los pasos y la persistencia del prompt
+recorren la entidad `Activity` y su repositorio. Los tres ajustes son:
+
+1. **Pasos 3–6 en actividades:** los prompts de actividad (`buildActivitiesPrompt`, ES y EN) piden
+   explícitamente que `instrucciones` tenga **entre 3 y 6 pasos** numerados, claros y aptos para
+   niños de 2 a 6 años; el `MockProvider` rellena un paso a paso de 3–6 pasos.
+2. **Persistir el prompt usado:** se guarda en BD el prompt (system + user) realmente empleado, como
+   columna `prompt` **TEXT nullable** en `stories` y `activities`. Los proveedores
+   (`Mock`/`Ollama`/`Cloud`) lo devuelven en `GeneratedStory`/`GeneratedActivity`; el
+   `FallbackProvider` propaga el del proveedor que sirvió. **No se expone en el DTO público** (solo
+   BD, consultable por SQL o `prompts:dump`). En **modo anónimo** no se persiste nada (sin cambio).
+3. **Fecha en el DTO:** `StoryOutput`/`ActivityOutput` añaden `creadoEn` (ISO string), mapeado desde
+   `entity.creadoEn`; lo consumirá la app (feature B, US-62).
+
+**Criterios de aceptación**
+
+- **(Pasos 3–6)** Dado el prompt de actividades (ES/EN), Cuando se construye, Entonces pide
+  explícitamente un paso a paso de **3 a 6 pasos** numerados, claros y para niños de 2 a 6 años.
+- **(Pasos 3–6 · mock)** Dado `AI_PROVIDER=mock`, Cuando pido actividades, Entonces las
+  `instrucciones` deterministas tienen **entre 3 y 6 pasos** numerados.
+- **(Persistir prompt)** Dado un cuento/actividad generado por un perfil (no anónimo), Cuando se
+  persiste, Entonces se guarda el `prompt` usado en una columna `NULL`-able de `stories`/`activities`
+  (migración Prisma, sin romper filas existentes); el proveedor que sirvió devuelve su prompt y el
+  `FallbackProvider` propaga el efectivo.
+- **(Prompt no expuesto)** Dado el contrato HTTP, Cuando se devuelve un cuento/actividad, Entonces el
+  `prompt` **no** aparece en el DTO público (solo vive en BD).
+- **(Anónimo)** Dado el modo anónimo efímero (US-50), Cuando genero contenido, Entonces **no** se
+  persiste nada (incluido el prompt).
+- **(Fecha en DTO)** Dado un cuento/actividad, Cuando se devuelve, Entonces `StoryOutput`/
+  `ActivityOutput` incluyen `creadoEn` como ISO string mapeado desde la entidad.
+- (No funcional) Dado el cambio de prompts, providers, entidades, schema, repos y mappers, Cuando se
+  ejecuta el gate, Entonces los tests (prompt, mock, parseResponse, casos de uso, mapper y rutas)
+  siguen en verde y `Docs/modelo-datos.md` queda actualizado (regla schema↔modelo).

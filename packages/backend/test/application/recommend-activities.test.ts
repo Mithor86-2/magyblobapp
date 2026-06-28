@@ -51,6 +51,17 @@ describe('RecommendActivities', () => {
     expect(await activities.findByProfile('p-1')).toHaveLength(2);
   });
 
+  it('US-61: persiste el prompt (solo BD, no en el DTO) y expone creadoEn en ISO', async () => {
+    const out = await useCase.execute({ profileId: 'p-1', cantidad: 1 });
+    // creadoEn mapeado desde la entidad (relojFijo()).
+    expect(out[0]?.creadoEn).toBe('2026-06-10T12:00:00.000Z');
+    // El prompt no se expone en el DTO público.
+    expect((out[0] as Record<string, unknown>).prompt).toBeUndefined();
+    // ...pero sí se persiste en la entidad.
+    const guardadas = await activities.findByProfile('p-1');
+    expect(guardadas[0]?.prompt).toContain('prompt-actividades:');
+  });
+
   it('genera 3 actividades por defecto si no se indica cantidad', async () => {
     const out = await useCase.execute({ profileId: 'p-1' });
     expect(out).toHaveLength(3);

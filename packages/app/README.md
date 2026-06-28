@@ -2,10 +2,11 @@
 
 App móvil **"Aprendizaje Mágico"** (Expo SDK 56 + React Navigation + Zustand).
 
-Slice vertical del **HITO 1** (Fase 4): recorre el flujo de punta a punta
-**consentimiento del adulto → crear perfil → generar cuento** contra el backend real.
-Es agnóstica del proveedor de IA: solo llama a `POST /stories`; el modo (mock | local
-| cloud) lo decide el backend.
+Cubre el producto completo: **onboarding y sesión** (alta/login del adulto con JWT,
+multi-perfil), pestañas **Inicio · Actividades · Cuentos · Historial**, **modo anónimo**,
+**zona de adultos tras gate parental**, **narración** por voz y **portadas** de imagen,
+con interfaz **bilingüe ES/EN**. Es agnóstica del proveedor de IA: el modo (mock | local
+| cloud) lo decide el backend. Visión de conjunto y despliegue en el [README raíz](../../README.md).
 
 ## Arrancar
 

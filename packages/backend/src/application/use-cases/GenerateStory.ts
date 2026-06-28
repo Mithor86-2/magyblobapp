@@ -56,6 +56,8 @@ export class GenerateStory {
       idioma: perfil.idioma.value,
       proveedor: generado.proveedor,
       portada,
+      // US-61: se persiste el prompt usado (solo BD; no se expone en el DTO).
+      prompt: generado.prompt,
       estado: 'nuevo',
       creadoEn: this.deps.now(),
     });

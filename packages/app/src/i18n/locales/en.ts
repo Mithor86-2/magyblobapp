@@ -69,6 +69,8 @@ export const en: typeof es = {
     email: 'Email',
     emailPlaceholder: 'you@email.com',
     password: 'Password',
+    // Content generation date (US-62); {{fecha}} is already localized.
+    generatedOn: 'Created on {{fecha}}',
   },
 
   welcome: {
@@ -195,6 +197,22 @@ export const en: typeof es = {
     readStory: 'Read story',
     readStoryA11y: 'Read the story {{titulo}}',
     errorLoad: 'Could not load the history.',
+    // History filters (US-62).
+    filterTheme: 'Theme',
+    filterStyle: 'Style',
+    filterCategory: 'Category',
+    filterAll: 'All',
+    noMatchStories: 'No story matches the filter.',
+    noMatchActivities: 'No activity matches the filter.',
+    // Favorites and search (US-64).
+    searchLabel: 'Search',
+    searchPlaceholder: 'Search by title, theme, category…',
+    onlyFavorites: 'Only favorites',
+  },
+
+  favorite: {
+    add: 'Add to favorites',
+    remove: 'Remove from favorites',
   },
 
   parental: {

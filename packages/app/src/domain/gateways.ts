@@ -46,6 +46,8 @@ export interface StoryGateway {
   generateAnonymous(request: GenerateStoryAnonymousRequest): Promise<AnonymousStory>;
   /** Marca un cuento como leído (US-07). */
   markRead(storyId: string): Promise<Story>;
+  /** Marca/desmarca un cuento como favorito (US-64); idempotente, devuelve el cuento actualizado. */
+  setFavorite(storyId: string, favorito: boolean): Promise<Story>;
   /** URL del audio de narración del cuento (US-22). Constructor puro, sin red. */
   narrationUrl(storyId: string): string;
 }
@@ -56,6 +58,8 @@ export interface ActivityGateway {
   recommendAnonymous(request: RecommendActivitiesAnonymousRequest): Promise<AnonymousActivity[]>;
   /** Registra una actividad completada con valoración 1-3 (US-10). */
   complete(activityId: string, valoracion: number): Promise<Activity>;
+  /** Marca/desmarca una actividad como favorita (US-64); idempotente, devuelve la actividad actualizada. */
+  setFavorite(activityId: string, favorito: boolean): Promise<Activity>;
 }
 
 export interface HistoryGateway {

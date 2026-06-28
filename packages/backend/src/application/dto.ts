@@ -86,6 +86,10 @@ export interface StoryOutput {
   proveedor: ProveedorIa;
   /** Portada generada (data URL, US-59); ausente si no se generó (la app usa respaldo). */
   portada?: string;
+  /** Marcado como favorito por el tutor (US-63). */
+  favorito: boolean;
+  /** Fecha de generación en ISO 8601 (US-61); la app la muestra formateada. */
+  creadoEn: string;
 }
 
 // --- GenerateStoryAnonymous (US-50, modo efímero sin sesión) ---
@@ -173,6 +177,10 @@ export interface ActivityOutput {
   proveedor: ProveedorIa;
   /** Imagen generada (data URL, US-59); ausente si no se generó (la app usa respaldo). */
   imagen?: string;
+  /** Marcada como favorita por el tutor (US-63). */
+  favorito: boolean;
+  /** Fecha de generación en ISO 8601 (US-61); la app la muestra formateada. */
+  creadoEn?: string;
 }
 
 // --- GetHistory ---
@@ -193,4 +201,15 @@ export interface MarkStoryReadRequest {
 export interface CompleteActivityRequest {
   activityId: string;
   valoracion: number;
+}
+
+// --- Favoritos (US-63) ---
+export interface SetStoryFavoriteRequest {
+  storyId: string;
+  favorito: boolean;
+}
+
+export interface SetActivityFavoriteRequest {
+  activityId: string;
+  favorito: boolean;
 }

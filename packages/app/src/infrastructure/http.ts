@@ -301,6 +301,15 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           storySchema,
           session,
         ),
+      // US-64: marca/desmarca favorito (idempotente); devuelve el cuento actualizado.
+      setFavorite: (storyId: string, favorito: boolean) =>
+        request(
+          baseUrl,
+          `/stories/${storyId}/favorite`,
+          { method: 'POST', body: { favorito }, auth: true },
+          storySchema,
+          session,
+        ),
       narrationUrl: (storyId: string) => `${baseUrl}/stories/${storyId}/narration`,
     },
     activities: {
@@ -325,6 +334,15 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           baseUrl,
           `/activities/${activityId}/complete`,
           { method: 'POST', body: { valoracion }, auth: true },
+          activitySchema,
+          session,
+        ),
+      // US-64: marca/desmarca favorito (idempotente); devuelve la actividad actualizada.
+      setFavorite: (activityId: string, favorito: boolean) =>
+        request(
+          baseUrl,
+          `/activities/${activityId}/favorite`,
+          { method: 'POST', body: { favorito }, auth: true },
           activitySchema,
           session,
         ),

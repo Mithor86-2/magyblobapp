@@ -64,6 +64,8 @@ model Story {
   estado    String       @default("nuevo")
   proveedor String       @default("mock")
   portada   String?
+  prompt    String?
+  favorito  Boolean      @default(false)
   creadoEn  DateTime     @default(now())
   narration StoryNarration?
 
@@ -98,8 +100,10 @@ model Activity {
   nivel        Int?
   proveedor    String       @default("mock")
   imagen       String?
+  prompt       String?
   completadaEn DateTime?
   valoracion   Int?
+  favorito     Boolean      @default(false)
   creadoEn     DateTime     @default(now())
 
   @@index([profileId])

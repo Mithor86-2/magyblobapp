@@ -18,8 +18,18 @@ export interface ActivityProps {
    * no se generó (sin clave o fallo); la app cae al respaldo local.
    */
   imagen?: string;
+  /**
+   * Prompt (system + user) usado para generar la actividad (US-61). Trazabilidad
+   * técnica: se persiste en BD pero **no** se expone en el DTO público. Nullable
+   * (filas antiguas o modo anónimo no lo tienen).
+   */
+  prompt?: string;
   completadaEn?: Date;
   valoracion?: number;
+  /** Marcada como favorita por el tutor (US-63); por defecto `false`. */
+  favorito?: boolean;
+  /** Fecha de generación (US-61). La pone el caso de uso / la lee el repositorio. */
+  creadoEn?: Date;
 }
 
 /**
@@ -37,8 +47,11 @@ export class Activity {
   readonly nivel?: number;
   readonly proveedor: ProveedorIa;
   readonly imagen?: string;
+  readonly prompt?: string;
   completadaEn?: Date;
   valoracion?: number;
+  favorito: boolean;
+  readonly creadoEn?: Date;
 
   constructor(props: ActivityProps) {
     if (!(CATEGORIAS as readonly string[]).includes(props.categoria)) {
@@ -60,8 +73,11 @@ export class Activity {
     this.nivel = props.nivel;
     this.proveedor = props.proveedor;
     this.imagen = props.imagen;
+    this.prompt = props.prompt;
     this.completadaEn = props.completadaEn;
     this.valoracion = props.valoracion;
+    this.favorito = props.favorito ?? false;
+    this.creadoEn = props.creadoEn;
   }
 
   /** Marca la actividad como completada con una valoración de 1 a 3 estrellas. */
@@ -71,5 +87,10 @@ export class Activity {
     }
     this.valoracion = valoracion;
     this.completadaEn = cuando;
+  }
+
+  /** Marca o desmarca la actividad como favorita (US-63). Idempotente. */
+  marcarFavorito(valor: boolean): void {
+    this.favorito = valor;
   }
 }

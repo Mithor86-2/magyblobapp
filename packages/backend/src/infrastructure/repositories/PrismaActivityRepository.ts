@@ -22,12 +22,15 @@ export class PrismaActivityRepository implements ActivityRepository {
         nivel: activity.nivel ?? null,
         proveedor: activity.proveedor,
         imagen: activity.imagen ?? null,
+        prompt: activity.prompt ?? null,
         completadaEn: activity.completadaEn ?? null,
         valoracion: activity.valoracion ?? null,
+        favorito: activity.favorito,
       },
       update: {
         completadaEn: activity.completadaEn ?? null,
         valoracion: activity.valoracion ?? null,
+        favorito: activity.favorito,
       },
     });
   }
@@ -58,7 +61,10 @@ function toActivity(row: PrismaActivity): Activity {
     nivel: row.nivel ?? undefined,
     proveedor: row.proveedor as ProveedorIa,
     imagen: row.imagen ?? undefined,
+    prompt: row.prompt ?? undefined,
     completadaEn: row.completadaEn ?? undefined,
     valoracion: row.valoracion ?? undefined,
+    favorito: row.favorito,
+    creadoEn: row.creadoEn,
   });
 }

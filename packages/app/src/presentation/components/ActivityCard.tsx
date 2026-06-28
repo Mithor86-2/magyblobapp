@@ -3,10 +3,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { Activity, Categoria } from '../../domain/types';
 import { categoriaLabel } from '../labels';
+import { formatearFecha } from '../formatFecha';
+import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import { StarRating } from './StarRating';
 import { AuthorBadge } from './AuthorBadge';
 import { BubblyButton } from './BubblyButton';
+import { FavoriteButton } from './FavoriteButton';
 import { Icon } from './Icon';
+import { api } from '../../composition';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 
 /** Color por categoría (borde de tarjeta e icono según el design system). */
@@ -43,7 +47,7 @@ interface ActivityCardProps {
 
 /** Tarjeta de actividad: emoji + categoría + título + descripción + progreso. */
 export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // Flujo del botón "Realizado" (US-10 ampliada): pedir la valoración al pulsarlo.
   const [valorando, setValorando] = useState(false);
   const color = CATEGORIA_COLOR[activity.categoria];
@@ -52,13 +56,22 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
     activity.nivel ? t('activityCard.level', { nivel: activity.nivel }) : null,
   ].filter(Boolean);
   const completada = activity.valoracion != null;
+  // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
+  const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
+  const fecha = formatearFecha(activity.creadoEn, idioma);
 
   return (
     <View style={[styles.card, { borderBottomColor: color }]}>
       <View style={styles.header}>
         <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
-        <View style={[styles.badge, { backgroundColor: color }]}>
-          <Text style={styles.badgeText}>{categoriaLabel(activity.categoria)}</Text>
+        <View style={styles.headerRight}>
+          <View style={[styles.badge, { backgroundColor: color }]}>
+            <Text style={styles.badgeText}>{categoriaLabel(activity.categoria)}</Text>
+          </View>
+          <FavoriteButton
+            favorito={activity.favorito}
+            onToggle={(favorito) => api.activities.setFavorite(activity.id, favorito)}
+          />
         </View>
       </View>
       <Text style={styles.titulo}>{activity.titulo}</Text>
@@ -97,6 +110,7 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
       ) : null}
 
       <AuthorBadge proveedor={activity.proveedor} />
+      {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
     </View>
   );
 }
@@ -114,6 +128,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   badge: {
     borderRadius: radius.pill,
@@ -158,6 +177,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   meta: {
+    ...typography.labelBold,
+    color: colors.onSurfaceVariant,
+  },
+  fecha: {
     ...typography.labelBold,
     color: colors.onSurfaceVariant,
   },
