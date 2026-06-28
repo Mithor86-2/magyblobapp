@@ -9,6 +9,21 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Favoritos (UI) y búsqueda en el Historial (US-64).** Botón **estrella** (lucide `star`, relleno
+  cuando es favorito) para alternar el favorito de un cuento o actividad en la **lectura** del cuento
+  (`StoryReaderScreen`), los **ítems del Historial** y la tarjeta de actividad (`ActivityCard`), con
+  actualización **optimista** (revierte si el backend falla). Nuevos gateways
+  `stories.setFavorite(id, favorito)` / `activities.setFavorite(id, favorito)` contra
+  `POST /stories/:id/favorite` y `POST /activities/:id/favorite` (autenticados, body `{ favorito }`),
+  con `favorito?: boolean` opcional en los tipos `Story`/`Activity` y sus esquemas Zod (compatibilidad
+  durante la transición hasta integrar el backend).
+- **Búsqueda de texto en el Historial** (en cliente): campo de texto que filtra cuentos y actividades
+  por coincidencia **normalizada** (minúsculas, sin acentos, por subcadena) en título, cuerpo
+  (cuentos), descripción e instrucciones (actividades), tema, estilo y categoría; lógica pura en
+  `historyFilters.ts` (US-64).
+- **Filtro "Solo favoritos"** en el Historial (chip toggle), combinado con los filtros de tema/estilo/
+  categoría (US-62) y con la búsqueda de texto (US-64).
+
 ### Changed
 
 ### Deprecated

@@ -1,6 +1,6 @@
 # Epic D — Historial
 
-Historias: **US-08**, **US-27**, **US-62**. Volver al [índice](README.md).
+Historias: **US-08**, **US-27**, **US-62**, **US-64**. Volver al [índice](README.md).
 
 ## US-08 — Ver historial de cuentos · Should
 
@@ -55,3 +55,40 @@ opción **"Todos"** por defecto. **Solo app.**
   se reduce a las de esa categoría; con **"Todos"** se muestran todas.
 - Dado un filtro activo, Cuando lo cambio, Entonces el estado del filtro es **local** de la pantalla
   (no se persiste) y las etiquetas de chips y la fecha respetan el **idioma del app**.
+
+## US-64 — Favoritos (UI) y búsqueda de texto en el Historial · Should (Mejoras)
+
+Como **padre/tutor** quiero **marcar como favoritos** los cuentos y actividades que más nos gustan y
+**buscar por texto** en el Historial, para reencontrar rápido lo que busco.
+
+**Contexto.** Amplía **US-08** y **US-62**. La parte **app** de la feature de favoritos (la
+persistencia y los endpoints son de la feature A, US-63): el backend expone
+`POST /stories/:id/favorite` y `POST /activities/:id/favorite` (body `{ favorito: boolean }`,
+autenticados, idempotentes; devuelven el item actualizado) y añade `favorito` a los DTO de cuento y
+actividad. El app muestra un **botón estrella** (lucide `star`, relleno cuando es favorito) para
+alternar el favorito en la **lectura** del cuento, en los **ítems del Historial** y en la
+`ActivityCard`, con actualización **optimista** y refresco del estado. El campo `favorito?` se trata
+como **opcional** en los tipos/esquemas del app, para no romper durante la transición hasta integrar
+la feature A. Además, el Historial gana un **filtro "solo favoritos"** (chip/toggle, combinado con
+los filtros de US-62) y un **campo de búsqueda de texto** que filtra **en cliente** (coincidencia
+**normalizada**: minúsculas, sin acentos, por subcadena) cuentos y actividades por **título**,
+**cuerpo** (cuentos), **descripción** e **instrucciones** (actividades), **tema**, **estilo** y
+**categoría**. **Solo app.**
+
+**Criterios de aceptación**
+
+- Dado un cuento (en la lectura o en el Historial), Cuando pulso su **estrella**, Entonces se marca
+  como favorito (estrella rellena) llamando a `POST /stories/:id/favorite`, con efecto **optimista**;
+  si el backend falla, el estado vuelve atrás sin romper la pantalla.
+- Dada una actividad en su tarjeta, Cuando pulso su **estrella**, Entonces se marca como favorita
+  llamando a `POST /activities/:id/favorite`, con el mismo comportamiento optimista.
+- Dado el Historial, Cuando activo el chip **"Solo favoritos"**, Entonces las listas se reducen a los
+  cuentos y actividades marcados como favoritos; al desactivarlo se muestran todos.
+- Dado el Historial, Cuando escribo texto en el **campo de búsqueda**, Entonces las listas se reducen
+  a los ítems cuyo título, cuerpo/descripción, instrucciones, tema, estilo o categoría **contienen**
+  el texto (comparación **normalizada**, sin distinguir mayúsculas ni acentos); con el campo vacío se
+  muestran todos.
+- Dados varios filtros activos (tema/estilo/categoría de US-62 + "Solo favoritos" + búsqueda), Cuando
+  los combino, Entonces las listas respetan **todos** a la vez.
+- Dado un cuento o actividad **sin** el campo `favorito` (backend antiguo), Cuando se muestra,
+  Entonces se trata como **no favorito** y no se produce ningún error.
