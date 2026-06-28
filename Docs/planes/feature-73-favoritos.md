@@ -36,7 +36,7 @@ perfil" sin tabla nueva. Endpoints **idempotentes** `POST /stories/:id/favorite`
 
 - ✅ `favorito Boolean @default(false)` en `Story` y `Activity` en `prisma/schema.prisma`.
 - ✅ Migración SQL a mano (sin shadow DB, patrón de migraciones previas): `ADD COLUMN "favorito"
-  BOOLEAN NOT NULL DEFAULT false` en `stories` y `activities` + `prisma generate`.
+BOOLEAN NOT NULL DEFAULT false` en `stories` y `activities` + `prisma generate`.
 - ✅ Repos Prisma: `favorito` en `create`, `update` (upsert) y la lectura (`toStory`/`toActivity`).
 - ✅ `Docs/modelo-datos.md` actualizado (bloque ER + nota conceptual).
 

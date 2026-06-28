@@ -57,6 +57,7 @@ erDiagram
         string   proveedor "IA efectiva: mock | local | cloud"
         string   portada   "opcional — data URL de portada (US-59)"
         text     prompt    "opcional — prompt usado (system+user), solo BD (US-61)"
+        boolean  favorito  "marcado como favorito (US-63); por defecto false"
         datetime creadoEn
     }
 
@@ -83,6 +84,7 @@ erDiagram
         text     prompt      "opcional — prompt usado (system+user), solo BD (US-61)"
         datetime completadaEn "opcional — null = pendiente"
         int      valoracion  "opcional — 1..3 estrellas"
+        boolean  favorito    "marcada como favorita (US-63); por defecto false"
         datetime creadoEn
     }
 
@@ -137,6 +139,14 @@ el prompt realmente empleado para generar el contenido (texto `system` + `user` 
 se expone en el DTO público** (solo BD: consultable por SQL o el `prompts:dump`); el **modo anónimo**
 (US-50) no persiste nada, así que tampoco guarda prompt. Las filas anteriores a la migración tienen el
 campo `NULL`.
+
+**Favoritos (US-63).** `Story.favorito` y `Activity.favorito` son un **flag booleano** (`NOT NULL`,
+por defecto `false`) que marca el contenido como favorito del tutor. Se modela como atributo de la
+propia entidad (que ya cuelga de un perfil) en vez de una tabla aparte: es "favoritas por perfil" con
+coste mínimo (YAGNI, igual que el progreso de lectura/realización). Se actualiza con endpoints
+idempotentes `POST /stories/:id/favorite` y `POST /activities/:id/favorite` (`{ favorito: boolean }`)
+y **sí** se expone en el DTO público (lo consume el Historial del app, US-64). Las filas anteriores a
+la migración quedan en `false` por el `DEFAULT`.
 
 `AppSetting` es **global** (no se relaciona con otras entidades): es una tabla
 clave-valor para configuración de la app editable sin redeploy.
