@@ -9,6 +9,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- `eas.json` con perfiles de **EAS Build**: `preview` (APK de distribución interna apuntando al backend
+  de producción, para probar en dispositivo), `development` (APK dev contra `10.0.2.2`) y `production`
+  (AAB). La URL del backend va en `env.EXPO_PUBLIC_API_URL` del perfil (la build en la nube no usa el
+  `.env` local).
+
 ### Changed
 
 ### Deprecated
