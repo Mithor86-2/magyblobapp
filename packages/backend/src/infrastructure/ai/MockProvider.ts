@@ -7,7 +7,12 @@ import type {
 } from '../../domain/ai/AIProvider.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';
 import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
-import { buildActivitiesPrompt, buildStoryPrompt, joinPromptParts } from './prompts.js';
+import {
+  buildActivitiesPrompt,
+  buildStoryPrompt,
+  joinPromptParts,
+  terminoCuidador,
+} from './prompts.js';
 
 /**
  * Proveedor de IA determinista que NO necesita Ollama ni red. Cumple tres papeles:
@@ -71,13 +76,15 @@ export class MockProvider implements AIProvider {
 
   async recommendActivities(input: RecommendActivitiesInput): Promise<GeneratedActivity[]> {
     const idioma = input.perfil.idioma.value;
+    // US-67: las instrucciones se dirigen al adulto por su parentesco (o trato genérico).
+    const cuidador = terminoCuidador(input.parentesco, idioma);
     // US-61: prompt representativo del lote (el que usarían los proveedores reales).
     const prompt = joinPromptParts(buildActivitiesPrompt(input));
     return Array.from({ length: input.cantidad }, (_unused, i): GeneratedActivity => {
       const categoria: Categoria = input.categoria ?? CATEGORIAS[i % CATEGORIAS.length]!;
       return {
         categoria,
-        ...PLANTILLAS_ACTIVIDAD[idioma](categoria, i + 1),
+        ...PLANTILLAS_ACTIVIDAD[idioma](categoria, i + 1, cuidador),
         duracionMin: 10 + (i % 3) * 5,
         nivel: (i % 3) + 1,
         proveedor: 'mock',
@@ -90,26 +97,34 @@ export class MockProvider implements AIProvider {
 type DatosActividad = { titulo: string; descripcion: string; instrucciones: string };
 
 /**
- * Pasos del paso a paso de la mock (US-61): se exige entre 3 y 6 pasos. Hay 6
- * plantillas por idioma; cada actividad usa un número de pasos en [3, 6] derivado
- * de `n` (determinista) para que el conjunto mock cumpla el rango sin red.
+ * Pasos del paso a paso de la mock (US-67): se exige al menos 6 pasos detallados.
+ * Hay 8 plantillas por idioma; cada actividad usa un número de pasos en [6, 8]
+ * derivado de `n` (determinista) para que el conjunto mock cumpla el mínimo sin red.
  */
-const PASOS_ACTIVIDAD: Record<CodigoIdioma, ((categoria: Categoria) => string)[]> = {
+const PASOS_ACTIVIDAD: Record<CodigoIdioma, ((categoria: Categoria, c: string) => string)[]> = {
   es: [
-    (categoria) => `Prepara los materiales de ${categoria}.`,
-    () => 'Explica la actividad al niño con palabras sencillas.',
-    () => 'Acompáñale mientras juega y anímale.',
-    () => 'Dale tiempo para que pruebe a su ritmo.',
-    () => 'Hazle preguntas sencillas sobre lo que hace.',
-    () => 'Celebrad juntos el resultado.',
+    (categoria, c) => `${cap(c)} reúne los materiales sencillos de ${categoria} que hay en casa.`,
+    (_categoria, c) =>
+      `${cap(c)} explica la actividad al niño con palabras sencillas y un ejemplo.`,
+    (_categoria, c) => `El niño elige por dónde empezar mientras ${c} le acompaña.`,
+    (_categoria, c) => `${cap(c)} muestra el primer paso y el niño lo repite a su ritmo.`,
+    (_categoria, c) => `El niño prueba por sí mismo y ${c} le anima cuando lo intenta.`,
+    (_categoria, c) => `${cap(c)} hace preguntas sencillas para que el niño cuente lo que hace.`,
+    (_categoria, c) => `El niño termina la actividad y ${c} le ayuda a recoger.`,
+    (_categoria, c) =>
+      `${cap(c)} y el niño celebran juntos el resultado y comentan qué han aprendido.`,
   ],
   en: [
-    (categoria) => `Get the ${categoria} materials ready.`,
-    () => 'Explain the activity to the child in simple words.',
-    () => 'Stay close while they play and cheer them on.',
-    () => 'Give them time to try at their own pace.',
-    () => 'Ask simple questions about what they are doing.',
-    () => 'Celebrate the result together.',
+    (categoria, c) => `${cap(c)} gathers the simple ${categoria} materials found at home.`,
+    (_categoria, c) =>
+      `${cap(c)} explains the activity to the child in simple words with an example.`,
+    (_categoria, c) => `The child chooses where to start while ${c} stays close.`,
+    (_categoria, c) => `${cap(c)} shows the first step and the child repeats it at their own pace.`,
+    (_categoria, c) => `The child tries on their own and ${c} cheers them on as they attempt it.`,
+    (_categoria, c) => `${cap(c)} asks simple questions so the child can tell what they are doing.`,
+    (_categoria, c) => `The child finishes the activity and ${c} helps tidy up.`,
+    (_categoria, c) =>
+      `${cap(c)} and the child celebrate the result together and talk about what they learned.`,
   ],
 };
 
@@ -118,27 +133,37 @@ function pasosNumerados(pasos: string[]): string {
   return pasos.map((paso, i) => `${i + 1}. ${paso}`).join(' ');
 }
 
+/** Pone en mayúscula la primera letra (para el trato del cuidador al inicio de frase). */
+function cap(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 const PLANTILLAS_ACTIVIDAD: Record<
   CodigoIdioma,
-  (categoria: Categoria, n: number) => DatosActividad
+  (categoria: Categoria, n: number, cuidador: string) => DatosActividad
 > = {
-  es: (categoria, n) => ({
+  es: (categoria, n, cuidador) => ({
     titulo: `Actividad de ${categoria} nº ${n}`,
     descripcion: `Una propuesta sencilla de ${categoria} para jugar y aprender en casa.`,
-    instrucciones: instruccionesMock('es', categoria, n),
+    instrucciones: instruccionesMock('es', categoria, n, cuidador),
   }),
-  en: (categoria, n) => ({
+  en: (categoria, n, cuidador) => ({
     titulo: `${categoria} activity #${n}`,
     descripcion: `A simple ${categoria} idea to play and learn at home.`,
-    instrucciones: instruccionesMock('en', categoria, n),
+    instrucciones: instruccionesMock('en', categoria, n, cuidador),
   }),
 };
 
-/** Paso a paso mock con un número de pasos en [3, 6] derivado de `n` (US-61). */
-function instruccionesMock(idioma: CodigoIdioma, categoria: Categoria, n: number): string {
+/** Paso a paso mock con un número de pasos en [6, 8] derivado de `n` (US-67). */
+function instruccionesMock(
+  idioma: CodigoIdioma,
+  categoria: Categoria,
+  n: number,
+  cuidador: string,
+): string {
   const plantillas = PASOS_ACTIVIDAD[idioma];
-  const cantidad = 3 + ((n - 1) % 4); // 3, 4, 5 o 6 pasos
-  const pasos = plantillas.slice(0, cantidad).map((paso) => paso(categoria));
+  const cantidad = 6 + ((n - 1) % 3); // 6, 7 u 8 pasos (siempre ≥6)
+  const pasos = plantillas.slice(0, cantidad).map((paso) => paso(categoria, cuidador));
   return pasosNumerados(pasos);
 }
 

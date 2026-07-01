@@ -14,13 +14,20 @@ import { idiomaLabel, temaLabel } from '../labels';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
-import { colors, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 const EDADES = [2, 3, 4, 5, 6] as const;
 
+/**
+ * Pantalla de **alta de perfil de niño** bajo la cuenta del adulto: nombre, edad,
+ * idioma e intereses (vocabulario cerrado de temas). Valida en cliente, crea el
+ * perfil contra el `api` inyectado y lo deja como perfil activo. US-01.
+ */
 export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfile'>) {
   const { t } = useTranslation();
+  const styles = useThemedStyles(makeStyles);
   const guardianId = useAppStore((s) => s.guardian?.id ?? null);
   const setProfile = useAppStore((s) => s.setProfile);
   const dialog = useDialog();
@@ -131,14 +138,15 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
   );
 }
 
-const styles = StyleSheet.create({
-  fieldLabel: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    fieldLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+  });

@@ -1,6 +1,6 @@
 {
   "name": "magyblobapp",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "description": "App infantil bilingüe que crea perfiles y genera cuentos con IA local (TFM Máster)",
@@ -46,6 +46,7 @@
     "@eslint/js": "^9.17.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsdoc": "^63.0.10",
     "eslint-plugin-sonarjs": "^4.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",

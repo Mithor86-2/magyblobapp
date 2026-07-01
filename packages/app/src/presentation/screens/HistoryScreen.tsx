@@ -27,11 +27,20 @@ import {
   type FiltroTema,
 } from './historyFilters';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
+/**
+ * Pantalla de **historial** del perfil activo: lista los cuentos y actividades
+ * guardados con filtros en cliente (tema, estilo, categoría), búsqueda por texto y
+ * marca de favoritos (US-62/US-64). Desde aquí se relee un cuento en el lector del
+ * stack raíz (US-27). Recarga al recuperar el foco.
+ */
 export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
 
@@ -258,90 +267,91 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.tertiary,
-  },
-  subtitle: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  section: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-    marginTop: spacing.sm,
-  },
-  vacio: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  filterLabel: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-    marginTop: spacing.xs,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  fecha: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  errorBox: {
-    backgroundColor: colors.errorContainer,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    alignItems: 'center',
-  },
-  error: {
-    ...typography.labelBold,
-    color: colors.onErrorContainer,
-    textAlign: 'center',
-  },
-  storyCard: {
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    ...softShadow,
-  },
-  storyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  storyTitle: {
-    ...typography.bodyLg,
-    color: colors.onSurface,
-    flex: 1,
-  },
-  estado: {
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-  },
-  estadoNuevo: {
-    backgroundColor: colors.primaryContainer,
-  },
-  estadoLeido: {
-    backgroundColor: colors.secondaryContainer,
-  },
-  estadoText: {
-    ...typography.labelBold,
-    color: colors.onSurface,
-  },
-  accionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  accion: {
-    ...typography.labelBold,
-    color: colors.primary,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    title: {
+      ...typography.displayLg,
+      color: colors.tertiary,
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    section: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+      marginTop: spacing.sm,
+    },
+    vacio: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    filterLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+      marginTop: spacing.xs,
+    },
+    chipRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      paddingVertical: spacing.xs,
+    },
+    fecha: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    errorBox: {
+      backgroundColor: colors.errorContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      alignItems: 'center',
+    },
+    error: {
+      ...typography.labelBold,
+      color: colors.onErrorContainer,
+      textAlign: 'center',
+    },
+    storyCard: {
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      ...makeSoftShadow(colors),
+    },
+    storyHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+    },
+    storyTitle: {
+      ...typography.bodyLg,
+      color: colors.onSurface,
+      flex: 1,
+    },
+    estado: {
+      borderRadius: radius.pill,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 4,
+    },
+    estadoNuevo: {
+      backgroundColor: colors.primaryContainer,
+    },
+    estadoLeido: {
+      backgroundColor: colors.secondaryContainer,
+    },
+    estadoText: {
+      ...typography.labelBold,
+      color: colors.onSurface,
+    },
+    accionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    accion: {
+      ...typography.labelBold,
+      color: colors.primary,
+    },
+  });

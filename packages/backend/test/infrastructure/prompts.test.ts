@@ -154,13 +154,15 @@ describe('prompts — contenido IA (US-54)', () => {
     expect(prompt).toContain('original, different title');
   });
 
-  it('el prompt de actividades pide un paso a paso de 3 a 6 pasos (ES, US-61)', () => {
+  it('el prompt de actividades pide un paso a paso de al menos 6 pasos (ES, US-67)', () => {
     const { prompt } = buildActivitiesPrompt({ perfil: perfil(4), cantidad: 3 });
     expect(prompt).toContain('paso a paso');
-    expect(prompt).toContain('entre 3 y 6 pasos');
+    expect(prompt).toContain('al menos 6 pasos');
+    expect(prompt).toContain('objetivo de aprendizaje');
+    expect(prompt).toContain('materiales sencillos');
   });
 
-  it('el prompt de actividades pide un paso a paso de 3 a 6 pasos (EN, US-61)', () => {
+  it('el prompt de actividades pide un paso a paso de al menos 6 pasos (EN, US-67)', () => {
     const perfilEn = new ChildProfile({
       id: 'p-en3',
       guardianId: 'g-1',
@@ -173,7 +175,44 @@ describe('prompts — contenido IA (US-54)', () => {
     });
     const { prompt } = buildActivitiesPrompt({ perfil: perfilEn, cantidad: 3 });
     expect(prompt).toContain('step-by-step');
-    expect(prompt).toContain('between 3 and 6 numbered steps');
+    expect(prompt).toContain('at least 6 detailed');
+    expect(prompt).toContain('learning objective');
+    expect(prompt).toContain('simple materials');
+  });
+
+  it('US-67: dirige las instrucciones al adulto por su parentesco (ES, madre → "mamá")', () => {
+    const { prompt } = buildActivitiesPrompt({
+      perfil: perfil(4),
+      cantidad: 3,
+      parentesco: 'madre',
+    });
+    expect(prompt).toContain('mamá');
+    expect(prompt).toContain('no como "el adulto"');
+  });
+
+  it('US-67: sin parentesco usa un trato genérico (ES → "la persona adulta")', () => {
+    const { prompt } = buildActivitiesPrompt({ perfil: perfil(4), cantidad: 3 });
+    expect(prompt).toContain('la persona adulta');
+  });
+
+  it('US-67: dirige las instrucciones al adulto por su parentesco (EN, padre → "dad")', () => {
+    const perfilEn = new ChildProfile({
+      id: 'p-en4',
+      guardianId: 'g-1',
+      nombre: 'Leo',
+      edad: Edad.create(5),
+      idioma: Idioma.create('en'),
+      avatar: 'a1',
+      intereses: ['animales'],
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    const { prompt } = buildActivitiesPrompt({
+      perfil: perfilEn,
+      cantidad: 3,
+      parentesco: 'padre',
+    });
+    expect(prompt).toContain('dad');
+    expect(prompt).toContain('not as "the adult"');
   });
 });
 

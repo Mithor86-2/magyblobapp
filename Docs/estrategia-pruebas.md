@@ -107,9 +107,12 @@ está sonando vía `expo-speech`), algo que el render web no puede ejercitar.
 
 ### Cómo ejecutar el E2E nativo (Maestro) en local
 
-**Validado con Expo Go** (no hace falta development build): la narración degrada a la voz nativa del
-dispositivo (`expo-speech`), incluida en Expo Go, así que el happy path se ejercita igual. Hay **dos
-flows hermanos** porque el `appId` y algunos selectores difieren por plataforma:
+**Requiere un development build** (`expo run:android`/`run:ios`): desde el tema claro/oscuro (US-66)
+la app incluye módulos nativos (`expo-navigation-bar`/`expo-system-ui`) que **Expo Go no puede
+cargar**. La narración sigue degradando a la voz nativa (`expo-speech`), así que el happy path se
+ejercita igual una vez instalado el dev build. Hay **dos flows hermanos** porque el `appId` y algunos
+selectores difieren por plataforma (el `appId` del dev build es el `bundleIdentifier`/`package` de la
+app, no el de Expo Go):
 
 - iOS: [`.maestro/onboarding.yaml`](../packages/app/.maestro/onboarding.yaml) (`host.exp.Exponent`).
 - Android: [`.maestro/onboarding.android.yaml`](../packages/app/.maestro/onboarding.android.yaml) (`host.exp.exponent`).
@@ -124,12 +127,12 @@ curl -fsSL https://get.maestro.mobile.dev | bash
 pnpm --filter @magyblob/backend exec tsx scripts/e2e-serve.ts
 
 # 3a. iOS Simulator (macOS + Xcode): localhost del simulador = host
-pnpm --filter @magyblob/app exec expo start --ios
+cd packages/app && npx expo run:ios      # dev build (Expo Go ya no carga los módulos nativos)
 maestro test packages/app/.maestro/onboarding.yaml
 
 # 3b. Android Emulator (Android SDK + AVD arrancado): OJO con la red
 #     en Android `localhost` es el emulador; el host se alcanza por 10.0.2.2
-EXPO_PUBLIC_API_URL=http://10.0.2.2:3100 pnpm --filter @magyblob/app exec expo start --android
+cd packages/app && EXPO_PUBLIC_API_URL=http://10.0.2.2:3100 npx expo run:android   # dev build
 maestro test packages/app/.maestro/onboarding.android.yaml
 ```
 

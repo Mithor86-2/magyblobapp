@@ -19,6 +19,62 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.6.0] - 2026-07-01
+
+### Added
+
+- Configuración del app (`AppSetting`) declarada en `prisma/app-settings.json` (fuente única, sin
+  secretos) con **sync versionado** a la BD: cada clave lleva una `version` y el sync solo crea las
+  ausentes o reescribe cuando la versión del JSON es mayor, sin pisar los cambios hechos en caliente
+  (p. ej. `ai.cloud`). Corre en el **arranque** del backend y con `pnpm config:sync`; las claves de la
+  BD ausentes del JSON se conservan (huérfanas, se loguean). Nueva columna `AppSetting.version`
+  (migración). El `seed` pasa a delegar en el mismo mecanismo (US-70).
+
+## [1.5.0] - 2026-07-01
+
+### Added
+
+### Changed
+
+- Prompt de recomendación de actividades más significativo para niños de 2-6 años: pide instrucciones
+  de al menos 6 pasos numerados y detallados, un objetivo de aprendizaje y materiales sencillos de
+  casa (ES y EN). La plantilla configurable `prompt.activity.template` (seed) se alinea con el nuevo
+  default y el `MockProvider` emite siempre ≥6 pasos (US-67).
+- Las instrucciones de las actividades se dirigen al adulto acompañante por su **parentesco** (el
+  guardián con sesión: "mamá", "papá", "la abuela o el abuelo"…) en vez de "el adulto"; sin parentesco
+  (p. ej. modo anónimo) se usa un trato genérico. El caso de uso `RecommendActivities` resuelve el
+  parentesco desde el `GuardianRepository` (US-67).
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.4.1] - 2026-06-28
+
+### Added
+
+- Estándar de documentación **_enforced_** (US-65): la regla de lint `jsdoc/require-jsdoc`
+  (`eslint-plugin-jsdoc`) exige un bloque de documentación en los **exports públicos** del backend
+  (clases y funciones exportadas), integrada en el gate `pnpm check`. Se activa solo `require-jsdoc`
+  (no el preset completo) porque la convención del proyecto es **prosa en español**, no TSDoc formal.
+  Documentados los 14 exports que faltaban (mappers de salida, type-guards de vocabulario/cloud/formato,
+  `parseStory`/`parseActivities`, `buildStoryPrompt`/`buildActivitiesPrompt`) y añadidas cabeceras de
+  módulo a las rutas (`profiles`, `stories`, `anonymous`, `activities`).
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
 ## [1.4.0] - 2026-06-28
 
 ### Added

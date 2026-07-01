@@ -4,9 +4,43 @@
  *
  * Paleta "pasteles saturados", tipografía Quicksand, formas redondeadas y
  * tap targets generosos (≥64px) pensados para motricidad de 2-6 años.
+ *
+ * Tema claro/oscuro (US-66): los **colores** viven en dos paletas de la misma
+ * forma (`lightColors`/`darkColors`) que se seleccionan en runtime vía el
+ * `ThemeProvider`. El resto de tokens (espaciado, radios, tipografía, tamaños)
+ * son invariantes al tema. Se conserva `export const colors = lightColors` para
+ * no romper los imports estáticos durante la migración ni los tests que
+ * renderizan sin provider (contexto por defecto = claro).
  */
 
-export const colors = {
+/**
+ * Contrato de colores del tema: las claves son idénticas en claro y oscuro, de
+ * modo que cualquier `StyleSheet` funciona con ambas paletas (US-66).
+ */
+export type ColorTokens = {
+  surface: string;
+  surfaceContainer: string;
+  surfaceContainerHigh: string;
+  primary: string;
+  onPrimary: string;
+  primaryContainer: string;
+  primaryBorder: string;
+  secondary: string;
+  onSecondary: string;
+  secondaryContainer: string;
+  tertiary: string;
+  onTertiary: string;
+  tertiaryContainer: string;
+  onSurface: string;
+  onSurfaceVariant: string;
+  outline: string;
+  error: string;
+  errorContainer: string;
+  onErrorContainer: string;
+};
+
+/** Paleta clara (la histórica): superficies crema cálidas, coral/menta/cielo. */
+export const lightColors: ColorTokens = {
   // Superficies cálidas (crema) para reducir fatiga visual frente al blanco puro.
   surface: '#fff8f6',
   surfaceContainer: '#fceae3',
@@ -32,7 +66,66 @@ export const colors = {
   error: '#ba1a1a',
   errorContainer: '#ffdad6',
   onErrorContainer: '#93000a',
+};
+
+/**
+ * Paleta oscura (US-66): diseño **"cielo nocturno"** (índigo cósmico) definido en
+ * Docs/Design/stitch_magyblob/DESIGN_Dark.md. Superficies índigo profundas que
+ * evocan un cielo estrellado (más calmado para la transición al sueño), coral como
+ * acción principal de alto contraste, púrpura suave como secundario "mágico" y aqua
+ * como terciario de pistas/navegación; texto lila claro (no blanco puro para evitar
+ * la vibración sobre fondo oscuro). Las claves son las mismas que en claro, así que
+ * cualquier `StyleSheet` funciona con ambas paletas sin cambios.
+ */
+export const darkColors: ColorTokens = {
+  // Superficies índigo cósmicas: canvas profundo → contenedores algo más claros.
+  surface: '#111125',
+  surfaceContainer: '#1e1e32',
+  surfaceContainerHigh: '#28283d',
+  // Coral: acción principal y momentos de "éxito", alto contraste sobre el índigo.
+  primary: '#ffb4a7',
+  onPrimary: '#640c04', // texto/icono oscuro sobre el coral
+  primaryContainer: '#ff7f6a',
+  primaryBorder: '#a43b2c', // "lip" inferior de coral más oscuro (botón extruido)
+  // Púrpura suave: interacciones secundarias y elementos decorativos "mágicos".
+  secondary: '#d3bcfc',
+  onSecondary: '#38265b',
+  secondaryContainer: '#523f76',
+  // Aqua suave: pistas, rastros de navegación y feedback "gentil".
+  tertiary: '#76d5e1',
+  onTertiary: '#00363c',
+  tertiaryContainer: '#52b2be',
+  // Texto lila claro sobre las superficies índigo (evita el blanco puro).
+  onSurface: '#e2e0fc',
+  onSurfaceVariant: '#dec0bb',
+  outline: '#a58b86',
+  // Error legible sobre oscuro.
+  error: '#ffb4ab',
+  errorContainer: '#93000a',
+  onErrorContainer: '#ffdad6',
+};
+
+/** Paletas indexadas por esquema (las selecciona el `ThemeProvider`, US-66). */
+export const themes = {
+  light: lightColors,
+  dark: darkColors,
 } as const;
+
+/** Preferencia elegida por la persona adulta: seguir al sistema o forzar un tema. */
+export type ThemePreference = 'system' | 'light' | 'dark';
+
+/** Esquema efectivo ya resuelto (lo que realmente se pinta). */
+export type Scheme = 'light' | 'dark';
+
+/** Valor por defecto de la preferencia: seguir al sistema operativo (US-66). */
+export const DEFAULT_THEME_PREFERENCE: ThemePreference = 'system';
+
+/**
+ * Alias de compatibilidad: apunta a la paleta clara. Se mantiene para los
+ * imports estáticos aún no migrados a `useTheme()` y para los tests que
+ * renderizan sin provider (donde el contexto ya cae al tema claro).
+ */
+export const colors = lightColors;
 
 /** Unidad base de 8px; ritmo vertical holgado (24-40px). */
 export const spacing = {
@@ -84,11 +177,20 @@ export const typography = {
   button: { fontFamily: fonts.bold, fontSize: 22, lineHeight: 24 },
 } as const;
 
-/** Sombra "ambiental suave" (tinte sobre crema, no gris). */
-export const softShadow = {
-  shadowColor: colors.primary,
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.12,
-  shadowRadius: 20,
-  elevation: 4,
-} as const;
+/**
+ * Sombra "ambiental suave" (tinte sobre la superficie, no gris). Depende del
+ * tema porque su color se toma de la paleta activa (US-66): en claro tiñe con el
+ * coral; en oscuro conviene un tinte más neutro para que la elevación se lea.
+ */
+export function makeSoftShadow(c: ColorTokens) {
+  return {
+    shadowColor: c.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 4,
+  } as const;
+}
+
+/** Sombra suave del tema claro (back-compat para imports estáticos). */
+export const softShadow = makeSoftShadow(lightColors);

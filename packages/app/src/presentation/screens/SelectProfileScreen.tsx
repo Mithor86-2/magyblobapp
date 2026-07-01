@@ -8,7 +8,8 @@ import type { ChildProfile } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 /**
@@ -18,6 +19,8 @@ import type { RootScreenProps } from '../navigation';
  */
 export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfile'>) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const guardian = useAppStore((s) => s.guardian);
   const setProfile = useAppStore((s) => s.setProfile);
   // Lista de hijos en el store: fuente única para la pantalla y para el arranque (US-49).
@@ -101,56 +104,57 @@ export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfi
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-  },
-  subtitle: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  statusBox: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-  },
-  statusText: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  errorBox: {
-    backgroundColor: colors.errorContainer,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-  },
-  errorText: {
-    ...typography.labelBold,
-    color: colors.onErrorContainer,
-    textAlign: 'center',
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-  },
-  avatar: {
-    fontSize: 48,
-  },
-  profileInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  profileName: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-  },
-  profileMeta: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    title: {
+      ...typography.displayLg,
+      color: colors.primary,
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    statusBox: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.lg,
+    },
+    statusText: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    errorBox: {
+      backgroundColor: colors.errorContainer,
+      borderRadius: radius.lg,
+      paddingHorizontal: spacing.md,
+    },
+    errorText: {
+      ...typography.labelBold,
+      color: colors.onErrorContainer,
+      textAlign: 'center',
+    },
+    profileRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: colors.secondaryContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+    },
+    avatar: {
+      fontSize: 48,
+    },
+    profileInfo: {
+      flex: 1,
+      gap: 2,
+    },
+    profileName: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+    },
+    profileMeta: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+  });

@@ -11,14 +11,15 @@ import { BubblyButton } from './BubblyButton';
 import { FavoriteButton } from './FavoriteButton';
 import { Icon } from './Icon';
 import { api } from '../../composition';
-import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
 
 /** Color por categoría (borde de tarjeta e icono según el design system). */
-const CATEGORIA_COLOR: Record<Categoria, string> = {
+const categoriaColor = (colors: ColorTokens): Record<Categoria, string> => ({
   arte: colors.primary,
   musica: colors.secondary,
   logica: colors.tertiary,
-};
+});
 
 /**
  * Parte las instrucciones (texto con pasos "1. … 2. … 3. …" o por líneas) en una
@@ -48,9 +49,11 @@ interface ActivityCardProps {
 /** Tarjeta de actividad: emoji + categoría + título + descripción + progreso. */
 export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   // Flujo del botón "Realizado" (US-10 ampliada): pedir la valoración al pulsarlo.
   const [valorando, setValorando] = useState(false);
-  const color = CATEGORIA_COLOR[activity.categoria];
+  const color = categoriaColor(colors)[activity.categoria];
   const meta = [
     activity.duracionMin ? t('activityCard.minutes', { min: activity.duracionMin }) : null,
     activity.nivel ? t('activityCard.level', { nivel: activity.nivel }) : null,
@@ -115,79 +118,80 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: radius.lg,
-    borderBottomWidth: 4,
-    padding: spacing.md,
-    gap: spacing.xs,
-    ...softShadow,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  badge: {
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-  },
-  badgeText: {
-    ...typography.labelBold,
-    color: colors.onPrimary,
-  },
-  titulo: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-  },
-  descripcion: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  instrucciones: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.sm,
-    gap: spacing.xs,
-    marginTop: spacing.xs,
-  },
-  instruccionesTitulo: {
-    ...typography.labelBold,
-    color: colors.onSurface,
-  },
-  pasoFila: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  pasoNum: {
-    ...typography.bodyMd,
-    color: colors.onSurface,
-    fontWeight: '700',
-  },
-  instruccionesTexto: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    flex: 1,
-  },
-  meta: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  fecha: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  progreso: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.xs,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.lg,
+      borderBottomWidth: 4,
+      padding: spacing.md,
+      gap: spacing.xs,
+      ...makeSoftShadow(colors),
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    badge: {
+      borderRadius: radius.pill,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 4,
+    },
+    badgeText: {
+      ...typography.labelBold,
+      color: colors.onPrimary,
+    },
+    titulo: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+    },
+    descripcion: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    instrucciones: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.md,
+      padding: spacing.sm,
+      gap: spacing.xs,
+      marginTop: spacing.xs,
+    },
+    instruccionesTitulo: {
+      ...typography.labelBold,
+      color: colors.onSurface,
+    },
+    pasoFila: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+    },
+    pasoNum: {
+      ...typography.bodyMd,
+      color: colors.onSurface,
+      fontWeight: '700',
+    },
+    instruccionesTexto: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+      flex: 1,
+    },
+    meta: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    fecha: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    progreso: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: spacing.xs,
+    },
+  });

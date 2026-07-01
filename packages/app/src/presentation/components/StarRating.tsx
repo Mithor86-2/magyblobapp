@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from './Icon';
-import { colors, iconSize } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeProvider';
+import { iconSize } from '../theme/tokens';
 
 /**
  * Valoración en estrellas (1-3). En modo lectura solo muestra; si se pasa
@@ -13,6 +14,7 @@ export function StarRating({
   value: number;
   onChange?: (valoracion: number) => void;
 }) {
+  const { colors } = useTheme();
   const estrellas = [1, 2, 3];
   return (
     <View style={styles.row}>

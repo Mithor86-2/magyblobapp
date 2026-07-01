@@ -13,7 +13,8 @@ import { ApiError } from '../../domain/errors';
 import { estiloLabel, temaLabel } from '../labels';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
-import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 /**
@@ -31,6 +32,8 @@ const EDAD_DEFECTO = 4;
 
 export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [temas, setTemas] = useState<Tema[]>([TEMAS[0]]);
   const [estilos, setEstilos] = useState<Estilo[]>([ESTILOS[0]]);
   const [story, setStory] = useState<AnonymousStory | null>(null);
@@ -224,91 +227,92 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  hero: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingTop: spacing.sm,
-  },
-  logo: {
-    fontSize: 64,
-  },
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-    textAlign: 'center',
-  },
-  subtitle: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    ...typography.headlineMd,
-    color: colors.secondary,
-    marginTop: spacing.md,
-  },
-  fieldLabel: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  usos: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  limitMsg: {
-    ...typography.bodyMd,
-    color: colors.primary,
-    textAlign: 'center',
-    fontWeight: '700',
-  },
-  statusBox: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-  },
-  statusText: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  errorBox: {
-    backgroundColor: colors.errorContainer,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-  },
-  errorText: {
-    ...typography.labelBold,
-    color: colors.onErrorContainer,
-    textAlign: 'center',
-  },
-  storyCard: {
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    ...softShadow,
-  },
-  storyCover: {
-    width: '100%',
-    height: 180,
-    borderRadius: radius.md,
-  },
-  storyTitle: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-  },
-  storyBody: {
-    ...typography.bodyLg,
-    color: colors.onSurface,
-  },
-  footerActions: {
-    gap: spacing.sm,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    hero: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingTop: spacing.sm,
+    },
+    logo: {
+      fontSize: 64,
+    },
+    title: {
+      ...typography.displayLg,
+      color: colors.primary,
+      textAlign: 'center',
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    sectionTitle: {
+      ...typography.headlineMd,
+      color: colors.secondary,
+      marginTop: spacing.md,
+    },
+    fieldLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    usos: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    limitMsg: {
+      ...typography.bodyMd,
+      color: colors.primary,
+      textAlign: 'center',
+      fontWeight: '700',
+    },
+    statusBox: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.md,
+    },
+    statusText: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    errorBox: {
+      backgroundColor: colors.errorContainer,
+      borderRadius: radius.lg,
+      paddingHorizontal: spacing.md,
+    },
+    errorText: {
+      ...typography.labelBold,
+      color: colors.onErrorContainer,
+      textAlign: 'center',
+    },
+    storyCard: {
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      ...makeSoftShadow(colors),
+    },
+    storyCover: {
+      width: '100%',
+      height: 180,
+      borderRadius: radius.md,
+    },
+    storyTitle: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+    },
+    storyBody: {
+      ...typography.bodyLg,
+      color: colors.onSurface,
+    },
+    footerActions: {
+      gap: spacing.sm,
+    },
+  });

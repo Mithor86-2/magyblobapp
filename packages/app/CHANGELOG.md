@@ -19,6 +19,54 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.6.0] - 2026-07-01
+
+### Changed
+
+- Sin cambios funcionales en el app; versión alineada (lockstep) con el release conjunto v1.6.0
+  (backend: configuración por JSON con sync versionado, US-70).
+
+## [1.5.0] - 2026-07-01
+
+### Added
+
+- Tema **claro/oscuro** reactivo en toda la app con selección **Automático / Claro / Oscuro** desde la
+  zona de adultos, persistida (no se borra al cerrar sesión). "Automático" sigue el esquema del sistema
+  operativo (US-66). Toda la implementación es local (lectura del SO + módulos build-time de Expo), sin
+  red ni SDK de terceros (Docs/cumplimiento-menores.md).
+
+### Changed
+
+- Las **barras del sistema** (barra de estado y, en Android, la barra de navegación inferior de
+  botones/gestos), la barra de pestañas y las cabeceras de navegación son ahora coherentes con el tema
+  activo (US-66). `userInterfaceStyle` pasa a `automatic`.
+- **La app se arranca con un development build** (`cd packages/app && npx expo run:android` / `run:ios`),
+  no con Expo Go: al usar módulos nativos (`expo-navigation-bar`/`expo-system-ui`) Expo Go ya no puede
+  cargarla. Documentación de arranque (READMEs y `estrategia-pruebas.md`) actualizada (US-66).
+- La **paleta del tema oscuro** pasa del cocoa cálido al diseño **"cielo nocturno"** (índigo cósmico)
+  de `Docs/Design/stitch_magyblob/DESIGN_Dark.md`: superficies índigo profundas, coral como acción
+  principal, púrpura suave (secundario) y aqua (terciario), con texto lila claro de alto contraste
+  (US-66). El tema claro y los tokens invariantes (Quicksand, radios, espaciado) no cambian.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.4.1] - 2026-06-28
+
+### Added
+
+- `eas.json` con perfiles de **EAS Build**: `preview` (APK de distribución interna apuntando al backend
+  de producción, para probar en dispositivo), `development` (APK dev contra `10.0.2.2`) y `production`
+  (AAB). La URL del backend va en `env.EXPO_PUBLIC_API_URL` del perfil (la build en la nube no usa el
+  `.env` local).
+- Cabecera de documentación de módulo en las pantallas `StoryGeneratorScreen`, `HistoryScreen`,
+  `CreateProfileScreen` y `ActivitiesScreen`, que aún no la tenían (US-65).
+
 ## [1.4.0] - 2026-06-28
 
 ### Added

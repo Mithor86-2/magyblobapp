@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { colors, radius, tapTarget, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, tapTarget, typography } from '../theme/tokens';
 
 interface SelectableChipProps {
   label: string;
@@ -12,6 +13,8 @@ interface SelectableChipProps {
  * coral; inactivo = contorno suave. Tap target ≥64px de alto para dedos pequeños.
  */
 export function SelectableChip({ label, selected, onPress }: SelectableChipProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -32,35 +35,36 @@ export function SelectableChip({ label, selected, onPress }: SelectableChipProps
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    minHeight: tapTarget,
-    paddingHorizontal: 20,
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // Recorta el android_ripple a la forma de píldora.
-    overflow: 'hidden',
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  selected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  unselected: {
-    backgroundColor: colors.surfaceContainer,
-    borderColor: colors.outline,
-  },
-  label: {
-    ...typography.labelBold,
-  },
-  labelSelected: {
-    color: colors.onPrimary,
-  },
-  labelUnselected: {
-    color: colors.onSurfaceVariant,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    base: {
+      minHeight: tapTarget,
+      paddingHorizontal: 20,
+      borderRadius: radius.pill,
+      borderWidth: 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+      // Recorta el android_ripple a la forma de píldora.
+      overflow: 'hidden',
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    selected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    unselected: {
+      backgroundColor: colors.surfaceContainer,
+      borderColor: colors.outline,
+    },
+    label: {
+      ...typography.labelBold,
+    },
+    labelSelected: {
+      color: colors.onPrimary,
+    },
+    labelUnselected: {
+      color: colors.onSurfaceVariant,
+    },
+  });

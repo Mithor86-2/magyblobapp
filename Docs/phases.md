@@ -655,3 +655,70 @@ Dos features en paralelo (A backend, B app; plan en
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
+
+### Estándar de documentación del código (US-65, integrado el 2026-06-28, v1.4.1)
+
+Feature `feature/76-doc-estandar-jsdoc` (docs + tooling; sin cambio funcional → **patch v1.4.1**).
+Formaliza y hace **verificable** la convención de documentación que el proyecto ya seguía. La skill
+[`documentar`](../.claude/skills/documentar/SKILL.md) es la **fuente única** del estándar; `CLAUDE.md`
+la referencia.
+
+- [x] ✅ **Enforce (backend):** `eslint-plugin-jsdoc` + regla `jsdoc/require-jsdoc` (`publicOnly`,
+      clases y funciones exportadas de `packages/backend/src/**`) integrada en `pnpm check`. Solo
+      `require-jsdoc` (no el preset), acorde a la convención de prosa española (sin TSDoc formal).
+- [x] ✅ **Huecos cerrados:** 14 funciones exportadas del backend (mappers, type-guards, parseResponse,
+      prompts, storyParams) + cabeceras de módulo en 4 rutas; 4 pantallas del app documentadas a mano
+      (el app no tiene ESLint en el gate → estándar por convención, follow-up de tooling).
+- [x] ✅ **Docs:** skill `documentar`, enlaces desde `CLAUDE.md`, decisión en `memory.md`.
+- **DoD:** `pnpm check` verde (backend 311 + app 187); estándar aplicado y enforced en backend.
+
+### Tema claro/oscuro + barras de sistema (US-66, integrado el 2026-07-01, v1.5.0)
+
+Feature `feature/77-tema-dark-light` (solo app; nueva funcionalidad de UI → **minor v1.5.0**). La app
+pasa de _light-only_ a **tema reactivo** claro/oscuro con selección **Sistema + toggle manual**.
+
+- [x] ✅ **Tokens light/dark:** `tokens.ts` divide `colors` en `lightColors`/`darkColors` (misma forma,
+      `ColorTokens`), paleta oscura cálida con contraste AA; `themes` + `makeSoftShadow`.
+- [x] ✅ **Reactivo:** `ThemeProvider` + `useTheme()` + `useThemedStyles(makeStyles)` (memoiza por
+      esquema) + función pura `resolveScheme(preference, systemScheme)`; contexto por defecto = claro
+      (los tests sin provider siguen verdes). **25 componentes/pantallas** migrados a estilos temáticos.
+- [x] ✅ **Preferencia:** `themePreference` (`system|light|dark`, default `system`) en `useAppStore`
+      (persistida, no se borra en logout; persistencia v4→v5) + selector Automático/Claro/Oscuro en la
+      Zona de adultos (i18n ES/EN).
+- [x] ✅ **Barras del SO:** `expo-system-ui` (fondo raíz) + `expo-navigation-bar` (estilo de botones
+      Android), `StatusBar`, `NavigationContainer`, tab bar y cabeceras coherentes con el tema;
+      `app.json` `userInterfaceStyle: automatic`. Todo local (sin red ni SDK de terceros).
+- [x] ✅ **Arranque:** al añadir módulos nativos, **Expo Go deja de servir**; la app se lanza con dev
+      build (`cd packages/app && npx expo run:android`/`run:ios`). README (raíz y app), estrategia de
+      pruebas, CHANGELOG y lecciones actualizados con instrucciones de dev y prod.
+- **DoD:** ✅ `pnpm check` verde (app 194 + backend 311) · ✅ `expo export` · ✅ verificado en emulador
+  Android por el usuario (selector de tema operativo).
+
+#### Refinamiento de paleta oscura → "cielo nocturno" (Feature 79, US-66)
+
+Feature `feature/79-tema-dark-design-nocturno` (solo app; cambio de color del tema oscuro). La feature 77
+dejó `darkColors` en un cocoa cálido provisional; con el documento de diseño
+[Docs/Design/stitch_magyblob/DESIGN_Dark.md](Design/stitch_magyblob/DESIGN_Dark.md) se re-mapea al diseño
+aprobado.
+
+- [x] ✅ **`darkColors` = "cielo nocturno" (índigo cósmico):** superficies índigo (`#111125`), coral
+      (acción), púrpura suave (secundario), aqua (terciario), texto lila claro. Un solo objeto tocado
+      (contrato `ColorTokens` intacto); ni `StyleSheet` ni `ThemeProvider` cambian. Quicksand y tokens
+      invariantes (radios/espaciado) se mantienen; el tema claro no cambia.
+- **DoD:** ✅ `pnpm check` verde (app 194 tests) · ✅ verificado en simulador Android por el usuario.
+
+### Actividades más significativas: ≥6 pasos y trato por parentesco (US-67, integrado el 2026-07-01)
+
+Feature `feature/78-actividades-6-pasos` (solo backend). Actividades más significativas para 2-6 años
+y con las instrucciones dirigidas al adulto por su parentesco. Integrada en `develop` **sin release**
+(entradas en `## [Unreleased]` del CHANGELOG del backend, a versionar más adelante).
+
+- [x] ✅ **Prompt (ES/EN):** de "3-6 pasos" a **al menos 6 pasos** numerados, detallados y concretos,
+      con **objetivo de aprendizaje** y **materiales sencillos de casa**; `MockProvider` emite ≥6.
+- [x] ✅ **Seed alineado:** `prompt.activity.template` coincide con el default de código (estaba
+      desactualizado y ni pedía pasos).
+- [x] ✅ **Trato por parentesco:** las instrucciones se dirigen al adulto por su parentesco (mamá/papá/
+      abuela o abuelo/tutor) en vez de "el adulto"; sin sesión (anónimo) → "la persona adulta".
+      `RecommendActivities` resuelve el parentesco vía `GuardianRepository`.
+- **DoD:** ✅ `pnpm check` verde (backend 317 + app 194) · ✅ verificado por el usuario en la app
+  (Groq): actividades con ≥6 pasos y trato por parentesco.

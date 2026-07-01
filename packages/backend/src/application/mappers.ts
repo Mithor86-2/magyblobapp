@@ -2,8 +2,9 @@ import type { Story } from '../domain/entities/Story.js';
 import type { Activity } from '../domain/entities/Activity.js';
 import type { ActivityOutput, StoryOutput } from './dto.js';
 
-/** Mapas entidad → DTO de salida, compartidos por los casos de uso de lectura. */
+// Mapas entidad → DTO de salida, compartidos por los casos de uso de lectura.
 
+/** Convierte una entidad `Story` en su DTO de salida (fecha en ISO; el `prompt` no se expone). */
 export function toStoryOutput(story: Story): StoryOutput {
   return {
     id: story.id,
@@ -22,6 +23,7 @@ export function toStoryOutput(story: Story): StoryOutput {
   };
 }
 
+/** Convierte una entidad `Activity` en su DTO de salida (fechas en ISO; el `prompt` no se expone). */
 export function toActivityOutput(activity: Activity): ActivityOutput {
   return {
     id: activity.id,

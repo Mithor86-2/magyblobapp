@@ -10,7 +10,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, radius, spacing } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, spacing } from '../theme/tokens';
 
 /**
  * Nombre lógico de cada cabecera ilustrada (US-58). El mapa a la imagen usa
@@ -59,6 +60,7 @@ export function Screen({
   headerImageName?: HeaderImageName;
 }) {
   const { height } = useWindowDimensions();
+  const styles = useThemedStyles(makeStyles);
   // Alto proporcional acotado: ni minúscula en pantallas bajas ni gigante en altas.
   const headerHeight = Math.max(HEADER_MIN, Math.min(HEADER_MAX, height * HEADER_RATIO));
 
@@ -89,34 +91,35 @@ export function Screen({
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    flexGrow: 1,
-  },
-  header: {
-    width: '100%',
-    // El alto (banda proporcional acotada) se inyecta en línea (feature 65). Con
-    // `resizeMode="contain"` la imagen se ve completa y centrada dentro de la banda; el
-    // fondo del theme rellena de forma equilibrada el espacio sobrante a los lados.
-    backgroundColor: colors.surface,
-    borderBottomLeftRadius: radius.lg,
-    borderBottomRightRadius: radius.lg,
-  },
-  body: {
-    flexGrow: 1,
-    padding: spacing.containerPadding,
-    gap: spacing.md,
-  },
-  footer: {
-    paddingHorizontal: spacing.containerPadding,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.surface,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      flexGrow: 1,
+    },
+    header: {
+      width: '100%',
+      // El alto (banda proporcional acotada) se inyecta en línea (feature 65). Con
+      // `resizeMode="contain"` la imagen se ve completa y centrada dentro de la banda; el
+      // fondo del theme rellena de forma equilibrada el espacio sobrante a los lados.
+      backgroundColor: colors.surface,
+      borderBottomLeftRadius: radius.lg,
+      borderBottomRightRadius: radius.lg,
+    },
+    body: {
+      flexGrow: 1,
+      padding: spacing.containerPadding,
+      gap: spacing.md,
+    },
+    footer: {
+      paddingHorizontal: spacing.containerPadding,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+  });

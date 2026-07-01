@@ -1,6 +1,6 @@
 {
   "name": "@magyblob/backend",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
@@ -20,6 +20,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "config:sync": "tsx prisma/sync-settings.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

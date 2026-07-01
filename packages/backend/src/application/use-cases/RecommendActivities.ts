@@ -3,6 +3,7 @@ import { Activity } from '../../domain/entities/Activity.js';
 import { DomainError, NotFoundError } from '../../domain/errors.js';
 import type { ActivityRepository } from '../../domain/repositories/ActivityRepository.js';
 import type { ChildProfileRepository } from '../../domain/repositories/ChildProfileRepository.js';
+import type { GuardianRepository } from '../../domain/repositories/GuardianRepository.js';
 import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { ActivityOutput, RecommendActivitiesRequest } from '../dto.js';
@@ -10,6 +11,7 @@ import { toActivityOutput } from '../mappers.js';
 
 export interface RecommendActivitiesDeps {
   profiles: ChildProfileRepository;
+  guardians: GuardianRepository;
   activities: ActivityRepository;
   ai: AIProvider;
   newId: IdGenerator;
@@ -41,8 +43,17 @@ export class RecommendActivities {
       throw new NotFoundError(`No existe el perfil con id "${input.profileId}".`);
     }
 
+    // Parentesco del adulto con sesión para dirigir las instrucciones a él por su
+    // trato (US-67); si no se encuentra el guardián, se cae al trato genérico.
+    const guardian = await this.deps.guardians.findById(perfil.guardianId);
+
     const cantidad = input.cantidad ?? CANTIDAD_POR_DEFECTO;
-    const generadas = await this.deps.ai.recommendActivities({ perfil, categoria, cantidad });
+    const generadas = await this.deps.ai.recommendActivities({
+      perfil,
+      categoria,
+      cantidad,
+      parentesco: guardian?.parentesco,
+    });
 
     // Dedup simple: descartar las que ya existan para el perfil (por título) y las
     // repetidas dentro del propio lote generado.

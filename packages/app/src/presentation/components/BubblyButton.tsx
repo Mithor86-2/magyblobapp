@@ -1,7 +1,8 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Icon, type IconName } from './Icon';
-import { colors, radius, tapTarget, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, tapTarget, typography } from '../theme/tokens';
 
 interface BubblyButtonProps {
   /** Texto del botón. Opcional para botones solo-icono (usar `accessibilityLabel`). */
@@ -16,14 +17,16 @@ interface BubblyButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'accent';
 }
 
-const VARIANT_BG = {
-  primary: colors.primary,
-  secondary: colors.secondary,
-  danger: colors.error,
-  // Acento (cielo): acción afirmativa propia (p. ej. "Realizado" de una actividad, US-54),
-  // distinta del color de la categoría y de la secundaria menta.
-  accent: colors.tertiary,
-} as const;
+/** Color de fondo por variante del botón, tomado de la paleta activa (US-66). */
+const variantBg = (colors: ColorTokens) =>
+  ({
+    primary: colors.primary,
+    secondary: colors.secondary,
+    danger: colors.error,
+    // Acento (cielo): acción afirmativa propia (p. ej. "Realizado" de una actividad, US-54),
+    // distinta del color de la categoría y de la secundaria menta.
+    accent: colors.tertiary,
+  }) as const;
 
 /**
  * Botón "squishy": píldora con borde inferior grueso (efecto 3D físico) que se
@@ -39,7 +42,9 @@ export function BubblyButton({
   loading = false,
   variant = 'primary',
 }: BubblyButtonProps) {
-  const bg = VARIANT_BG[variant];
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const bg = variantBg(colors)[variant];
   const isDisabled = disabled || loading;
 
   // Confirmación táctil (Material 3 / HIG): háptico suave al pulsar el botón principal.
@@ -83,32 +88,33 @@ export function BubblyButton({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    minHeight: tapTarget,
-    borderRadius: radius.pill,
-    borderBottomWidth: 4,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    // Recorta el android_ripple a la forma de píldora (sin esto desborda el radio).
-    overflow: 'hidden',
-  },
-  pressed: {
-    borderBottomWidth: 1,
-    transform: [{ translateY: 3 }],
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  inner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  label: {
-    ...typography.button,
-    color: colors.onPrimary,
-    textAlign: 'center',
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    base: {
+      minHeight: tapTarget,
+      borderRadius: radius.pill,
+      borderBottomWidth: 4,
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+      // Recorta el android_ripple a la forma de píldora (sin esto desborda el radio).
+      overflow: 'hidden',
+    },
+    pressed: {
+      borderBottomWidth: 1,
+      transform: [{ translateY: 3 }],
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+    inner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+    },
+    label: {
+      ...typography.button,
+      color: colors.onPrimary,
+      textAlign: 'center',
+    },
+  });

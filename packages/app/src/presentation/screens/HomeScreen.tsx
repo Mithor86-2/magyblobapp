@@ -6,12 +6,15 @@ import { BubblyButton } from '../components/BubblyButton';
 import { Icon } from '../components/Icon';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { useAppStore } from '../store/useAppStore';
-import { colors, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /** Pantalla de bienvenida: saluda al niño actual y lleva a Cuentos / Actividades. */
 export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
 
   // La zona de adultos vive en el stack raíz (sobre las pestañas), tras la puerta parental.
@@ -53,39 +56,40 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  hero: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingTop: spacing.lg,
-  },
-  avatar: {
-    fontSize: 80,
-  },
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-    textAlign: 'center',
-  },
-  subtitle: {
-    ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  actions: {
-    gap: spacing.elementGap,
-    marginTop: spacing.lg,
-  },
-  adultLink: {
-    marginTop: spacing.lg,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-  },
-  adultLinkText: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    hero: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingTop: spacing.lg,
+    },
+    avatar: {
+      fontSize: 80,
+    },
+    title: {
+      ...typography.displayLg,
+      color: colors.primary,
+      textAlign: 'center',
+    },
+    subtitle: {
+      ...typography.bodyLg,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    actions: {
+      gap: spacing.elementGap,
+      marginTop: spacing.lg,
+    },
+    adultLink: {
+      marginTop: spacing.lg,
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingVertical: spacing.sm,
+    },
+    adultLinkText: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+  });

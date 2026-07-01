@@ -9,7 +9,8 @@ import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
-import { colors, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 import { CONSENT_VERSION } from './ConsentScreen';
 import type { RootScreenProps } from '../navigation';
 
@@ -24,6 +25,7 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
   const { t } = useTranslation();
   const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
+  const styles = useThemedStyles(makeStyles);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -100,18 +102,19 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  body: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  link: {
-    marginTop: spacing.sm,
-    alignSelf: 'center',
-    paddingVertical: spacing.sm,
-  },
-  linkText: {
-    ...typography.labelBold,
-    color: colors.primary,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    body: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    link: {
+      marginTop: spacing.sm,
+      alignSelf: 'center',
+      paddingVertical: spacing.sm,
+    },
+    linkText: {
+      ...typography.labelBold,
+      color: colors.primary,
+    },
+  });

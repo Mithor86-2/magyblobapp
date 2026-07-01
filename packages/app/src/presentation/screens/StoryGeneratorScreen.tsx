@@ -15,11 +15,20 @@ import { StoryCover } from '../components/StoryCover';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
 import type { TabScreenProps } from '../navigation';
 
+/**
+ * Pantalla del **generador de cuentos** para el perfil activo. Permite elegir uno o
+ * varios temas y estilos (multi-selección, US-47/US-54), lanza la generación contra
+ * el `api` inyectado y muestra el cuento con su portada, narración y favorito.
+ * Degrada con un mensaje si la petición falla.
+ */
 export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
 
   // US-54: el generador ofrece TODOS los temas del vocabulario (antes se limitaba a
@@ -143,66 +152,67 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  avatar: {
-    fontSize: 56,
-  },
-  title: {
-    ...typography.headlineMd,
-    color: colors.primary,
-    textAlign: 'center',
-  },
-  fieldLabel: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  statusBox: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-  },
-  statusText: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  errorBox: {
-    backgroundColor: colors.errorContainer,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-  },
-  errorText: {
-    ...typography.labelBold,
-    color: colors.onErrorContainer,
-    textAlign: 'center',
-  },
-  storyCard: {
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    ...softShadow,
-  },
-  storyCover: {
-    width: '100%',
-    height: 180,
-    borderRadius: radius.md,
-  },
-  storyTitle: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-  },
-  storyBody: {
-    ...typography.bodyLg,
-    color: colors.onSurface,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    header: {
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    avatar: {
+      fontSize: 56,
+    },
+    title: {
+      ...typography.headlineMd,
+      color: colors.primary,
+      textAlign: 'center',
+    },
+    fieldLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    statusBox: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.lg,
+    },
+    statusText: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    errorBox: {
+      backgroundColor: colors.errorContainer,
+      borderRadius: radius.lg,
+      paddingHorizontal: spacing.md,
+    },
+    errorText: {
+      ...typography.labelBold,
+      color: colors.onErrorContainer,
+      textAlign: 'center',
+    },
+    storyCard: {
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      ...makeSoftShadow(colors),
+    },
+    storyCover: {
+      width: '100%',
+      height: 180,
+      borderRadius: radius.md,
+    },
+    storyTitle: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+    },
+    storyBody: {
+      ...typography.bodyLg,
+      color: colors.onSurface,
+    },
+  });

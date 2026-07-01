@@ -2,13 +2,16 @@
   "expo": {
     "name": "Aprendizaje Mágico",
     "slug": "magyblob-app",
-    "version": "1.4.0",
+    "version": "1.6.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.magyblobapp"
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#fff8f6"
     },
     "android": {
       "adaptiveIcon": {
@@ -41,6 +44,12 @@
           "resizeMode": "contain"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1ec84a76-3c8c-452d-9be5-d02210219bf5"
+      }
+    },
+    "owner": "mithor1986"
   }
 }

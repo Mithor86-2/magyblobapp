@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BubblyButton } from './BubblyButton';
-import { colors, radius, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 
 interface ErrorFallbackProps {
   /** Reintenta: el boundary se resetea y vuelve a montar el contenido. */
@@ -17,6 +18,7 @@ interface ErrorFallbackProps {
  */
 export function ErrorFallback({ onRetry }: ErrorFallbackProps) {
   const { t } = useTranslation();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.container} accessibilityRole="alert">
       <Text style={styles.emoji}>🌈</Text>
@@ -27,27 +29,28 @@ export function ErrorFallback({ onRetry }: ErrorFallbackProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    padding: spacing.containerPadding,
-    backgroundColor: colors.errorContainer,
-    borderRadius: radius.lg,
-  },
-  emoji: {
-    fontSize: 64,
-  },
-  title: {
-    ...typography.headlineMd,
-    color: colors.onErrorContainer,
-    textAlign: 'center',
-  },
-  body: {
-    ...typography.bodyMd,
-    color: colors.onErrorContainer,
-    textAlign: 'center',
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.md,
+      padding: spacing.containerPadding,
+      backgroundColor: colors.errorContainer,
+      borderRadius: radius.lg,
+    },
+    emoji: {
+      fontSize: 64,
+    },
+    title: {
+      ...typography.headlineMd,
+      color: colors.onErrorContainer,
+      textAlign: 'center',
+    },
+    body: {
+      ...typography.bodyMd,
+      color: colors.onErrorContainer,
+      textAlign: 'center',
+    },
+  });

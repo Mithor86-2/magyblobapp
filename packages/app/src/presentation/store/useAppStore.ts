@@ -15,6 +15,9 @@ import { persist } from 'zustand/middleware';
 import { persistStorage } from '../../infrastructure/storage';
 import { setActiveChildName } from '../../infrastructure/sentry';
 import { cambiarIdiomaApp, DEFAULT_APP_LANGUAGE, type AppLanguage } from '../../i18n';
+// Tipo y default del tema desde `tokens` (no desde `ThemeProvider`) para evitar el
+// ciclo de import store→ThemeProvider→store: `tokens` no depende del store.
+import { DEFAULT_THEME_PREFERENCE, type ThemePreference } from '../theme/tokens';
 import type { ChildProfile, Guardian, GuardianSession, SessionTokens } from '../../domain/types';
 
 interface AppState {
@@ -33,6 +36,14 @@ interface AppState {
   appLanguage: AppLanguage;
   /** Cambia el idioma de la interfaz y lo aplica a i18next (US-57). */
   setAppLanguage: (lng: AppLanguage) => void;
+  /**
+   * Preferencia de tema de la interfaz (US-66): `system` sigue al SO, o se fuerza
+   * `light`/`dark`. Es preferencia de UI (como `appLanguage`): se persiste y NO se
+   * borra al cerrar sesión. El esquema efectivo lo resuelve el `ThemeProvider`.
+   */
+  themePreference: ThemePreference;
+  /** Fija la preferencia de tema (Automático/Claro/Oscuro) desde la zona de adultos (US-66). */
+  setThemePreference: (preference: ThemePreference) => void;
   /** Abre sesión tras alta/login: guarda el guardián, el consentimiento y los tokens. */
   setSession: (session: GuardianSession, consentVersion: string) => void;
   /** Reemplaza los tokens tras una renovación (refresh-on-401). */
@@ -66,6 +77,10 @@ export const useAppStore = create<AppState>()(
         cambiarIdiomaApp(lng);
         set({ appLanguage: lng });
       },
+      // El tema es una preferencia de UI: arranca siguiendo al sistema y NO se
+      // borra al cerrar sesión (como el idioma del app).
+      themePreference: DEFAULT_THEME_PREFERENCE,
+      setThemePreference: (preference) => set({ themePreference: preference }),
       setSession: (session, consentVersion) => {
         const { accessToken, refreshToken, ...guardian } = session;
         set({ guardian, consentVersion, accessToken, refreshToken });
@@ -100,12 +115,16 @@ export const useAppStore = create<AppState>()(
         setActiveChildName(state?.currentProfile?.nombre);
         cambiarIdiomaApp(state?.appLanguage ?? DEFAULT_APP_LANGUAGE);
       },
-      // v4 (US-57): el estado incorpora `appLanguage` (idioma de la interfaz). v3
-      // añadió la lista de `profiles` del guardián (US-49). El estado anterior se
-      // descarta (el adulto vuelve a identificarse una vez); el idioma cae al
-      // por defecto `es` (feature 64: sin detección del dispositivo).
-      version: 4,
-      migrate: () => ({ ...SESION_VACIA, appLanguage: DEFAULT_APP_LANGUAGE }),
+      // v5 (US-66): el estado incorpora `themePreference` (tema de la interfaz). v4
+      // (US-57) añadió `appLanguage`; v3 añadió la lista de `profiles` (US-49). El
+      // estado anterior se descarta (el adulto vuelve a identificarse una vez); el
+      // idioma cae a `es` y el tema a `system` (seguir al SO).
+      version: 5,
+      migrate: () => ({
+        ...SESION_VACIA,
+        appLanguage: DEFAULT_APP_LANGUAGE,
+        themePreference: DEFAULT_THEME_PREFERENCE,
+      }),
       partialize: (state) => ({
         guardian: state.guardian,
         consentVersion: state.consentVersion,
@@ -114,6 +133,7 @@ export const useAppStore = create<AppState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         appLanguage: state.appLanguage,
+        themePreference: state.themePreference,
       }),
     },
   ),

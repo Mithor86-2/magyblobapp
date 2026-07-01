@@ -781,3 +781,63 @@ paralelo deje de generar conflictos al mergear a `develop`. Cierra el hilo de la
   **no** va en union (corrompería el árbol); su receta es `pnpm install` (pnpm reconcilia el lockfile).
 - **Protocolo consolidado en [trabajo-en-paralelo.md](trabajo-en-paralelo.md).** Worktree por feature,
   commit-pronto y las recetas de conflicto al integrar, en un único doc enlazado desde `CLAUDE.md`.
+
+## Estándar de documentación del código (Feature 76 · 2026-06-28 · US-65 · calidad)
+
+Rama `feature/76-doc-estandar-jsdoc` (desde `develop`). Se formaliza y se vuelve **verificable** la
+convención de documentación de código que el proyecto ya seguía de facto. Las **reglas** (cómo se
+escribe la doc y cómo se hace enforce) viven en la skill `documentar` como fuente única; aquí solo la
+**decisión y su porqué**:
+
+- **Se crea una skill `documentar` como fuente única del estándar**, en lugar de dispersar las reglas
+  entre `CLAUDE.md`, `memory.md` y los comentarios: `CLAUDE.md` la **referencia** (misma pauta que
+  `versionar`). Si cambia el estándar, se cambia en un solo sitio.
+- **Enforce solo en backend, con `eslint-plugin-jsdoc` (`jsdoc/require-jsdoc`, `publicOnly`).** Se
+  activa **solo** `require-jsdoc` (no el preset `flat/recommended`) porque la convención del proyecto
+  es **prosa en español**, no TSDoc formal; solo se exige la _presencia_ del bloque. El **app (Expo)**
+  queda fuera: **no tiene ESLint** en el gate (montarlo es un follow-up de tooling).
+- **No se exige doc en interfaces** para no generar ruido en los «bags» de opciones triviales
+  (`XxxOptions`/`XxxDeps`).
+- **La auditoría inicial sobre-reportó** (los «backend sin doc» eran ficheros **generados de Prisma**).
+  Lección: para medir cobertura de doc, la fuente de verdad es **correr la regla de lint**, no contar
+  bloques `/**`.
+
+## Tema claro/oscuro reactivo (Feature 77 · 2026-07-01 · US-66 · app)
+
+Rama `feature/77-tema-dark-light` (desde `develop`, worktree). La app deja de ser _light-only_ y gana
+tema claro/oscuro. Decisiones y su porqué:
+
+- **Sistema + toggle manual, y cobertura completa (no parcial).** A elección del usuario: el tema por
+  defecto **sigue al SO** (`useColorScheme`) y además hay selector **Automático/Claro/Oscuro** en la
+  zona de adultos, persistido como preferencia de UI (patrón de `appLanguage`: no se borra en logout,
+  `partialize`, persistencia v4→v5). Se migran **todas** las pantallas/componentes, no un subconjunto.
+- **Reactividad sin librería externa (YAGNI).** En vez de nativewind/dripsy, un `ThemeProvider` propio
+  con `useTheme()` y `useThemedStyles(makeStyles)` que memoiza el `StyleSheet.create` por esquema. Los
+  ~14 ficheros que hacían `StyleSheet.create` a nivel de módulo con `colors` estático pasan al patrón
+  `makeStyles(colors)`. El **contexto por defecto = tema claro**, para que los tests de componentes que
+  renderizan sin provider sigan verdes sin tocarlos. La lógica de resolución es una función **pura**
+  (`resolveScheme(preference, systemScheme)`), testeable aislada (patrón `resolveInitialRoute`).
+- **Barras del SO con paquetes Expo build-time.** `expo-system-ui` (fondo raíz, evita flash) y
+  `expo-navigation-bar` (estilo de los botones de la barra inferior de Android). En SDK 56 `expo-navigation-bar`
+  retiró los setters imperativos (edge-to-edge): se usa su **componente** `<NavigationBar style=…>`.
+  Todo local (lectura del SO + módulos empaquetados), **sin red ni SDK de terceros** → no afecta a C-2/C-5.
+- **Coste asumido: adiós a Expo Go.** Añadir módulos nativos obliga a arrancar con **development build**
+  (`expo run:android`/`run:ios`); Expo Go ya no carga la app. Se documenta en READMEs, estrategia de
+  pruebas y lecciones. El E2E nativo (Maestro) pasa a requerir dev build (appId = bundleId, no Expo Go).
+
+## Paleta del tema oscuro "cielo nocturno" (Feature 79 · 2026-07-01 · US-66 · app)
+
+Rama `feature/79-tema-dark-design-nocturno` (desde `develop`). Refinamiento **solo de color** del tema
+oscuro que la feature 77 dejó en un cocoa cálido provisional. Decisiones y su porqué:
+
+- **La paleta oscura sigue ahora el diseño aprobado**, no una improvisación. La feature 77 implementó la
+  _mecánica_ (ThemeProvider, contrato `ColorTokens`, cobertura completa) con una paleta cocoa cálida de
+  relleno; con el documento de diseño [Docs/Design/stitch_magyblob/DESIGN_Dark.md](Design/stitch_magyblob/DESIGN_Dark.md)
+  disponible, `darkColors` se re-mapea al **"cielo nocturno" (índigo cósmico)**: superficies índigo
+  profundas (`#111125`), coral (acción), púrpura suave (secundario) y aqua (terciario), texto lila claro.
+- **El cambio es barato porque el contrato ya existía.** Al ser las claves de `ColorTokens` idénticas en
+  claro y oscuro, ajustar el tema oscuro es tocar **un solo objeto** (`darkColors` en `tokens.ts`); ni un
+  `StyleSheet` ni el `ThemeProvider` cambian. Es la prueba de que la abstracción de la feature 77 pagó.
+- **Se mantiene Quicksand (no Plus Jakarta Sans).** El `DESIGN_Dark.md` sugiere Plus Jakarta Sans, pero
+  se conserva la tipografía y los tokens invariantes (radios, espaciado) para no divergir del tema claro
+  ni cargar fuentes nuevas: el alcance es la paleta de color, no una migración tipográfica.

@@ -8,6 +8,7 @@ export const STORY_PARAMS_SETTING_KEY = 'prompt.story.params';
 export const FORMATOS_CUENTO = ['cuento', 'fabula', 'poema', 'adivinanza'] as const;
 export type FormatoCuento = (typeof FORMATOS_CUENTO)[number];
 
+/** Type guard: ¿`value` es un formato de cuento válido? */
 export function esFormatoCuento(value: unknown): value is FormatoCuento {
   return typeof value === 'string' && (FORMATOS_CUENTO as readonly string[]).includes(value);
 }

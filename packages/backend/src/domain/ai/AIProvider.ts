@@ -1,5 +1,5 @@
 import type { ChildProfile } from '../entities/ChildProfile.js';
-import type { Categoria, Estilo, ProveedorIa, Tema } from '../vocabulary.js';
+import type { Categoria, Estilo, Parentesco, ProveedorIa, Tema } from '../vocabulary.js';
 
 export interface GenerateStoryInput {
   perfil: ChildProfile;
@@ -29,6 +29,12 @@ export interface RecommendActivitiesInput {
   /** Si se indica, acota a una categoría; si no, libre. */
   categoria?: Categoria;
   cantidad: number;
+  /**
+   * Parentesco del adulto acompañante (el guardián con sesión, US-67). Las
+   * instrucciones se dirigen a él por su trato ("mamá", "papá", "el abuelo o la
+   * abuela"…) en vez de "el adulto". Ausente (p. ej. modo anónimo) → trato genérico.
+   */
+  parentesco?: Parentesco;
 }
 
 export interface GeneratedActivity {

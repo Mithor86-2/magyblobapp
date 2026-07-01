@@ -1,6 +1,6 @@
 # Epic C — Actividades
 
-Historias: **US-09**, **US-10**. Volver al [índice](README.md).
+Historias: **US-09**, **US-10**, **US-67**. Volver al [índice](README.md).
 
 ## US-09 — Ver actividades recomendadas · Should
 
@@ -31,3 +31,26 @@ valoración para llevar seguimiento del progreso.
 - (Mejoras) Dada una actividad sin completar, Cuando pulso el botón **"Realizado"**, Entonces se me
   pide la valoración (1-3 estrellas) y al elegirla se registra la actividad como completada
   (`complete`); el botón es una entrada explícita además de tocar directamente las estrellas.
+
+## US-67 — Actividades más significativas con instrucciones de al menos 6 pasos · Mejoras
+
+Como **padre/tutor** quiero que las actividades recomendadas sean más significativas y con
+instrucciones detalladas para poder realizarlas paso a paso con mi hijo/a de 2 a 6 años.
+
+**Criterios de aceptación**
+
+- Dado el prompt de `RecommendActivities` (ES y EN), Cuando se construye, Entonces pide instrucciones
+  en un paso a paso de **al menos 6 pasos numerados**, detallados y concretos (cada paso explica qué
+  hace el adulto y qué hace el niño).
+- Dado ese prompt, Cuando se construye, Entonces pide además un **objetivo de aprendizaje** breve y
+  una lista de **materiales sencillos** que suele haber en casa, manteniendo lenguaje simple,
+  seguridad y tono apropiado para 2-6 años.
+- Dado el guardián con sesión y su **parentesco** (madre/padre/tutor legal/abuelo-a/otro), Cuando se
+  generan las actividades, Entonces las instrucciones se dirigen al adulto por su trato ("mamá",
+  "papá", "la abuela o el abuelo", "el tutor o la tutora") en vez de "el adulto"; sin parentesco
+  (p. ej. modo anónimo) se usa un trato genérico ("la persona adulta").
+- Dada la plantilla configurable `prompt.activity.template` (seed), Cuando se siembra, Entonces
+  **coincide** con el default en código (≥6 pasos detallados, objetivo y materiales de casa).
+- Dado `AI_PROVIDER=mock` o IA caída, Cuando pido actividades, Entonces el fallback a mock devuelve
+  instrucciones con **al menos 6 pasos** numerados (política "sanea, no rechaza": `instrucciones`
+  sigue opcional y saneada, sin validación dura de recuento).

@@ -1,0 +1,70 @@
+{
+  "$comment": "Fuente única de la configuración ajustable en caliente (AppSetting). US-70. NO contiene secretos (API keys y DATABASE_URL van en env). El sync (src/infrastructure/config/appSettings.ts) la aplica a la BD de forma VERSIONADA: solo reescribe una clave cuando su 'version' aquí es MAYOR que la aplicada en BD (o la clave no existe), para no pisar cambios hechos en caliente. Para 'migrar' una config: cambia su 'value' y sube su 'version'. 'value' admite string | number | boolean | objeto (se serializa a texto al guardar).",
+  "settings": [
+    {
+      "key": "ai.model.local",
+      "version": 1,
+      "value": "gemma:2b",
+      "descripcion": "Modelo Ollama por defecto."
+    },
+    {
+      "key": "prompt.activity.system",
+      "version": 5,
+      "value": "Eres un experto en pedagogía de la primera infancia y diseñador de experiencias lúdicas para niños de 2 a 6 años. Tu objetivo es proponer actividades educativas, altamente atractivas y 100% seguras, que transformen objetos cotidianos del hogar en herramientas de aprendizaje, promoviendo la autonomía del niño.\n\nPor cada actividad que diseñes, estructura la respuesta de la siguiente manera:\n\n1. Ficha Técnica:\n- Nombre Creativo: (Un título llamativo para el niño)\n- Edad Recomendada: (Especificar el rango, ej. 2-3 años o 4-6 años)\n- Objetivo de Aprendizaje: (Qué habilidad fomenta: motricidad fina, lenguaje, lógica, sensorial, etc.)\n- Duración Estimada: (En minutos)\n- Nivel de Dificultad: (Del 1 al 3)\n\n2. Preparación:\n- Materiales: Lista de elementos simples, no tóxicos y comunes en casa (ej. rollos de cartón, pinzas de ropa, agua, recipientes de plástico).\n- Espacio Ideal: (Ej. la mesa del comedor, el suelo de la sala, el patio).\n\n3. Secuencia de Juego Paso a Paso (Entre 6 y 10 pasos):\n- Redacta instrucciones claras, cronológicas y dinámicas.\n- Crucial: En cada paso, especifica claramente qué hace la persona adulta acompañante y qué hace el niño. Refiérete a la persona adulta por el trato que indique la petición (p. ej. \"mamá\", \"papá\"), NO con etiquetas como [Adulto]/[Niño] (ej. \"Mamá corta las tiras de papel y el niño las pega con sus dedos\").\n- Asegura que el diseño permita que el niño experimente por sí mismo de forma segura, reduciendo la necesidad de una intervención correctiva constante del adulto.\n\n4. El Toque Mágico (Tip para el adulto):\n- Incluye una sugerencia breve sobre cómo motivar al niño a través de una pregunta o un minirreto (ej. \"¿Cuántos objetos rojos puedes atrapar con las pinzas?\"), o cómo adaptar la actividad si el niño se frustra.\n\nRestricciones Absolutas: Cero peligro (sin objetos cortantes, piezas asfixiantes o químicos), lenguaje impecable, tono entusiasta y propuestas 100% originales (evita los clichés típicos de internet a menos que tengan un giro novedoso).",
+      "descripcion": "System prompt de recommendActivities."
+    },
+    {
+      "key": "prompt.activity.template",
+      "version": 3,
+      "value": "Propón {n} actividades sencillas y significativas para {nombre}, de {edad} años, de la categoría {categoria}. Cada una con título, descripción , un objetivo de aprendizaje , una lista de materiales sencillos que suele haber en casa, unas instrucciones en un paso a paso claro de  6 a 10  pasos numerados, detallados y concretos (cada paso explica qué hace {cuidador} y qué hace el niño), aptos para niños de 2 a 6 años, duración en minutos y nivel 1 a 3. En las instrucciones refiérete al adulto como \"{cuidador}\", no como \"el adulto\".",
+      "descripcion": "Plantilla de actividades (US-67: ≥6 pasos detallados, objetivo y materiales de casa)."
+    },
+    {
+      "key": "prompt.story.system",
+      "version": 2,
+      "value": "Eres un cuentacuentos experto en la primera infancia (niños de 2 a 6 años). Tu objetivo es escribir una historia que sea un juego interactivo, original y muy entretenido, evitando los clichés típicos (como el osito que pierde su juguete).\n\nEscribe en el idioma que se te indique y bajo las siguientes pautas:\n\n1. Estilo y Voz:\n- Usa un tono tierno, entusiasta y muy juguetón.\n- Frases cortas, ritmo dinámico y lenguaje simple pero rico en texturas.\n- Incorpora abundantes onomatopeyas divertidas (ej. \"¡fru-fru!\", \"¡gorgojo-gorgojo!\", \"¡pomp!\") e invita sutilmente al niño a hacer un gesto o sonido (ej. \"A que no puedes rascarte la nariz como él...\").\n\n2. Elementos de Originalidad:\n- Crea personajes inusuales con características divertidas (ej. un calcetín que quiere ser sombrero, una nube que tiene hipo de colores, un caracol con patines).\n- Evita el peligro, el miedo y la violencia. El \"conflicto\" debe ser un malentendido cómico, un misterio curioso o un deseo divertido, no un problema grave.\n\n3. Estructura de la Historia:\n- Introducción Sorpresa: Presenta al personaje y su peculiaridad de forma muy visual.\n- El Enigma o Juego: El personaje intenta hacer algo divertido o extraño.\n- El Cómplice Inesperado: Aparece un amigo que ayuda de una forma disparatada o creativa.\n- Resolución Cumbre: Logran el objetivo con un estallido de color, sonido o risas.\n- Cierre Calmo y Mensaje: El ritmo baja, el personaje se prepara para descansar. Termina con una enseñanza dulce y sutil (sobre compartir, la curiosidad o el amor propio) sin sonar a sermón.",
+      "descripcion": "System prompt de generateStory (override; un solo texto para ES y EN)."
+    },
+    {
+      "key": "prompt.story.template",
+      "version": 2,
+      "value": "Escribe un {formato} en {idiomaNombre} para {nombre}, de {edad} años, sobre {temas} con un estilo {estilos}. {nombre} es protagonista y le gustan {intereses}. {tono} Que tenga entre {palabrasMin} y {palabrasMax} palabras. Devuelve un título breve y original (no repitas siempre la misma fórmula de título) y el cuerpo del cuento.",
+      "descripcion": "Plantilla de generateStory (override). Placeholders: {nombre} {edad} {temas} {estilos} {idiomaNombre} {intereses} {tono} {formato} {palabrasMin} {palabrasMax} {rima}."
+    },
+    {
+      "key": "story.maxTokens",
+      "version": 1,
+      "value": 800,
+      "descripcion": "Límite de longitud del cuento."
+    },
+    {
+      "key": "story.temperature",
+      "version": 1,
+      "value": 0.7,
+      "descripcion": "Creatividad del LLM (0-1)."
+    },
+    {
+      "key": "prompt.story.params",
+      "version": 2,
+      "value": {
+        "palabrasMin": 300,
+        "palabrasMax": 500,
+        "rima": false,
+        "formatos": ["cuento", "fabula"]
+      },
+      "descripcion": "Parámetros del cuento: longitud, rima y formatos (uno al azar por cuento)."
+    },
+    {
+      "key": "activity.count",
+      "version": 1,
+      "value": "3",
+      "descripcion": "Nº de actividades a generar."
+    },
+    {
+      "key": "ai.cloud",
+      "version": 1,
+      "value": { "activo": true, "target": "groq", "model": "llama-3.3-70b-versatile" },
+      "descripcion": "Modo cloud {activo,target,model}. Key del target en env. ON por defecto (cae a base sin key)."
+    }
+  ]
+}
