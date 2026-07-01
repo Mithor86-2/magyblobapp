@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { decidirAccion, loadAppSettingsJson, parseAppSettings } from './appSettings.js';
 
-describe('appSettings — decidirAccion (US-68)', () => {
+describe('appSettings — decidirAccion (US-70)', () => {
   it('crea cuando la clave no existe en BD', () => {
     expect(decidirAccion(1, null)).toBe('crear');
   });

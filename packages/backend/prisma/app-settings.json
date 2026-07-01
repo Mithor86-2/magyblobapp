@@ -1,5 +1,5 @@
 {
-  "$comment": "Fuente única de la configuración ajustable en caliente (AppSetting). US-68. NO contiene secretos (API keys y DATABASE_URL van en env). El sync (src/infrastructure/config/appSettings.ts) la aplica a la BD de forma VERSIONADA: solo reescribe una clave cuando su 'version' aquí es MAYOR que la aplicada en BD (o la clave no existe), para no pisar cambios hechos en caliente. Para 'migrar' una config: cambia su 'value' y sube su 'version'. 'value' admite string | number | boolean | objeto (se serializa a texto al guardar).",
+  "$comment": "Fuente única de la configuración ajustable en caliente (AppSetting). US-70. NO contiene secretos (API keys y DATABASE_URL van en env). El sync (src/infrastructure/config/appSettings.ts) la aplica a la BD de forma VERSIONADA: solo reescribe una clave cuando su 'version' aquí es MAYOR que la aplicada en BD (o la clave no existe), para no pisar cambios hechos en caliente. Para 'migrar' una config: cambia su 'value' y sube su 'version'. 'value' admite string | number | boolean | objeto (se serializa a texto al guardar).",
   "settings": [
     {
       "key": "ai.model.local",

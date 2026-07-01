@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 /**
  * Lógica **pura** de la configuración versionada (`AppSetting`) desde
- * `prisma/app-settings.json` (US-68): validación/normalización del JSON, carga del
+ * `prisma/app-settings.json` (US-70): validación/normalización del JSON, carga del
  * fichero y la decisión de sync por versión. La orquestación con BD vive en
  * `syncAppSettings.ts` (IO, cubierta por `test:integration`). El JSON NO contiene
  * secretos (las API keys y `DATABASE_URL` siguen en variables de entorno).
@@ -70,7 +70,7 @@ export function loadAppSettingsJson(): AppSettingEntry[] {
 /**
  * Decide qué hacer con una clave: `crear` si no existe en BD; `actualizar` si la
  * versión del JSON supera a la aplicada; `omitir` si es igual o menor (preserva el
- * valor actual, incluidos los cambios hechos en caliente). Función pura (US-68).
+ * valor actual, incluidos los cambios hechos en caliente). Función pura (US-70).
  */
 export function decidirAccion(jsonVersion: number, dbVersion: number | null): AccionSync {
   if (dbVersion === null) return 'crear';

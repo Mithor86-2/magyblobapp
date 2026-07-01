@@ -1,4 +1,4 @@
-# Plan — Feature 80: Configuración del app por JSON con sync versionado (US-68)
+# Plan — Feature 80: Configuración del app por JSON con sync versionado (US-70)
 
 > Alcance global en [../plan-ejecucion-master.md](../plan-ejecucion-master.md); estado por fase en
 > [../phases.md](../phases.md). Aquí va el **cómo**.
@@ -15,7 +15,7 @@ clave** (solo reaplica cuando sube la `version`).
 
 ## Historias cubiertas
 
-- US-68 — Configuración del app por JSON con sync versionado ([épica E](../historias-usuario/epic-e-config.md#us-68))
+- US-70 — Configuración del app por JSON con sync versionado ([épica E](../historias-usuario/epic-e-config.md#us-70))
 
 ## Tareas
 
@@ -31,7 +31,7 @@ clave** (solo reaplica cuando sube la `version`).
       `config:sync` (`prisma/sync-settings.ts`), `seed` delega en el mismo mecanismo.
 - [x] ✅ Tests: unitarios (`appSettings.test.ts`) + integración Postgres real
       (`test/integration-db/app-settings.sync.test.ts`: crea/omite-preserva/actualiza/huérfanas/idempotente).
-- [x] ✅ Docs: US-68 (épica E) + trazabilidad (README) + `CHANGELOG` (Unreleased) + este plan.
+- [x] ✅ Docs: US-70 (épica E) + trazabilidad (README) + `CHANGELOG` (Unreleased) + este plan.
 - [x] ✅ Gate `pnpm check` verde (backend 326 + app 194); `config:sync` verificado contra BD local
       (crea 5 + actualiza 3; 2ª pasada 8 omitidas, idempotente).
 - [ ] ⬜ Pruebas con el usuario → confirmación → cierre con `cerrar-feature` (versionado diferido).

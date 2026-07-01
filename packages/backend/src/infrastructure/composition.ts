@@ -24,13 +24,13 @@ import { BcryptPasswordHasher } from './auth/BcryptPasswordHasher.js';
  * dobles en memoria nunca carguen Prisma ni abran conexión a la DB.
  *
  * En el arranque aplica la configuración versionada (`AppSetting`) desde
- * `prisma/app-settings.json` (US-68) antes de servir: un despliegue limpio queda
+ * `prisma/app-settings.json` (US-70) antes de servir: un despliegue limpio queda
  * configurado sin pasos ocultos y sin pisar los cambios hechos en caliente.
  */
 export async function buildProductionDeps(config: Config, logger?: TTSLogger): Promise<AppDeps> {
   const prisma = createPrismaClient();
 
-  // Sync versionado de la configuración (US-68). Falla el arranque si el JSON es
+  // Sync versionado de la configuración (US-70). Falla el arranque si el JSON es
   // inválido o la BD no responde: mejor fallar pronto que servir mal configurado.
   // Se omite si no hay `DATABASE_URL` (p. ej. un test que monta el server real sin
   // BD): sin BD no hay nada que sincronizar; en producción `DATABASE_URL` siempre está.

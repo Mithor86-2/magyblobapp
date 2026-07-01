@@ -145,7 +145,7 @@ model AppSetting {
   key           String   @unique
   value         String
   descripcion   String?
-  /// Versión aplicada de la clave (US-68). Gobierna el sync versionado desde
+  /// Versión aplicada de la clave (US-70). Gobierna el sync versionado desde
   /// `prisma/app-settings.json`: el sync solo reescribe cuando la versión del JSON
   /// es mayor, para no pisar cambios hechos en caliente (p. ej. `ai.cloud`).
   version       Int      @default(0)

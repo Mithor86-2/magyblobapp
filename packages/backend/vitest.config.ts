@@ -21,7 +21,7 @@ export default defineConfig({
         // Cubierto por otra suite (no es hueco):
         'src/infrastructure/repositories/**', // → test:integration (Postgres real)
         'src/infrastructure/db/**',
-        'src/infrastructure/config/syncAppSettings.ts', // IO de BD → test:integration (US-68)
+        'src/infrastructure/config/syncAppSettings.ts', // IO de BD → test:integration (US-70)
         'src/infrastructure/tts/ElevenLabsProvider.ts', // → E2E/manual
         'src/infrastructure/ai/aiLog.ts', // logger, ejercitado en E2E/manual
         // INFRASTRUCTURE tier (TypeScript valida; 0% objetivo): interfaces/puertos,

@@ -3,7 +3,7 @@ import { syncAppSettings } from '../src/infrastructure/config/syncAppSettings.js
 
 /**
  * Script `config:sync`: aplica `prisma/app-settings.json` a la tabla `AppSetting`
- * de forma versionada e idempotente (US-68). Reutiliza `syncAppSettings`, el mismo
+ * de forma versionada e idempotente (US-70). Reutiliza `syncAppSettings`, el mismo
  * mecanismo que corre en el arranque del backend. No contiene secretos.
  */
 async function main(): Promise<void> {

@@ -111,7 +111,7 @@ erDiagram
         string   key           "única — p. ej. prompt.story.template"
         text     value         "valor (texto; JSON si es estructurado)"
         string   descripcion   "opcional — para qué sirve"
-        int      version       "versión aplicada — sync versionado (US-68)"
+        int      version       "versión aplicada — sync versionado (US-70)"
         datetime actualizadoEn "opcional"
     }
 ```
@@ -158,7 +158,7 @@ Tabla clave-valor (`id`, `key`, `value`) para parámetros **ajustables en calien
 plantillas de prompt, identificadores de modelo y opciones de generación, sin tocar
 código ni reconstruir la imagen.
 
-**Fuente y sincronización (US-68):** la configuración se declara en
+**Fuente y sincronización (US-70):** la configuración se declara en
 [`packages/backend/prisma/app-settings.json`](../packages/backend/prisma/app-settings.json)
 (fuente única) y se aplica a la tabla con un **sync versionado**: cada clave lleva una `version` y el
 sync solo la crea (si falta) o la reescribe cuando la versión del JSON es **mayor** que la aplicada

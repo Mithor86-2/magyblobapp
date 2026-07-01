@@ -10,7 +10,7 @@ function entrada(overrides: Partial<AppSettingEntry> & { key: string }): AppSett
   return { version: 1, value: 'v', descripcion: 'd', ...overrides };
 }
 
-describe('syncAppSettings (Postgres real, US-68)', () => {
+describe('syncAppSettings (Postgres real, US-70)', () => {
   let db: TestDb;
 
   beforeAll(async () => {

@@ -3,7 +3,7 @@ import { decidirAccion, loadAppSettingsJson, type AppSettingEntry } from './appS
 
 /**
  * Orquestación con BD del sync **versionado** de la configuración (`AppSetting`,
- * US-68). Aplica la fuente única `prisma/app-settings.json`: crea las claves
+ * US-70). Aplica la fuente única `prisma/app-settings.json`: crea las claves
  * ausentes y reescribe una clave solo cuando la versión del JSON es **mayor** que la
  * aplicada, de modo que **no pisa** los cambios hechos en caliente (p. ej.
  * `ai.cloud`). Es IO de base de datos: se ejercita en `test:integration` (Postgres

@@ -1,6 +1,6 @@
 # Epic E — Configuración (zona de padres)
 
-Historias: **US-11**, **US-12**, **US-13**, **US-66**, **US-68**. Volver al [índice](README.md).
+Historias: **US-11**, **US-12**, **US-13**, **US-66**, **US-70**. Volver al [índice](README.md).
 
 ## US-11 — Editar perfil · Should
 
@@ -61,7 +61,7 @@ del peque, y que ese ajuste alcance también a las barras del sistema.
   superficies índigo profundas, coral como acción principal, púrpura suave (secundario) y
   aqua (terciario), con texto claro de alto contraste.
 
-## US-68 — Configuración del app por JSON con sync versionado a la BD · Should (Mejoras)
+## US-70 — Configuración del app por JSON con sync versionado a la BD · Should (Mejoras)
 
 Como **responsable técnico** quiero declarar la configuración ajustable en caliente
 (`AppSetting`) en un **JSON versionado** que se aplique a la base de datos, para gestionar
