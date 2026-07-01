@@ -19,6 +19,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.6.0] - 2026-07-01
+
+### Changed
+
+- Sin cambios funcionales en el app; versión alineada (lockstep) con el release conjunto v1.6.0
+  (backend: configuración por JSON con sync versionado, US-70).
+
 ## [1.5.0] - 2026-07-01
 
 ### Added
