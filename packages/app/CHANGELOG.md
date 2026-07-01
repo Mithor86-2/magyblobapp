@@ -18,6 +18,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Refactor interno del cliente HTTP (`fetchWithRetry`): bucle de reintentos acotado + intento final,
+  **sin cambio de comportamiento** (mismos intentos/backoff). Elimina una rama muerta y restaura la
+  cobertura CORE de `http.ts` al 100%; E2E de alta localizado por `testID` (robusto). (US-71)
+
 ### Deprecated
 
 ### Removed
