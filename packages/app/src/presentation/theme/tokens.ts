@@ -69,34 +69,36 @@ export const lightColors: ColorTokens = {
 };
 
 /**
- * Paleta oscura (US-66): superficies **oscuras cálidas** (cocoa muy oscuro, no
- * negro/gris frío) que conservan el carácter acogedor de la app; texto claro
- * crema; y coral/menta/cielo re-tonalizados hacia versiones más luminosas para
- * mantener contraste AA sobre fondo oscuro. El coral principal se aclara a un
- * rosa salmón porque el coral vino oscuro (`#9c4143`) no contrasta sobre negro.
+ * Paleta oscura (US-66): diseño **"cielo nocturno"** (índigo cósmico) definido en
+ * Docs/Design/stitch_magyblob/DESIGN_Dark.md. Superficies índigo profundas que
+ * evocan un cielo estrellado (más calmado para la transición al sueño), coral como
+ * acción principal de alto contraste, púrpura suave como secundario "mágico" y aqua
+ * como terciario de pistas/navegación; texto lila claro (no blanco puro para evitar
+ * la vibración sobre fondo oscuro). Las claves son las mismas que en claro, así que
+ * cualquier `StyleSheet` funciona con ambas paletas sin cambios.
  */
 export const darkColors: ColorTokens = {
-  // Superficies cocoa muy oscuras (cálidas, no gris frío).
-  surface: '#1a1210',
-  surfaceContainer: '#271b18',
-  surfaceContainerHigh: '#332420',
-  // Coral aclarado: acción principal legible sobre fondo oscuro.
-  primary: '#ffb3b3',
-  onPrimary: '#5a1c1e', // texto/icono oscuro sobre el coral claro
-  primaryContainer: '#8c3436',
-  primaryBorder: '#ff8e8e', // borde "squishy" ahora es el realce claro
-  // Menta clara: éxito / naturaleza.
-  secondary: '#a6cfca',
-  onSecondary: '#0e2c29',
-  secondaryContainer: '#2b4744',
-  // Cielo claro: fondos calmados y navegación.
-  tertiary: '#8fcfeb',
-  onTertiary: '#053546',
-  tertiaryContainer: '#1c4a5d',
-  // Texto crema cálido sobre las superficies oscuras.
-  onSurface: '#f3e6e1',
-  onSurfaceVariant: '#d5bfba',
-  outline: '#5a4742',
+  // Superficies índigo cósmicas: canvas profundo → contenedores algo más claros.
+  surface: '#111125',
+  surfaceContainer: '#1e1e32',
+  surfaceContainerHigh: '#28283d',
+  // Coral: acción principal y momentos de "éxito", alto contraste sobre el índigo.
+  primary: '#ffb4a7',
+  onPrimary: '#640c04', // texto/icono oscuro sobre el coral
+  primaryContainer: '#ff7f6a',
+  primaryBorder: '#a43b2c', // "lip" inferior de coral más oscuro (botón extruido)
+  // Púrpura suave: interacciones secundarias y elementos decorativos "mágicos".
+  secondary: '#d3bcfc',
+  onSecondary: '#38265b',
+  secondaryContainer: '#523f76',
+  // Aqua suave: pistas, rastros de navegación y feedback "gentil".
+  tertiary: '#76d5e1',
+  onTertiary: '#00363c',
+  tertiaryContainer: '#52b2be',
+  // Texto lila claro sobre las superficies índigo (evita el blanco puro).
+  onSurface: '#e2e0fc',
+  onSurfaceVariant: '#dec0bb',
+  outline: '#a58b86',
   // Error legible sobre oscuro.
   error: '#ffb4ab',
   errorContainer: '#93000a',

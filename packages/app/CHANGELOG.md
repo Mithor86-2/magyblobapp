@@ -22,6 +22,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - **La app se arranca con un development build** (`cd packages/app && npx expo run:android` / `run:ios`),
   no con Expo Go: al usar módulos nativos (`expo-navigation-bar`/`expo-system-ui`) Expo Go ya no puede
   cargarla. Documentación de arranque (READMEs y `estrategia-pruebas.md`) actualizada (US-66).
+- La **paleta del tema oscuro** pasa del cocoa cálido al diseño **"cielo nocturno"** (índigo cósmico)
+  de `Docs/Design/stitch_magyblob/DESIGN_Dark.md`: superficies índigo profundas, coral como acción
+  principal, púrpura suave (secundario) y aqua (terciario), con texto lila claro de alto contraste
+  (US-66). El tema claro y los tokens invariantes (Quicksand, radios, espaciado) no cambian.
 
 ### Deprecated
 
