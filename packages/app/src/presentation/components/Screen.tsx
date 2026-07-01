@@ -78,6 +78,9 @@ export function Screen({
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        {/* A6: barra fija de acciones (zona de adultos) dentro del área segura, por
+            encima del scroll: no se desplaza y no invade la barra de estado. */}
+        {headerAction ? <View style={styles.headerBar}>{headerAction}</View> : null}
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
@@ -101,8 +104,6 @@ export function Screen({
           </View>
         ) : null}
       </KeyboardAvoidingView>
-      {/* A6: acción fija (zona de adultos) sobre el contenido, arriba a la derecha. */}
-      {headerAction ? <View style={styles.headerAction}>{headerAction}</View> : null}
     </SafeAreaView>
   );
 }
@@ -138,10 +139,10 @@ const makeStyles = (colors: ColorTokens) =>
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
     },
-    headerAction: {
-      position: 'absolute',
-      top: spacing.sm,
-      right: spacing.containerPadding,
-      zIndex: 10,
+    headerBar: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      paddingHorizontal: spacing.containerPadding,
+      paddingTop: spacing.sm,
     },
   });
