@@ -1,6 +1,6 @@
 import type { GenerateStoryInput, RecommendActivitiesInput } from '../../domain/ai/AIProvider.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';
-import { CATEGORIAS } from '../../domain/vocabulary.js';
+import { CATEGORIAS, type Parentesco } from '../../domain/vocabulary.js';
 import type { FormatoCuento, ResolvedStoryParams } from './storyParams.js';
 
 /**
@@ -272,10 +272,39 @@ export function buildImagePrompt(tema: string, estilo: string, titulo: string): 
   );
 }
 
+/** Trato del adulto acompañante en las instrucciones, por idioma y parentesco (US-67). */
+const TERMINO_CUIDADOR: Record<CodigoIdioma, Record<Parentesco, string>> = {
+  es: {
+    madre: 'mamá',
+    padre: 'papá',
+    abuelo_a: 'la abuela o el abuelo',
+    tutor_legal: 'el tutor o la tutora',
+    otro: 'la persona adulta',
+  },
+  en: {
+    madre: 'mom',
+    padre: 'dad',
+    abuelo_a: 'grandma or grandpa',
+    tutor_legal: 'the guardian',
+    otro: 'the grown-up',
+  },
+};
+
+/**
+ * Término con el que las instrucciones se dirigen al adulto acompañante (US-67): su
+ * parentesco ("mamá", "papá", "la abuela o el abuelo"…) en vez de "el adulto". Sin
+ * parentesco (p. ej. modo anónimo) devuelve un trato genérico.
+ */
+export function terminoCuidador(parentesco: Parentesco | undefined, idioma: CodigoIdioma): string {
+  if (parentesco === undefined) return idioma === 'es' ? 'la persona adulta' : 'the grown-up';
+  return TERMINO_CUIDADOR[idioma][parentesco];
+}
+
 /**
  * Construye el prompt (system + user) para recomendar actividades, aplicando overrides configurables.
  * US-67: pide actividades más significativas para niños de 2 a 6 años, con instrucciones de al menos
- * 6 pasos numerados y detallados, un objetivo de aprendizaje y materiales sencillos de casa.
+ * 6 pasos numerados y detallados, un objetivo de aprendizaje y materiales sencillos de casa. Las
+ * instrucciones se dirigen al adulto por su parentesco (`terminoCuidador`), no como "el adulto".
  */
 export function buildActivitiesPrompt(
   input: RecommendActivitiesInput,
@@ -286,6 +315,12 @@ export function buildActivitiesPrompt(
   const categorias = CATEGORIAS.join(', ');
   const tono = tonoPorEdad(edad.value, idioma);
   const gustos = listaIntereses(intereses, idioma);
+  const cuidador = terminoCuidador(input.parentesco, idioma);
+  // Trato del adulto acompañante en las instrucciones: su parentesco, no "el adulto" (US-67).
+  const trato =
+    idioma === 'es'
+      ? ` En las instrucciones, refiérete al adulto acompañante como "${cuidador}" (no como "el adulto").`
+      : ` In the instructions, refer to the accompanying adult as "${cuidador}" (not as "the adult").`;
   // Solo se sugieren intereses cuando la categoría es libre (si está fija, manda la categoría).
   const afinidad =
     input.categoria !== undefined
@@ -311,6 +346,7 @@ export function buildActivitiesPrompt(
         categorias,
         intereses: gustos,
         tono,
+        cuidador,
       })
     : idioma === 'es'
       ? `Propón ${input.cantidad} actividades sencillas y significativas para ${nombre}, de ${edad.value} años.` +
@@ -321,9 +357,10 @@ export function buildActivitiesPrompt(
         `breve, un objetivo de aprendizaje breve (qué aprende o practica el niño), ` +
         `una lista de materiales sencillos que suele haber en casa, ` +
         `unas instrucciones en un paso a paso claro de al menos 6 pasos numerados, detallados y ` +
-        `concretos (cada paso explica qué hace el adulto y qué hace el niño), ` +
-        `sencillos y aptos para niños de 2 a 6 años (que un adulto pueda seguir con el niño), ` +
-        `una duración en minutos y un nivel de dificultad de 1 a 3.`
+        `concretos (cada paso explica qué hace ${cuidador} y qué hace el niño), ` +
+        `sencillos y aptos para niños de 2 a 6 años (que ${cuidador} pueda seguir con el niño), ` +
+        `una duración en minutos y un nivel de dificultad de 1 a 3.` +
+        trato
       : `Suggest ${input.cantidad} simple, meaningful activities for ${nombre}, aged ${edad.value}.` +
         acotacion +
         afinidad +
@@ -332,9 +369,10 @@ export function buildActivitiesPrompt(
         `a brief learning objective (what the child learns or practices), ` +
         `a list of simple materials commonly found at home, ` +
         `step-by-step instructions with at least 6 detailed, concrete numbered steps ` +
-        `(each step explains what the adult does and what the child does) that are simple and ` +
-        `suitable for children aged 2 to 6 (an adult can follow them with the child), ` +
-        `a duration in minutes and a difficulty level from 1 to 3.`;
+        `(each step explains what ${cuidador} does and what the child does) that are simple and ` +
+        `suitable for children aged 2 to 6 (${cuidador} can follow them with the child), ` +
+        `a duration in minutes and a difficulty level from 1 to 3.` +
+        trato;
 
   return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
 }

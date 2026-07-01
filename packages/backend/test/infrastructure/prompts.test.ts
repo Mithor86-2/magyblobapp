@@ -179,6 +179,41 @@ describe('prompts — contenido IA (US-54)', () => {
     expect(prompt).toContain('learning objective');
     expect(prompt).toContain('simple materials');
   });
+
+  it('US-67: dirige las instrucciones al adulto por su parentesco (ES, madre → "mamá")', () => {
+    const { prompt } = buildActivitiesPrompt({
+      perfil: perfil(4),
+      cantidad: 3,
+      parentesco: 'madre',
+    });
+    expect(prompt).toContain('mamá');
+    expect(prompt).toContain('no como "el adulto"');
+  });
+
+  it('US-67: sin parentesco usa un trato genérico (ES → "la persona adulta")', () => {
+    const { prompt } = buildActivitiesPrompt({ perfil: perfil(4), cantidad: 3 });
+    expect(prompt).toContain('la persona adulta');
+  });
+
+  it('US-67: dirige las instrucciones al adulto por su parentesco (EN, padre → "dad")', () => {
+    const perfilEn = new ChildProfile({
+      id: 'p-en4',
+      guardianId: 'g-1',
+      nombre: 'Leo',
+      edad: Edad.create(5),
+      idioma: Idioma.create('en'),
+      avatar: 'a1',
+      intereses: ['animales'],
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    const { prompt } = buildActivitiesPrompt({
+      perfil: perfilEn,
+      cantidad: 3,
+      parentesco: 'padre',
+    });
+    expect(prompt).toContain('dad');
+    expect(prompt).toContain('not as "the adult"');
+  });
 });
 
 describe('prompts — multi-tema / multi-estilo (US-47)', () => {

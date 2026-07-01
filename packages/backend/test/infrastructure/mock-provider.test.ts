@@ -91,6 +91,21 @@ describe('MockProvider', () => {
     }
   });
 
+  it('US-67: las instrucciones se dirigen al adulto por su parentesco (madre → "mamá")', async () => {
+    const actividades = await provider.recommendActivities({
+      perfil: perfil('es'),
+      cantidad: 1,
+      parentesco: 'madre',
+    });
+    expect(actividades[0]!.instrucciones).toContain('Mamá');
+    expect(actividades[0]!.instrucciones).not.toContain('El adulto');
+  });
+
+  it('US-67: sin parentesco usa un trato genérico ("la persona adulta")', async () => {
+    const actividades = await provider.recommendActivities({ perfil: perfil('es'), cantidad: 1 });
+    expect(actividades[0]!.instrucciones).toContain('La persona adulta');
+  });
+
   it('respeta la categoría cuando se acota', async () => {
     const actividades = await provider.recommendActivities({
       perfil: perfil('es'),

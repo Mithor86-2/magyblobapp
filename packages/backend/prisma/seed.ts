@@ -30,15 +30,16 @@ const SETTINGS: { key: string; value: string; descripcion: string }[] = [
     key: 'prompt.activity.template',
     // US-67: actividades más significativas para 2-6 años. La plantilla coincide con el default en
     // código (buildActivitiesPrompt): pide al menos 6 pasos detallados, objetivo de aprendizaje y
-    // materiales sencillos de casa. Placeholders soportados por `rellenar`:
-    // {n} {nombre} {edad} {categoria} {categorias} {intereses} {tono}.
+    // materiales sencillos de casa, y dirige las instrucciones al adulto por su parentesco
+    // ({cuidador}). Placeholders soportados por `rellenar`:
+    // {n} {nombre} {edad} {categoria} {categorias} {intereses} {tono} {cuidador}.
     value:
       'Propón {n} actividades sencillas y significativas para {nombre}, de {edad} años, de la ' +
       'categoría {categoria}. Cada una con título, descripción breve, un objetivo de aprendizaje ' +
       'breve, una lista de materiales sencillos que suele haber en casa, unas instrucciones en un ' +
       'paso a paso claro de al menos 6 pasos numerados, detallados y concretos (cada paso explica ' +
-      'qué hace el adulto y qué hace el niño), aptos para niños de 2 a 6 años, duración en minutos ' +
-      'y nivel 1 a 3.',
+      'qué hace {cuidador} y qué hace el niño), aptos para niños de 2 a 6 años, duración en minutos ' +
+      'y nivel 1 a 3. En las instrucciones refiérete al adulto como "{cuidador}", no como "el adulto".',
     descripcion:
       'Plantilla de actividades (US-67: ≥6 pasos detallados, objetivo y materiales de casa).',
   },
