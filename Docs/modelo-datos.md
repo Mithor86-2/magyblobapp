@@ -165,7 +165,8 @@ sync solo la crea (si falta) o la reescribe cuando la versión del JSON es **may
 (columna `version`), de modo que **no pisa** los cambios hechos en caliente (p. ej. `ai.cloud`). Corre
 en el **arranque** del backend y bajo demanda con `pnpm --filter @magyblob/backend config:sync`. Las
 claves de la BD ausentes del JSON se **conservan** (no se borran). "Migrar" una config = subir su
-`version` en el JSON.
+`version` en el JSON. **Procedimiento paso a paso para subir cambios a la BD (dev y prod):**
+[configuracion-app-settings.md](configuracion-app-settings.md).
 
 **Claves previstas (fuente `app-settings.json`):**
 
