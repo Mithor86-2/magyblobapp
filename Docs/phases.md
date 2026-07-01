@@ -693,3 +693,19 @@ pasa de _light-only_ a **tema reactivo** claro/oscuro con selección **Sistema +
       pruebas, CHANGELOG y lecciones actualizados con instrucciones de dev y prod.
 - **DoD:** ✅ `pnpm check` verde (app 194 + backend 311) · ✅ `expo export` · ✅ verificado en emulador
   Android por el usuario (selector de tema operativo).
+
+### Actividades más significativas: ≥6 pasos y trato por parentesco (US-67, integrado el 2026-07-01)
+
+Feature `feature/78-actividades-6-pasos` (solo backend). Actividades más significativas para 2-6 años
+y con las instrucciones dirigidas al adulto por su parentesco. Integrada en `develop` **sin release**
+(entradas en `## [Unreleased]` del CHANGELOG del backend, a versionar más adelante).
+
+- [x] ✅ **Prompt (ES/EN):** de "3-6 pasos" a **al menos 6 pasos** numerados, detallados y concretos,
+      con **objetivo de aprendizaje** y **materiales sencillos de casa**; `MockProvider` emite ≥6.
+- [x] ✅ **Seed alineado:** `prompt.activity.template` coincide con el default de código (estaba
+      desactualizado y ni pedía pasos).
+- [x] ✅ **Trato por parentesco:** las instrucciones se dirigen al adulto por su parentesco (mamá/papá/
+      abuela o abuelo/tutor) en vez de "el adulto"; sin sesión (anónimo) → "la persona adulta".
+      `RecommendActivities` resuelve el parentesco vía `GuardianRepository`.
+- **DoD:** ✅ `pnpm check` verde (backend 317 + app 194) · ✅ verificado por el usuario en la app
+  (Groq): actividades con ≥6 pasos y trato por parentesco.
