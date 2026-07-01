@@ -749,10 +749,11 @@ más adelante).
 - **DoD:** ✅ `pnpm check` verde (**backend 357 + app 203**); integrado en `develop` sin release ·
   ⏳ pruebas con el usuario (manual: cuento con enseñanza + filtro en Historial + pantalla Mis logros).
 
-### Lote de ajustes UX + robustez cold-start (US-71, rama `feature/81-ajustes-ux-render`)
+### Lote de ajustes UX + robustez cold-start (US-71, integrado el 2026-07-01, sin release)
 
-Seis ajustes de cara al usuario (plan en [planes/ajustes-ux-render.md](planes/ajustes-ux-render.md)).
-Solo app (más un test de regresión backend). Integrado sin release (entradas en `## [Unreleased]`).
+Feature `feature/81-ajustes-ux-render`. Seis ajustes de cara al usuario (plan en
+[planes/ajustes-ux-render.md](planes/ajustes-ux-render.md)). Solo app (más un test de regresión
+backend). Integrado en `develop` **sin release** (entradas en `## [Unreleased]` del CHANGELOG del app).
 
 - [x] ✅ **A1 · Robustez cold-start de Render.** Render free suspende la instancia por inactividad
       (primer request 50 s+): warm-up con reintentos y timeout largo (`WARMUP_TIMEOUT_MS` 70 s),
