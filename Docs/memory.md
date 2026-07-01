@@ -841,3 +841,23 @@ oscuro que la feature 77 dejó en un cocoa cálido provisional. Decisiones y su 
 - **Se mantiene Quicksand (no Plus Jakarta Sans).** El `DESIGN_Dark.md` sugiere Plus Jakarta Sans, pero
   se conserva la tipografía y los tokens invariantes (radios, espaciado) para no divergir del tema claro
   ni cargar fuentes nuevas: el alcance es la paleta de color, no una migración tipográfica.
+
+## Logros del niño (US-68) + Cuento con enseñanza (US-69) · 2026-07-01 · rama `feature/80-logros-ensenanza`
+
+Lote de dos mejoras de cara al usuario, implementadas **secuencialmente en una sola rama** (no en
+worktrees paralelos): al hacerlo un solo ejecutor, una rama única garantiza un gate combinado verde y
+evita resolver conflictos entre los ~10 ficheros compartidos por ambas features. Decisiones y porqué:
+
+- **Logros persistidos como "hecho", estado calculado (US-68).** La entidad `Achievement` guarda solo
+  el desbloqueo (`clave` + `desbloqueadoEn`); el **progreso y el estado "conseguido" se calculan en
+  caliente** desde `Story`/`Activity` (`domain/logros.ts`, función pura). Así el catálogo (umbrales,
+  temas) vive en el dominio y no en `AppSetting`, y el read-model es la fuente de verdad.
+- **Reconciliación en la lectura, no por EventBus.** El plan barajaba un suscriptor del bus + un evento
+  `cuento_leido`. Se descartó por **mínima superficie**: `GetAchievements` calcula el estado y persiste
+  los desbloqueos nuevos de forma **idempotente** (unicidad `profileId`+`clave`). El endpoint sigue
+  siendo `GET`; la escritura es un efecto lateral idempotente. Ventaja clave: el estado mostrado es
+  correcto **aunque la persistencia falle** (sale del cálculo), y no se toca `MarkStoryRead` ni los
+  subscribers. Coste asumido: un GET con efecto lateral (documentado).
+- **Enseñanza como campo opcional persistido (US-69).** Frente a US-47 (multi-tema sin migración), aquí
+  **sí** se persiste `Story.ensenanza` (migración) porque el requisito era **filtrar por ella en el
+  Historial**. Es un enum del vocabulario cerrado (no texto libre) → sin PII nueva.
