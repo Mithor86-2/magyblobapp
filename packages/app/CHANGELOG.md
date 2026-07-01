@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.5.0] - 2026-07-01
+
+### Added
+
 - Tema **claro/oscuro** reactivo en toda la app con selección **Automático / Claro / Oscuro** desde la
   zona de adultos, persistida (no se borra al cerrar sesión). "Automático" sigue el esquema del sistema
   operativo (US-66). Toda la implementación es local (lectura del SO + módulos build-time de Expo), sin
