@@ -22,7 +22,12 @@ usa módulos nativos —`expo-navigation-bar`/`expo-system-ui`, tema claro/oscur
 no incluye):
 
 ```bash
-cp .env.example .env          # ajusta EXPO_PUBLIC_API_URL si usas móvil físico
+cp .env.example .env          # crea el .env local
+# Fija EXPO_PUBLIC_API_URL en packages/app/.env SEGÚN el destino:
+#   Emulador Android:  EXPO_PUBLIC_API_URL=http://10.0.2.2:3000   (localhost = el emulador, NO tu PC)
+#   Simulador iOS:     EXPO_PUBLIC_API_URL=http://localhost:3000
+#   Móvil físico:      EXPO_PUBLIC_API_URL=http://<IP-LAN-de-tu-PC>:3000   (móvil en el mismo wifi)
+
 cd packages/app
 npx expo run:android          # compila e instala el dev build en emulador/dispositivo Android
 npx expo run:ios              # (macOS + Xcode) compila e instala en simulador/dispositivo iOS
@@ -32,9 +37,12 @@ npx expo run:ios              # (macOS + Xcode) compila e instala en simulador/d
 > no puede cargarlos; hace falta un dev build propio. `expo run:android`/`run:ios` hacen el prebuild,
 > compilan y lanzan Metro. Tras la primera compilación puedes iterar con Metro ya activo.
 >
-> **Dispositivo físico:** `localhost` no alcanza al backend desde el móvil. Pon la
-> **IP LAN** del ordenador en `EXPO_PUBLIC_API_URL` (p. ej. `http://192.168.1.42:3000`)
-> con el móvil en la misma red. En el simulador iOS `localhost` funciona.
+> **`EXPO_PUBLIC_*` se incrusta en build-time:** si cambias `.env`, **relanza** `expo run:*` (no basta
+> recargar). Si sale "no se puede conectar al servidor": revisa `EXPO_PUBLIC_API_URL` (emulador Android
+> = `10.0.2.2`, no `localhost`) y que el backend responda (`curl http://localhost:3000/health` → 200).
+
+Para **producción** (URL del backend de Render, export web y EAS Build), ver
+[Desplegar la app en producción](../../README.md#desplegar-la-app-en-producción-expo) en el README raíz.
 
 ## Estructura (Clean Architecture ligera)
 
