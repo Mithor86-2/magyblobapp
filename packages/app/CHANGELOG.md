@@ -9,7 +9,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Tema **claro/oscuro** reactivo en toda la app con selección **Automático / Claro / Oscuro** desde la
+  zona de adultos, persistida (no se borra al cerrar sesión). "Automático" sigue el esquema del sistema
+  operativo (US-66). Toda la implementación es local (lectura del SO + módulos build-time de Expo), sin
+  red ni SDK de terceros (Docs/cumplimiento-menores.md).
+
 ### Changed
+
+- Las **barras del sistema** (barra de estado y, en Android, la barra de navegación inferior de
+  botones/gestos), la barra de pestañas y las cabeceras de navegación son ahora coherentes con el tema
+  activo (US-66). `userInterfaceStyle` pasa a `automatic`.
 
 ### Deprecated
 
