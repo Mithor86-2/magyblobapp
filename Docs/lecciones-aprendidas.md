@@ -769,3 +769,17 @@ en paralelo): ya no se mitigan a mano, se evitan por diseño. Protocolo en
   ambos lados bajo `## [Unreleased]` sin marcadores de conflicto. Trade-off: revisar duplicados.
 - **`pnpm-lock.yaml`:** **no** se resuelve a mano ni con union (corrompería el árbol de deps). Ante un
   conflicto, `pnpm install` reconcilia el lockfile automáticamente (docs de pnpm) y se commitea.
+
+## Feature 77 — Tema claro/oscuro (US-66)
+
+### Añadir módulos nativos rompe Expo Go: la app se arranca con `expo run:*` (dev build)
+
+- **Síntoma:** `pnpm --filter @magyblob/app start` (o `expo start` → Expo Go) **falla** al abrir la app.
+- **Causa:** el tema conmuta las **barras del sistema** con `expo-navigation-bar` y `expo-system-ui`,
+  que son **módulos nativos**. El cliente Expo Go trae un runtime fijo y **no** puede cargar módulos
+  nativos que no vengan ya empaquetados en él → la app deja de arrancar en Expo Go.
+- **Solución:** arrancar con un **development build** propio: `cd packages/app && npx expo run:android`
+  (o `npx expo run:ios`). Hacen el prebuild, compilan la app con sus módulos nativos y lanzan Metro;
+  después se itera con Metro ya activo. Docs actualizados (READMEs raíz y del app, `estrategia-pruebas.md`).
+- **Coletazo en el E2E nativo (Maestro):** los flows dejan de valer sobre Expo Go; hay que instalar el
+  dev build y usar como `appId` el `bundleIdentifier`/`package` de la app (no el de Expo Go).

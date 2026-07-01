@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  type Theme,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -32,13 +38,14 @@ import type {
   RootStackParamList,
   TabScreenProps,
 } from './src/presentation/navigation';
-import { colors, fonts, radius } from './src/presentation/theme/tokens';
+import { ThemeProvider, useTheme } from './src/presentation/theme/ThemeProvider';
+import { type ColorTokens, fonts, radius } from './src/presentation/theme/tokens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 /**
- * Cabecera del stack con el tema de la app (botón "atrás" incluido). US-24 + US-56.
+ * Cabecera del stack con el tema de la app (botón "atrás" incluido). US-24 + US-56 + US-66.
  *
  * `headerBackButtonDisplayMode: 'default'` sigue la Human Interface Guidelines de iOS:
  * el botón "atrás" muestra el título de la pantalla anterior cuando cabe (ayuda a
@@ -46,15 +53,36 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
  * de "atrás" se oculta por defecto; `'default'` recupera el comportamiento clásico y deja
  * una vuelta atrás consistente entre versiones. En Android el chevron va siempre sin
  * etiqueta (Material), así que el cambio es específico de iOS.
+ *
+ * Los colores se derivan de la paleta activa (US-66) para que cabecera y fondo sigan
+ * al tema claro/oscuro.
  */
-const stackScreenOptions = {
-  headerStyle: { backgroundColor: colors.surface },
-  headerTintColor: colors.primary,
-  headerTitleStyle: { fontFamily: fonts.bold },
-  headerShadowVisible: false,
-  headerBackButtonDisplayMode: 'default',
-  headerTitleAlign: 'center',
-} as const;
+function makeStackScreenOptions(colors: ColorTokens) {
+  return {
+    headerStyle: { backgroundColor: colors.surface },
+    headerTintColor: colors.primary,
+    headerTitleStyle: { fontFamily: fonts.bold },
+    headerShadowVisible: false,
+    headerBackButtonDisplayMode: 'default',
+    headerTitleAlign: 'center',
+  } as const;
+}
+
+/** Tema de React Navigation derivado de la paleta activa (fondos, tarjetas, texto; US-66). */
+function makeNavigationTheme(colors: ColorTokens, scheme: 'light' | 'dark'): Theme {
+  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: colors.primary,
+      background: colors.surface,
+      card: colors.surface,
+      text: colors.onSurface,
+      border: colors.outline,
+    },
+  };
+}
 
 /**
  * Boundaries por zona (US-41): aíslan las pantallas de contenido generado para que
@@ -87,6 +115,8 @@ function LecturaScreen(props: RootScreenProps<'StoryReader'>) {
 
 /** Icono de pestaña: icono lucide dentro de un "blob" pastel cuando está activo. */
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   return (
     <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
       <Icon name={name} size={24} color={focused ? colors.primary : colors.onSurfaceVariant} />
@@ -96,6 +126,7 @@ function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
 
 function MainTabs() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -153,8 +184,15 @@ function useStoreHydrated(): boolean {
   return hydrated;
 }
 
-export default function App() {
+/**
+ * Cuerpo de la app **bajo el `ThemeProvider`** (US-66): consume la paleta activa
+ * para tematizar splash, barra de estado, navegación, cabeceras y pestañas. Se
+ * separa del `App` raíz porque necesita `useTheme()`, que solo existe dentro del
+ * provider.
+ */
+function ThemedApp() {
   const { t } = useTranslation();
+  const { colors, scheme } = useTheme();
   const [fontsLoaded] = useFonts({ Quicksand_500Medium, Quicksand_700Bold });
   const hydrated = useStoreHydrated();
   const guardian = useAppStore((s) => s.guardian);
@@ -163,6 +201,7 @@ export default function App() {
   const setProfile = useAppStore((s) => s.setProfile);
   // Ref de la navegación para registrar breadcrumbs de pantalla (US-42).
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
+  const styles = makeStyles(colors);
 
   // Recupera la sesión persistida y decide la ruta inicial (US-49): sin sesión →
   // onboarding; con perfil activo → pestañas; sin perfil activo pero con un único
@@ -188,84 +227,103 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AppErrorBoundary label="app">
-        <DialogProvider>
-          <NavigationContainer
-            ref={navigationRef}
-            onStateChange={() => {
-              // Breadcrumb por cambio de pantalla: solo el nombre de ruta (sin params/PII).
-              const route = navigationRef.getCurrentRoute();
-              if (route) trackNavigation(route.name);
-            }}
+    <AppErrorBoundary label="app">
+      <DialogProvider>
+        <NavigationContainer
+          ref={navigationRef}
+          theme={makeNavigationTheme(colors, scheme)}
+          onStateChange={() => {
+            // Breadcrumb por cambio de pantalla: solo el nombre de ruta (sin params/PII).
+            const route = navigationRef.getCurrentRoute();
+            if (route) trackNavigation(route.name);
+          }}
+        >
+          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+          <Stack.Navigator
+            initialRouteName={initialRoute}
+            screenOptions={makeStackScreenOptions(colors)}
           >
-            <StatusBar style="dark" />
-            <Stack.Navigator initialRouteName={initialRoute} screenOptions={stackScreenOptions}>
-              {/* Inicio sin sesión (US-50), bienvenida y las pestañas no llevan cabecera. */}
-              <Stack.Screen
-                name="Dashboard"
-                component={DashboardScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Welcome"
-                component={WelcomeScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="Consent"
-                component={ConsentScreen}
-                options={{ title: t('nav.consent') }}
-              />
-              <Stack.Screen
-                name="Login"
-                component={LoginScreen}
-                options={{ title: t('nav.login') }}
-              />
-              <Stack.Screen
-                name="SelectProfile"
-                component={SelectProfileScreen}
-                options={{ title: t('nav.selectProfile') }}
-              />
-              <Stack.Screen
-                name="CreateProfile"
-                component={CreateProfileScreen}
-                options={{ title: t('nav.createProfile') }}
-              />
-              <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-              <Stack.Screen
-                name="Parental"
-                component={ParentalScreen}
-                options={{ title: t('nav.parental') }}
-              />
-              <Stack.Screen
-                name="StoryReader"
-                component={LecturaScreen}
-                options={{ title: t('nav.storyReader') }}
-              />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </DialogProvider>
-      </AppErrorBoundary>
+            {/* Inicio sin sesión (US-50), bienvenida y las pestañas no llevan cabecera. */}
+            <Stack.Screen
+              name="Dashboard"
+              component={DashboardScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Welcome"
+              component={WelcomeScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Consent"
+              component={ConsentScreen}
+              options={{ title: t('nav.consent') }}
+            />
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ title: t('nav.login') }}
+            />
+            <Stack.Screen
+              name="SelectProfile"
+              component={SelectProfileScreen}
+              options={{ title: t('nav.selectProfile') }}
+            />
+            <Stack.Screen
+              name="CreateProfile"
+              component={CreateProfileScreen}
+              options={{ title: t('nav.createProfile') }}
+            />
+            <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="Parental"
+              component={ParentalScreen}
+              options={{ title: t('nav.parental') }}
+            />
+            <Stack.Screen
+              name="StoryReader"
+              component={LecturaScreen}
+              options={{ title: t('nav.storyReader') }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </DialogProvider>
+    </AppErrorBoundary>
+  );
+}
+
+/**
+ * Raíz de la app: monta los providers de nivel superior. El `ThemeProvider`
+ * (US-66) envuelve todo el árbol dentro del `SafeAreaProvider` para que la paleta
+ * activa (claro/oscuro según la preferencia + el SO) esté disponible en toda la
+ * presentación, incluidas las barras del sistema.
+ */
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <ThemedApp />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  splash: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabIcon: {
-    width: 56,
-    height: 32,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabIconActive: {
-    backgroundColor: colors.secondaryContainer,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    splash: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabIcon: {
+      width: 56,
+      height: 32,
+      borderRadius: radius.pill,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabIconActive: {
+      backgroundColor: colors.secondaryContainer,
+    },
+  });

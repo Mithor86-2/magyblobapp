@@ -10,8 +10,17 @@ import { useAppStore } from '../store/useAppStore';
 import { isSentryEnabled } from '../../infrastructure/sentry';
 import { IDIOMAS_APP } from '../../i18n';
 import { idiomaLabel } from '../labels';
-import { colors, radius, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
+import type { ThemePreference } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
+
+/** Opciones de tema del selector (US-66): valor de preferencia + clave i18n de su etiqueta. */
+const OPCIONES_TEMA: { value: ThemePreference; labelKey: string }[] = [
+  { value: 'system', labelKey: 'parental.themeSystem' },
+  { value: 'light', labelKey: 'parental.themeLight' },
+  { value: 'dark', labelKey: 'parental.themeDark' },
+];
 
 /**
  * Zona de personas adultas (Fase 5.5, US-19): gestión de la sesión, separada de
@@ -26,6 +35,9 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
   const logout = useAppStore((s) => s.logout);
   const appLanguage = useAppStore((s) => s.appLanguage);
   const setAppLanguage = useAppStore((s) => s.setAppLanguage);
+  const themePreference = useAppStore((s) => s.themePreference);
+  const setThemePreference = useAppStore((s) => s.setThemePreference);
+  const styles = useThemedStyles(makeStyles);
   const dialog = useDialog();
 
   function onCambiarPerfil() {
@@ -83,6 +95,18 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
           ))}
         </View>
 
+        <Text style={styles.cardLabel}>{t('parental.theme')}</Text>
+        <View style={styles.chips}>
+          {OPCIONES_TEMA.map(({ value, labelKey }) => (
+            <SelectableChip
+              key={value}
+              label={t(labelKey)}
+              selected={themePreference === value}
+              onPress={() => setThemePreference(value)}
+            />
+          ))}
+        </View>
+
         <View style={styles.actions}>
           <BubblyButton label={t('parental.changeProfile')} onPress={onCambiarPerfil} />
           <BubblyButton label={t('parental.logout')} onPress={onCerrarSesion} variant="secondary" />
@@ -99,32 +123,33 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: spacing.xs,
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-  },
-  cardLabel: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  cardName: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-  },
-  cardEmail: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  actions: {
-    gap: spacing.elementGap,
-    marginTop: spacing.md,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    card: {
+      gap: spacing.xs,
+      backgroundColor: colors.secondaryContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+    },
+    cardLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    cardName: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+    },
+    cardEmail: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    actions: {
+      gap: spacing.elementGap,
+      marginTop: spacing.md,
+    },
+  });

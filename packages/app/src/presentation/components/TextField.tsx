@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors, radius, spacing, tapTarget, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, spacing, tapTarget, typography } from '../theme/tokens';
 
 interface TextFieldProps {
   label: string;
@@ -28,6 +29,8 @@ export function TextField({
   secureTextEntry = false,
   testID,
 }: TextFieldProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
@@ -47,22 +50,23 @@ export function TextField({
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: {
-    gap: spacing.xs,
-  },
-  label: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  input: {
-    ...typography.bodyMd,
-    color: colors.onSurface,
-    minHeight: tapTarget,
-    borderWidth: 2,
-    borderColor: colors.tertiaryContainer,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sm,
-    backgroundColor: colors.surfaceContainer,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    wrapper: {
+      gap: spacing.xs,
+    },
+    label: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    input: {
+      ...typography.bodyMd,
+      color: colors.onSurface,
+      minHeight: tapTarget,
+      borderWidth: 2,
+      borderColor: colors.tertiaryContainer,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sm,
+      backgroundColor: colors.surfaceContainer,
+    },
+  });

@@ -671,3 +671,25 @@ la referencia.
       (el app no tiene ESLint en el gate → estándar por convención, follow-up de tooling).
 - [x] ✅ **Docs:** skill `documentar`, enlaces desde `CLAUDE.md`, decisión en `memory.md`.
 - **DoD:** `pnpm check` verde (backend 311 + app 187); estándar aplicado y enforced en backend.
+
+### Tema claro/oscuro + barras de sistema (US-66, integrado el 2026-07-01, v1.5.0)
+
+Feature `feature/77-tema-dark-light` (solo app; nueva funcionalidad de UI → **minor v1.5.0**). La app
+pasa de _light-only_ a **tema reactivo** claro/oscuro con selección **Sistema + toggle manual**.
+
+- [x] ✅ **Tokens light/dark:** `tokens.ts` divide `colors` en `lightColors`/`darkColors` (misma forma,
+      `ColorTokens`), paleta oscura cálida con contraste AA; `themes` + `makeSoftShadow`.
+- [x] ✅ **Reactivo:** `ThemeProvider` + `useTheme()` + `useThemedStyles(makeStyles)` (memoiza por
+      esquema) + función pura `resolveScheme(preference, systemScheme)`; contexto por defecto = claro
+      (los tests sin provider siguen verdes). **25 componentes/pantallas** migrados a estilos temáticos.
+- [x] ✅ **Preferencia:** `themePreference` (`system|light|dark`, default `system`) en `useAppStore`
+      (persistida, no se borra en logout; persistencia v4→v5) + selector Automático/Claro/Oscuro en la
+      Zona de adultos (i18n ES/EN).
+- [x] ✅ **Barras del SO:** `expo-system-ui` (fondo raíz) + `expo-navigation-bar` (estilo de botones
+      Android), `StatusBar`, `NavigationContainer`, tab bar y cabeceras coherentes con el tema;
+      `app.json` `userInterfaceStyle: automatic`. Todo local (sin red ni SDK de terceros).
+- [x] ✅ **Arranque:** al añadir módulos nativos, **Expo Go deja de servir**; la app se lanza con dev
+      build (`cd packages/app && npx expo run:android`/`run:ios`). README (raíz y app), estrategia de
+      pruebas, CHANGELOG y lecciones actualizados con instrucciones de dev y prod.
+- **DoD:** ✅ `pnpm check` verde (app 194 + backend 311) · ✅ `expo export` · ✅ verificado en emulador
+  Android por el usuario (selector de tema operativo).

@@ -9,7 +9,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Tema **claro/oscuro** reactivo en toda la app con selección **Automático / Claro / Oscuro** desde la
+  zona de adultos, persistida (no se borra al cerrar sesión). "Automático" sigue el esquema del sistema
+  operativo (US-66). Toda la implementación es local (lectura del SO + módulos build-time de Expo), sin
+  red ni SDK de terceros (Docs/cumplimiento-menores.md).
+
 ### Changed
+
+- Las **barras del sistema** (barra de estado y, en Android, la barra de navegación inferior de
+  botones/gestos), la barra de pestañas y las cabeceras de navegación son ahora coherentes con el tema
+  activo (US-66). `userInterfaceStyle` pasa a `automatic`.
+- **La app se arranca con un development build** (`cd packages/app && npx expo run:android` / `run:ios`),
+  no con Expo Go: al usar módulos nativos (`expo-navigation-bar`/`expo-system-ui`) Expo Go ya no puede
+  cargarla. Documentación de arranque (READMEs y `estrategia-pruebas.md`) actualizada (US-66).
 
 ### Deprecated
 

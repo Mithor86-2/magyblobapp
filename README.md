@@ -20,7 +20,7 @@ En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos
 `adb install magyblob-v1.4.0.apk`. La app apunta al **backend de producción**; la primera
 petición tras un rato de inactividad tarda ~50 s (_cold start_ del plan gratuito de Render).
 
-> El build se genera con **EAS Build** (perfil `preview`, ver [Desplegar la app (Expo)](#desplegar-la-app-expo)).
+> El build se genera con **EAS Build** (perfil `preview`, ver [Desplegar la app en producción](#desplegar-la-app-en-producción-expo)).
 
 ## Funcionalidades
 
@@ -55,7 +55,7 @@ enlaza a la sección con el detalle paso a paso.
 | Componente  | Desarrollo (local)                                                                                                                 | Producción                                                                                                          |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | **Backend** | [Arranque rápido (Docker)](#arranque-rápido-docker) · [Dev con `tsx`](#desarrollo-del-backend-con-tsx-sin-la-pila-docker-completa) | [Desplegar el backend en producción](#desplegar-el-backend-en-producción-neon--render--groq) (Neon + Render + Groq) |
-| **App**     | [App móvil (Expo)](#app-móvil-expo)                                                                                                | [Desplegar la app (Expo)](#desplegar-la-app-expo) (web export / EAS Build)                                          |
+| **App**     | [App móvil (Expo)](#app-móvil-expo)                                                                                                | [Desplegar la app en producción](#desplegar-la-app-en-producción-expo) (web export / EAS Build)                     |
 
 > **Local funciona sin nada externo:** `cp .env.example .env && docker compose up` levanta
 > backend + PostgreSQL + Ollama en modo `mock` (sin GPU, sin claves). Producción es un camino
@@ -352,47 +352,78 @@ producto completo, no solo el slice del HITO 1. Navegación en dos niveles:
   **lector de cuentos** (relectura desde el historial), **narración** por voz, **portadas** de
   imagen e interfaz **bilingüe ES/EN** (idioma elegido por el adulto).
 
-```bash
-pnpm up:local                                    # backend + PostgreSQL + Ollama (AI_PROVIDER=local)
-# (una vez) pnpm ollama:setup                     # baja gemma:2b al contenedor de Ollama
+### Ejecutar la app en desarrollo (paso a paso)
 
-cp packages/app/.env.example packages/app/.env   # ajusta EXPO_PUBLIC_API_URL si usas móvil físico
-pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Android, w = web)
+```bash
+# 1. Backend + PostgreSQL + Ollama en local; deja el backend en http://localhost:3000
+pnpm up:local
+pnpm ollama:setup                                # (una vez, solo para IA local real) baja gemma:2b
+curl http://localhost:3000/health                # comprueba que responde 200
+
+# 2. Config de la app: crea packages/app/.env y fija EXPO_PUBLIC_API_URL SEGÚN el destino
+cp packages/app/.env.example packages/app/.env
+#    Emulador Android:  EXPO_PUBLIC_API_URL=http://10.0.2.2:3000   (localhost = el emulador, NO tu PC)
+#    Simulador iOS:     EXPO_PUBLIC_API_URL=http://localhost:3000
+#    Móvil físico:      EXPO_PUBLIC_API_URL=http://<IP-LAN-de-tu-PC>:3000   (móvil en el mismo wifi)
+
+# 3. Compila e instala el DEV BUILD y arranca Metro (desde packages/app)
+cd packages/app
+npx expo run:android                             # Android (emulador arrancado o dispositivo por USB)
+npx expo run:ios                                 # iOS (macOS + Xcode; simulador o dispositivo)
 ```
 
-> En simulador iOS `localhost` sirve. Desde un **móvil físico** (Expo Go) pon la IP LAN
-> del ordenador en `EXPO_PUBLIC_API_URL`. Detalle en [packages/app/README.md](packages/app/README.md).
+> **Dev build, NO Expo Go.** La app usa módulos nativos (`expo-navigation-bar`/`expo-system-ui`, tema
+> claro/oscuro US-66) que Expo Go no incluye, así que `expo start` sobre Expo Go **falla**; se arranca
+> con `expo run:android`/`run:ios` (prebuild + compilación + Metro). Tras la 1.ª compilación puedes
+> iterar con Metro activo (recarga la app).
 >
-> **Variables opcionales de la app** (`packages/app/.env`): `EXPO_PUBLIC_SENTRY_DSN` activa el
-> reporte de errores (sin DSN no se inicializa). Ver [packages/app/.env.example](packages/app/.env.example).
+> **`EXPO_PUBLIC_*` se incrusta en build-time:** si cambias `packages/app/.env`, **relanza** `expo run:*`
+> (no basta recargar). Si "no se puede conectar al servidor": revisa `EXPO_PUBLIC_API_URL` (en emulador
+> Android debe ser `10.0.2.2`, no `localhost`) y que el backend esté arriba (`/health` → 200).
+>
+> **Variables opcionales** (`packages/app/.env`): `EXPO_PUBLIC_SENTRY_DSN` activa el reporte de errores
+> (sin DSN no se inicializa). Ver [packages/app/.env.example](packages/app/.env.example).
 
-## Desplegar la app (Expo)
+## Desplegar la app en producción (Expo)
 
-La app es un cliente que apunta al backend por **`EXPO_PUBLIC_API_URL`** (se _inlinea_ en build-time).
-Para producción, en `packages/app/.env` apúntala a tu backend de Render:
+La app es un cliente que apunta al backend por **`EXPO_PUBLIC_API_URL`**, que se _inlinea_ en
+build-time. Paso previo obligatorio: **apuntar al backend de producción** (Render) antes de
+exportar/compilar.
 
 ```bash
+# 1. En packages/app/.env fija la URL del backend de producción
 EXPO_PUBLIC_API_URL=https://magyblobapp.onrender.com
 ```
 
-**Web** (lo más simple para una demo) — export estático que se sube a cualquier hosting
+**Opción A — Web** (lo más simple para una demo): export estático servible en cualquier hosting
 (Vercel / Netlify / Render Static / GitHub Pages):
 
 ```bash
-pnpm --filter @magyblob/app exec expo export --platform web   # genera packages/app/dist
+pnpm --filter @magyblob/app exec expo export --platform web   # genera packages/app/dist/
 ```
 
-**APK / IPA nativo con EAS Build** (incluye el icono y el splash propios):
+**Opción B — APK / IPA nativo con EAS Build** (incluye icono y splash propios). Los perfiles viven
+en [packages/app/eas.json](packages/app/eas.json): `preview` (APK de distribución interna),
+`development` (APK dev) y `production` (AAB para tienda):
 
 ```bash
 cd packages/app
 npx eas-cli login                                  # una vez
-npx eas-cli build:configure                        # una vez (crea eas.json)
-npx eas-cli build -p android --profile preview     # APK instalable en el emulador/dispositivo
+npx eas-cli build:configure                        # una vez (crea/valida eas.json)
+npx eas-cli build -p android --profile preview     # APK instalable en emulador/dispositivo
+npx eas-cli build -p android --profile production  # AAB para Google Play
 npx eas-cli build -p ios --profile preview         # requiere cuenta de Apple Developer
 ```
 
-**Ver el icono/splash en un build local** (sin EAS): `npx expo prebuild --clean && npx expo run:android`.
+> Con EAS, la URL del backend puede ir en `env.EXPO_PUBLIC_API_URL` del perfil de `eas.json` (la build
+> en la nube **no** usa tu `.env` local).
+
+**Build nativo local sin EAS** (p. ej. para ver icono/splash en el emulador):
+
+```bash
+cd packages/app
+npx expo prebuild --clean && npx expo run:android --variant release
+```
 
 > Fija `EXPO_PUBLIC_API_URL` **antes** de exportar/compilar: el valor se incrusta en el bundle. La app
 > no descarga recursos en runtime; iconos, imágenes y traducciones van empaquetados (cumplimiento de

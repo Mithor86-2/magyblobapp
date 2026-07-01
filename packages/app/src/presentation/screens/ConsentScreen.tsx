@@ -13,7 +13,8 @@ import { ApiError } from '../../domain/errors';
 import { parentescoLabel } from '../labels';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
-import { colors, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 /** Versión de los términos/política que el adulto acepta (se registra en el AuditLog). */
@@ -34,6 +35,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   const { t } = useTranslation();
   const setSession = useAppStore((s) => s.setSession);
   const dialog = useDialog();
+  const styles = useThemedStyles(makeStyles);
 
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
@@ -157,41 +159,42 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-  },
-  body: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  fieldLabel: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  passwordHint: {
-    ...typography.bodyMd,
-    fontSize: 14,
-    lineHeight: 18,
-    color: colors.onSurfaceVariant,
-  },
-  passwordHintOk: {
-    color: colors.secondary,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  consentBox: {
-    gap: spacing.sm,
-    backgroundColor: colors.secondaryContainer,
-    padding: spacing.md,
-    borderRadius: 24,
-  },
-  consentText: {
-    ...typography.bodyMd,
-    color: colors.onSurface,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    title: {
+      ...typography.displayLg,
+      color: colors.primary,
+    },
+    body: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    fieldLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    passwordHint: {
+      ...typography.bodyMd,
+      fontSize: 14,
+      lineHeight: 18,
+      color: colors.onSurfaceVariant,
+    },
+    passwordHintOk: {
+      color: colors.secondary,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    consentBox: {
+      gap: spacing.sm,
+      backgroundColor: colors.secondaryContainer,
+      padding: spacing.md,
+      borderRadius: 24,
+    },
+    consentText: {
+      ...typography.bodyMd,
+      color: colors.onSurface,
+    },
+  });

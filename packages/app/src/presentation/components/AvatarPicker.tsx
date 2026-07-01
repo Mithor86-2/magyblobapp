@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, tapTarget } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, tapTarget } from '../theme/tokens';
 
 /**
  * Avatares predefinidos como emojis: sin assets externos ni descargas en runtime
@@ -27,6 +28,7 @@ interface AvatarPickerProps {
 }
 
 export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.grid}>
       {AVATARS.map((avatar) => {
@@ -48,29 +50,30 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  cell: {
-    width: tapTarget,
-    height: tapTarget,
-    borderRadius: radius.lg,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selected: {
-    backgroundColor: colors.primaryContainer,
-    borderColor: colors.primary,
-  },
-  unselected: {
-    backgroundColor: colors.surfaceContainer,
-    borderColor: colors.outline,
-  },
-  emoji: {
-    fontSize: 32,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 12,
+    },
+    cell: {
+      width: tapTarget,
+      height: tapTarget,
+      borderRadius: radius.lg,
+      borderWidth: 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    selected: {
+      backgroundColor: colors.primaryContainer,
+      borderColor: colors.primary,
+    },
+    unselected: {
+      backgroundColor: colors.surfaceContainer,
+      borderColor: colors.outline,
+    },
+    emoji: {
+      fontSize: 32,
+    },
+  });

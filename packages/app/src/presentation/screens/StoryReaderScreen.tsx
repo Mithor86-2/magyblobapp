@@ -9,7 +9,8 @@ import { StoryCover } from '../components/StoryCover';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import { api } from '../../composition';
-import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 /**
@@ -20,6 +21,7 @@ import type { RootScreenProps } from '../navigation';
 export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
   const { story } = route.params;
   const { t, i18n } = useTranslation();
+  const styles = useThemedStyles(makeStyles);
   // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
   const fecha = formatearFecha(story.creadoEn, idioma);
@@ -56,36 +58,37 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    ...softShadow,
-  },
-  cover: {
-    width: '100%',
-    height: 180,
-    borderRadius: radius.md,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  title: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-    flex: 1,
-  },
-  body: {
-    ...typography.bodyLg,
-    color: colors.onSurface,
-  },
-  fecha: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      ...makeSoftShadow(colors),
+    },
+    cover: {
+      width: '100%',
+      height: 180,
+      borderRadius: radius.md,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+    },
+    title: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+      flex: 1,
+    },
+    body: {
+      ...typography.bodyLg,
+      color: colors.onSurface,
+    },
+    fecha: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+  });

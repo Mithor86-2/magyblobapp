@@ -13,7 +13,8 @@ import { categoriaLabel } from '../labels';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 import type { TabScreenProps } from '../navigation';
 
 /**
@@ -23,6 +24,8 @@ import type { TabScreenProps } from '../navigation';
  */
 export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
   const dialog = useDialog();
 
@@ -127,42 +130,43 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.secondary,
-  },
-  subtitle: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  fieldLabel: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  statusBox: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-  },
-  statusText: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  errorBox: {
-    backgroundColor: colors.errorContainer,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-  },
-  errorText: {
-    ...typography.labelBold,
-    color: colors.onErrorContainer,
-    textAlign: 'center',
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    title: {
+      ...typography.displayLg,
+      color: colors.secondary,
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    fieldLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    statusBox: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.lg,
+    },
+    statusText: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    errorBox: {
+      backgroundColor: colors.errorContainer,
+      borderRadius: radius.lg,
+      paddingHorizontal: spacing.md,
+    },
+    errorText: {
+      ...typography.labelBold,
+      color: colors.onErrorContainer,
+      textAlign: 'center',
+    },
+  });
