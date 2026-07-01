@@ -10,9 +10,9 @@ import { correoUnico } from './_correo';
  *  - Historial de cuentos (US-08): el cuento generado aparece en "Cuentos mágicos".
  *
  * Se localiza por rol/nombre accesible (coherente con US-30), no por estructura ni
- * estilos. El contenido es determinista (modo mock, `MockProvider`): el cuento se
- * titula «{nombre} y la aventura de {tema}» y las actividades «Actividad de
- * {categoria} nº {n}». Valida el export web (Chromium), no la app nativa.
+ * estilos. El contenido es determinista (modo mock, `MockProvider`), pero el **título
+ * del cuento varía** (US-54), así que el historial se localiza por el prefijo estable de
+ * la etiqueta accesible «Leer el cuento …», no por el título exacto. Valida el export web.
  *
  * Cada test de Playwright arranca con un contexto/página nuevos, así que el
  * onboarding se rehace dentro del propio test (el helper de abajo). El backend
@@ -21,10 +21,8 @@ import { correoUnico } from './_correo';
  * registrado".
  */
 
-/** Nombre del niño usado en este spec; aparece en el título del cuento del mock. */
+/** Nombre del niño usado en este spec (aparece en el cuerpo del cuento del mock). */
 const NOMBRE_NINO = 'Lucia';
-/** Tema preseleccionado a partir del interés "Animales" → valor de vocabulario `animales`. */
-const TITULO_CUENTO = new RegExp(`${NOMBRE_NINO} y la aventura de animales`);
 
 /**
  * Recorre el onboarding (bienvenida → puerta parental → alta del adulto → crear
@@ -117,7 +115,8 @@ test('historial: el cuento generado aparece en "Cuentos mágicos"', async ({ pag
   // El cuento recién generado aparece bajo la sección "Cuentos mágicos" (US-08).
   await expect(page.getByText('Cuentos mágicos')).toBeVisible();
   // La tarjeta de cuento es un botón con etiqueta accesible "Leer el cuento {título}".
-  await expect(
-    page.getByRole('button', { name: new RegExp(`Leer el cuento ${TITULO_CUENTO.source}`) }),
-  ).toBeVisible({ timeout: 30_000 });
+  // El título varía (US-54), así que basta el prefijo estable de la etiqueta.
+  await expect(page.getByRole('button', { name: /^Leer el cuento / }).first()).toBeVisible({
+    timeout: 30_000,
+  });
 });
