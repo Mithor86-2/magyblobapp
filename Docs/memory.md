@@ -801,3 +801,26 @@ escribe la doc y cómo se hace enforce) viven en la skill `documentar` como fuen
 - **La auditoría inicial sobre-reportó** (los «backend sin doc» eran ficheros **generados de Prisma**).
   Lección: para medir cobertura de doc, la fuente de verdad es **correr la regla de lint**, no contar
   bloques `/**`.
+
+## Tema claro/oscuro reactivo (Feature 77 · 2026-07-01 · US-66 · app)
+
+Rama `feature/77-tema-dark-light` (desde `develop`, worktree). La app deja de ser _light-only_ y gana
+tema claro/oscuro. Decisiones y su porqué:
+
+- **Sistema + toggle manual, y cobertura completa (no parcial).** A elección del usuario: el tema por
+  defecto **sigue al SO** (`useColorScheme`) y además hay selector **Automático/Claro/Oscuro** en la
+  zona de adultos, persistido como preferencia de UI (patrón de `appLanguage`: no se borra en logout,
+  `partialize`, persistencia v4→v5). Se migran **todas** las pantallas/componentes, no un subconjunto.
+- **Reactividad sin librería externa (YAGNI).** En vez de nativewind/dripsy, un `ThemeProvider` propio
+  con `useTheme()` y `useThemedStyles(makeStyles)` que memoiza el `StyleSheet.create` por esquema. Los
+  ~14 ficheros que hacían `StyleSheet.create` a nivel de módulo con `colors` estático pasan al patrón
+  `makeStyles(colors)`. El **contexto por defecto = tema claro**, para que los tests de componentes que
+  renderizan sin provider sigan verdes sin tocarlos. La lógica de resolución es una función **pura**
+  (`resolveScheme(preference, systemScheme)`), testeable aislada (patrón `resolveInitialRoute`).
+- **Barras del SO con paquetes Expo build-time.** `expo-system-ui` (fondo raíz, evita flash) y
+  `expo-navigation-bar` (estilo de los botones de la barra inferior de Android). En SDK 56 `expo-navigation-bar`
+  retiró los setters imperativos (edge-to-edge): se usa su **componente** `<NavigationBar style=…>`.
+  Todo local (lectura del SO + módulos empaquetados), **sin red ni SDK de terceros** → no afecta a C-2/C-5.
+- **Coste asumido: adiós a Expo Go.** Añadir módulos nativos obliga a arrancar con **development build**
+  (`expo run:android`/`run:ios`); Expo Go ya no carga la app. Se documenta en READMEs, estrategia de
+  pruebas y lecciones. El E2E nativo (Maestro) pasa a requerir dev build (appId = bundleId, no Expo Go).
