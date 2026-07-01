@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Configuración del app (`AppSetting`) declarada en `prisma/app-settings.json` (fuente única, sin
+  secretos) con **sync versionado** a la BD: cada clave lleva una `version` y el sync solo crea las
+  ausentes o reescribe cuando la versión del JSON es mayor, sin pisar los cambios hechos en caliente
+  (p. ej. `ai.cloud`). Corre en el **arranque** del backend y con `pnpm config:sync`; las claves de la
+  BD ausentes del JSON se conservan (huérfanas, se loguean). Nueva columna `AppSetting.version`
+  (migración). El `seed` pasa a delegar en el mismo mecanismo (US-68).
+
 ### Changed
 
 ### Deprecated

@@ -6,6 +6,7 @@ import { ElevenLabsProvider, type TTSLogger } from './tts/ElevenLabsProvider.js'
 import { InMemoryEventBus } from './events/InMemoryEventBus.js';
 import { wireDomainEvents } from './events/subscribers.js';
 import { createPrismaClient } from './db/prismaClient.js';
+import { syncAppSettings, type SyncLogger } from './config/syncAppSettings.js';
 import { PrismaGuardianRepository } from './repositories/PrismaGuardianRepository.js';
 import { PrismaChildProfileRepository } from './repositories/PrismaChildProfileRepository.js';
 import { PrismaStoryRepository } from './repositories/PrismaStoryRepository.js';
@@ -21,9 +22,27 @@ import { BcryptPasswordHasher } from './auth/BcryptPasswordHasher.js';
  * (con AppSetting como config en caliente). Se importa de forma diferida desde
  * `buildServer` solo cuando no se inyectan dependencias, para que los tests con
  * dobles en memoria nunca carguen Prisma ni abran conexión a la DB.
+ *
+ * En el arranque aplica la configuración versionada (`AppSetting`) desde
+ * `prisma/app-settings.json` (US-68) antes de servir: un despliegue limpio queda
+ * configurado sin pasos ocultos y sin pisar los cambios hechos en caliente.
  */
-export function buildProductionDeps(config: Config, logger?: TTSLogger): AppDeps {
+export async function buildProductionDeps(config: Config, logger?: TTSLogger): Promise<AppDeps> {
   const prisma = createPrismaClient();
+
+  // Sync versionado de la configuración (US-68). Falla el arranque si el JSON es
+  // inválido o la BD no responde: mejor fallar pronto que servir mal configurado.
+  // Se omite si no hay `DATABASE_URL` (p. ej. un test que monta el server real sin
+  // BD): sin BD no hay nada que sincronizar; en producción `DATABASE_URL` siempre está.
+  if (process.env.DATABASE_URL) {
+    const syncLog: SyncLogger = { info: (m) => (logger ? logger.info({}, m) : console.info(m)) };
+    await syncAppSettings(prisma, undefined, syncLog);
+  } else {
+    const msg = 'config sync (AppSetting) omitido: sin DATABASE_URL.';
+    if (logger) logger.warn({}, msg);
+    else console.warn(msg);
+  }
+
   const settings = new PrismaSettingsRepository(prisma);
 
   const deps: AppDeps = {
