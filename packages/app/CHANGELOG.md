@@ -36,6 +36,9 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - **Timeouts tolerantes al cold-start de Render (A1).** Warm-up con reintentos (`/health`, ~70 s) y
   timeouts más holgados (base 30→60 s, generación 90→120 s) para no abortar mientras la instancia
   suspendida de Render free despierta.
+- Refactor interno del cliente HTTP (`fetchWithRetry`): bucle de reintentos acotado + intento final,
+  **sin cambio de comportamiento** (mismos intentos/backoff). Elimina una rama muerta y restaura la
+  cobertura CORE de `http.ts` al 100%; E2E de alta localizado por `testID` (robusto). (US-72)
 
 ### Deprecated
 

@@ -51,9 +51,27 @@ describe('GenerateStoryAnonymous', () => {
     );
   });
 
+  it('rechaza temas duplicados', async () => {
+    await expect(
+      build().execute({ edad: 4, temas: ['animales', 'animales'], estilos: ['aventura'] }),
+    ).rejects.toThrow(DomainError);
+  });
+
+  it('rechaza estilos duplicados', async () => {
+    await expect(
+      build().execute({ edad: 4, temas: ['animales'], estilos: ['aventura', 'aventura'] }),
+    ).rejects.toThrow(DomainError);
+  });
+
   it('rechaza un tema fuera del vocabulario', async () => {
     await expect(
       build().execute({ edad: 4, temas: ['piratas'], estilos: ['aventura'] }),
+    ).rejects.toThrow(DomainError);
+  });
+
+  it('rechaza un estilo fuera del vocabulario', async () => {
+    await expect(
+      build().execute({ edad: 4, temas: ['animales'], estilos: ['dramatico'] }),
     ).rejects.toThrow(DomainError);
   });
 

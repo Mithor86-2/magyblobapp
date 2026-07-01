@@ -81,6 +81,7 @@ export function nuevaActividad(
     duracionMin: 15,
     nivel: 1,
     proveedor: 'mock',
+    creadoEn: FECHA,
   });
 }
 

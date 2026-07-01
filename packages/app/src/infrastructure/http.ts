@@ -200,16 +200,18 @@ async function request<TResponse>(
   // el cold start de Render o una red intermitente se recuperan con un segundo intento.
   // Los errores HTTP llegan como `response` (no lanzan aquí) y no se reintentan.
   async function fetchWithRetry(token: string | null): Promise<Response> {
-    for (let intento = 0; ; intento++) {
+    // `fetchOnce` solo lanza `ApiError` **transitorio** (`timeout`/`network`): los errores
+    // HTTP del backend llegan como `response` (no lanzan aquí) y no se reintentan. Por eso
+    // todo fallo capturado en este bucle es reintentable: backoff hasta MAX_RETRIES y un
+    // intento final fuera del `try` cuyo error se propaga tal cual (sin ramas muertas).
+    for (let intento = 0; intento < MAX_RETRIES; intento++) {
       try {
         return await fetchOnce(token);
-      } catch (error) {
-        const transitorio =
-          error instanceof ApiError && (error.tipo === 'timeout' || error.tipo === 'network');
-        if (!transitorio || intento >= MAX_RETRIES) throw error;
+      } catch {
         await delay(RETRY_BASE_DELAY_MS * 2 ** intento);
       }
     }
+    return await fetchOnce(token);
   }
 
   let response = await fetchWithRetry(auth ? (session?.getAccessToken() ?? null) : null);

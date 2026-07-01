@@ -23,12 +23,13 @@ test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ pa
   const suma = Number(m![1]) + Number(m![2]);
   await page.getByRole('button', { name: String(suma), exact: true }).click();
 
-  // Formulario de alta del adulto (3 campos de texto en orden: nombre, apellidos, email)
-  const campos = page.getByRole('textbox');
-  await expect(campos).toHaveCount(3);
-  await campos.nth(0).fill('Ana');
-  await campos.nth(1).fill('García');
-  await campos.nth(2).fill(correoUnico(testInfo));
+  // Formulario de alta del adulto. Se localiza por testID (robusto ante cambios en
+  // el nº o el orden de campos: nombre, apellidos, email y contraseña US-48).
+  await expect(page.getByTestId('alta-nombre')).toBeVisible();
+  await page.getByTestId('alta-nombre').fill('Ana');
+  await page.getByTestId('alta-apellidos').fill('García');
+  await page.getByTestId('alta-email').fill(correoUnico(testInfo));
+  await page.getByTestId('alta-password').fill('Contrasena123');
   await page.getByRole('button', { name: 'Madre' }).click();
   await page.getByRole('button', { name: 'Acepto', exact: true }).click();
   await page.getByRole('button', { name: 'Aceptar y continuar' }).click();

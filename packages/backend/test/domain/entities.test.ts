@@ -5,6 +5,7 @@ import { Activity, type ActivityProps } from '../../src/domain/entities/Activity
 import { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js';
 import { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import { AuditLog } from '../../src/domain/entities/AuditLog.js';
+import { Achievement } from '../../src/domain/entities/Achievement.js';
 import { DomainError } from '../../src/domain/errors.js';
 import { HASH_DE_PRUEBA } from '../support/doubles.js';
 
@@ -244,5 +245,23 @@ describe('AuditLog', () => {
 
   it('exige una entidad afectada', () => {
     expect(() => new AuditLog({ ...base, entidad: '  ', accion: 'crear' })).toThrow(DomainError);
+  });
+});
+
+describe('Achievement', () => {
+  const base = { id: 'ac-1', profileId: 'p-1', clave: 'cuentos_leidos_5', desbloqueadoEn: fecha };
+
+  it('materializa un logro válido (US-68)', () => {
+    const logro = new Achievement(base);
+    expect(logro.clave).toBe('cuentos_leidos_5');
+    expect(logro.profileId).toBe('p-1');
+  });
+
+  it('exige un profileId no vacío', () => {
+    expect(() => new Achievement({ ...base, profileId: '  ' })).toThrow(DomainError);
+  });
+
+  it('exige una clave no vacía', () => {
+    expect(() => new Achievement({ ...base, clave: '  ' })).toThrow(DomainError);
   });
 });

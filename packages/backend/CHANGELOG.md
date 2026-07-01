@@ -27,6 +27,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- `PrismaActivityRepository` **persiste `creadoEn`** al guardar (como `PrismaStoryRepository`), en vez
+  de depender del `@default(now())`: corrige el round-trip del test de integración que se rompió al
+  añadir `creadoEn` (US-61). Cobertura CORE del backend restaurada al 100% con tests (US-72).
+
 ### Security
 
 ## [1.6.0] - 2026-07-01
