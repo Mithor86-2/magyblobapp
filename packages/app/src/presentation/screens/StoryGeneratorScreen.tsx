@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -6,6 +6,7 @@ import { Screen } from '../components/Screen';
 import { AdultsButton } from '../components/AdultsButton';
 import { Appear } from '../components/Appear';
 import { BubblyButton } from '../components/BubblyButton';
+import { Icon } from '../components/Icon';
 import { SelectableChip } from '../components/SelectableChip';
 import { ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
 import type { Ensenanza, Estilo, Story, Tema } from '../../domain/types';
@@ -55,8 +56,18 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
   const [loading, setLoading] = useState(false);
   const [story, setStory] = useState<Story | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // A2: marcado de leído explícito también en el resultado del generador.
+  const [leido, setLeido] = useState(false);
   // Aviso de espera larga (US-53, cold-start de Render free).
   const lento = useSlowHint(loading);
+
+  // Marca el cuento recién generado como leído (idempotente, optimista). Lo usan el
+  // botón y el fin de la narración.
+  const marcarLeido = useCallback(() => {
+    if (!story || leido) return;
+    setLeido(true);
+    void api.stories.markRead(story.id).catch(() => {});
+  }, [story, leido]);
 
   const puedeGenerar = temas.length > 0 && estilos.length > 0;
 
@@ -81,6 +92,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
     setLoading(true);
     setError(null);
     setStory(null);
+    setLeido(false);
     trackAction('story.generate', {
       temas: temas.join(','),
       estilos: estilos.join(','),
@@ -94,6 +106,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
         ensenanza,
       });
       setStory(result);
+      setLeido(result.estado === 'leido');
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('storyGenerator.errorGenerate'));
     } finally {
@@ -190,7 +203,20 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
           />
           <Text style={styles.storyTitle}>{story.titulo}</Text>
           <Text style={styles.storyBody}>{story.cuerpo}</Text>
-          <NarrationControls story={story} />
+          <NarrationControls story={story} onFinished={marcarLeido} />
+          {leido ? (
+            <View style={styles.leidoRow}>
+              <Icon name="check" size="sm" color={colors.tertiary} />
+              <Text style={styles.leidoText}>{t('reader.alreadyRead')}</Text>
+            </View>
+          ) : (
+            <BubblyButton
+              label={t('reader.markRead')}
+              icon="check"
+              variant="accent"
+              onPress={marcarLeido}
+            />
+          )}
           <AuthorBadge proveedor={story.proveedor} />
         </Appear>
       ) : null}
@@ -264,5 +290,14 @@ const makeStyles = (colors: ColorTokens) =>
     storyBody: {
       ...typography.bodyLg,
       color: colors.onSurface,
+    },
+    leidoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    leidoText: {
+      ...typography.labelBold,
+      color: colors.tertiary,
     },
   });

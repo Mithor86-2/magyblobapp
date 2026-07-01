@@ -27,8 +27,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
-- **Marcar cuento como leído explícito (A2).** El lector ya no marca leído solo por abrir: se marca con
-  el botón "Marcar como leído" o al terminar de escuchar la narración (`onFinished` en `useNarration`).
+- **Marcar cuento como leído explícito (A2).** Ya no se marca leído solo por abrir el lector: se marca
+  con el botón "Marcar como leído" (en la vista de lectura y en el resultado del generador, en color
+  `accent` para distinguirlo del botón de escuchar) o al terminar de escuchar la narración
+  (`onFinished` en `useNarration`).
 - **Historial reorganizado (A3).** Búsqueda de texto y todos los filtros pasan a un **modal** ("Buscar"
   con contador de filtros activos + "Limpiar"); el título del cuento se muestra completo.
 - **Timeouts tolerantes al cold-start de Render (A1).** Warm-up con reintentos (`/health`, ~70 s) y

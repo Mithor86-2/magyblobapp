@@ -10,8 +10,13 @@ import type { ChildProfile, Story } from '../../domain/types';
  * enviando las listas al gateway. Se sustituyen las dependencias de IO (`api`,
  * store, telemetría) y la subvista de narración (audio nativo).
  */
-const { generateMock } = vi.hoisted(() => ({ generateMock: vi.fn() }));
-vi.mock('../../composition', () => ({ api: { stories: { generate: generateMock } } }));
+const { generateMock, markReadMock } = vi.hoisted(() => ({
+  generateMock: vi.fn(),
+  markReadMock: vi.fn(),
+}));
+vi.mock('../../composition', () => ({
+  api: { stories: { generate: generateMock, markRead: markReadMock } },
+}));
 vi.mock('../../infrastructure/telemetry', () => ({ trackAction: vi.fn() }));
 vi.mock('../components/NarrationControls', () => ({ NarrationControls: () => null }));
 vi.mock('../components/AuthorBadge', () => ({ AuthorBadge: () => null }));
@@ -58,6 +63,8 @@ describe('StoryGeneratorScreen — multi-selección (US-47)', () => {
   beforeEach(() => {
     generateMock.mockReset();
     generateMock.mockResolvedValue(STORY);
+    markReadMock.mockReset();
+    markReadMock.mockResolvedValue(undefined);
   });
 
   it('permite seleccionar varios temas y estilos y los envía como listas', async () => {
@@ -127,5 +134,16 @@ describe('StoryGeneratorScreen — multi-selección (US-47)', () => {
 
     await waitFor(() => expect(generateMock).toHaveBeenCalledTimes(1));
     expect(generateMock.mock.calls[0]![0]!.ensenanza).toBeUndefined();
+  });
+
+  it('A2: tras generar, el botón "Marcar como leído" marca el cuento y muestra "Leído"', async () => {
+    render(<StoryGeneratorScreen {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
+
+    const marcar = await screen.findByRole('button', { name: 'Marcar como leído' });
+    fireEvent.click(marcar);
+    expect(markReadMock).toHaveBeenCalledWith('s1');
+    expect(screen.getByText('Leído')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Marcar como leído' })).not.toBeInTheDocument();
   });
 });

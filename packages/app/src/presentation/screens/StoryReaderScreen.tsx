@@ -61,14 +61,14 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
         <NarrationControls story={story} onFinished={marcarLeido} />
         {leido ? (
           <View style={styles.leidoRow}>
-            <Icon name="check" size="sm" color={colors.secondary} />
+            <Icon name="check" size="sm" color={colors.tertiary} />
             <Text style={styles.leidoText}>{t('reader.alreadyRead')}</Text>
           </View>
         ) : (
           <BubblyButton
             label={t('reader.markRead')}
             icon="check"
-            variant="secondary"
+            variant="accent"
             onPress={marcarLeido}
           />
         )}
@@ -115,7 +115,7 @@ const makeStyles = (colors: ColorTokens) =>
     },
     leidoText: {
       ...typography.labelBold,
-      color: colors.secondary,
+      color: colors.tertiary,
     },
     fecha: {
       ...typography.labelBold,
