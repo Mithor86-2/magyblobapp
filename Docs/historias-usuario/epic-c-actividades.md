@@ -45,6 +45,10 @@ instrucciones detalladas para poder realizarlas paso a paso con mi hijo/a de 2 a
 - Dado ese prompt, Cuando se construye, Entonces pide además un **objetivo de aprendizaje** breve y
   una lista de **materiales sencillos** que suele haber en casa, manteniendo lenguaje simple,
   seguridad y tono apropiado para 2-6 años.
+- Dado el guardián con sesión y su **parentesco** (madre/padre/tutor legal/abuelo-a/otro), Cuando se
+  generan las actividades, Entonces las instrucciones se dirigen al adulto por su trato ("mamá",
+  "papá", "la abuela o el abuelo", "el tutor o la tutora") en vez de "el adulto"; sin parentesco
+  (p. ej. modo anónimo) se usa un trato genérico ("la persona adulta").
 - Dada la plantilla configurable `prompt.activity.template` (seed), Cuando se siembra, Entonces
   **coincide** con el default en código (≥6 pasos detallados, objetivo y materiales de casa).
 - Dado `AI_PROVIDER=mock` o IA caída, Cuando pido actividades, Entonces el fallback a mock devuelve
