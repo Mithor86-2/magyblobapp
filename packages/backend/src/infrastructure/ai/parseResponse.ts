@@ -40,6 +40,7 @@ const enteroEnRango = (min: number, max: number) =>
 
 const storySchema = z.object({ titulo: textoNoVacio, cuerpo: textoNoVacio });
 
+/** Valida y normaliza la respuesta del LLM en un `GeneratedStory` (lanza si falta título o cuerpo). */
 export function parseStory(
   data: { titulo?: unknown; cuerpo?: unknown },
   fuente: string,
@@ -66,6 +67,7 @@ const actividadSchema = z.object({
   nivel: enteroEnRango(1, 3),
 });
 
+/** Valida y normaliza la respuesta del LLM en una lista de `GeneratedActivity` (sanea rangos, descarta inválidas). */
 export function parseActivities(
   data: { actividades?: unknown },
   cantidad: number,

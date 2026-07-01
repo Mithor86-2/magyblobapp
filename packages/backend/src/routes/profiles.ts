@@ -1,3 +1,8 @@
+/**
+ * Rutas Fastify del recurso **perfil de niño** (`/profiles`). Exponen la creación
+ * del perfil bajo sesión del adulto (`authenticate`), validando la entrada con Zod
+ * (vocabulario cerrado de intereses, edad/idioma en rango). US-01.
+ */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';

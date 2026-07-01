@@ -781,3 +781,23 @@ paralelo deje de generar conflictos al mergear a `develop`. Cierra el hilo de la
   **no** va en union (corrompería el árbol); su receta es `pnpm install` (pnpm reconcilia el lockfile).
 - **Protocolo consolidado en [trabajo-en-paralelo.md](trabajo-en-paralelo.md).** Worktree por feature,
   commit-pronto y las recetas de conflicto al integrar, en un único doc enlazado desde `CLAUDE.md`.
+
+## Estándar de documentación del código (Feature 76 · 2026-06-28 · US-65 · calidad)
+
+Rama `feature/76-doc-estandar-jsdoc` (desde `develop`). Se formaliza y se vuelve **verificable** la
+convención de documentación de código que el proyecto ya seguía de facto. Las **reglas** (cómo se
+escribe la doc y cómo se hace enforce) viven en la skill `documentar` como fuente única; aquí solo la
+**decisión y su porqué**:
+
+- **Se crea una skill `documentar` como fuente única del estándar**, en lugar de dispersar las reglas
+  entre `CLAUDE.md`, `memory.md` y los comentarios: `CLAUDE.md` la **referencia** (misma pauta que
+  `versionar`). Si cambia el estándar, se cambia en un solo sitio.
+- **Enforce solo en backend, con `eslint-plugin-jsdoc` (`jsdoc/require-jsdoc`, `publicOnly`).** Se
+  activa **solo** `require-jsdoc` (no el preset `flat/recommended`) porque la convención del proyecto
+  es **prosa en español**, no TSDoc formal; solo se exige la _presencia_ del bloque. El **app (Expo)**
+  queda fuera: **no tiene ESLint** en el gate (montarlo es un follow-up de tooling).
+- **No se exige doc en interfaces** para no generar ruido en los «bags» de opciones triviales
+  (`XxxOptions`/`XxxDeps`).
+- **La auditoría inicial sobre-reportó** (los «backend sin doc» eran ficheros **generados de Prisma**).
+  Lección: para medir cobertura de doc, la fuente de verdad es **correr la regla de lint**, no contar
+  bloques `/**`.

@@ -3,7 +3,7 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**.
+**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**, **US-60**, **US-65**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -1228,3 +1228,46 @@ Gemini devolvió imagen y su tamaño**, sin incrustar el base64. **Solo backend 
   resultado.
 - Dado el **formateador** del documento, Cuando se ejecuta `pnpm test`, Entonces hay una prueba unitaria
   con datos deterministas en memoria (sin red) que verifica el Markdown generado.
+
+## US-65 — Estándar de documentación de código (cabeceras + lint) · Could (Mejoras)
+
+Como **autor del TFM / quien mantiene el código** quiero que la documentación de código siga un
+**estándar uniforme y verificable** (cabecera de módulo en los ficheros que aún no la tienen y una
+regla de lint que la exija a futuro), para que la cobertura de comentarios deje de depender de la
+disciplina manual y el código siga siendo navegable y trazable a las historias de usuario.
+
+**Contexto.** Una auditoría detectó que el proyecto ya sigue una **convención de facto** sólida
+(cobertura ~89–90 %): cabecera de módulo `/** */` en **prosa española** con referencias a las US y a
+los requisitos de cumplimiento (`C-N`); andamiaje técnico en inglés; sin TSDoc formal. Quedan **14
+ficheros** sin cabecera de módulo: 4 rutas backend
+([profiles](../../packages/backend/src/routes/profiles.ts),
+[stories](../../packages/backend/src/routes/stories.ts),
+[anonymous](../../packages/backend/src/routes/anonymous.ts),
+[activities](../../packages/backend/src/routes/activities.ts)), 3 providers de IA
+([CloudProvider](../../packages/backend/src/infrastructure/ai/CloudProvider.ts),
+[createAIProvider](../../packages/backend/src/infrastructure/ai/createAIProvider.ts),
+[OllamaProvider](../../packages/backend/src/infrastructure/ai/OllamaProvider.ts) —cabecera mal ubicada—),
+la entidad [Story](../../packages/backend/src/domain/entities/Story.ts), el caso de uso
+[RecommendActivities](../../packages/backend/src/application/use-cases/RecommendActivities.ts) y 5 del app
+(4 pantallas + `Icon.tsx`). Además, el gate **no** valida documentación (no hay `eslint-plugin-jsdoc`).
+Esta historia (a) cierra esos huecos siguiendo la convención y (b) la vuelve _enforced_ con una regla
+de lint sobre exports públicos, integrada en `pnpm check`. Es **mejora de calidad/tooling** (no altera
+lógica). Ver el plan [feature-76-doc-estandar](../planes/feature-76-doc-estandar.md).
+
+**Criterios de aceptación**
+
+- Dado cada uno de los **14 ficheros** sin cabecera de módulo, Cuando se documenta, Entonces tiene un
+  bloque `/** */` **inicial** en español que describe su propósito y —cuando aplique— referencia su
+  **US** y/o requisito de **cumplimiento** (`C-N`), conforme a la convención de facto.
+- Dado [OllamaProvider](../../packages/backend/src/infrastructure/ai/OllamaProvider.ts), Cuando se
+  ajusta, Entonces su bloque doc queda **al inicio del módulo** (no tras las interfaces).
+- Dado `eslint-plugin-jsdoc`, Cuando se configura la regla `jsdoc/require-jsdoc` para **exports
+  públicos** (clases, interfaces, funciones exportadas) con `publicOnly`, Entonces `pnpm lint`
+  **falla** si un export público carece de bloque doc.
+- Dado que la regla sería ruidosa en pruebas y código generado, Cuando se configura, Entonces se
+  **excluyen** `*.test.ts`, `src/generated/**` y lo que no sea fuente propia (config, tipos triviales).
+- Dado el gate `pnpm check`, Cuando se ejecuta tras la feature, Entonces pasa en **verde** (typecheck +
+  lint + format:check + test) con la nueva regla activa y los 14 ficheros documentados.
+- (No funcional) Dada la naturaleza del cambio, Cuando se aplica, Entonces **no se altera la lógica**:
+  solo se añaden comentarios de documentación y configuración de lint; los tests existentes siguen en
+  verde sin cambios de comportamiento.

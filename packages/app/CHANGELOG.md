@@ -13,6 +13,8 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   de producción, para probar en dispositivo), `development` (APK dev contra `10.0.2.2`) y `production`
   (AAB). La URL del backend va en `env.EXPO_PUBLIC_API_URL` del perfil (la build en la nube no usa el
   `.env` local).
+- Cabecera de documentación de módulo en las pantallas `StoryGeneratorScreen`, `HistoryScreen`,
+  `CreateProfileScreen` y `ActivitiesScreen`, que aún no la tenían (US-65).
 
 ### Changed
 

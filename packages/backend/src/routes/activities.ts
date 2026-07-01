@@ -1,3 +1,8 @@
+/**
+ * Rutas Fastify del recurso **actividad** (`/activities`): recomendación, registro
+ * de realización (progreso) y favorito. Todas bajo sesión del adulto
+ * (`authenticate`) y validadas con Zod. US-09, US-10, US-63.
+ */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';

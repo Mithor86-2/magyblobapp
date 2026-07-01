@@ -18,6 +18,12 @@ import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { TabScreenProps } from '../navigation';
 
+/**
+ * Pantalla del **generador de cuentos** para el perfil activo. Permite elegir uno o
+ * varios temas y estilos (multi-selección, US-47/US-54), lanza la generación contra
+ * el `api` inyectado y muestra el cuento con su portada, narración y favorito.
+ * Degrada con un mensaje si la petición falla.
+ */
 export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   const { t } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);

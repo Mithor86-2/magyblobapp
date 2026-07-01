@@ -53,6 +53,12 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
   (`domain` tipos/gateway → `infrastructure/http` → estado en store Zustand o `useState` →
   `presentation/screens` consumiendo el `api` inyectado y los tokens de theme → registro en el
   navegador). Vive en el repo: [.claude/skills/nueva-pantalla/](.claude/skills/nueva-pantalla/).
+- **`documentar`** — al documentar código nuevo, revisar la cobertura de documentación o tocar la
+  regla de lint de doc. Es la **fuente única** del estándar de documentación: cómo se escribe la doc
+  (bloque `/** */` en prosa española sobre el símbolo exportado o como cabecera de módulo, refs
+  `US-NN`/`C-N`, sin TSDoc formal) y cómo se hace verificable (regla ESLint `jsdoc/require-jsdoc` en
+  el backend, dentro de `pnpm check`). Vive en el repo:
+  [.claude/skills/documentar/](.claude/skills/documentar/).
 - **`cerrar-feature`** — al finalizar una feature o cerrar una fase. Aplica la Definition of Done
   (gate verde con `pnpm check`), la actualización de docs y el cierre con Git Flow. El versionado y
   el CHANGELOG los **delega** en la skill `versionar` (versionado diferido: la versión se asigna al
@@ -96,6 +102,11 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
   network, third-party SDKs, analytics, or data retention, check
   [Docs/cumplimiento-menores.md](Docs/cumplimiento-menores.md): no third-party SDKs, no external
   calls in the default (`mock`) mode, data minimization, parental gate. When in doubt, don't add it.
+- **Documentation standard — see the skill `documentar`.** How code is documented (Spanish-prose
+  `/** */` block on the exported symbol or as a module header, refs `US-NN`/`C-N`, no formal TSDoc) and
+  how it is enforced (ESLint `jsdoc/require-jsdoc` on backend public exports, inside `pnpm check`) live
+  in that skill — the single source. Don't duplicate it here; apply it. Skill:
+  [.claude/skills/documentar/](.claude/skills/documentar/).
 
 ## Definition of Done (gates every phase)
 

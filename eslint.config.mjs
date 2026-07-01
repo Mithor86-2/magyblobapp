@@ -2,6 +2,7 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import sonarjs from 'eslint-plugin-sonarjs';
+import jsdoc from 'eslint-plugin-jsdoc';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
@@ -46,6 +47,34 @@ export default tseslint.config(
     files: ['packages/backend/test/**/*.ts'],
     rules: {
       'sonarjs/no-clear-text-protocols': 'off',
+    },
+  },
+
+  // Estándar de documentación (US-65): exige un bloque de documentación en los
+  // **exports públicos** del código fuente del backend (clases —casos de uso,
+  // providers— y funciones exportadas —rutas, factories—). No usamos el preset
+  // `flat/recommended` a propósito: la convención del proyecto es **prosa en
+  // español**, no TSDoc formal, así que solo exigimos la *presencia* del bloque
+  // (`require-jsdoc`), no `@param`/`@returns`. Tests y código generado quedan fuera
+  // (el `ignores` global excluye `**/generated/**`; aquí acotamos a `src`).
+  {
+    files: ['packages/backend/src/**/*.ts'],
+    plugins: { jsdoc },
+    rules: {
+      'jsdoc/require-jsdoc': [
+        'error',
+        {
+          publicOnly: true,
+          require: {
+            ClassDeclaration: true,
+            FunctionDeclaration: true,
+          },
+          // Los métodos internos y los constructores no necesitan bloque propio:
+          // la clase ya lleva su documentación de propósito.
+          checkConstructors: false,
+          exemptEmptyFunctions: false,
+        },
+      ],
     },
   },
 

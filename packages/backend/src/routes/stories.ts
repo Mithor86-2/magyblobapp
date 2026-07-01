@@ -1,3 +1,8 @@
+/**
+ * Rutas Fastify del recurso **cuento** (`/stories`): generación, marcado de leído,
+ * narración en voz alta y favorito. Todas bajo sesión del adulto (`authenticate`)
+ * y validadas con Zod. US-03, US-07, US-22, US-47, US-63.
+ */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';

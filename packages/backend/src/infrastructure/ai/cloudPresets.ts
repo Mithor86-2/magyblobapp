@@ -30,6 +30,7 @@ export type CloudTarget = keyof typeof CLOUD_PRESETS;
 
 export const CLOUD_TARGETS = Object.keys(CLOUD_PRESETS) as CloudTarget[];
 
+/** Type guard: ¿`value` es un target cloud con preset registrado? */
 export function esCloudTarget(value: unknown): value is CloudTarget {
   return typeof value === 'string' && value in CLOUD_PRESETS;
 }
