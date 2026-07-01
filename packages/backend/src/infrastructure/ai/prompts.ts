@@ -272,7 +272,11 @@ export function buildImagePrompt(tema: string, estilo: string, titulo: string): 
   );
 }
 
-/** Construye el prompt (system + user) para recomendar actividades, aplicando overrides configurables. */
+/**
+ * Construye el prompt (system + user) para recomendar actividades, aplicando overrides configurables.
+ * US-67: pide actividades más significativas para niños de 2 a 6 años, con instrucciones de al menos
+ * 6 pasos numerados y detallados, un objetivo de aprendizaje y materiales sencillos de casa.
+ */
 export function buildActivitiesPrompt(
   input: RecommendActivitiesInput,
   overrides: PromptOverrides = {},
@@ -309,20 +313,26 @@ export function buildActivitiesPrompt(
         tono,
       })
     : idioma === 'es'
-      ? `Propón ${input.cantidad} actividades sencillas para ${nombre}, de ${edad.value} años.` +
+      ? `Propón ${input.cantidad} actividades sencillas y significativas para ${nombre}, de ${edad.value} años.` +
         acotacion +
         afinidad +
         ` ${tono}` +
         ` Cada actividad necesita una categoría (${categorias}), un título, una descripción ` +
-        `breve, unas instrucciones en un paso a paso claro de entre 3 y 6 pasos numerados, ` +
+        `breve, un objetivo de aprendizaje breve (qué aprende o practica el niño), ` +
+        `una lista de materiales sencillos que suele haber en casa, ` +
+        `unas instrucciones en un paso a paso claro de al menos 6 pasos numerados, detallados y ` +
+        `concretos (cada paso explica qué hace el adulto y qué hace el niño), ` +
         `sencillos y aptos para niños de 2 a 6 años (que un adulto pueda seguir con el niño), ` +
         `una duración en minutos y un nivel de dificultad de 1 a 3.`
-      : `Suggest ${input.cantidad} simple activities for ${nombre}, aged ${edad.value}.` +
+      : `Suggest ${input.cantidad} simple, meaningful activities for ${nombre}, aged ${edad.value}.` +
         acotacion +
         afinidad +
         ` ${tono}` +
         ` Each activity needs a category (${categorias}), a title, a short description, ` +
-        `step-by-step instructions with between 3 and 6 numbered steps that are simple and ` +
+        `a brief learning objective (what the child learns or practices), ` +
+        `a list of simple materials commonly found at home, ` +
+        `step-by-step instructions with at least 6 detailed, concrete numbered steps ` +
+        `(each step explains what the adult does and what the child does) that are simple and ` +
         `suitable for children aged 2 to 6 (an adult can follow them with the child), ` +
         `a duration in minutes and a difficulty level from 1 to 3.`;
 

@@ -90,26 +90,30 @@ export class MockProvider implements AIProvider {
 type DatosActividad = { titulo: string; descripcion: string; instrucciones: string };
 
 /**
- * Pasos del paso a paso de la mock (US-61): se exige entre 3 y 6 pasos. Hay 6
- * plantillas por idioma; cada actividad usa un número de pasos en [3, 6] derivado
- * de `n` (determinista) para que el conjunto mock cumpla el rango sin red.
+ * Pasos del paso a paso de la mock (US-67): se exige al menos 6 pasos detallados.
+ * Hay 8 plantillas por idioma; cada actividad usa un número de pasos en [6, 8]
+ * derivado de `n` (determinista) para que el conjunto mock cumpla el mínimo sin red.
  */
 const PASOS_ACTIVIDAD: Record<CodigoIdioma, ((categoria: Categoria) => string)[]> = {
   es: [
-    (categoria) => `Prepara los materiales de ${categoria}.`,
-    () => 'Explica la actividad al niño con palabras sencillas.',
-    () => 'Acompáñale mientras juega y anímale.',
-    () => 'Dale tiempo para que pruebe a su ritmo.',
-    () => 'Hazle preguntas sencillas sobre lo que hace.',
-    () => 'Celebrad juntos el resultado.',
+    (categoria) => `El adulto reúne los materiales sencillos de ${categoria} que hay en casa.`,
+    () => 'El adulto explica la actividad al niño con palabras sencillas y un ejemplo.',
+    () => 'El niño elige por dónde empezar mientras el adulto le acompaña.',
+    () => 'El adulto muestra el primer paso y el niño lo repite a su ritmo.',
+    () => 'El niño prueba por sí mismo y el adulto le anima cuando lo intenta.',
+    () => 'El adulto hace preguntas sencillas para que el niño cuente lo que hace.',
+    () => 'El niño termina la actividad y el adulto le ayuda a recoger.',
+    () => 'El adulto y el niño celebran juntos el resultado y comentan qué han aprendido.',
   ],
   en: [
-    (categoria) => `Get the ${categoria} materials ready.`,
-    () => 'Explain the activity to the child in simple words.',
-    () => 'Stay close while they play and cheer them on.',
-    () => 'Give them time to try at their own pace.',
-    () => 'Ask simple questions about what they are doing.',
-    () => 'Celebrate the result together.',
+    (categoria) => `The adult gathers the simple ${categoria} materials found at home.`,
+    () => 'The adult explains the activity to the child in simple words with an example.',
+    () => 'The child chooses where to start while the adult stays close.',
+    () => 'The adult shows the first step and the child repeats it at their own pace.',
+    () => 'The child tries on their own and the adult cheers them on as they attempt it.',
+    () => 'The adult asks simple questions so the child can tell what they are doing.',
+    () => 'The child finishes the activity and the adult helps tidy up.',
+    () => 'The adult and child celebrate the result together and talk about what they learned.',
   ],
 };
 
@@ -134,10 +138,10 @@ const PLANTILLAS_ACTIVIDAD: Record<
   }),
 };
 
-/** Paso a paso mock con un número de pasos en [3, 6] derivado de `n` (US-61). */
+/** Paso a paso mock con un número de pasos en [6, 8] derivado de `n` (US-67). */
 function instruccionesMock(idioma: CodigoIdioma, categoria: Categoria, n: number): string {
   const plantillas = PASOS_ACTIVIDAD[idioma];
-  const cantidad = 3 + ((n - 1) % 4); // 3, 4, 5 o 6 pasos
+  const cantidad = 6 + ((n - 1) % 3); // 6, 7 u 8 pasos (siempre ≥6)
   const pasos = plantillas.slice(0, cantidad).map((paso) => paso(categoria));
   return pasosNumerados(pasos);
 }
