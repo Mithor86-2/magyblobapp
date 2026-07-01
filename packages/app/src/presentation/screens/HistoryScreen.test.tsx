@@ -50,7 +50,8 @@ vi.mock('../store/useAppStore', () => ({
     selector({ currentProfile: perfil }),
 }));
 
-import { HistoryScreen } from './HistoryScreen';
+import { HistoryScreen, SearchFiltersModal } from './HistoryScreen';
+import { TODOS } from './historyFilters';
 
 const navigation = {
   getParent: () => ({ navigate: vi.fn() }),
@@ -197,5 +198,41 @@ describe('HistoryScreen — favoritos y búsqueda (US-64)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Solo favoritos' }));
     expect(screen.queryByText('Cuento 1')).not.toBeInTheDocument();
     expect(screen.getByText('Cuento 2')).toBeVisible();
+  });
+});
+
+/**
+ * A3: la modal de búsqueda tiene un botón "X" (Cerrar) arriba a la derecha que
+ * dispara el cierre. Se prueba el componente exportado en aislamiento con un espía
+ * de `onClose` (el `Modal` con animación no desmonta su contenido bajo jsdom, así que
+ * la aserción es sobre el callback, no sobre el DOM).
+ */
+describe('SearchFiltersModal — botón cerrar (A3/US-73)', () => {
+  const modalProps = () => ({
+    visible: true,
+    onClose: vi.fn(),
+    onClear: vi.fn(),
+    busqueda: '',
+    setBusqueda: vi.fn(),
+    temaFiltro: TODOS,
+    setTemaFiltro: vi.fn(),
+    estiloFiltro: TODOS,
+    setEstiloFiltro: vi.fn(),
+    ensenanzaFiltro: TODOS,
+    setEnsenanzaFiltro: vi.fn(),
+    categoriaFiltro: TODOS,
+    setCategoriaFiltro: vi.fn(),
+    soloFavoritos: false,
+    setSoloFavoritos: vi.fn(),
+  });
+
+  it('el botón "Cerrar" dispara onClose', () => {
+    const p = modalProps();
+    render(<SearchFiltersModal {...p} />);
+
+    const cerrar = screen.getByRole('button', { name: 'Cerrar' });
+    expect(cerrar).toBeInTheDocument();
+    fireEvent.click(cerrar);
+    expect(p.onClose).toHaveBeenCalledTimes(1);
   });
 });
