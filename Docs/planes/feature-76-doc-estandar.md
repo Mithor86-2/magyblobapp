@@ -47,40 +47,52 @@ siguiendo la convención existente y (2) volverla _enforced_ con `eslint-plugin-
 - US-65 — Estándar de documentación de código (cabeceras + lint)
   ([épica F](../historias-usuario/epic-f-plataforma.md#us-65))
 
+## Hallazgo (revisión con el linter como fuente de verdad)
+
+Al configurar la regla se comprobó que **la auditoría sobre-reportó**: los 3 «backend sin doc» del
+conteo eran ficheros **generados de Prisma** (`src/generated/**`), y `CloudProvider`, `createAIProvider`,
+`OllamaProvider`, `Story` y `RecommendActivities` **ya tenían** doc adyacente en su clase/función (el
+patrón correcto del proyecto). Los **huecos reales**, según `jsdoc/require-jsdoc`, eran **14 funciones
+exportadas** sin bloque (mappers, type-guards, `parseStory`/`parseActivities`, `buildStoryPrompt`/
+`buildActivitiesPrompt`) + las **4 pantallas** del app. **Alcance del _enforce_: backend**, porque el
+app **no tiene ESLint** en el gate (montarlo es tarea de infra aparte, ver Follow-ups).
+
 ## Fases y tareas
 
 ### Fase 1 — Cerrar huecos de cabecera (backend)
 
-- [ ] ❌ Cabecera de módulo en las 4 rutas (`profiles`, `stories`, `anonymous`, `activities`):
-      `/** Rutas Fastify de … · valida con JSON Schema · US-NN */`.
-- [ ] ❌ `CloudProvider.ts`: documentar (texto vía Groq/dialecto OpenAI, fallback a Mock).
-- [ ] ❌ `createAIProvider.ts`: documentar la factory (compone `AIProvider` según `AI_PROVIDER`;
-      envuelve en `FallbackProvider`).
-- [ ] ❌ `OllamaProvider.ts`: mover el bloque doc al inicio del módulo.
-- [ ] ❌ `Story.ts`: cabecera de clase (entidad con estado nuevo/leído + favorito, US-63).
-- [ ] ❌ `RecommendActivities.ts`: mover el bloque `/** */` al inicio de la clase.
+- [x] ✅ Cabecera de módulo en las 4 rutas (`profiles`, `stories`, `anonymous`, `activities`).
+- [x] ✅ `CloudProvider`/`createAIProvider`/`OllamaProvider`: ya documentados en su símbolo (sin cambio).
+- [x] ✅ `Story.ts` y `RecommendActivities.ts`: ya tienen doc de clase adyacente (sin cambio).
+- [x] ✅ Documentadas 14 funciones exportadas que la regla marcó (mappers, type-guards, parseResponse,
+      prompts, storyParams).
 
 ### Fase 2 — Cerrar huecos de cabecera (app)
 
-- [ ] ❌ Cabecera en las 4 pantallas (propósito + flujo + US que cubren).
-- [ ] ❌ `Icon.tsx`: cabecera del componente (wrapper de Ionicons unificado con el theme).
+- [x] ✅ Cabecera en las 4 pantallas (`StoryGenerator`, `History`, `CreateProfile`, `Activities`).
+- [x] ✅ `Icon.tsx`: ya tenía doc (falsa alarma de la auditoría; sin cambio).
 
 ### Fase 3 — Estándar _enforced_ con eslint-plugin-jsdoc
 
-- [ ] ❌ Añadir `eslint-plugin-jsdoc` como devDependency (raíz/workspace) — consultar la doc vigente
-      del plugin antes de configurar (flat config).
-- [ ] ❌ Configurar `jsdoc/require-jsdoc` en [../../eslint.config.mjs](../../eslint.config.mjs) para
-      **exports públicos** (clases, interfaces, funciones exportadas) con `publicOnly`.
-- [ ] ❌ Excluir `**/*.test.ts`, `packages/backend/src/generated/**` y lo que no sea fuente propia;
-      calibrar severidad (`warn`→`error`) sin volver ruidoso el gate.
-- [ ] ❌ Ajustar cualquier export público que la regla marque (o documentarlo).
+- [x] ✅ `eslint-plugin-jsdoc` añadido como devDependency del workspace.
+- [x] ✅ `jsdoc/require-jsdoc` en [../../eslint.config.mjs](../../eslint.config.mjs) para exports
+      públicos (`ClassDeclaration` + `FunctionDeclaration`, `publicOnly`), acotado a
+      `packages/backend/src/**`. Solo `require-jsdoc` (no el preset), acorde a la convención de prosa.
+- [x] ✅ Excluidos tests y `src/generated/**` (ignore global). Interfaces **no** exigidas (evita ruido
+      en los «bags» de opciones triviales).
+- [x] ✅ Documentados los 14 exports que la regla marcó → `pnpm lint` en verde.
 
 ### Fase 4 — Gate + docs + cierre
 
-- [ ] ❌ `pnpm check` en verde (typecheck + lint + format:check + test).
-- [ ] ❌ Entradas en `CHANGELOG.md` (backend y app) bajo `## [Unreleased]` (`Added`/`Changed`).
-- [ ] ❌ Actualizar [../lecciones-aprendidas.md](../lecciones-aprendidas.md) si hay gotcha del plugin.
-- [ ] ❌ Pruebas con el usuario → confirmación → cierre con `cerrar-feature`.
+- [x] ✅ `pnpm check` en verde (typecheck + lint + format:check + test): backend 311, app 187.
+- [x] ✅ Entradas en `CHANGELOG.md` (backend y app) bajo `## [Unreleased]`.
+- [ ] 🔄 Pruebas con el usuario → confirmación → cierre con `cerrar-feature`.
+
+## Follow-ups (fuera de alcance)
+
+- Montar ESLint en el app Expo (no existe hoy) para extender el _enforce_ de documentación a las
+  pantallas/componentes. Sería su propia feature de tooling.
+- Valorar `typedoc` para generar un sitio de documentación navegable.
 
 ## Notas de alcance
 
