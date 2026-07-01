@@ -655,3 +655,19 @@ Dos features en paralelo (A backend, B app; plan en
 - **DoD:** assets integrados sin romper el contrato de datos; cuentos/actividades notablemente
   personalizados por perfil; releer desde Historial, narración por voz (US-22) y botón "Realizado"
   operativos; `pnpm check` verde + bundle + pruebas con el usuario.
+
+### Estándar de documentación del código (US-65, integrado el 2026-06-28, v1.4.1)
+
+Feature `feature/76-doc-estandar-jsdoc` (docs + tooling; sin cambio funcional → **patch v1.4.1**).
+Formaliza y hace **verificable** la convención de documentación que el proyecto ya seguía. La skill
+[`documentar`](../.claude/skills/documentar/SKILL.md) es la **fuente única** del estándar; `CLAUDE.md`
+la referencia.
+
+- [x] ✅ **Enforce (backend):** `eslint-plugin-jsdoc` + regla `jsdoc/require-jsdoc` (`publicOnly`,
+      clases y funciones exportadas de `packages/backend/src/**`) integrada en `pnpm check`. Solo
+      `require-jsdoc` (no el preset), acorde a la convención de prosa española (sin TSDoc formal).
+- [x] ✅ **Huecos cerrados:** 14 funciones exportadas del backend (mappers, type-guards, parseResponse,
+      prompts, storyParams) + cabeceras de módulo en 4 rutas; 4 pantallas del app documentadas a mano
+      (el app no tiene ESLint en el gate → estándar por convención, follow-up de tooling).
+- [x] ✅ **Docs:** skill `documentar`, enlaces desde `CLAUDE.md`, decisión en `memory.md`.
+- **DoD:** `pnpm check` verde (backend 311 + app 187); estándar aplicado y enforced en backend.

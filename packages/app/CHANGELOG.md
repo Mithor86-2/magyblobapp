@@ -9,13 +9,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- `eas.json` con perfiles de **EAS Build**: `preview` (APK de distribución interna apuntando al backend
-  de producción, para probar en dispositivo), `development` (APK dev contra `10.0.2.2`) y `production`
-  (AAB). La URL del backend va en `env.EXPO_PUBLIC_API_URL` del perfil (la build en la nube no usa el
-  `.env` local).
-- Cabecera de documentación de módulo en las pantallas `StoryGeneratorScreen`, `HistoryScreen`,
-  `CreateProfileScreen` y `ActivitiesScreen`, que aún no la tenían (US-65).
-
 ### Changed
 
 ### Deprecated
@@ -25,6 +18,17 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+## [1.4.1] - 2026-06-28
+
+### Added
+
+- `eas.json` con perfiles de **EAS Build**: `preview` (APK de distribución interna apuntando al backend
+  de producción, para probar en dispositivo), `development` (APK dev contra `10.0.2.2`) y `production`
+  (AAB). La URL del backend va en `env.EXPO_PUBLIC_API_URL` del perfil (la build en la nube no usa el
+  `.env` local).
+- Cabecera de documentación de módulo en las pantallas `StoryGeneratorScreen`, `HistoryScreen`,
+  `CreateProfileScreen` y `ActivitiesScreen`, que aún no la tenían (US-65).
 
 ## [1.4.0] - 2026-06-28
 

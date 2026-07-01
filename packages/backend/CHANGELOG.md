@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.4.1] - 2026-06-28
+
+### Added
+
 - Estándar de documentación **_enforced_** (US-65): la regla de lint `jsdoc/require-jsdoc`
   (`eslint-plugin-jsdoc`) exige un bloque de documentación en los **exports públicos** del backend
   (clases y funciones exportadas), integrada en el gate `pnpm check`. Se activa solo `require-jsdoc`
