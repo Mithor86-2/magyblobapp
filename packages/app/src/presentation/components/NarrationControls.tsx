@@ -9,10 +9,19 @@ import type { Story } from '../../domain/types';
  * Controles de narración de un cuento (US-22): un botón principal que alterna
  * escuchar/pausar/reanudar y un botón de parar cuando suena. La lógica (audio de
  * ElevenLabs + fallback a voz nativa + limpieza) vive en `useNarration`.
+ *
+ * `onFinished` (A2) se invoca cuando la narración se escucha **completa** (no al
+ * pausar/parar); la vista de lectura lo usa para marcar el cuento como leído.
  */
-export function NarrationControls({ story }: { story: Story }) {
+export function NarrationControls({
+  story,
+  onFinished,
+}: {
+  story: Story;
+  onFinished?: () => void;
+}) {
   const { t } = useTranslation();
-  const { estado, escuchar, pausar, parar } = useNarration(story);
+  const { estado, escuchar, pausar, parar } = useNarration(story, onFinished);
   const sonando = estado === 'playing' || estado === 'paused';
 
   return (

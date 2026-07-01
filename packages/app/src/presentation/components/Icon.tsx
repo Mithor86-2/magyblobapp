@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   BookOpen,
+  Check,
   Cloud,
   Home,
   Library,
@@ -10,6 +11,7 @@ import {
   Pause,
   Play,
   Puzzle,
+  Search,
   Sparkles,
   Square,
   Star,
@@ -41,6 +43,8 @@ const ICONS = {
   // Acciones / navegación.
   'arrow-right': ArrowRight,
   adults: UserRound,
+  check: Check,
+  search: Search,
   // Valoración (estrella; usar `fill` para el estado lleno).
   rating: Star,
   // Favorito (estrella; relleno cuando es favorito, US-64).

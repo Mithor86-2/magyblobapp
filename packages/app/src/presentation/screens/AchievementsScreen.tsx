@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import { Screen } from '../components/Screen';
+import { Appear } from '../components/Appear';
 import { BubblyButton } from '../components/BubblyButton';
 import { CATEGORIAS_LOGRO } from '../../domain/types';
 import type { Achievement, CategoriaLogro, Tema } from '../../domain/types';
@@ -104,25 +105,30 @@ export function AchievementsScreen(_props: RootScreenProps<'Achievements'>) {
           <View key={categoria} style={styles.grupo}>
             <Text style={styles.section}>{t(CATEGORIA_LABEL[categoria])}</Text>
             <View style={styles.grid}>
-              {delGrupo.map((l) => (
-                <View
+              {delGrupo.map((l, i) => (
+                <Appear
                   key={l.clave}
+                  delay={i * 40}
                   style={[styles.medal, l.conseguido ? styles.medalOn : styles.medalOff]}
-                  accessibilityRole="text"
-                  accessibilityLabel={`${goalLabel(l)} — ${
-                    l.conseguido
-                      ? t('achievements.unlocked')
-                      : t('achievements.progress', { progreso: l.progreso, meta: l.meta })
-                  }`}
                 >
-                  <Text style={styles.medalIcon}>{l.conseguido ? '🏆' : '🔒'}</Text>
-                  <Text style={styles.medalLabel}>{goalLabel(l)}</Text>
-                  <Text style={styles.medalProgress}>
-                    {l.conseguido
-                      ? t('achievements.unlocked')
-                      : t('achievements.progress', { progreso: l.progreso, meta: l.meta })}
-                  </Text>
-                </View>
+                  <View
+                    accessibilityRole="text"
+                    accessibilityLabel={`${goalLabel(l)} — ${
+                      l.conseguido
+                        ? t('achievements.unlocked')
+                        : t('achievements.progress', { progreso: l.progreso, meta: l.meta })
+                    }`}
+                    style={styles.medalContent}
+                  >
+                    <Text style={styles.medalIcon}>{l.conseguido ? '🏆' : '🔒'}</Text>
+                    <Text style={styles.medalLabel}>{goalLabel(l)}</Text>
+                    <Text style={styles.medalProgress}>
+                      {l.conseguido
+                        ? t('achievements.unlocked')
+                        : t('achievements.progress', { progreso: l.progreso, meta: l.meta })}
+                    </Text>
+                  </View>
+                </Appear>
               ))}
             </View>
           </View>
@@ -167,9 +173,11 @@ const makeStyles = (colors: ColorTokens) =>
       width: '47%',
       borderRadius: radius.lg,
       padding: spacing.md,
+      ...makeSoftShadow(colors),
+    },
+    medalContent: {
       gap: spacing.xs,
       alignItems: 'center',
-      ...makeSoftShadow(colors),
     },
     medalOn: {
       backgroundColor: colors.primaryContainer,

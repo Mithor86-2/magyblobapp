@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
+import { AdultsButton } from '../components/AdultsButton';
+import { Appear } from '../components/Appear';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
@@ -13,11 +16,12 @@ import { AuthorBadge } from '../components/AuthorBadge';
 import { NarrationControls } from '../components/NarrationControls';
 import { StoryCover } from '../components/StoryCover';
 import { api } from '../../composition';
+import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
-import type { TabScreenProps } from '../navigation';
+import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /**
  * Pantalla del **generador de cuentos** para el perfil activo. Permite elegir uno o
@@ -25,11 +29,15 @@ import type { TabScreenProps } from '../navigation';
  * el `api` inyectado y muestra el cuento con su portada, narración y favorito.
  * Degrada con un mensaje si la petición falla.
  */
-export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
+export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
+
+  // Zona de adultos (A6): el botón fijo del header navega al stack raíz.
+  const openParental = () =>
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
 
   // US-54: el generador ofrece TODOS los temas del vocabulario (antes se limitaba a
   // los intereses del perfil y ocultaba magia/música). Los intereses del perfil quedan
@@ -47,6 +55,8 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   const [loading, setLoading] = useState(false);
   const [story, setStory] = useState<Story | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Aviso de espera larga (US-53, cold-start de Render free).
+  const lento = useSlowHint(loading);
 
   const puedeGenerar = temas.length > 0 && estilos.length > 0;
 
@@ -94,6 +104,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   return (
     <Screen
       headerImageName="cuentos"
+      headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton
           label={story ? t('storyGenerator.generateAnother') : t('storyGenerator.generate')}
@@ -153,6 +164,12 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.statusText}>{t('storyGenerator.creating')}</Text>
+          {lento ? (
+            <>
+              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
+              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
+            </>
+          ) : null}
         </View>
       ) : null}
 
@@ -164,7 +181,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
       ) : null}
 
       {story ? (
-        <View style={styles.storyCard}>
+        <Appear style={styles.storyCard}>
           <StoryCover
             generada={story.portada}
             tema={story.tema}
@@ -175,7 +192,7 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
           <Text style={styles.storyBody}>{story.cuerpo}</Text>
           <NarrationControls story={story} />
           <AuthorBadge proveedor={story.proveedor} />
-        </View>
+        </Appear>
       ) : null}
     </Screen>
   );

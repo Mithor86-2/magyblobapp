@@ -81,6 +81,12 @@ export const es = {
     password: 'Contraseña',
     // Fecha de generación del contenido (US-62); {{fecha}} ya viene localizada.
     generatedOn: 'Creado el {{fecha}}',
+    // Aviso de espera larga (US-53, cold-start de Render free).
+    slowHint: 'Este proceso está tardando más de lo usual. Espera un momento…',
+    slowHintServer: 'La primera vez el servidor puede tardar hasta ~1 minuto en despertar.',
+    search: 'Buscar',
+    clear: 'Limpiar',
+    close: 'Cerrar',
   },
 
   welcome: {
@@ -115,6 +121,7 @@ export const es = {
     createStory: 'Crear un cuento',
     seeActivities: 'Ver actividades',
     myAchievements: 'Mis logros',
+    achievementsSummary: '{{conseguidos}}/{{total}}',
     adultsZone: 'Zona de personas adultas',
   },
 
@@ -220,6 +227,11 @@ export const es = {
     errorGenerate: 'No se pudo generar el cuento.',
   },
 
+  reader: {
+    markRead: 'Marcar como leído',
+    alreadyRead: 'Leído',
+  },
+
   history: {
     title: 'Tu historial',
     subtitle: 'Mira todo lo que has aprendido y creado.',
@@ -238,6 +250,8 @@ export const es = {
     filterTeaching: 'Enseñanza',
     filterCategory: 'Categoría',
     filterAll: 'Todos',
+    filtersTitle: 'Búsqueda y filtros',
+    searchWithCount: 'Buscar ({{count}})',
     noMatchStories: 'Ningún cuento coincide con el filtro.',
     noMatchActivities: 'Ninguna actividad coincide con el filtro.',
     // Favoritos y búsqueda (US-64).

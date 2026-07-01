@@ -433,9 +433,10 @@ describe('createApiGateways (adaptador HTTP)', () => {
     const pending = api.stories
       .generate({ profileId: 'p1', temas: ['magia'], estilos: ['aventura'] })
       .catch((e) => e);
-    // Generación usa 90 s de timeout; ante `timeout` se reintenta hasta 2 veces con
-    // backoff (500 ms, 1000 ms): hay que dejar correr los 3 intentos completos (US-53).
-    await vi.advanceTimersByTimeAsync(90_000 * 3 + 500 + 1000);
+    // Generación usa 120 s de timeout (holgura cold-start Render, A1); ante `timeout` se
+    // reintenta hasta 2 veces con backoff (500 ms, 1000 ms): hay que dejar correr los 3
+    // intentos completos (US-53).
+    await vi.advanceTimersByTimeAsync(120_000 * 3 + 500 + 1000);
     const error = await pending;
 
     expect(error).toBeInstanceOf(ApiError);
@@ -642,7 +643,7 @@ describe('sesión autenticada (US-45)', () => {
     const pending = createApiGateways(BASE)
       .guardians.refresh('rt-1')
       .catch((e) => e);
-    await vi.advanceTimersByTimeAsync(30_000);
+    await vi.advanceTimersByTimeAsync(60_000);
     const error = await pending;
 
     expect(error).toBeInstanceOf(ApiError);

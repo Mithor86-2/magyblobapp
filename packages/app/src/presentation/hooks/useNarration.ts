@@ -23,13 +23,17 @@ const NARRATION_TIMEOUT_MS = 30_000;
  * del dispositivo (`expo-speech`) sin error visible para el niño. Limpia el
  * audio y la voz al desmontar.
  */
-export function useNarration(story: Story) {
+export function useNarration(story: Story, onFinished?: () => void) {
   const player = useAudioPlayer();
   const status = useAudioPlayerStatus(player);
   const accessToken = useAppStore((s) => s.accessToken);
   const [estado, setEstado] = useState<EstadoNarracion>('idle');
   // Si caímos a la voz nativa, el control de pausa/parada va por expo-speech.
   const vozNativa = useRef(false);
+  // Callback de "narración terminada por completo" (US-68/A2: marca el cuento leído).
+  // En ref para no re-suscribir efectos ni recrear callbacks al cambiar la función.
+  const onFinishedRef = useRef(onFinished);
+  onFinishedRef.current = onFinished;
 
   const idioma = story.idioma === 'en' ? 'en-US' : 'es-ES';
 
@@ -38,7 +42,11 @@ export function useNarration(story: Story) {
     Speech.stop();
     Speech.speak(sanitizeForSpeech(story.cuerpo), {
       language: idioma,
-      onDone: () => setEstado('idle'),
+      // Solo `onDone` es "escuchado completo"; parar/pausar no cuenta como terminado.
+      onDone: () => {
+        setEstado('idle');
+        onFinishedRef.current?.();
+      },
       onStopped: () => setEstado('idle'),
       onError: () => setEstado('idle'),
     });
@@ -104,9 +112,12 @@ export function useNarration(story: Story) {
     setEstado('idle');
   }, [player]);
 
-  // El audio (ElevenLabs) terminó por sí solo → volver a idle.
+  // El audio (ElevenLabs) terminó por sí solo → volver a idle y avisar "escuchado completo".
   useEffect(() => {
-    if (!vozNativa.current && status.didJustFinish) setEstado('idle');
+    if (!vozNativa.current && status.didJustFinish) {
+      setEstado('idle');
+      onFinishedRef.current?.();
+    }
   }, [status.didJustFinish]);
 
   // Limpieza al desmontar: corta audio y voz nativa.

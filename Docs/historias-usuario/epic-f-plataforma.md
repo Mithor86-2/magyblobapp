@@ -1271,3 +1271,37 @@ lógica). Ver el plan [feature-76-doc-estandar](../planes/feature-76-doc-estanda
 - (No funcional) Dada la naturaleza del cambio, Cuando se aplica, Entonces **no se altera la lógica**:
   solo se añaden comentarios de documentación y configuración de lint; los tests existentes siguen en
   verde sin cambios de comportamiento.
+
+## US-71 — Ajustes UX + robustez cold-start {#us-71}
+
+**Como** usuario, **quiero** una app más robusta ante el arranque en frío del servidor y con una
+navegación y un historial más cómodos, **para** una mejor experiencia.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app.
+
+**Alcance (6 ajustes)**
+
+1. **Cold-start de Render (A1):** warm-up con reintentos + timeouts holgados (base 60 s, generación
+   120 s) y aviso "esto tarda más de lo usual" tras ~6 s (`useSlowHint`) en Generador/Actividades/Dashboard.
+2. **Marcar leído explícito (A2):** botón "Marcar como leído" o al terminar la narración; ya no se marca
+   solo por abrir el lector.
+3. **Actividades + buscador (A3):** actividades realizadas visibles en Historial y contadas en logros
+   (test de regresión); búsqueda y filtros en un modal ("Buscar" con contador + "Limpiar"); título completo.
+4. **Resumen de logros en Home (A4):** conseguidos/total + barra de progreso hacia Mis logros.
+5. **Animaciones de entrada (A5):** wrapper `Appear` (translateY + escala) en imágenes, tarjetas y botón principal.
+6. **Botón fijo a zona de adultos (A6):** en el header compartido, visible en las 4 pestañas.
+
+**Criterios de aceptación**
+
+- **(A1)** Dado un backend dormido, Cuando genero contenido, Entonces la petición no se aborta antes de
+  ~60 s (120 s en generación) y, si tarda >6 s, aparece el aviso de espera.
+- **(A2)** Dado el lector, Cuando lo abro, Entonces el cuento **no** se marca leído; Cuando pulso el
+  botón o termino la narración, Entonces sí se marca leído.
+- **(A3)** Dado que completo una actividad, Cuando abro el Historial, Entonces aparece; y Cuando abro
+  Mis logros, Entonces cuenta para el logro de actividades. El buscador vive en un modal; "Limpiar" resetea.
+- **(A4)** Dado un perfil con logros, Cuando abro Inicio, Entonces veo "conseguidos/total" con barra que
+  lleva a Mis logros.
+- **(A5)** Dado que entro a una pantalla, Entonces imágenes, tarjetas y el botón principal aparecen con
+  una animación de entrada sin ocultar el contenido.
+- **(A6)** Dado que estoy en cualquiera de las 4 pestañas, Entonces hay un botón fijo en el header que
+  lleva a la zona de adultos (tras su puerta parental).

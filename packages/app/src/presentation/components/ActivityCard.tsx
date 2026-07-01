@@ -5,6 +5,7 @@ import type { Activity, Categoria } from '../../domain/types';
 import { categoriaLabel } from '../labels';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
+import { Appear } from './Appear';
 import { StarRating } from './StarRating';
 import { AuthorBadge } from './AuthorBadge';
 import { BubblyButton } from './BubblyButton';
@@ -64,7 +65,7 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
   const fecha = formatearFecha(activity.creadoEn, idioma);
 
   return (
-    <View style={[styles.card, { borderBottomColor: color }]}>
+    <Appear style={[styles.card, { borderBottomColor: color }]}>
       <View style={styles.header}>
         <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
         <View style={styles.headerRight}>
@@ -114,7 +115,7 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
 
       <AuthorBadge proveedor={activity.proveedor} />
       {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
-    </View>
+    </Appear>
   );
 }
 

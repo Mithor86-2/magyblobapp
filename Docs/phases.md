@@ -748,3 +748,27 @@ más adelante).
       para mínima superficie; el estado mostrado es correcto aunque falle la persistencia (sale del cálculo).
 - **DoD:** ✅ `pnpm check` verde (**backend 357 + app 203**); integrado en `develop` sin release ·
   ⏳ pruebas con el usuario (manual: cuento con enseñanza + filtro en Historial + pantalla Mis logros).
+
+### Lote de ajustes UX + robustez cold-start (US-71, rama `feature/81-ajustes-ux-render`)
+
+Seis ajustes de cara al usuario (plan en [planes/ajustes-ux-render.md](planes/ajustes-ux-render.md)).
+Solo app (más un test de regresión backend). Integrado sin release (entradas en `## [Unreleased]`).
+
+- [x] ✅ **A1 · Robustez cold-start de Render.** Render free suspende la instancia por inactividad
+      (primer request 50 s+): warm-up con reintentos y timeout largo (`WARMUP_TIMEOUT_MS` 70 s),
+      timeouts tolerantes (base 30→60 s, generación 90→120 s) y aviso escalado "esto tarda más de lo
+      usual…" vía hook `useSlowHint` en Generador/Actividades/Dashboard.
+- [x] ✅ **A2 · Marcar leído explícito.** Se quita el auto-marcado al abrir el lector; se marca con el
+      botón "Marcar como leído" o al **terminar la narración** (`onFinished` en `useNarration`).
+- [x] ✅ **A3 · Actividades en logros/historial + buscador.** Test de regresión confirma que una
+      actividad completada aparece en el historial y desbloquea su logro (el backend ya era correcto).
+      Historial reorganizado: búsqueda y todos los filtros en un **modal** ("Buscar" con contador de
+      filtros activos + "Limpiar"); **título del cuento completo**.
+- [x] ✅ **A4 · Resumen de logros en Home.** Tarjeta con "conseguidos/total" + `ProgressBar` que lleva a
+      Mis logros (carga al enfocar, degrada en silencio).
+- [x] ✅ **A6 · Botón fijo a la zona de adultos.** `AdultsButton` en el `headerAction` del `Screen`
+      (fijo arriba a la derecha) en las 4 pestañas; se retira el enlace inferior de Inicio.
+- [x] ✅ **A5 · Animaciones de entrada.** Wrapper `Appear` (`Animated` integrado; anima translateY+scale,
+      no opacidad) en imágenes de cabecera, footer (botón principal), `ActivityCard`, medallas de logros
+      y tarjetas de cuento.
+- **DoD:** ✅ `pnpm check` verde (**backend 357 + app 216**) · ⏳ pruebas en dev por el usuario.

@@ -804,3 +804,27 @@ en paralelo): ya no se mitigan a mano, se evitan por diseño. Protocolo en
 
 - Las etiquetas de objetivo de los logros ("Leer 1 cuento" vs "Leer 5 cuentos") usan las claves
   `*_one`/`*_other` de i18next con `t(clave, { count })`; evita concatenar el número con un plural fijo.
+
+## Lote de ajustes UX + cold-start (2026-07-01, rama `feature/81-ajustes-ux-render`)
+
+### `toBeVisible()` de jest-dom trata `opacity: 0` como NO visible → animaciones de entrada sin opacidad
+
+- **Síntoma:** al envolver tarjetas/imágenes/botones en un wrapper de animación de entrada que arranca
+  con `opacity: 0` (fade-in), decenas de tests con `expect(...).toBeVisible()` fallaban (react-native-web
+  renderiza `opacity:0` y jest-dom lo considera invisible), aunque el elemento estaba montado.
+- **Causa:** en tests no se avanza el reloj de animación (Animated JS driver usa RAF), así que la opacidad
+  se queda en ~0 en el momento de la aserción.
+- **Solución:** el wrapper `Appear` anima **`translateY` + `scale`** (0.98→1) y **no la opacidad** (queda
+  en 1). Sigue siendo una entrada atractiva y no altera la visibilidad para los tests. `useNativeDriver:
+false` para que funcione igual en nativo y en react-native-web.
+
+### Tests de timeout de red: al cambiar los presupuestos hay que ajustar el avance de timers
+
+- Subir `DEFAULT_TIMEOUT_MS` (30→60 s) y el de generación (90→120 s) por el cold start de Render rompió
+  dos tests de `http.test.ts` que avanzaban los timers al valor antiguo. Regla: los tests con
+  `vi.advanceTimersByTimeAsync(...)` deben avanzar al **nuevo** presupuesto (×nº de reintentos + backoff).
+
+### `renderHook` + timers falsos: envolver `advanceTimersByTime` en `act`
+
+- Un hook que hace `setState` desde un `setTimeout` (p. ej. `useSlowHint`) no refleja el cambio si se
+  avanzan los timers fuera de `act(...)`. Envolver `act(() => vi.advanceTimersByTime(ms))`.

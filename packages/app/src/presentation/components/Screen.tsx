@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Appear } from './Appear';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, spacing } from '../theme/tokens';
 
@@ -54,10 +55,17 @@ export function Screen({
   children,
   footer,
   headerImageName,
+  headerAction,
 }: {
   children: ReactNode;
   footer?: ReactNode;
   headerImageName?: HeaderImageName;
+  /**
+   * Acción fija arriba a la derecha, por encima del contenido y del scroll (A6): la
+   * usan las pestañas para el botón de la zona de adultos. Fija = no se desplaza con
+   * el scroll (posicionada sobre el área segura).
+   */
+  headerAction?: ReactNode;
 }) {
   const { height } = useWindowDimensions();
   const styles = useThemedStyles(makeStyles);
@@ -76,17 +84,25 @@ export function Screen({
           showsVerticalScrollIndicator={false}
         >
           {headerImageName ? (
-            <Image
-              source={headerImages[headerImageName]}
-              style={[styles.header, { height: headerHeight }]}
-              resizeMode="contain"
-              accessibilityRole="image"
-            />
+            <Appear>
+              <Image
+                source={headerImages[headerImageName]}
+                style={[styles.header, { height: headerHeight }]}
+                resizeMode="contain"
+                accessibilityRole="image"
+              />
+            </Appear>
           ) : null}
           <View style={styles.body}>{children}</View>
         </ScrollView>
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
+        {footer ? (
+          <View style={styles.footer}>
+            <Appear>{footer}</Appear>
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
+      {/* A6: acción fija (zona de adultos) sobre el contenido, arriba a la derecha. */}
+      {headerAction ? <View style={styles.headerAction}>{headerAction}</View> : null}
     </SafeAreaView>
   );
 }
@@ -121,5 +137,11 @@ const makeStyles = (colors: ColorTokens) =>
       paddingHorizontal: spacing.containerPadding,
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
+    },
+    headerAction: {
+      position: 'absolute',
+      top: spacing.sm,
+      right: spacing.containerPadding,
+      zIndex: 10,
     },
   });

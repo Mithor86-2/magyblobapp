@@ -78,6 +78,12 @@ export const en: typeof es = {
     password: 'Password',
     // Content generation date (US-62); {{fecha}} is already localized.
     generatedOn: 'Created on {{fecha}}',
+    // Long-wait notice (US-53, Render free cold start).
+    slowHint: 'This is taking longer than usual. Please wait a moment…',
+    slowHintServer: 'The first time, the server may take up to ~1 minute to wake up.',
+    search: 'Search',
+    clear: 'Clear',
+    close: 'Close',
   },
 
   welcome: {
@@ -112,6 +118,7 @@ export const en: typeof es = {
     createStory: 'Create a story',
     seeActivities: 'See activities',
     myAchievements: 'My achievements',
+    achievementsSummary: '{{conseguidos}}/{{total}}',
     adultsZone: 'Adults zone',
   },
 
@@ -217,6 +224,11 @@ export const en: typeof es = {
     errorGenerate: 'Could not generate the story.',
   },
 
+  reader: {
+    markRead: 'Mark as read',
+    alreadyRead: 'Read',
+  },
+
   history: {
     title: 'Your history',
     subtitle: 'See everything you have learned and created.',
@@ -235,6 +247,8 @@ export const en: typeof es = {
     filterTeaching: 'Teaching',
     filterCategory: 'Category',
     filterAll: 'All',
+    filtersTitle: 'Search and filters',
+    searchWithCount: 'Search ({{count}})',
     noMatchStories: 'No story matches the filter.',
     noMatchActivities: 'No activity matches the filter.',
     // Favorites and search (US-64).

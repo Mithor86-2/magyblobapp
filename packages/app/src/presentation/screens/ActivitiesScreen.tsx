@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
+import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
@@ -11,29 +13,36 @@ import type { Activity, Categoria } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { categoriaLabel } from '../labels';
 import { api } from '../../composition';
+import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
-import type { TabScreenProps } from '../navigation';
+import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /**
  * Pantalla de **actividades recomendadas** para el perfil activo. Permite filtrar
  * por categoría, pide recomendaciones al `api` inyectado y las muestra en tarjetas
  * (con opción de marcarlas). US-09, US-10.
  */
-export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
+export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
   const dialog = useDialog();
 
+  // Zona de adultos (A6): el botón fijo del header navega al stack raíz.
+  const openParental = () =>
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
+
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [loading, setLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [generado, setGenerado] = useState(false);
+  // Aviso de espera larga (US-53, cold-start de Render free).
+  const lento = useSlowHint(loading);
 
   async function onGenerate() {
     if (!profile) return;
@@ -70,6 +79,7 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
   return (
     <Screen
       headerImageName="actividades"
+      headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton
           label={generado ? t('activities.generateMore') : t('activities.generate')}
@@ -105,6 +115,12 @@ export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.statusText}>{t('activities.preparing')}</Text>
+          {lento ? (
+            <>
+              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
+              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
+            </>
+          ) : null}
         </View>
       ) : null}
 

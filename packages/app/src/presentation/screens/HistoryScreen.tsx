@@ -1,9 +1,19 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
+import { AdultsButton } from '../components/AdultsButton';
+import { Appear } from '../components/Appear';
 import { ActivityCard } from '../components/ActivityCard';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { BubblyButton } from '../components/BubblyButton';
@@ -34,9 +44,11 @@ import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /**
  * Pantalla de **historial** del perfil activo: lista los cuentos y actividades
- * guardados con filtros en cliente (tema, estilo, categoría), búsqueda por texto y
- * marca de favoritos (US-62/US-64). Desde aquí se relee un cuento en el lector del
- * stack raíz (US-27). Recarga al recuperar el foco.
+ * guardados. La búsqueda de texto y todos los filtros (tema, estilo, enseñanza,
+ * categoría, favoritos) viven en un **modal** que se abre con el botón "Buscar"
+ * (A3), para no saturar la pantalla; el botón muestra un contador de filtros activos
+ * y hay un botón "Limpiar" que los resetea. El título del cuento se ve completo.
+ * US-62/US-64/US-69. Recarga al recuperar el foco.
  */
 export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const { t, i18n } = useTranslation();
@@ -51,19 +63,23 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       story,
     });
 
+  // Zona de adultos (A6): el botón fijo del header navega al stack raíz.
+  const openParental = () =>
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
+
   const [history, setHistory] = useState<History>({ stories: [], activities: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Filtros en cliente (US-62), estado local; "Todos" por defecto.
+  // Filtros en cliente (US-62/US-64/US-69), estado local; "Todos" por defecto.
   const [temaFiltro, setTemaFiltro] = useState<FiltroTema>(TODOS);
   const [estiloFiltro, setEstiloFiltro] = useState<FiltroEstilo>(TODOS);
-  // US-69: filtro por enseñanza/valor de los cuentos.
   const [ensenanzaFiltro, setEnsenanzaFiltro] = useState<FiltroEnsenanza>(TODOS);
   const [categoriaFiltro, setCategoriaFiltro] = useState<FiltroCategoria>(TODOS);
-  // Favoritos + búsqueda de texto (US-64), también local.
   const [soloFavoritos, setSoloFavoritos] = useState(false);
   const [busqueda, setBusqueda] = useState('');
+  // A3: la búsqueda y los filtros se editan en un modal (la pantalla queda limpia).
+  const [modalVisible, setModalVisible] = useState(false);
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -95,8 +111,27 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     return api.stories.setFavorite(storyId, favorito);
   };
 
+  // Nº de filtros activos: alimenta el badge del botón "Buscar" (A3).
+  const filtrosActivos = [
+    temaFiltro !== TODOS,
+    estiloFiltro !== TODOS,
+    ensenanzaFiltro !== TODOS,
+    categoriaFiltro !== TODOS,
+    soloFavoritos,
+    busqueda.trim() !== '',
+  ].filter(Boolean).length;
+
+  const limpiarFiltros = () => {
+    setTemaFiltro(TODOS);
+    setEstiloFiltro(TODOS);
+    setEnsenanzaFiltro(TODOS);
+    setCategoriaFiltro(TODOS);
+    setSoloFavoritos(false);
+    setBusqueda('');
+  };
+
   const hechas = history.activities.filter((a) => a.valoracion != null);
-  // Listas filtradas en cliente (US-62 + US-64) sobre lo ya cargado.
+  // Listas filtradas en cliente (US-62 + US-64 + US-69) sobre lo ya cargado.
   const cuentosVisibles = filtrarCuentos(
     history.stories,
     temaFiltro,
@@ -108,25 +143,27 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const actividadesVisibles = filtrarActividades(hechas, categoriaFiltro, soloFavoritos, busqueda);
 
   return (
-    <Screen>
+    <Screen headerAction={<AdultsButton onPress={openParental} />}>
       <Text style={styles.title}>{t('history.title')}</Text>
       <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
 
-      {/* Búsqueda de texto + filtro favoritos (US-64): afectan a cuentos y actividades. */}
-      <TextField
-        label={t('history.searchLabel')}
-        value={busqueda}
-        onChangeText={setBusqueda}
-        placeholder={t('history.searchPlaceholder')}
-        autoCapitalize="none"
-        testID="history-search"
-      />
-      <View style={styles.chipRow}>
-        <SelectableChip
-          label={t('history.onlyFavorites')}
-          selected={soloFavoritos}
-          onPress={() => setSoloFavoritos((v) => !v)}
-        />
+      {/* A3: acceso a búsqueda y filtros en un modal; badge con nº de filtros activos. */}
+      <View style={styles.toolbar}>
+        <View style={styles.searchButton}>
+          <BubblyButton
+            label={
+              filtrosActivos > 0
+                ? t('history.searchWithCount', { count: filtrosActivos })
+                : t('common.search')
+            }
+            icon="search"
+            variant="secondary"
+            onPress={() => setModalVisible(true)}
+          />
+        </View>
+        {filtrosActivos > 0 ? (
+          <BubblyButton label={t('common.clear')} variant="secondary" onPress={limpiarFiltros} />
+        ) : null}
       </View>
 
       {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
@@ -140,155 +177,199 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       <Text style={styles.section}>{t('history.sectionStories')}</Text>
       {history.stories.length === 0 ? (
         <Text style={styles.vacio}>{t('history.emptyStories')}</Text>
+      ) : cuentosVisibles.length === 0 ? (
+        <Text style={styles.vacio}>{t('history.noMatchStories')}</Text>
       ) : (
-        <>
-          <Text style={styles.filterLabel}>{t('history.filterTheme')}</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipRow}
-          >
-            <SelectableChip
-              label={t('history.filterAll')}
-              selected={temaFiltro === TODOS}
-              onPress={() => setTemaFiltro(TODOS)}
-            />
-            {TEMAS.map((tema) => (
-              <SelectableChip
-                key={tema}
-                label={temaLabel(tema)}
-                selected={temaFiltro === tema}
-                onPress={() => setTemaFiltro(tema)}
-              />
-            ))}
-          </ScrollView>
-
-          <Text style={styles.filterLabel}>{t('history.filterStyle')}</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipRow}
-          >
-            <SelectableChip
-              label={t('history.filterAll')}
-              selected={estiloFiltro === TODOS}
-              onPress={() => setEstiloFiltro(TODOS)}
-            />
-            {ESTILOS.map((estilo) => (
-              <SelectableChip
-                key={estilo}
-                label={estiloLabel(estilo)}
-                selected={estiloFiltro === estilo}
-                onPress={() => setEstiloFiltro(estilo)}
-              />
-            ))}
-          </ScrollView>
-
-          <Text style={styles.filterLabel}>{t('history.filterTeaching')}</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipRow}
-          >
-            <SelectableChip
-              label={t('history.filterAll')}
-              selected={ensenanzaFiltro === TODOS}
-              onPress={() => setEnsenanzaFiltro(TODOS)}
-            />
-            {ENSENANZAS.map((ensenanza) => (
-              <SelectableChip
-                key={ensenanza}
-                label={ensenanzaLabel(ensenanza)}
-                selected={ensenanzaFiltro === ensenanza}
-                onPress={() => setEnsenanzaFiltro(ensenanza)}
-              />
-            ))}
-          </ScrollView>
-
-          {cuentosVisibles.length === 0 ? (
-            <Text style={styles.vacio}>{t('history.noMatchStories')}</Text>
-          ) : (
-            cuentosVisibles.map((story) => {
-              const fecha = formatearFecha(story.creadoEn, idioma);
-              // La estrella de favorito es un control aparte: el área pulsable que
-              // abre la lectura no la envuelve (evita un botón anidado en otro).
-              return (
-                <View key={story.id} style={styles.storyCard}>
-                  <View style={styles.storyHeader}>
-                    <Text style={styles.storyTitle} numberOfLines={1}>
-                      {story.titulo}
-                    </Text>
-                    <View
-                      style={[
-                        styles.estado,
-                        story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
-                      ]}
-                    >
-                      <Text style={styles.estadoText}>
-                        {story.estado === 'leido' ? t('history.read') : t('history.new')}
-                      </Text>
-                    </View>
-                    <FavoriteButton
-                      favorito={story.favorito}
-                      onToggle={(favorito) => toggleFavoritoCuento(story.id, favorito)}
-                    />
-                  </View>
-                  <Pressable
-                    onPress={() => openReader(story)}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
-                    style={styles.accionRow}
-                  >
-                    <Text style={styles.accion}>{t('history.readStory')}</Text>
-                    <Icon name="arrow-right" size="sm" color={colors.primary} />
-                  </Pressable>
-                  <AuthorBadge proveedor={story.proveedor} />
-                  {fecha ? (
-                    <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text>
-                  ) : null}
+        cuentosVisibles.map((story) => {
+          const fecha = formatearFecha(story.creadoEn, idioma);
+          return (
+            <Appear key={story.id} style={styles.storyCard}>
+              <View style={styles.storyHeader}>
+                {/* A3: título completo (sin numberOfLines). */}
+                <Text style={styles.storyTitle}>{story.titulo}</Text>
+                <View
+                  style={[
+                    styles.estado,
+                    story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
+                  ]}
+                >
+                  <Text style={styles.estadoText}>
+                    {story.estado === 'leido' ? t('history.read') : t('history.new')}
+                  </Text>
                 </View>
-              );
-            })
-          )}
-        </>
+                <FavoriteButton
+                  favorito={story.favorito}
+                  onToggle={(favorito) => toggleFavoritoCuento(story.id, favorito)}
+                />
+              </View>
+              <Pressable
+                onPress={() => openReader(story)}
+                accessibilityRole="button"
+                accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
+                style={styles.accionRow}
+              >
+                <Text style={styles.accion}>{t('history.readStory')}</Text>
+                <Icon name="arrow-right" size="sm" color={colors.primary} />
+              </Pressable>
+              <AuthorBadge proveedor={story.proveedor} />
+              {fecha ? (
+                <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text>
+              ) : null}
+            </Appear>
+          );
+        })
       )}
 
       <Text style={styles.section}>{t('history.sectionActivities')}</Text>
       {hechas.length === 0 ? (
         <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
+      ) : actividadesVisibles.length === 0 ? (
+        <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
       ) : (
-        <>
-          <Text style={styles.filterLabel}>{t('history.filterCategory')}</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipRow}
-          >
-            <SelectableChip
-              label={t('history.filterAll')}
-              selected={categoriaFiltro === TODOS}
-              onPress={() => setCategoriaFiltro(TODOS)}
+        actividadesVisibles.map((activity) => (
+          <ActivityCard key={activity.id} activity={activity} />
+        ))
+      )}
+
+      <SearchFiltersModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onClear={limpiarFiltros}
+        busqueda={busqueda}
+        setBusqueda={setBusqueda}
+        temaFiltro={temaFiltro}
+        setTemaFiltro={setTemaFiltro}
+        estiloFiltro={estiloFiltro}
+        setEstiloFiltro={setEstiloFiltro}
+        ensenanzaFiltro={ensenanzaFiltro}
+        setEnsenanzaFiltro={setEnsenanzaFiltro}
+        categoriaFiltro={categoriaFiltro}
+        setCategoriaFiltro={setCategoriaFiltro}
+        soloFavoritos={soloFavoritos}
+        setSoloFavoritos={setSoloFavoritos}
+      />
+    </Screen>
+  );
+}
+
+interface SearchFiltersModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onClear: () => void;
+  busqueda: string;
+  setBusqueda: (v: string) => void;
+  temaFiltro: FiltroTema;
+  setTemaFiltro: (v: FiltroTema) => void;
+  estiloFiltro: FiltroEstilo;
+  setEstiloFiltro: (v: FiltroEstilo) => void;
+  ensenanzaFiltro: FiltroEnsenanza;
+  setEnsenanzaFiltro: (v: FiltroEnsenanza) => void;
+  categoriaFiltro: FiltroCategoria;
+  setCategoriaFiltro: (v: FiltroCategoria) => void;
+  soloFavoritos: boolean;
+  setSoloFavoritos: (v: boolean) => void;
+}
+
+/**
+ * Modal de búsqueda y filtros del Historial (A3): campo de texto + todos los filtros
+ * + botones Buscar (cierra) y Limpiar (resetea). Edita los filtros en vivo (el
+ * listado ya es reactivo); "Buscar" solo cierra el modal con lo elegido aplicado.
+ */
+function SearchFiltersModal(props: SearchFiltersModalProps) {
+  const { t } = useTranslation();
+  const styles = useThemedStyles(makeStyles);
+
+  return (
+    <Modal visible={props.visible} animationType="slide" transparent onRequestClose={props.onClose}>
+      <View style={styles.modalBackdrop}>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>{t('history.filtersTitle')}</Text>
+          <ScrollView contentContainerStyle={styles.modalBody}>
+            <TextField
+              label={t('history.searchLabel')}
+              value={props.busqueda}
+              onChangeText={props.setBusqueda}
+              placeholder={t('history.searchPlaceholder')}
+              autoCapitalize="none"
+              testID="history-search"
             />
-            {CATEGORIAS.map((categoria) => (
+
+            <FilterGroup
+              label={t('history.filterTheme')}
+              options={TEMAS.map((tema) => ({ value: tema, label: temaLabel(tema) }))}
+              selected={props.temaFiltro}
+              onSelect={(v) => props.setTemaFiltro(v as FiltroTema)}
+            />
+            <FilterGroup
+              label={t('history.filterStyle')}
+              options={ESTILOS.map((e) => ({ value: e, label: estiloLabel(e) }))}
+              selected={props.estiloFiltro}
+              onSelect={(v) => props.setEstiloFiltro(v as FiltroEstilo)}
+            />
+            <FilterGroup
+              label={t('history.filterTeaching')}
+              options={ENSENANZAS.map((e) => ({ value: e, label: ensenanzaLabel(e) }))}
+              selected={props.ensenanzaFiltro}
+              onSelect={(v) => props.setEnsenanzaFiltro(v as FiltroEnsenanza)}
+            />
+            <FilterGroup
+              label={t('history.filterCategory')}
+              options={CATEGORIAS.map((c) => ({ value: c, label: categoriaLabel(c) }))}
+              selected={props.categoriaFiltro}
+              onSelect={(v) => props.setCategoriaFiltro(v as FiltroCategoria)}
+            />
+
+            <View style={styles.chipRow}>
               <SelectableChip
-                key={categoria}
-                label={categoriaLabel(categoria)}
-                selected={categoriaFiltro === categoria}
-                onPress={() => setCategoriaFiltro(categoria)}
+                label={t('history.onlyFavorites')}
+                selected={props.soloFavoritos}
+                onPress={() => props.setSoloFavoritos(!props.soloFavoritos)}
               />
-            ))}
+            </View>
           </ScrollView>
 
-          {actividadesVisibles.length === 0 ? (
-            <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
-          ) : (
-            actividadesVisibles.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} />
-            ))
-          )}
-        </>
-      )}
-    </Screen>
+          <View style={styles.modalActions}>
+            <View style={styles.modalActionMain}>
+              <BubblyButton label={t('common.search')} icon="search" onPress={props.onClose} />
+            </View>
+            <BubblyButton label={t('common.clear')} variant="secondary" onPress={props.onClear} />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+interface FilterGroupProps {
+  label: string;
+  options: { value: string; label: string }[];
+  selected: string;
+  onSelect: (value: string) => void;
+}
+
+/** Grupo de chips de un filtro con la opción "Todos" al inicio (A3, dentro del modal). */
+function FilterGroup({ label, options, selected, onSelect }: FilterGroupProps) {
+  const { t } = useTranslation();
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <View style={styles.filterGroup}>
+      <Text style={styles.filterLabel}>{label}</Text>
+      <View style={styles.chipRowWrap}>
+        <SelectableChip
+          label={t('history.filterAll')}
+          selected={selected === TODOS}
+          onPress={() => onSelect(TODOS)}
+        />
+        {options.map((o) => (
+          <SelectableChip
+            key={o.value}
+            label={o.label}
+            selected={selected === o.value}
+            onPress={() => onSelect(o.value)}
+          />
+        ))}
+      </View>
+    </View>
   );
 }
 
@@ -301,6 +382,14 @@ const makeStyles = (colors: ColorTokens) =>
     subtitle: {
       ...typography.bodyMd,
       color: colors.onSurfaceVariant,
+    },
+    toolbar: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      alignItems: 'center',
+    },
+    searchButton: {
+      flex: 1,
     },
     section: {
       ...typography.headlineMd,
@@ -316,10 +405,18 @@ const makeStyles = (colors: ColorTokens) =>
       color: colors.onSurfaceVariant,
       marginTop: spacing.xs,
     },
+    filterGroup: {
+      gap: spacing.xs,
+    },
     chipRow: {
       flexDirection: 'row',
       gap: spacing.sm,
       paddingVertical: spacing.xs,
+    },
+    chipRowWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
     },
     fecha: {
       ...typography.labelBold,
@@ -378,5 +475,35 @@ const makeStyles = (colors: ColorTokens) =>
     accion: {
       ...typography.labelBold,
       color: colors.primary,
+    },
+    modalBackdrop: {
+      flex: 1,
+      // Sin token de scrim en el tema: overlay translúcido neutro para ambos esquemas.
+      backgroundColor: 'rgba(0, 0, 0, 0.45)',
+      justifyContent: 'flex-end',
+    },
+    modalCard: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radius.lg,
+      borderTopRightRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      maxHeight: '85%',
+    },
+    modalTitle: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+    },
+    modalBody: {
+      gap: spacing.sm,
+      paddingBottom: spacing.sm,
+    },
+    modalActions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      alignItems: 'center',
+    },
+    modalActionMain: {
+      flex: 1,
     },
   });

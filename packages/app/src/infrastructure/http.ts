@@ -53,8 +53,14 @@ const DEFAULT_BASE_URL = 'http://localhost:3000';
  * y la primera petición tarda; 30 s de base y 90 s para la generación de IA evitan
  * abortar una petición que sí iba a responder.
  */
-const DEFAULT_TIMEOUT_MS = 30_000;
-const GENERATION_TIMEOUT_MS = 90_000;
+// Render free suspende la instancia por inactividad; el primer request tras el
+// spin-down puede tardar 50 s o más en despertar. Los timeouts se dan holgura para
+// no abortar durante ese arranque en frío (base 60 s, generación 120 s).
+const DEFAULT_TIMEOUT_MS = 60_000;
+const GENERATION_TIMEOUT_MS = 120_000;
+// Presupuesto del ping de warm-up: cubre de sobra el spin-up (~50 s+) de Render free.
+const WARMUP_TIMEOUT_MS = 70_000;
+const WARMUP_RETRIES = 2;
 
 /**
  * Reintento con backoff ante fallos transitorios (US-53): un `timeout` o un fallo
@@ -84,18 +90,35 @@ export function getBaseUrl(): string {
 }
 
 /**
- * Ping de warm-up al arrancar (US-53): despierta el backend en frío de Render con
- * una petición a `/health` para que la primera acción del usuario no pague el cold
- * start. No bloquea la interfaz ni propaga errores (si falla, la petición real lo
- * reintentará con su propio backoff); fija un timeout amplio acorde al arranque.
+ * Ping de warm-up al arrancar (US-53, reforzado para Render free): despierta el
+ * backend en frío pidiendo `/health` para que la primera acción del usuario no pague
+ * el cold start. Como Render free **suspende** la instancia por inactividad y el
+ * despertar puede tardar 50 s o más, usa un timeout amplio (`WARMUP_TIMEOUT_MS`) y
+ * **reintenta** hasta que responda (o agotar `WARMUP_RETRIES`). No bloquea la
+ * interfaz ni propaga errores; es best-effort en segundo plano.
  */
 export function warmUp(baseUrl: string = getBaseUrl()): void {
   if (typeof fetch !== 'function') return;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
-  void fetch(`${baseUrl}/health`, { signal: controller.signal })
-    .catch(() => undefined)
-    .finally(() => clearTimeout(timer));
+
+  async function pingOnce(): Promise<boolean> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), WARMUP_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${baseUrl}/health`, { signal: controller.signal });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  void (async () => {
+    for (let intento = 0; intento <= WARMUP_RETRIES; intento++) {
+      if (await pingOnce()) return;
+      await delay(RETRY_BASE_DELAY_MS * 2 ** intento);
+    }
+  })();
 }
 
 interface RequestOptions {

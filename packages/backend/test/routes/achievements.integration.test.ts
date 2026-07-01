@@ -103,6 +103,50 @@ describe('GET /profiles/:profileId/achievements (integración)', () => {
     expect(persistidos.map((a) => a.clave).sort()).toEqual(['cuentos_leidos_1', 'tema_animales']);
   });
 
+  it('A3: una actividad completada aparece en el historial y desbloquea su logro', async () => {
+    const profileId = await crearPerfil();
+
+    // Recomendar (persiste) → completar una con valoración.
+    const rec = await app.inject({
+      method: 'POST',
+      url: '/activities/recommend',
+      headers: authHeaders(app),
+      payload: { profileId, cantidad: 1 },
+    });
+    expect(rec.statusCode).toBe(201);
+    const activityId = (rec.json() as Array<{ id: string }>)[0]!.id;
+
+    const done = await app.inject({
+      method: 'POST',
+      url: `/activities/${activityId}/complete`,
+      headers: authHeaders(app),
+      payload: { valoracion: 3 },
+    });
+    expect(done.statusCode).toBe(200);
+
+    // Aparece en el historial con su valoración.
+    const hist = await app.inject({
+      method: 'GET',
+      url: `/profiles/${profileId}/history`,
+      headers: authHeaders(app),
+    });
+    const activities = (hist.json() as { activities: Array<{ id: string; valoracion?: number }> })
+      .activities;
+    const enHistorial = activities.find((a) => a.id === activityId);
+    expect(enHistorial?.valoracion).toBe(3);
+
+    // Desbloquea el logro de actividades completadas.
+    const logros = await app.inject({
+      method: 'GET',
+      url: `/profiles/${profileId}/achievements`,
+      headers: authHeaders(app),
+    });
+    const porClave = new Map(
+      (logros.json() as Array<{ clave: string; conseguido: boolean }>).map((l) => [l.clave, l]),
+    );
+    expect(porClave.get('actividades_completadas_1')?.conseguido).toBe(true);
+  });
+
   it('exige sesión (401 sin token)', async () => {
     const profileId = await crearPerfil();
     const res = await app.inject({

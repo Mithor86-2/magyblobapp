@@ -1,21 +1,40 @@
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
+import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
-import { Icon } from '../components/Icon';
+import { ProgressBar } from '../components/ProgressBar';
 import { avatarEmoji } from '../components/AvatarPicker';
+import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
-import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, radius, makeSoftShadow, spacing, typography } from '../theme/tokens';
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /** Pantalla de bienvenida: saluda al niño actual y lleva a Cuentos / Actividades. */
 export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
+
+  // Resumen de logros (US-68/A4): conseguidos y total, para la barra de progreso.
+  const [logros, setLogros] = useState<{ conseguidos: number; total: number } | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!profile) return;
+      // Best-effort: si falla, Home no muestra el resumen pero nunca rompe.
+      void api.achievements
+        .get(profile.id)
+        .then((items) =>
+          setLogros({ conseguidos: items.filter((l) => l.conseguido).length, total: items.length }),
+        )
+        .catch(() => setLogros(null));
+    }, [profile]),
+  );
 
   // La zona de adultos vive en el stack raíz (sobre las pestañas), tras la puerta parental.
   const openParental = () =>
@@ -26,7 +45,7 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Achievements');
 
   return (
-    <Screen headerImageName="home">
+    <Screen headerImageName="home" headerAction={<AdultsButton onPress={openParental} />}>
       <View style={styles.hero}>
         <Text style={styles.avatar}>{profile ? avatarEmoji(profile.avatar) : '✨'}</Text>
         <Text style={styles.title}>
@@ -34,6 +53,29 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         </Text>
         <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
       </View>
+
+      {logros && logros.total > 0 ? (
+        <Pressable
+          style={styles.achievementsCard}
+          onPress={openAchievements}
+          accessibilityRole="button"
+          accessibilityLabel={t('home.achievementsSummary', {
+            conseguidos: logros.conseguidos,
+            total: logros.total,
+          })}
+        >
+          <View style={styles.achievementsHeader}>
+            <Text style={styles.achievementsTitle}>{t('home.myAchievements')}</Text>
+            <Text style={styles.achievementsCount}>
+              {t('home.achievementsSummary', {
+                conseguidos: logros.conseguidos,
+                total: logros.total,
+              })}
+            </Text>
+          </View>
+          <ProgressBar value={logros.conseguidos} max={logros.total} />
+        </Pressable>
+      ) : null}
 
       <View style={styles.actions}>
         <BubblyButton
@@ -51,16 +93,6 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
           variant="secondary"
         />
       </View>
-
-      <Pressable
-        style={styles.adultLink}
-        onPress={openParental}
-        accessibilityRole="button"
-        accessibilityLabel={t('home.adultsZone')}
-      >
-        <Icon name="adults" size="sm" color={colors.onSurfaceVariant} />
-        <Text style={styles.adultLinkText}>{t('home.adultsZone')}</Text>
-      </Pressable>
     </Screen>
   );
 }
@@ -85,20 +117,30 @@ const makeStyles = (colors: ColorTokens) =>
       color: colors.onSurfaceVariant,
       textAlign: 'center',
     },
+    achievementsCard: {
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      marginTop: spacing.lg,
+      ...makeSoftShadow(colors),
+    },
+    achievementsHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+    },
+    achievementsTitle: {
+      ...typography.labelBold,
+      color: colors.onSurface,
+    },
+    achievementsCount: {
+      ...typography.labelBold,
+      color: colors.primary,
+    },
     actions: {
       gap: spacing.elementGap,
       marginTop: spacing.lg,
-    },
-    adultLink: {
-      marginTop: spacing.lg,
-      alignSelf: 'center',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-      paddingVertical: spacing.sm,
-    },
-    adultLinkText: {
-      ...typography.labelBold,
-      color: colors.onSurfaceVariant,
     },
   });

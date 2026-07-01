@@ -114,22 +114,46 @@ describe('HistoryScreen — fecha y filtros (US-62)', () => {
     expect(screen.getByText('Actividad b')).toBeVisible();
   });
 
-  it('al elegir un tema reduce la lista de cuentos', async () => {
+  it('A3: los filtros viven en un modal que se abre con "Buscar"', async () => {
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Cuento 1')).toBeVisible());
+    // Con el modal cerrado, los chips de filtro no están montados.
+    expect(screen.queryByRole('button', { name: 'Espacio' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
+    expect(screen.getByRole('button', { name: 'Espacio' })).toBeInTheDocument();
+  });
+
+  it('al elegir un tema (en el modal) reduce la lista de cuentos', async () => {
     render(<HistoryScreen {...props} />);
     await waitFor(() => expect(screen.getByText('Cuento 1')).toBeVisible());
 
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Espacio' }));
     expect(screen.queryByText('Cuento 1')).not.toBeInTheDocument();
     expect(screen.getByText('Cuento 2')).toBeVisible();
   });
 
-  it('al elegir una categoría reduce la lista de actividades', async () => {
+  it('al elegir una categoría (en el modal) reduce la lista de actividades', async () => {
     render(<HistoryScreen {...props} />);
     await waitFor(() => expect(screen.getByText('Actividad a')).toBeVisible());
 
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Arte' }));
     expect(screen.getByText('Actividad a')).toBeVisible();
     expect(screen.queryByText('Actividad b')).not.toBeInTheDocument();
+  });
+
+  it('A3: "Limpiar" resetea los filtros y vuelve a mostrar todo', async () => {
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Cuento 1')).toBeVisible());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Espacio' }));
+    expect(screen.queryByText('Cuento 1')).not.toBeInTheDocument();
+    // "Limpiar" resetea el filtro (hay uno en la barra y otro en el modal; ambos valen).
+    fireEvent.click(screen.getAllByRole('button', { name: 'Limpiar' })[0]!);
+    expect(screen.getByText('Cuento 1')).toBeVisible();
+    expect(screen.getByText('Cuento 2')).toBeVisible();
   });
 });
 
@@ -145,6 +169,7 @@ describe('HistoryScreen — favoritos y búsqueda (US-64)', () => {
     render(<HistoryScreen {...props} />);
     await waitFor(() => expect(screen.getByText('Cuento 1')).toBeVisible());
 
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
     const buscador = screen.getByPlaceholderText('Busca por título, tema, categoría…');
     // "espacio" coincide con el tema del Cuento 2 (id del vocabulario).
     fireEvent.change(buscador, { target: { value: 'espacio' } });
@@ -168,6 +193,7 @@ describe('HistoryScreen — favoritos y búsqueda (US-64)', () => {
     render(<HistoryScreen {...props} />);
     await waitFor(() => expect(screen.getByText('Cuento 1')).toBeVisible());
 
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Solo favoritos' }));
     expect(screen.queryByText('Cuento 1')).not.toBeInTheDocument();
     expect(screen.getByText('Cuento 2')).toBeVisible();

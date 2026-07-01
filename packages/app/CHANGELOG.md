@@ -15,8 +15,25 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - **Cuento a la carta: enseñanza (US-69).** Chip de selección única opcional "¿Qué quieres enseñar?"
   en el generador (envía `ensenanza`) y **filtro por enseñanza** en el Historial; tipos, esquema Zod e
   i18n ES/EN.
+- **Aviso de espera larga en cold-start (A1).** Hook `useSlowHint` que, tras ~6 s cargando, muestra
+  "esto está tardando más de lo usual…" (más el matiz de que el servidor puede tardar ~1 min en
+  despertar) en Generador, Actividades y Dashboard.
+- **Resumen de logros en Home (A4).** Tarjeta con "conseguidos/total" y `ProgressBar` que lleva a
+  Mis logros.
+- **Botón fijo a la zona de adultos (A6).** `AdultsButton` en el header compartido (`Screen`), visible
+  en las 4 pestañas.
+- **Animaciones de entrada (A5).** Wrapper `Appear` (`Animated` integrado: translateY + escala) en
+  imágenes de cabecera, botón principal del footer, tarjetas de actividad/cuento y medallas de logros.
 
 ### Changed
+
+- **Marcar cuento como leído explícito (A2).** El lector ya no marca leído solo por abrir: se marca con
+  el botón "Marcar como leído" o al terminar de escuchar la narración (`onFinished` en `useNarration`).
+- **Historial reorganizado (A3).** Búsqueda de texto y todos los filtros pasan a un **modal** ("Buscar"
+  con contador de filtros activos + "Limpiar"); el título del cuento se muestra completo.
+- **Timeouts tolerantes al cold-start de Render (A1).** Warm-up con reintentos (`/health`, ~70 s) y
+  timeouts más holgados (base 30→60 s, generación 90→120 s) para no abortar mientras la instancia
+  suspendida de Render free despierta.
 
 ### Deprecated
 
