@@ -96,6 +96,14 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
   network, third-party SDKs, analytics, or data retention, check
   [Docs/cumplimiento-menores.md](Docs/cumplimiento-menores.md): no third-party SDKs, no external
   calls in the default (`mock`) mode, data minimization, parental gate. When in doubt, don't add it.
+- **Documentation standard (enforced on backend).** Document code with a `/** … */` block in
+  **Spanish prose** stating the _purpose_, placed on the exported symbol (class/function) or as a
+  module header, referencing the story (`US-NN`) and compliance requirement (`C-N`) when relevant.
+  **Not** formal TSDoc (`@param`/`@returns`) — the unit is the _what/why_, not the signature. ESLint's
+  `jsdoc/require-jsdoc` (in [eslint.config.mjs](eslint.config.mjs)) enforces a doc block on **public
+  exports** of `packages/backend/src/**` (classes + exported functions); it runs in `pnpm check`. The
+  Expo `app` has no ESLint yet, so its doc standard is convention-only. Rationale in
+  [Docs/memory.md](Docs/memory.md) (Feature 76).
 
 ## Definition of Done (gates every phase)
 

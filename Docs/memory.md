@@ -781,3 +781,28 @@ paralelo deje de generar conflictos al mergear a `develop`. Cierra el hilo de la
   **no** va en union (corrompería el árbol); su receta es `pnpm install` (pnpm reconcilia el lockfile).
 - **Protocolo consolidado en [trabajo-en-paralelo.md](trabajo-en-paralelo.md).** Worktree por feature,
   commit-pronto y las recetas de conflicto al integrar, en un único doc enlazado desde `CLAUDE.md`.
+
+## Estándar de documentación del código (Feature 76 · 2026-06-28 · US-65 · calidad)
+
+Rama `feature/76-doc-estandar-jsdoc` (desde `develop`). Se formaliza y se vuelve **verificable** la
+convención de documentación de código que el proyecto ya seguía de facto.
+
+- **Convención (cómo se documenta el código).** Bloque `/** … */` en **prosa española** describiendo
+  el _propósito_, colocado sobre el **símbolo exportado** (clase, función) o como **cabecera de
+  módulo**; se referencian las historias (`US-NN`) y los requisitos de cumplimiento (`C-N`) cuando
+  aplica. Vocabulario de dominio en español, andamiaje en inglés. **No** se usa TSDoc formal
+  (`@param`/`@returns`): la unidad documentada es el _qué/por qué_, no la firma.
+- **_Enforce_ con lint (solo backend).** Se añadió `eslint-plugin-jsdoc` y la regla
+  `jsdoc/require-jsdoc` en [../eslint.config.mjs](../eslint.config.mjs), acotada a
+  `packages/backend/src/**`, exigiendo bloque en **exports públicos** (`ClassDeclaration` +
+  `FunctionDeclaration`, `publicOnly`). Se activa **solo** `require-jsdoc` (no el preset
+  `flat/recommended`) para exigir _presencia_ de doc sin imponer el estilo TSDoc que choca con la
+  convención de prosa. Entra en el gate `pnpm check` (vía `pnpm lint`).
+- **Por qué no se exige en interfaces.** Requerir doc en cada `interface` exportada generaba ruido en
+  los «bags» de opciones triviales (`XxxOptions`, `XxxDeps`); se documentan las relevantes a mano.
+- **El app (Expo) queda fuera del _enforce_** porque **no tiene ESLint** en el gate (solo typecheck +
+  test). Sus pantallas se documentaron a mano; montar ESLint en Expo es un follow-up (tooling).
+- **La auditoría inicial sobre-reportó.** Los «backend sin doc» eran ficheros **generados de Prisma**
+  (`src/generated/**`, ya ignorados). La **fuente de verdad** de los huecos fue la propia regla de
+  lint: 14 funciones exportadas + 4 pantallas del app. Lección: para medir cobertura de doc, correr la
+  regla, no un conteo de bloques `/**`.
