@@ -11,6 +11,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Prompt de recomendación de actividades más significativo para niños de 2-6 años: pide instrucciones
+  de al menos 6 pasos numerados y detallados, un objetivo de aprendizaje y materiales sencillos de
+  casa (ES y EN). La plantilla configurable `prompt.activity.template` (seed) se alinea con el nuevo
+  default y el `MockProvider` emite siempre ≥6 pasos (US-67).
+
 ### Deprecated
 
 ### Removed
