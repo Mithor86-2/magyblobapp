@@ -81,6 +81,8 @@ y `expo-navigation-bar` / `expo-system-ui` son módulos build-time de Expo. Sin 
 ## Fuera de alcance / notas
 
 - La verificación visual real de las barras del SO en Android/iOS requiere **dispositivo o build
-  nativa** (prebuild); en desarrollo `expo start` sobre cliente ya aplica el tema, pero el color de la
-  barra de navegación inferior solo se aprecia en Android nativo.
+  nativa**. Como se añaden módulos nativos (`expo-navigation-bar`/`expo-system-ui`), **Expo Go ya no
+  arranca la app**: se lanza con un **development build** — `cd packages/app && npx expo run:android`
+  (o `npx expo run:ios`). El color de la barra de navegación inferior solo se aprecia en Android nativo.
+  Docs de arranque actualizados (READMEs raíz y del app, `estrategia-pruebas.md`, lecciones aprendidas).
 - No se añade ESLint específico del app (sigue sin lint propio); la doc del tema es por convención.

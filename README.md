@@ -357,11 +357,17 @@ pnpm up:local                                    # backend + PostgreSQL + Ollama
 # (una vez) pnpm ollama:setup                     # baja gemma:2b al contenedor de Ollama
 
 cp packages/app/.env.example packages/app/.env   # ajusta EXPO_PUBLIC_API_URL si usas móvil físico
-pnpm --filter @magyblob/app start                # Expo (i = iOS sim, a = Android, w = web)
+cd packages/app
+npx expo run:android                             # dev build en emulador/dispositivo Android
+npx expo run:ios                                 # (macOS + Xcode) dev build en simulador/dispositivo iOS
 ```
 
-> En simulador iOS `localhost` sirve. Desde un **móvil físico** (Expo Go) pon la IP LAN
-> del ordenador en `EXPO_PUBLIC_API_URL`. Detalle en [packages/app/README.md](packages/app/README.md).
+> **Dev build, no Expo Go.** La app usa módulos nativos (`expo-navigation-bar`/`expo-system-ui`,
+> tema claro/oscuro US-66) que Expo Go no incluye, así que `expo start`/Expo Go falla; se arranca
+> con `expo run:android`/`run:ios` (prebuild + compilación + Metro).
+>
+> En simulador iOS `localhost` sirve. Desde un **móvil físico** pon la IP LAN del ordenador en
+> `EXPO_PUBLIC_API_URL`. Detalle en [packages/app/README.md](packages/app/README.md).
 >
 > **Variables opcionales de la app** (`packages/app/.env`): `EXPO_PUBLIC_SENTRY_DSN` activa el
 > reporte de errores (sin DSN no se inicializa). Ver [packages/app/.env.example](packages/app/.env.example).

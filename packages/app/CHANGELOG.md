@@ -19,6 +19,9 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Las **barras del sistema** (barra de estado y, en Android, la barra de navegación inferior de
   botones/gestos), la barra de pestañas y las cabeceras de navegación son ahora coherentes con el tema
   activo (US-66). `userInterfaceStyle` pasa a `automatic`.
+- **La app se arranca con un development build** (`cd packages/app && npx expo run:android` / `run:ios`),
+  no con Expo Go: al usar módulos nativos (`expo-navigation-bar`/`expo-system-ui`) Expo Go ya no puede
+  cargarla. Documentación de arranque (READMEs y `estrategia-pruebas.md`) actualizada (US-66).
 
 ### Deprecated
 

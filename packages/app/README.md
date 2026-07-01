@@ -17,13 +17,21 @@ pnpm up:local                 # backend + PostgreSQL + Ollama (AI_PROVIDER=local
 # (una vez) pnpm ollama:setup  # baja gemma:2b al contenedor de Ollama
 ```
 
-Luego, la app:
+Luego, la app. Desde `packages/app`, con un **development build** (Expo Go ya no sirve: la app
+usa módulos nativos —`expo-navigation-bar`/`expo-system-ui`, tema claro/oscuro US-66— que Expo Go
+no incluye):
 
 ```bash
-cp packages/app/.env.example packages/app/.env   # ajusta EXPO_PUBLIC_API_URL si usas móvil físico
-pnpm --filter @magyblob/app start                # abre Expo (i = iOS sim, a = Android, w = web)
+cp .env.example .env          # ajusta EXPO_PUBLIC_API_URL si usas móvil físico
+cd packages/app
+npx expo run:android          # compila e instala el dev build en emulador/dispositivo Android
+npx expo run:ios              # (macOS + Xcode) compila e instala en simulador/dispositivo iOS
 ```
 
+> **Por qué `expo run:*` y no `expo start`/Expo Go:** al añadir módulos nativos el cliente Expo Go
+> no puede cargarlos; hace falta un dev build propio. `expo run:android`/`run:ios` hacen el prebuild,
+> compilan y lanzan Metro. Tras la primera compilación puedes iterar con Metro ya activo.
+>
 > **Dispositivo físico:** `localhost` no alcanza al backend desde el móvil. Pon la
 > **IP LAN** del ordenador en `EXPO_PUBLIC_API_URL` (p. ej. `http://192.168.1.42:3000`)
 > con el móvil en la misma red. En el simulador iOS `localhost` funciona.
