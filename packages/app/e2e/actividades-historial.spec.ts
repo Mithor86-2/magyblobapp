@@ -73,10 +73,14 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible();
   await page.getByRole('button', { name: 'Generar cuento' }).click();
 
-  // A1 (US-73): al generar se navega al LECTOR (Stack raíz). El cuento aparece ahí,
-  // paginado (mock determinista, primera página con "Había una vez …" y el nombre).
-  await expect(page.getByText(/Había una vez/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(new RegExp(NOMBRE_NINO)).first()).toBeVisible();
+  // A1/A2 (US-73): al generar se navega al LECTOR (Stack raíz) con el cuento PAGINADO.
+  // La primera página empieza con "Había una vez <nombre>, …" (mock determinista) y hay
+  // indicador de página. Se asienta la frase completa (única del lector visible; el nombre
+  // suelto también aparece oculto en las pestañas montadas detrás y daría un falso "hidden").
+  await expect(page.getByText(new RegExp(`Había una vez ${NOMBRE_NINO}`))).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByText(/Página 1 de/)).toBeVisible();
 
   // Volver del lector a las pestañas para seguir el recorrido (actividades/historial).
   await page.goBack();
