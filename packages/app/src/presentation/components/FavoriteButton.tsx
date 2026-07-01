@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
-import { colors } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeProvider';
 
 interface FavoriteButtonProps {
   /** Estado actual de favorito del ítem (ausente ⇒ no favorito). */
@@ -22,6 +22,7 @@ interface FavoriteButtonProps {
  */
 export function FavoriteButton({ favorito, onToggle }: FavoriteButtonProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [optimista, setOptimista] = useState(favorito ?? false);
 
   const activo = optimista;

@@ -2,7 +2,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
-import { colors, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 /**
@@ -11,6 +12,7 @@ import type { RootScreenProps } from '../navigation';
  */
 export function WelcomeScreen({ navigation }: RootScreenProps<'Welcome'>) {
   const { t } = useTranslation();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Screen headerImageName="welcome">
       <View style={styles.hero}>
@@ -34,27 +36,28 @@ export function WelcomeScreen({ navigation }: RootScreenProps<'Welcome'>) {
   );
 }
 
-const styles = StyleSheet.create({
-  hero: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingTop: spacing.lg,
-  },
-  logo: {
-    fontSize: 80,
-  },
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-    textAlign: 'center',
-  },
-  subtitle: {
-    ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-  actions: {
-    gap: spacing.elementGap,
-    marginTop: spacing.lg,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    hero: {
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingTop: spacing.lg,
+    },
+    logo: {
+      fontSize: 80,
+    },
+    title: {
+      ...typography.displayLg,
+      color: colors.primary,
+      textAlign: 'center',
+    },
+    subtitle: {
+      ...typography.bodyLg,
+      color: colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    actions: {
+      gap: spacing.elementGap,
+      marginTop: spacing.lg,
+    },
+  });

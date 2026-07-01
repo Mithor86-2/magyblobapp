@@ -4,9 +4,43 @@
  *
  * Paleta "pasteles saturados", tipografía Quicksand, formas redondeadas y
  * tap targets generosos (≥64px) pensados para motricidad de 2-6 años.
+ *
+ * Tema claro/oscuro (US-66): los **colores** viven en dos paletas de la misma
+ * forma (`lightColors`/`darkColors`) que se seleccionan en runtime vía el
+ * `ThemeProvider`. El resto de tokens (espaciado, radios, tipografía, tamaños)
+ * son invariantes al tema. Se conserva `export const colors = lightColors` para
+ * no romper los imports estáticos durante la migración ni los tests que
+ * renderizan sin provider (contexto por defecto = claro).
  */
 
-export const colors = {
+/**
+ * Contrato de colores del tema: las claves son idénticas en claro y oscuro, de
+ * modo que cualquier `StyleSheet` funciona con ambas paletas (US-66).
+ */
+export type ColorTokens = {
+  surface: string;
+  surfaceContainer: string;
+  surfaceContainerHigh: string;
+  primary: string;
+  onPrimary: string;
+  primaryContainer: string;
+  primaryBorder: string;
+  secondary: string;
+  onSecondary: string;
+  secondaryContainer: string;
+  tertiary: string;
+  onTertiary: string;
+  tertiaryContainer: string;
+  onSurface: string;
+  onSurfaceVariant: string;
+  outline: string;
+  error: string;
+  errorContainer: string;
+  onErrorContainer: string;
+};
+
+/** Paleta clara (la histórica): superficies crema cálidas, coral/menta/cielo. */
+export const lightColors: ColorTokens = {
   // Superficies cálidas (crema) para reducir fatiga visual frente al blanco puro.
   surface: '#fff8f6',
   surfaceContainer: '#fceae3',
@@ -32,7 +66,64 @@ export const colors = {
   error: '#ba1a1a',
   errorContainer: '#ffdad6',
   onErrorContainer: '#93000a',
+};
+
+/**
+ * Paleta oscura (US-66): superficies **oscuras cálidas** (cocoa muy oscuro, no
+ * negro/gris frío) que conservan el carácter acogedor de la app; texto claro
+ * crema; y coral/menta/cielo re-tonalizados hacia versiones más luminosas para
+ * mantener contraste AA sobre fondo oscuro. El coral principal se aclara a un
+ * rosa salmón porque el coral vino oscuro (`#9c4143`) no contrasta sobre negro.
+ */
+export const darkColors: ColorTokens = {
+  // Superficies cocoa muy oscuras (cálidas, no gris frío).
+  surface: '#1a1210',
+  surfaceContainer: '#271b18',
+  surfaceContainerHigh: '#332420',
+  // Coral aclarado: acción principal legible sobre fondo oscuro.
+  primary: '#ffb3b3',
+  onPrimary: '#5a1c1e', // texto/icono oscuro sobre el coral claro
+  primaryContainer: '#8c3436',
+  primaryBorder: '#ff8e8e', // borde "squishy" ahora es el realce claro
+  // Menta clara: éxito / naturaleza.
+  secondary: '#a6cfca',
+  onSecondary: '#0e2c29',
+  secondaryContainer: '#2b4744',
+  // Cielo claro: fondos calmados y navegación.
+  tertiary: '#8fcfeb',
+  onTertiary: '#053546',
+  tertiaryContainer: '#1c4a5d',
+  // Texto crema cálido sobre las superficies oscuras.
+  onSurface: '#f3e6e1',
+  onSurfaceVariant: '#d5bfba',
+  outline: '#5a4742',
+  // Error legible sobre oscuro.
+  error: '#ffb4ab',
+  errorContainer: '#93000a',
+  onErrorContainer: '#ffdad6',
+};
+
+/** Paletas indexadas por esquema (las selecciona el `ThemeProvider`, US-66). */
+export const themes = {
+  light: lightColors,
+  dark: darkColors,
 } as const;
+
+/** Preferencia elegida por la persona adulta: seguir al sistema o forzar un tema. */
+export type ThemePreference = 'system' | 'light' | 'dark';
+
+/** Esquema efectivo ya resuelto (lo que realmente se pinta). */
+export type Scheme = 'light' | 'dark';
+
+/** Valor por defecto de la preferencia: seguir al sistema operativo (US-66). */
+export const DEFAULT_THEME_PREFERENCE: ThemePreference = 'system';
+
+/**
+ * Alias de compatibilidad: apunta a la paleta clara. Se mantiene para los
+ * imports estáticos aún no migrados a `useTheme()` y para los tests que
+ * renderizan sin provider (donde el contexto ya cae al tema claro).
+ */
+export const colors = lightColors;
 
 /** Unidad base de 8px; ritmo vertical holgado (24-40px). */
 export const spacing = {
@@ -84,11 +175,20 @@ export const typography = {
   button: { fontFamily: fonts.bold, fontSize: 22, lineHeight: 24 },
 } as const;
 
-/** Sombra "ambiental suave" (tinte sobre crema, no gris). */
-export const softShadow = {
-  shadowColor: colors.primary,
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.12,
-  shadowRadius: 20,
-  elevation: 4,
-} as const;
+/**
+ * Sombra "ambiental suave" (tinte sobre la superficie, no gris). Depende del
+ * tema porque su color se toma de la paleta activa (US-66): en claro tiñe con el
+ * coral; en oscuro conviene un tinte más neutro para que la elevación se lea.
+ */
+export function makeSoftShadow(c: ColorTokens) {
+  return {
+    shadowColor: c.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 4,
+  } as const;
+}
+
+/** Sombra suave del tema claro (back-compat para imports estáticos). */
+export const softShadow = makeSoftShadow(lightColors);

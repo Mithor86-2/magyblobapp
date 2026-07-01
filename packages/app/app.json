@@ -5,10 +5,13 @@
     "version": "1.4.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.magyblobapp"
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#fff8f6"
     },
     "android": {
       "adaptiveIcon": {

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { ProveedorIa } from '../../domain/types';
 import { proveedorLabel } from '../labels';
 import { Icon } from './Icon';
-import { colors, spacing, typography } from '../theme/tokens';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 
 /**
  * "Autor": muestra qué proveedor de IA generó realmente el contenido (US-25),
@@ -12,6 +13,8 @@ import { colors, spacing, typography } from '../theme/tokens';
  */
 export function AuthorBadge({ proveedor }: { proveedor: ProveedorIa }) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const texto = t('authorBadge.author', { proveedor: proveedorLabel(proveedor) });
   return (
     <View style={styles.row} accessibilityLabel={texto}>
@@ -21,14 +24,15 @@ export function AuthorBadge({ proveedor }: { proveedor: ProveedorIa }) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  texto: {
-    ...typography.labelBold,
-    color: colors.onSurfaceVariant,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    texto: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+  });

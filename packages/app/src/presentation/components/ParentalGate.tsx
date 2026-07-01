@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from './Screen';
 import { SelectableChip } from './SelectableChip';
 import { useDialog } from './DialogProvider';
-import { colors, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 
 /**
  * Puerta parental reutilizable: una suma sencilla **aleatoria** (no memorizable
@@ -17,6 +18,7 @@ import { colors, spacing, typography } from '../theme/tokens';
  */
 export function ParentalGate({ children, intro }: { children: ReactNode; intro?: string }) {
   const { t } = useTranslation();
+  const styles = useThemedStyles(makeStyles);
   const [passed, setPassed] = useState(false);
   const [reto, setReto] = useState<RetoParental>(crearReto);
   const dialog = useDialog();
@@ -77,24 +79,25 @@ function crearReto(): RetoParental {
   return { a, b, respuesta, opciones };
 }
 
-const styles = StyleSheet.create({
-  title: {
-    ...typography.displayLg,
-    color: colors.primary,
-  },
-  body: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-  },
-  question: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
-  options: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'center',
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    title: {
+      ...typography.displayLg,
+      color: colors.primary,
+    },
+    body: {
+      ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    question: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+      textAlign: 'center',
+      marginTop: spacing.sm,
+    },
+    options: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      justifyContent: 'center',
+    },
+  });

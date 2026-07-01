@@ -143,6 +143,35 @@ describe('useAppStore', () => {
     expect(useAppStore.getState().appLanguage).toBe('es');
   });
 
+  it('arranca con la preferencia de tema por defecto (system, US-66)', () => {
+    expect(useAppStore.getState().themePreference).toBe('system');
+  });
+
+  it('setThemePreference cambia la preferencia de tema (US-66)', () => {
+    useAppStore.getState().setThemePreference('dark');
+    expect(useAppStore.getState().themePreference).toBe('dark');
+    useAppStore.getState().setThemePreference('light');
+    expect(useAppStore.getState().themePreference).toBe('light');
+    // Restaura el default para no contaminar otros tests.
+    useAppStore.getState().setThemePreference('system');
+  });
+
+  it('logout NO borra la preferencia de tema (es preferencia de UI, US-66)', () => {
+    useAppStore.getState().setThemePreference('dark');
+    useAppStore.getState().setSession(session, 'v1.0');
+    useAppStore.getState().logout();
+    expect(useAppStore.getState().themePreference).toBe('dark');
+    useAppStore.getState().setThemePreference('system');
+  });
+
+  it('persiste la preferencia de tema (partialize incluye `themePreference`, US-66)', async () => {
+    useAppStore.getState().setThemePreference('light');
+    await Promise.resolve();
+    const persisted = JSON.parse(mem.get('magyblob-app') ?? '{}');
+    expect(persisted.state.themePreference).toBe('light');
+    useAppStore.getState().setThemePreference('system');
+  });
+
   it('setAppLanguage cambia el idioma de la interfaz (US-57)', () => {
     useAppStore.getState().setAppLanguage('en');
     expect(useAppStore.getState().appLanguage).toBe('en');

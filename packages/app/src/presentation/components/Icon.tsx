@@ -16,7 +16,8 @@ import {
   UserRound,
   type LucideIcon,
 } from 'lucide-react-native';
-import { colors, iconSize } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeProvider';
+import { iconSize } from '../theme/tokens';
 
 /**
  * Iconografía funcional de la app con `lucide-react-native` (SVG vectorial,
@@ -73,19 +74,21 @@ interface IconProps {
 export function Icon({
   name,
   size = 'md',
-  color = colors.onSurface,
+  color,
   strokeWidth,
   fill = false,
   accessibilityLabel,
 }: IconProps) {
+  const { colors } = useTheme();
+  const resolved = color ?? colors.onSurface;
   const Glyph = ICONS[name];
   const px = typeof size === 'number' ? size : iconSize[size];
   return (
     <Glyph
       size={px}
-      color={color}
+      color={resolved}
       strokeWidth={strokeWidth}
-      fill={fill ? color : 'none'}
+      fill={fill ? resolved : 'none'}
       accessibilityLabel={accessibilityLabel}
     />
   );

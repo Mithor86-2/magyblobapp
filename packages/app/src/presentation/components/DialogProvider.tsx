@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { BubblyButton } from './BubblyButton';
-import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
+import { useThemedStyles } from '../theme/ThemeProvider';
+import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
 
 /**
  * Avisos y confirmaciones con el estilo de la app (US-23), en lugar de las
@@ -48,6 +49,7 @@ interface DialogState {
 const DialogContext = createContext<DialogApi | null>(null);
 
 export function DialogProvider({ children }: { children: ReactNode }) {
+  const styles = useThemedStyles(makeStyles);
   const [state, setState] = useState<DialogState | null>(null);
 
   const close = useCallback(() => setState(null), []);
@@ -129,33 +131,34 @@ export function useDialog(): DialogApi {
   return ctx;
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(34, 26, 22, 0.45)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.md,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    ...softShadow,
-  },
-  title: {
-    ...typography.headlineMd,
-    color: colors.primary,
-  },
-  message: {
-    ...typography.bodyMd,
-    color: colors.onSurface,
-  },
-  actions: {
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-});
+const makeStyles = (colors: ColorTokens) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(34, 26, 22, 0.45)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.md,
+    },
+    card: {
+      width: '100%',
+      maxWidth: 420,
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: spacing.sm,
+      ...makeSoftShadow(colors),
+    },
+    title: {
+      ...typography.headlineMd,
+      color: colors.primary,
+    },
+    message: {
+      ...typography.bodyMd,
+      color: colors.onSurface,
+    },
+    actions: {
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+  });

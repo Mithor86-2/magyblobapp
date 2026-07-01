@@ -77,6 +77,12 @@ export default defineConfig({
       // `expo-haptics` arrastra `expo-modules-core` (no carga bajo jsdom). Lo aliasamos a un
       // stub para los tests; el test de BubblyButton que verifica el háptico lo re-mockea.
       'expo-haptics': fileURLToPath(new URL('./test/expo-haptics-stub.ts', import.meta.url)),
+      // Módulos nativos del tema del SO (US-66): no resuelven bajo Vitest. El
+      // `ThemeProvider` los importa; los aliasamos a stubs inocuos (mismo patrón).
+      'expo-navigation-bar': fileURLToPath(
+        new URL('./test/expo-navigation-bar-stub.ts', import.meta.url),
+      ),
+      'expo-system-ui': fileURLToPath(new URL('./test/expo-system-ui-stub.ts', import.meta.url)),
     },
   },
   define: {
