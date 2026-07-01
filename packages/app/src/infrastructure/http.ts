@@ -103,14 +103,17 @@ export function warmUp(baseUrl: string = getBaseUrl()): void {
   async function pingOnce(): Promise<boolean> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), WARMUP_TIMEOUT_MS);
+    // Sin `finally` con `return` (evita una rama fantasma de v8 en cobertura): se
+    // guarda el resultado, se limpia el timer y se retorna una sola vez.
+    let ok = false;
     try {
       const res = await fetch(`${baseUrl}/health`, { signal: controller.signal });
-      return res.ok;
+      ok = res.ok;
     } catch {
-      return false;
-    } finally {
-      clearTimeout(timer);
+      ok = false;
     }
+    clearTimeout(timer);
+    return ok;
   }
 
   void (async () => {

@@ -524,6 +524,32 @@ describe('warmUp (ping de arranque, US-53)', () => {
     vi.stubGlobal('fetch', undefined);
     expect(() => warmUp(BASE)).not.toThrow();
   });
+
+  it('reintenta con backoff si el ping falla, sin bloquear ni lanzar (US-53)', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockRejectedValue(new Error('backend caído'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    warmUp(BASE);
+    // Deja correr los reintentos con su backoff (500 + 1000 + 2000 ms).
+    await vi.advanceTimersByTimeAsync(500 + 1000 + 2000 + 50);
+
+    // 1 intento + WARMUP_RETRIES (2) reintentos = 3 pings a /health.
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    vi.useRealTimers();
+  });
+
+  it('reintenta si /health responde no-ok (sin lanzar) (US-53)', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503 } as Response);
+    vi.stubGlobal('fetch', fetchMock);
+
+    warmUp(BASE);
+    await vi.advanceTimersByTimeAsync(500 + 1000 + 2000 + 50);
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    vi.useRealTimers();
+  });
 });
 
 describe('sesión autenticada (US-45)', () => {
