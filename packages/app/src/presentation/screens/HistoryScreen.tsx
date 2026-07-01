@@ -30,6 +30,12 @@ import { useAppStore } from '../store/useAppStore';
 import { colors, radius, softShadow, spacing, typography } from '../theme/tokens';
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
+/**
+ * Pantalla de **historial** del perfil activo: lista los cuentos y actividades
+ * guardados con filtros en cliente (tema, estilo, categoría), búsqueda por texto y
+ * marca de favoritos (US-62/US-64). Desde aquí se relee un cuento en el lector del
+ * stack raíz (US-27). Recarga al recuperar el foco.
+ */
 export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const { t, i18n } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);

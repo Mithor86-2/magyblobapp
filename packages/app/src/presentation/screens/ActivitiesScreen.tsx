@@ -16,6 +16,11 @@ import { useAppStore } from '../store/useAppStore';
 import { colors, radius, spacing, typography } from '../theme/tokens';
 import type { TabScreenProps } from '../navigation';
 
+/**
+ * Pantalla de **actividades recomendadas** para el perfil activo. Permite filtrar
+ * por categoría, pide recomendaciones al `api` inyectado y las muestra en tarjetas
+ * (con opción de marcarlas). US-09, US-10.
+ */
 export function ActivitiesScreen(_props: TabScreenProps<'Actividades'>) {
   const { t } = useTranslation();
   const profile = useAppStore((s) => s.currentProfile);
