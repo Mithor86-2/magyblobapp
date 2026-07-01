@@ -1325,3 +1325,27 @@ impida volver a publicar en rojo, para que `main`/`develop` reflejen un estado r
 coverage`, bloqueando el push si la cobertura baja del umbral (evita reincidir en CI rojo).
 - (No funcional) Dado el alcance, Cuando se aplica, Entonces el comportamiento de producción no cambia
   (se simplifica `fetchWithRetry` sin alterar intentos/backoff; el resto son tests/proceso).
+
+## US-73 — Lectura tipo libro + pulido UX · Should (Mejoras) {#us-73}
+
+Como **niño/a** quiero **leer el cuento como un libro** (páginas que paso una a una) nada más
+generarlo, y como **adulto** quiero **cerrar con claridad** el buscador del historial y que el niño
+vea **sus trofeos** para motivarse.
+
+**Criterios de aceptación**
+
+- Dado el generador de cuentos, Cuando pulso **"Generar cuento"** y el cuento se genera, Entonces se
+  **navega al lector** (`StoryReader`) y el generador ya **no** muestra el cuento en línea (queda como
+  formulario). (A1)
+- Dado el lector, Cuando se muestra el cuento, Entonces el cuerpo aparece **paginado** (una página a la
+  vez) con **swipe horizontal** y botones **‹ / ›**, un indicador **"Página {n} de {total}"** y una
+  **animación de giro** al cambiar de página (API `Animated` de RN, sin librerías nuevas). (A2)
+- Dado un cuerpo de una sola línea (mock) o multipárrafo (LLM real) o vacío, Cuando se pagina, Entonces
+  el paginado es robusto (nunca 0 páginas; reparte por párrafos y, si hace falta, por frases). (A2)
+- Dado el **modal de búsqueda** del Historial, Cuando está abierto, Entonces muestra un botón **"X"**
+  arriba a la derecha con etiqueta accesible "Cerrar" que lo cierra. (A3)
+- Dado el resumen de logros de Inicio, Cuando hay logros conseguidos, Entonces se muestra una fila de
+  **🏆 pequeños** (uno por logro, acotada con "+N" si hay muchos); si no hay ninguno, un **mensaje de
+  ánimo**. (A4)
+- (No funcional) Dado el alcance, Cuando se aplica, Entonces solo cambia `packages/app`; gate +
+  cobertura (CORE/IMPORTANT US-35) + E2E siguen en verde.
