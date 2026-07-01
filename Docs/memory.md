@@ -824,3 +824,20 @@ tema claro/oscuro. Decisiones y su porqué:
 - **Coste asumido: adiós a Expo Go.** Añadir módulos nativos obliga a arrancar con **development build**
   (`expo run:android`/`run:ios`); Expo Go ya no carga la app. Se documenta en READMEs, estrategia de
   pruebas y lecciones. El E2E nativo (Maestro) pasa a requerir dev build (appId = bundleId, no Expo Go).
+
+## Paleta del tema oscuro "cielo nocturno" (Feature 79 · 2026-07-01 · US-66 · app)
+
+Rama `feature/79-tema-dark-design-nocturno` (desde `develop`). Refinamiento **solo de color** del tema
+oscuro que la feature 77 dejó en un cocoa cálido provisional. Decisiones y su porqué:
+
+- **La paleta oscura sigue ahora el diseño aprobado**, no una improvisación. La feature 77 implementó la
+  _mecánica_ (ThemeProvider, contrato `ColorTokens`, cobertura completa) con una paleta cocoa cálida de
+  relleno; con el documento de diseño [Docs/Design/stitch_magyblob/DESIGN_Dark.md](Design/stitch_magyblob/DESIGN_Dark.md)
+  disponible, `darkColors` se re-mapea al **"cielo nocturno" (índigo cósmico)**: superficies índigo
+  profundas (`#111125`), coral (acción), púrpura suave (secundario) y aqua (terciario), texto lila claro.
+- **El cambio es barato porque el contrato ya existía.** Al ser las claves de `ColorTokens` idénticas en
+  claro y oscuro, ajustar el tema oscuro es tocar **un solo objeto** (`darkColors` en `tokens.ts`); ni un
+  `StyleSheet` ni el `ThemeProvider` cambian. Es la prueba de que la abstracción de la feature 77 pagó.
+- **Se mantiene Quicksand (no Plus Jakarta Sans).** El `DESIGN_Dark.md` sugiere Plus Jakarta Sans, pero
+  se conserva la tipografía y los tokens invariantes (radios, espaciado) para no divergir del tema claro
+  ni cargar fuentes nuevas: el alcance es la paleta de color, no una migración tipográfica.
