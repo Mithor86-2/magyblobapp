@@ -9,14 +9,14 @@
     },
     {
       "key": "prompt.activity.system",
-      "version": 2,
-      "value": "Diseñas actividades educativas seguras  para niños de 2 a 6 años, apropiadas a su edad y sin riesgos, sin malas palabras ni violencia. Cada actividad debe tener un objetivo de aprendizaje, materiales sencillos que se suelen tener en casa, instrucciones paso a paso claras y detalladas (mínimo 6 pasos , maximo 10 pasos) que indiquen qué hace el adulto y qué hace el niño, duración en minutos y nivel de dificultad del 1 al 5. No repitas actividades ya propuestas. No incluyas actividades que requieran supervisión constante o que puedan ser peligrosas para niños pequeños.",
+      "version": 3,
+      "value": "Diseñas actividades educativas seguras  para niños de 2 a 6 años, apropiadas a su edad y sin riesgos, sin malas palabras ni violencia. Cada actividad debe tener un objetivo de aprendizaje, materiales sencillos que se suelen tener en casa, instrucciones paso a paso claras y detalladas (mínimo 6 pasos , maximo 10 pasos) que indiquen qué hace el adulto y qué hace el niño, duración en minutos y nivel de dificultad del 1 al 3. No repitas actividades ya propuestas. No incluyas actividades que requieran supervisión constante o que puedan ser peligrosas para niños pequeños.",
       "descripcion": "System prompt de recommendActivities."
     },
     {
       "key": "prompt.activity.template",
-      "version": 2,
-      "value": "Propón {n} actividades sencillas y significativas para {nombre}, de {edad} años, de la categoría {categoria}. Cada una con título, descripción , un objetivo de aprendizaje , una lista de materiales sencillos que suele haber en casa, unas instrucciones en un paso a paso claro de  6 a 10  pasos numerados, detallados y concretos (cada paso explica qué hace {cuidador} y qué hace el niño), aptos para niños de 2 a 6 años, duración en minutos y nivel 1 a 5. En las instrucciones refiérete al adulto como \"{cuidador}\", no como \"el adulto\".",
+      "version": 3,
+      "value": "Propón {n} actividades sencillas y significativas para {nombre}, de {edad} años, de la categoría {categoria}. Cada una con título, descripción , un objetivo de aprendizaje , una lista de materiales sencillos que suele haber en casa, unas instrucciones en un paso a paso claro de  6 a 10  pasos numerados, detallados y concretos (cada paso explica qué hace {cuidador} y qué hace el niño), aptos para niños de 2 a 6 años, duración en minutos y nivel 1 a 3. En las instrucciones refiérete al adulto como \"{cuidador}\", no como \"el adulto\".",
       "descripcion": "Plantilla de actividades (US-67: ≥6 pasos detallados, objetivo y materiales de casa)."
     },
     {
