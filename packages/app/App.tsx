@@ -19,6 +19,7 @@ import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
 import { LoginScreen } from './src/presentation/screens/LoginScreen';
 import { SelectProfileScreen } from './src/presentation/screens/SelectProfileScreen';
 import { ParentalScreen } from './src/presentation/screens/ParentalScreen';
+import { AchievementsScreen } from './src/presentation/screens/AchievementsScreen';
 import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
 import { StoryReaderScreen } from './src/presentation/screens/StoryReaderScreen';
 import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
@@ -279,6 +280,11 @@ function ThemedApp() {
               name="Parental"
               component={ParentalScreen}
               options={{ title: t('nav.parental') }}
+            />
+            <Stack.Screen
+              name="Achievements"
+              component={AchievementsScreen}
+              options={{ title: t('nav.achievements') }}
             />
             <Stack.Screen
               name="StoryReader"

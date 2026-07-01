@@ -21,6 +21,12 @@ por el usuario).
 | Enseñanza: catálogo  | `amistad` (amistad y compartir) · `emociones` (gestionar emociones) · `valentia` (valentía y superar miedos) · `honestidad` (honestidad y respeto). |
 | Enseñanza: flujo     | **Opcional, única, persistida y filtrable** en el Historial (migración en `Story`).                                                                 |
 
+> **Nota de ejecución (real):** finalmente se implementaron **secuencialmente en una sola rama de
+> lote** (`feature/80-logros-ensenanza`) en vez de dos worktrees en paralelo — al hacerlo un solo
+> agente de forma secuencial, una rama única garantiza un gate combinado verde y evita resolver
+> conflictos de integración entre ~10 ficheros compartidos. El resto del plan (decisiones, alcance,
+> DoD) se mantiene.
+
 ## Modo de ejecución — paralelo en worktrees
 
 Las dos features son mayormente independientes. Se ejecutan **en paralelo, un worktree por

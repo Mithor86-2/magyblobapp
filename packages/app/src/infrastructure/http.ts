@@ -18,6 +18,7 @@ import type { z } from 'zod';
 import { ApiError } from '../domain/errors';
 import { trackApi } from './telemetry';
 import {
+  achievementListSchema,
   activityListSchema,
   activitySchema,
   anonymousActivityListSchema,
@@ -354,6 +355,17 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           `/profiles/${profileId}/history`,
           { method: 'GET', auth: true },
           historySchema,
+          session,
+        ),
+    },
+    achievements: {
+      // US-68: catálogo de logros del perfil (la ruta reconcilia los desbloqueos).
+      get: (profileId: string) =>
+        request(
+          baseUrl,
+          `/profiles/${profileId}/achievements`,
+          { method: 'GET', auth: true },
+          achievementListSchema,
           session,
         ),
     },

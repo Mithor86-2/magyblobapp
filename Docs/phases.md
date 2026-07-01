@@ -722,3 +722,26 @@ y con las instrucciones dirigidas al adulto por su parentesco. Integrada en `dev
       `RecommendActivities` resuelve el parentesco vía `GuardianRepository`.
 - **DoD:** ✅ `pnpm check` verde (backend 317 + app 194) · ✅ verificado por el usuario en la app
   (Groq): actividades con ≥6 pasos y trato por parentesco.
+
+### Logros del niño (US-68) + Cuento con enseñanza (US-69) — en curso (rama `feature/80-logros-ensenanza`)
+
+Lote de dos mejoras de cara al usuario, implementadas juntas en una rama (plan en
+[planes/coordinacion-logros-ensenanza.md](planes/coordinacion-logros-ensenanza.md),
+[planes/feature-68-logros.md](planes/feature-68-logros.md),
+[planes/feature-69-cuento-ensenanza.md](planes/feature-69-cuento-ensenanza.md)). Pendiente de pruebas
+del usuario y del cierre (versionado diferido + `finish` tras confirmación).
+
+- [x] ✅ **Cuento a la carta: enseñanza opcional (US-69).** Vocabulario `ENSENANZAS`
+      (`amistad | emociones | valentia | honestidad`); `POST /stories` acepta `ensenanza?` (Zod), el
+      prompt la refuerza (ES/EN, `MockProvider` determinista), se persiste en `Story.ensenanza`
+      (`String?`, migración) y se devuelve en el DTO. App: chip único opcional en el generador y
+      **filtro por enseñanza** en el Historial; i18n ES/EN.
+- [x] ✅ **Logros / recompensas del niño (US-68).** Catálogo en el dominio (`domain/logros.ts`:
+      cuentos leídos 1/5/10/25, actividades 1/5/10/25, racha 3/7, un logro por tema), entidad
+      `Achievement` + repo Prisma (tabla `achievements`, migración, cascada por perfil) y caso de uso
+      `GetAchievements` (read-model calculado que **reconcilia** persistiendo los desbloqueos de forma
+      idempotente). Ruta `GET /profiles/:id/achievements`. App: pantalla **Mis logros** (rejilla de
+      medallas con progreso/estado) accesible desde Inicio; gateway, esquema Zod e i18n ES/EN.
+      _Decisión de diseño:_ reconciliación en la lectura (endpoint GET idempotente) en vez del EventBus,
+      para mínima superficie; el estado mostrado es correcto aunque falle la persistencia (sale del cálculo).
+- **DoD:** ✅ `pnpm check` verde (**backend 357 + app 203**) · ⏳ pruebas con el usuario · ⏳ cierre.

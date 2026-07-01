@@ -5,7 +5,10 @@ transmitir con el cuento; el cuento se construye alrededor de esa moraleja. Conv
 en una herramienta **educativa dirigida** (argumento fuerte de defensa). Reutiliza el corazón
 del proyecto (`AIProvider`) sin cambiar su interfaz — solo amplía el prompt y añade un campo.
 
-**Rama (al abrir):** `feature/<id>-cuento-ensenanza` desde `develop` (worktree). **Versionado diferido.**
+**Rama (al abrir):** `feature/<id>-cuento-ensenanza` desde `develop`. **Versionado diferido.**
+
+> **Estado:** ✅ implementado en la rama `feature/80-logros-ensenanza` (junto con US-68); `pnpm check`
+> verde (backend 357 + app 203). Pendiente: pruebas del usuario y cierre (`finish` tras confirmación).
 
 ## Decisiones (confirmadas)
 

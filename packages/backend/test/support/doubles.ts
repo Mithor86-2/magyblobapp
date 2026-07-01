@@ -9,6 +9,7 @@ import type { Guardian } from '../../src/domain/entities/Guardian.js';
 import type { Story } from '../../src/domain/entities/Story.js';
 import type { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import type { Activity } from '../../src/domain/entities/Activity.js';
+import type { Achievement } from '../../src/domain/entities/Achievement.js';
 import type { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js';
 import type { AuditLog } from '../../src/domain/entities/AuditLog.js';
 import type { ChildProfileRepository } from '../../src/domain/repositories/ChildProfileRepository.js';
@@ -16,6 +17,7 @@ import type { GuardianRepository } from '../../src/domain/repositories/GuardianR
 import type { StoryRepository } from '../../src/domain/repositories/StoryRepository.js';
 import type { StoryNarrationRepository } from '../../src/domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from '../../src/domain/repositories/ActivityRepository.js';
+import type { AchievementRepository } from '../../src/domain/repositories/AchievementRepository.js';
 import type { InteractionEventRepository } from '../../src/domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from '../../src/domain/repositories/AuditLogRepository.js';
 import type { SettingsRepository } from '../../src/domain/repositories/SettingsRepository.js';
@@ -106,6 +108,22 @@ export class InMemoryActivityRepository implements ActivityRepository {
 
   async findByProfile(profileId: string): Promise<Activity[]> {
     return [...this.items.values()].filter((a) => a.profileId === profileId);
+  }
+}
+
+/** Repositorio de logros en memoria para tests (idempotente por profileId+clave). */
+export class InMemoryAchievementRepository implements AchievementRepository {
+  readonly items: Achievement[] = [];
+
+  async findByProfile(profileId: string): Promise<Achievement[]> {
+    return this.items.filter((a) => a.profileId === profileId);
+  }
+
+  async unlock(achievement: Achievement): Promise<void> {
+    const existe = this.items.some(
+      (a) => a.profileId === achievement.profileId && a.clave === achievement.clave,
+    );
+    if (!existe) this.items.push(achievement);
   }
 }
 

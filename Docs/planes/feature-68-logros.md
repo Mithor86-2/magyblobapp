@@ -4,7 +4,16 @@
 las ve en una pantalla "Mis logros". Motiva el hábito de lectura/actividad. Todo **local**,
 sobre datos que ya se persisten, sin PII nueva ni terceros → cumplimiento intacto.
 
-**Rama (al abrir):** `feature/<id>-logros` desde `develop` (worktree). **Versionado diferido.**
+**Rama (al abrir):** `feature/<id>-logros` desde `develop`. **Versionado diferido.**
+
+> **Estado:** ✅ implementado en la rama `feature/80-logros-ensenanza` (junto con US-69); `pnpm check`
+> verde (backend 357 + app 203). Pendiente: pruebas del usuario y cierre (`finish` tras confirmación).
+>
+> **Desviación de diseño (respecto al plan):** en vez del EventBus + evento `cuento_leido`, la
+> persistencia se **reconcilia en la lectura** (`GetAchievements` calcula el estado y persiste los
+> desbloqueos nuevos de forma idempotente). Motivo: mínima superficie; el endpoint sigue siendo `GET`
+> y el estado mostrado es correcto aunque la persistencia falle (sale del cálculo). No se añadió el
+> evento `cuento_leido` ni se tocó `MarkStoryRead`/subscribers.
 
 ## Decisiones (confirmadas)
 

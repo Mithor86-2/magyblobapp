@@ -21,6 +21,10 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
   const openParental = () =>
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
 
+  // La vitrina de logros (US-68) también vive en el stack raíz, sobre las pestañas.
+  const openAchievements = () =>
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Achievements');
+
   return (
     <Screen headerImageName="home">
       <View style={styles.hero}>
@@ -39,6 +43,11 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         <BubblyButton
           label={t('home.seeActivities')}
           onPress={() => navigation.navigate('Actividades')}
+          variant="secondary"
+        />
+        <BubblyButton
+          label={t('home.myAchievements')}
+          onPress={openAchievements}
           variant="secondary"
         />
       </View>

@@ -1,11 +1,13 @@
 import type {
   Categoria,
+  Ensenanza,
   Parentesco,
   Tema,
   Estilo,
   EstadoStory,
   ProveedorIa,
 } from '../domain/vocabulary.js';
+import type { CategoriaLogro } from '../domain/logros.js';
 import type { CodigoIdioma } from '../domain/value-objects/Idioma.js';
 
 // --- RegisterGuardian ---
@@ -72,6 +74,11 @@ export interface GenerateStoryRequest {
   temas: string[];
   /** Estilos elegidos (multi-selección, US-47); el caso de uso valida vocabulario y no-vacío. */
   estilos: string[];
+  /**
+   * Enseñanza/valor a transmitir (US-69). Opcional; si se indica, el caso de uso
+   * valida que pertenezca al vocabulario cerrado `ENSENANZAS`.
+   */
+  ensenanza?: string;
 }
 
 export interface StoryOutput {
@@ -79,6 +86,8 @@ export interface StoryOutput {
   profileId: string;
   tema: Tema;
   estilo: Estilo;
+  /** Enseñanza/valor elegida (US-69); ausente si no se eligió ninguna. */
+  ensenanza?: Ensenanza;
   titulo: string;
   cuerpo: string;
   idioma: CodigoIdioma;
@@ -191,6 +200,26 @@ export interface GetHistoryRequest {
 export interface HistoryOutput {
   stories: StoryOutput[];
   activities: ActivityOutput[];
+}
+
+// --- Logros / recompensas (US-68) ---
+export interface GetAchievementsRequest {
+  profileId: string;
+}
+
+/** Estado de un logro del catálogo para pintar la medalla (US-68). */
+export interface AchievementOutput {
+  /** Clave estable del logro (p. ej. `cuentos_leidos_5`). */
+  clave: string;
+  categoria: CategoriaLogro;
+  /** Umbral a alcanzar. */
+  meta: number;
+  /** Progreso actual (0..meta). */
+  progreso: number;
+  /** ¿Está conseguido? */
+  conseguido: boolean;
+  /** Fecha ISO del desbloqueo; ausente si aún no está conseguido. */
+  desbloqueadoEn?: string;
 }
 
 // --- SaveProgress (partido en dos casos de uso cohesivos) ---

@@ -120,3 +120,38 @@ los filtros de US-62) y un **campo de búsqueda de texto** que filtra **en clien
   los combino, Entonces las listas respetan **todos** a la vez.
 - Dado un cuento o actividad **sin** el campo `favorito` (backend antiguo), Cuando se muestra,
   Entonces se trata como **no favorito** y no se produce ningún error.
+
+## US-68 — Logros / recompensas del niño {#us-68}
+
+**Como** niño, **quiero** ganar medallas al leer cuentos y completar actividades, **para** sentirme
+motivado a seguir aprendiendo y jugando.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Mis logros (abierta desde Inicio).
+
+**Alcance**
+
+1. **Catálogo (4 categorías):** cuentos leídos (hitos 1/5/10/25), actividades completadas
+   (1/5/10/25), racha de días seguidos de uso (3/7) y explorar temas (un logro por tema). El catálogo
+   vive en el **dominio** (`domain/logros.ts`), calculado sin IO sobre `Story`/`Activity`.
+2. **Persistencia (nueva entidad `Achievement`):** guarda solo el hecho del desbloqueo
+   (`clave` + `desbloqueadoEn`), idempotente por `profileId`+`clave`; cascada con el perfil (GDPR).
+3. **Lectura + reconciliación:** `GET /profiles/:id/achievements` devuelve el catálogo con progreso y
+   estado; **reconcilia** persistiendo los logros recién conseguidos. El estado es correcto aunque la
+   persistencia falle (sale del cálculo).
+4. **App:** pantalla "Mis logros" (rejilla de medallas conseguidas/bloqueadas con progreso), accesible
+   desde Inicio; i18n ES/EN. Todo local, sin PII nueva.
+
+**Criterios de aceptación**
+
+- **(Vacío)** Dado un perfil sin actividad, Cuando abro Mis logros, Entonces todo el catálogo aparece
+  como no conseguido y no se persiste nada.
+- **(Desbloqueo)** Dado que leo un cuento de un tema, Cuando consulto los logros, Entonces se marcan
+  conseguidos el hito "1 cuento" y el logro de ese tema, y quedan persistidos.
+- **(Progreso)** Dado un logro no conseguido, Entonces muestra su progreso `progreso/meta`.
+- **(Idempotencia)** Dado que consulto los logros dos veces, Entonces los desbloqueos no se duplican y
+  conservan su fecha original.
+- **(Racha)** Dado uso en días de calendario consecutivos, Cuando alcanzo 3 días seguidos, Entonces
+  se desbloquea la racha de 3 (un hueco reinicia el conteo; se guarda la máxima alcanzada).
+- **(Sesión)** Dado que no hay sesión, Cuando llamo al endpoint, Entonces responde **401**.
+- **(Cumplimiento)** Dado el cálculo, Entonces es **local**, sin terceros ni PII nueva (el logro se
+  refiere al niño por `profileId`) y se borra en cascada con el perfil.

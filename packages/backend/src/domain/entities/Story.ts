@@ -1,8 +1,10 @@
 import { DomainError } from '../errors.js';
 import {
+  esEnsenanza,
   esEstilo,
   esProveedorIa,
   esTema,
+  type Ensenanza,
   type Estilo,
   type EstadoStory,
   type ProveedorIa,
@@ -15,6 +17,11 @@ export interface StoryProps {
   profileId: string;
   tema: Tema;
   estilo: Estilo;
+  /**
+   * Enseñanza/valor que dirige la moraleja del cuento (US-69). Opcional: el adulto
+   * puede elegir una o ninguna. Si se indica, debe pertenecer al vocabulario cerrado.
+   */
+  ensenanza?: Ensenanza;
   titulo: string;
   cuerpo: string;
   idioma: CodigoIdioma;
@@ -46,6 +53,7 @@ export class Story {
   readonly profileId: string;
   readonly tema: Tema;
   readonly estilo: Estilo;
+  readonly ensenanza?: Ensenanza;
   readonly titulo: string;
   readonly cuerpo: string;
   readonly idioma: CodigoIdioma;
@@ -59,6 +67,8 @@ export class Story {
   constructor(props: StoryProps) {
     if (!esTema(props.tema)) throw new DomainError(`Tema inválido: "${props.tema}".`);
     if (!esEstilo(props.estilo)) throw new DomainError(`Estilo inválido: "${props.estilo}".`);
+    if (props.ensenanza !== undefined && !esEnsenanza(props.ensenanza))
+      throw new DomainError(`Enseñanza inválida: "${props.ensenanza}".`);
     if (props.titulo.trim() === '') throw new DomainError('El cuento necesita un título.');
     if (props.cuerpo.trim() === '') throw new DomainError('El cuento no puede estar vacío.');
     if (!esProveedorIa(props.proveedor))
@@ -68,6 +78,7 @@ export class Story {
     this.profileId = props.profileId;
     this.tema = props.tema;
     this.estilo = props.estilo;
+    this.ensenanza = props.ensenanza;
     this.titulo = props.titulo;
     this.cuerpo = props.cuerpo;
     this.idioma = props.idioma;

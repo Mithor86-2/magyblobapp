@@ -3,7 +3,7 @@ import { Story } from '../../domain/entities/Story.js';
 import { DomainError, NotFoundError } from '../../domain/errors.js';
 import type { ChildProfileRepository } from '../../domain/repositories/ChildProfileRepository.js';
 import type { StoryRepository } from '../../domain/repositories/StoryRepository.js';
-import { esEstilo, esTema } from '../../domain/vocabulary.js';
+import { esEnsenanza, esEstilo, esTema, type Ensenanza } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { GenerateStoryRequest, StoryOutput } from '../dto.js';
 import { toStoryOutput } from '../mappers.js';
@@ -29,13 +29,15 @@ export class GenerateStory {
     // duplicados y todos dentro del vocabulario cerrado.
     const temas = this.validarVocabulario(input.temas, esTema, 'tema');
     const estilos = this.validarVocabulario(input.estilos, esEstilo, 'estilo');
+    // US-69: enseñanza opcional; si viene, debe estar en el vocabulario cerrado.
+    const ensenanza = this.validarEnsenanza(input.ensenanza);
 
     const perfil = await this.deps.profiles.findById(input.profileId);
     if (!perfil) {
       throw new NotFoundError(`No existe el perfil con id "${input.profileId}".`);
     }
 
-    const generado = await this.deps.ai.generateStory({ perfil, temas, estilos });
+    const generado = await this.deps.ai.generateStory({ perfil, temas, estilos, ensenanza });
 
     // US-59: portada ilustrada **best-effort**. El prompt se forma con tema/estilo/
     // título, **redactando el nombre del niño** del título (que el LLM suele incluir)
@@ -51,6 +53,7 @@ export class GenerateStory {
       profileId: perfil.id,
       tema: temas[0]!,
       estilo: estilos[0]!,
+      ensenanza,
       titulo: generado.titulo,
       cuerpo: generado.cuerpo,
       idioma: perfil.idioma.value,
@@ -84,6 +87,16 @@ export class GenerateStory {
     } catch {
       return undefined;
     }
+  }
+
+  /**
+   * Valida la enseñanza opcional (US-69): si no viene, devuelve `undefined`; si viene,
+   * debe pertenecer al vocabulario cerrado `ENSENANZAS` o se rechaza con `DomainError`.
+   */
+  private validarEnsenanza(valor: string | undefined): Ensenanza | undefined {
+    if (valor === undefined) return undefined;
+    if (!esEnsenanza(valor)) throw new DomainError(`Enseñanza inválida: "${valor}".`);
+    return valor;
   }
 
   /**

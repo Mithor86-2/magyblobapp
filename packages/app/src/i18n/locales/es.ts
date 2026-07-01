@@ -22,6 +22,12 @@ export const es = {
       divertido: 'Divertido',
       educativo: 'Educativo',
     },
+    ensenanza: {
+      amistad: 'Amistad y compartir',
+      emociones: 'Gestionar emociones',
+      valentia: 'Valentía',
+      honestidad: 'Honestidad y respeto',
+    },
     parentesco: {
       madre: 'Madre',
       padre: 'Padre',
@@ -52,6 +58,7 @@ export const es = {
     selectProfile: 'Elegir perfil',
     createProfile: 'Crear perfil',
     parental: 'Zona de adultos',
+    achievements: 'Mis logros',
     storyReader: 'Cuento',
   },
 
@@ -107,7 +114,30 @@ export const es = {
     subtitle: 'Vamos a aprender y jugar juntos. Elige un cuento mágico o una actividad para hoy.',
     createStory: 'Crear un cuento',
     seeActivities: 'Ver actividades',
+    myAchievements: 'Mis logros',
     adultsZone: 'Zona de personas adultas',
+  },
+
+  // Logros / recompensas del niño (US-68).
+  achievements: {
+    title: 'Mis logros',
+    subtitle: 'Gana medallas leyendo cuentos y haciendo actividades.',
+    summary: '{{desbloqueados}} de {{total}} logros',
+    progress: '{{progreso}}/{{meta}}',
+    unlocked: '¡Conseguido!',
+    empty: 'Aún no hay logros. ¡Empieza a jugar!',
+    errorLoad: 'No se pudieron cargar los logros.',
+    catCuentos: 'Cuentos',
+    catActividades: 'Actividades',
+    catRacha: 'Constancia',
+    catTemas: 'Explorador',
+    goalCuentos_one: 'Leer {{count}} cuento',
+    goalCuentos_other: 'Leer {{count}} cuentos',
+    goalActividades_one: 'Completar {{count}} actividad',
+    goalActividades_other: 'Completar {{count}} actividades',
+    goalRacha_one: '{{count}} día seguido',
+    goalRacha_other: '{{count}} días seguidos',
+    goalTema: 'Explorar {{tema}}',
   },
 
   login: {
@@ -180,6 +210,8 @@ export const es = {
     youFallback: 'ti',
     themes: 'Temas',
     styles: 'Estilos',
+    teaching: '¿Qué quieres enseñar?',
+    teachingHint: 'Opcional: elige un valor para la moraleja.',
     creating: 'Creando un cuento mágico…',
     retryHint: 'Toca «Generar cuento» para reintentar.',
     generateAnother: 'Generar otro',
@@ -203,6 +235,7 @@ export const es = {
     // Filtros del historial (US-62).
     filterTheme: 'Tema',
     filterStyle: 'Estilo',
+    filterTeaching: 'Enseñanza',
     filterCategory: 'Categoría',
     filterAll: 'Todos',
     noMatchStories: 'Ningún cuento coincide con el filtro.',

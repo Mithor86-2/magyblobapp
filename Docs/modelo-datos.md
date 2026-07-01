@@ -18,6 +18,7 @@ erDiagram
     Story        ||--o| StoryNarration : "narra"
     ChildProfile ||--o{ Activity : "realiza"
     ChildProfile ||--o{ InteractionEvent : "produce"
+    ChildProfile ||--o{ Achievement : "desbloquea"
     Guardian     ||--o{ AuditLog : "actor de"
 
     Guardian {
@@ -50,6 +51,7 @@ erDiagram
         uuid     profileId FK "-> ChildProfile.id"
         string   tema      "vocabulario de temática"
         string   estilo    "aventura | divertido | educativo"
+        string   ensenanza "opcional — amistad | emociones | valentia | honestidad (US-69)"
         string   titulo
         text     cuerpo
         string   idioma    "heredado del perfil (es | en)"
@@ -94,6 +96,13 @@ erDiagram
         string   tipo      "pantalla_vista | cuento_generado | cuento_narrado | actividad_completada"
         json     payload   "datos del evento (sin PII)"
         datetime creadoEn
+    }
+
+    Achievement {
+        uuid     id             PK
+        uuid     profileId      FK "-> ChildProfile.id"
+        string   clave          "logro del catálogo (US-68): cuentos_leidos_5 | racha_dias_7 | tema_animales…"
+        datetime desbloqueadoEn "momento del desbloqueo"
     }
 
     AuditLog {
@@ -148,6 +157,22 @@ coste mínimo (YAGNI, igual que el progreso de lectura/realización). Se actuali
 idempotentes `POST /stories/:id/favorite` y `POST /activities/:id/favorite` (`{ favorito: boolean }`)
 y **sí** se expone en el DTO público (lo consume el Historial del app, US-64). Las filas anteriores a
 la migración quedan en `false` por el `DEFAULT`.
+
+**Enseñanza del cuento (US-69).** `Story.ensenanza` es un campo **opcional** (`NULL`-able) de un
+vocabulario cerrado (`amistad | emociones | valentia | honestidad`) que el adulto elige para dirigir
+la moraleja del cuento; se teje en el prompt (reforzando la "enseñanza final" de US-28) y se **expone
+en el DTO** para poder filtrar por ella en el Historial. Filas anteriores a la migración quedan `NULL`
+(no se eligió ninguna). No añade PII: es un enum, no texto libre.
+
+**Logros / recompensas (US-68).** `Achievement` materializa la gamificación: solo guarda el **hecho**
+de haber desbloqueado un logro (`clave` + `desbloqueadoEn`), no una copia del estado. El progreso y el
+estado "conseguido" se **calculan en caliente** desde `Story`/`Activity` (cuentos leídos, actividades
+completadas, racha de días de uso y temas explorados; ver `domain/logros.ts`). La lectura
+(`GET /profiles/:id/achievements`) **reconcilia**: persiste de forma **idempotente** (unicidad
+`profileId`+`clave`) los logros recién conseguidos, de modo que queda constancia de cuándo se logró
+cada uno; el estado mostrado es siempre correcto aunque la persistencia fallara (sale del cálculo). El
+catálogo de claves vive en el **dominio**, no en `AppSetting`. Sin PII: el logro se refiere al niño por
+`profileId`.
 
 `AppSetting` es **global** (no se relaciona con otras entidades): es una tabla
 clave-valor para configuración de la app editable sin redeploy.
@@ -211,6 +236,7 @@ Solo donde aportan (regla YAGNI del plan); el resto son escalares simples.
 | --------------- | -------------------------------------------------- | ---------------------------------------- |
 | **Temática**    | `animales · espacio · magia · aventuras · música`  | `ChildProfile.intereses[]`, `Story.tema` |
 | **Estilo**      | `aventura · divertido · educativo`                 | `Story.estilo`                           |
+| **Enseñanza**   | `amistad · emociones · valentia · honestidad`      | `Story.ensenanza` (opcional, US-69)      |
 | **Categoría**   | `arte · música · lógica`                           | `Activity.categoria`                     |
 | **EstadoStory** | `nuevo · leido`                                    | `Story.estado`                           |
 | **Idioma**      | `es · en`                                          | `ChildProfile.idioma`, `Story.idioma`    |
@@ -234,9 +260,9 @@ tema del cuento; los intereses pre-seleccionan el tema (decisión I-2).
   generada para un perfil y se persiste (no es un catálogo global). Para no repetir se usa un
   **dedup simple por título** sobre PostgreSQL; se descartó una base vectorial (Chroma)
   ([ADR 0004](ADR/0004-base-de-datos-vectorial-chroma.md), Rechazada).
-- **Borrado de perfil (US-13):** `Story`, `Activity` e `InteractionEvent` se eliminan
-  en cascada con su `ChildProfile`; borrar un `Guardian` elimina en cascada todos sus
-  niños y datos asociados (derecho de supresión, GDPR).
+- **Borrado de perfil (US-13):** `Story`, `Activity`, `InteractionEvent` y `Achievement`
+  se eliminan en cascada con su `ChildProfile`; borrar un `Guardian` elimina en cascada
+  todos sus niños y datos asociados (derecho de supresión, GDPR).
 - **`Guardian` y consentimiento:** el alta de un niño exige un `Guardian` con
   consentimiento registrado (`consentimientoDado/En/Ver`). Datos del adulto al mínimo
   necesario (minimización). El email es la base de la cuenta y del consentimiento.

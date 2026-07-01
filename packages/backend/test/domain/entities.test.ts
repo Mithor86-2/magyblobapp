@@ -119,6 +119,19 @@ describe('Story', () => {
     // @ts-expect-error valor inválido a propósito
     expect(() => build({ proveedor: 'gpt' })).toThrow(DomainError);
   });
+
+  it('US-69: acepta una enseñanza del vocabulario cerrado', () => {
+    expect(build({ ensenanza: 'amistad' }).ensenanza).toBe('amistad');
+  });
+
+  it('US-69: la enseñanza es opcional (ausente por defecto)', () => {
+    expect(build().ensenanza).toBeUndefined();
+  });
+
+  it('US-69: rechaza una enseñanza fuera del vocabulario', () => {
+    // @ts-expect-error valor inválido a propósito
+    expect(() => build({ ensenanza: 'obediencia' })).toThrow(DomainError);
+  });
 });
 
 describe('Activity', () => {

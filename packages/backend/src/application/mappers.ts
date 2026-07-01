@@ -11,6 +11,7 @@ export function toStoryOutput(story: Story): StoryOutput {
     profileId: story.profileId,
     tema: story.tema,
     estilo: story.estilo,
+    ensenanza: story.ensenanza,
     titulo: story.titulo,
     cuerpo: story.cuerpo,
     idioma: story.idioma,

@@ -12,6 +12,14 @@ export type Tema = (typeof TEMAS)[number];
 export const ESTILOS = ['aventura', 'divertido', 'educativo'] as const;
 export type Estilo = (typeof ESTILOS)[number];
 
+/**
+ * Enseñanza/valor que el cuento transmite (US-69). Es **opcional**: el adulto elige
+ * uno para dirigir la moraleja, o ninguno. Identificadores ASCII; la presentación
+ * legible (con acentos) es responsabilidad de la UI y del prompt.
+ */
+export const ENSENANZAS = ['amistad', 'emociones', 'valentia', 'honestidad'] as const;
+export type Ensenanza = (typeof ENSENANZAS)[number];
+
 /** Categoría de una actividad. */
 export const CATEGORIAS = ['arte', 'musica', 'logica'] as const;
 export type Categoria = (typeof CATEGORIAS)[number];
@@ -49,6 +57,11 @@ export function esTema(value: string): value is Tema {
 /** Type guard: ¿`value` es un estilo del vocabulario cerrado? */
 export function esEstilo(value: string): value is Estilo {
   return (ESTILOS as readonly string[]).includes(value);
+}
+
+/** Type guard: ¿`value` es una enseñanza del vocabulario cerrado (US-69)? */
+export function esEnsenanza(value: string): value is Ensenanza {
+  return (ENSENANZAS as readonly string[]).includes(value);
 }
 
 /** Type guard: ¿`value` es un parentesco válido? */

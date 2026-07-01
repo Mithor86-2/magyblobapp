@@ -216,6 +216,47 @@ describe('prompts — contenido IA (US-54)', () => {
   });
 });
 
+describe('prompts — enseñanza / valor (US-69)', () => {
+  it('incluye la enseñanza elegida en el prompt (ES)', () => {
+    const { prompt } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+      ensenanza: 'amistad',
+    });
+    expect(prompt).toContain('enseñanza sobre la amistad y compartir');
+  });
+
+  it('incluye la enseñanza elegida en el prompt (EN)', () => {
+    const perfilEn = new ChildProfile({
+      id: 'p-en5',
+      guardianId: 'g-1',
+      nombre: 'Leo',
+      edad: Edad.create(5),
+      idioma: Idioma.create('en'),
+      avatar: 'a1',
+      intereses: ['animales'],
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    const { prompt } = buildStoryPrompt({
+      perfil: perfilEn,
+      temas: ['animales'],
+      estilos: ['aventura'],
+      ensenanza: 'valentia',
+    });
+    expect(prompt).toContain('lesson about being brave and overcoming fears');
+  });
+
+  it('sin enseñanza no añade la instrucción de moraleja', () => {
+    const { prompt } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(prompt).not.toContain('enseñanza sobre');
+  });
+});
+
 describe('prompts — multi-tema / multi-estilo (US-47)', () => {
   it('interpola la lista legible de temas y estilos en español ("y")', () => {
     const { prompt } = buildStoryPrompt({

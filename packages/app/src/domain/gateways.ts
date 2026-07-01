@@ -8,6 +8,7 @@
  * "cliente", para que cada pantalla dependa solo de lo que usa.
  */
 import type {
+  Achievement,
   Activity,
   AnonymousActivity,
   AnonymousStory,
@@ -66,6 +67,11 @@ export interface HistoryGateway {
   get(profileId: string): Promise<History>;
 }
 
+export interface AchievementGateway {
+  /** Catálogo de logros del perfil con su progreso y estado de desbloqueo (US-68). */
+  get(profileId: string): Promise<Achievement[]>;
+}
+
 /** Conjunto de gateways que el composition root cablea y la presentación consume. */
 export interface Api {
   guardians: GuardianGateway;
@@ -73,4 +79,5 @@ export interface Api {
   stories: StoryGateway;
   activities: ActivityGateway;
   history: HistoryGateway;
+  achievements: AchievementGateway;
 }

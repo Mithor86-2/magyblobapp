@@ -43,9 +43,10 @@ model ChildProfile {
   avatar     String
   intereses  String[]
   creadoEn   DateTime           @default(now())
-  stories    Story[]
-  activities Activity[]
-  events     InteractionEvent[]
+  stories      Story[]
+  activities   Activity[]
+  events       InteractionEvent[]
+  achievements Achievement[]
 
   @@index([guardianId])
   @@map("child_profiles")
@@ -58,6 +59,7 @@ model Story {
   profile   ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   tema      String
   estilo    String
+  ensenanza String?
   titulo    String
   cuerpo    String
   idioma    String
@@ -136,6 +138,21 @@ model AuditLog {
 
   @@index([guardianId])
   @@map("audit_logs")
+}
+
+/// Logro/recompensa desbloqueado por un perfil (US-68). Solo el hecho (clave +
+/// fecha); el progreso se calcula en caliente. Unicidad por perfil+clave (idempotente).
+/// Se elimina en cascada con el perfil (y con el guardián).
+model Achievement {
+  id             String       @id @default(uuid())
+  profileId      String
+  profile        ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  clave          String
+  desbloqueadoEn DateTime     @default(now())
+
+  @@unique([profileId, clave])
+  @@index([profileId])
+  @@map("achievements")
 }
 
 /// Configuración clave-valor ajustable en caliente (prompts, modelo, parámetros).

@@ -67,6 +67,25 @@ describe('MockProvider', () => {
     expect(new Set(sinTema).size).toBeGreaterThan(1);
   });
 
+  it('US-69: refleja la enseñanza elegida en una moraleja al final (ES)', async () => {
+    const story = await provider.generateStory({
+      perfil: perfil('es'),
+      temas: ['animales'],
+      estilos: ['aventura'],
+      ensenanza: 'amistad',
+    });
+    expect(story.cuerpo).toContain('la amistad y compartir');
+  });
+
+  it('US-69: sin enseñanza el cuerpo no añade moraleja extra', async () => {
+    const story = await provider.generateStory({
+      perfil: perfil('es'),
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(story.cuerpo).not.toContain('Y aprendió');
+  });
+
   it('devuelve la cantidad de actividades pedida con categorías válidas', async () => {
     const actividades = await provider.recommendActivities({ perfil: perfil('es'), cantidad: 4 });
     expect(actividades).toHaveLength(4);

@@ -158,6 +158,40 @@ describe('GenerateStory', () => {
     ).rejects.toThrow(DomainError);
   });
 
+  // --- Enseñanza / valor (US-69) ---
+
+  it('US-69: persiste y devuelve la enseñanza elegida', async () => {
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+      ensenanza: 'amistad',
+    });
+    expect(out.ensenanza).toBe('amistad');
+    const guardado = await stories.findById(out.id);
+    expect(guardado?.ensenanza).toBe('amistad');
+  });
+
+  it('US-69: la enseñanza es opcional (sin ella el cuento se genera igual)', async () => {
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(out.ensenanza).toBeUndefined();
+  });
+
+  it('US-69: rechaza una enseñanza fuera del vocabulario', async () => {
+    await expect(
+      useCase.execute({
+        profileId: 'p-1',
+        temas: ['animales'],
+        estilos: ['aventura'],
+        ensenanza: 'obediencia',
+      }),
+    ).rejects.toThrow(DomainError);
+  });
+
   // --- Portada de imagen (US-59) ---
 
   it('persiste la portada generada cuando el proveedor la devuelve', async () => {

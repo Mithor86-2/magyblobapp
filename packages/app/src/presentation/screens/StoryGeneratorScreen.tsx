@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
-import { ESTILOS, TEMAS } from '../../domain/types';
-import type { Estilo, Story, Tema } from '../../domain/types';
+import { ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
+import type { Ensenanza, Estilo, Story, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
-import { estiloLabel, temaLabel } from '../labels';
+import { ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { NarrationControls } from '../components/NarrationControls';
@@ -41,6 +41,9 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   // intereses del perfil preseleccionados para que "Generar" funcione sin tocar nada.
   const [temas, setTemas] = useState<Tema[]>(interesesPerfil);
   const [estilos, setEstilos] = useState<Estilo[]>(['aventura']);
+  // US-69: enseñanza opcional de selección única (undefined = ninguna). Tocar el chip
+  // ya elegido lo deselecciona.
+  const [ensenanza, setEnsenanza] = useState<Ensenanza | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [story, setStory] = useState<Story | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +58,10 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
     setEstilos((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
   }
 
+  function toggleEnsenanza(e: Ensenanza) {
+    setEnsenanza((prev) => (prev === e ? undefined : e));
+  }
+
   async function onGenerate() {
     if (!profile) return;
     if (!puedeGenerar) {
@@ -64,9 +71,18 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
     setLoading(true);
     setError(null);
     setStory(null);
-    trackAction('story.generate', { temas: temas.join(','), estilos: estilos.join(',') });
+    trackAction('story.generate', {
+      temas: temas.join(','),
+      estilos: estilos.join(','),
+      ensenanza: ensenanza ?? 'ninguna',
+    });
     try {
-      const result = await api.stories.generate({ profileId: profile.id, temas, estilos });
+      const result = await api.stories.generate({
+        profileId: profile.id,
+        temas,
+        estilos,
+        ensenanza,
+      });
       setStory(result);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('storyGenerator.errorGenerate'));
@@ -120,6 +136,19 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
         ))}
       </View>
 
+      <Text style={styles.fieldLabel}>{t('storyGenerator.teaching')}</Text>
+      <Text style={styles.fieldHint}>{t('storyGenerator.teachingHint')}</Text>
+      <View style={styles.chips}>
+        {ENSENANZAS.map((e) => (
+          <SelectableChip
+            key={e}
+            label={ensenanzaLabel(e)}
+            selected={ensenanza === e}
+            onPress={() => toggleEnsenanza(e)}
+          />
+        ))}
+      </View>
+
       {loading ? (
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -168,6 +197,10 @@ const makeStyles = (colors: ColorTokens) =>
     },
     fieldLabel: {
       ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    fieldHint: {
+      ...typography.bodyMd,
       color: colors.onSurfaceVariant,
     },
     chips: {
