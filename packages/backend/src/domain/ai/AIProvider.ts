@@ -1,5 +1,5 @@
 import type { ChildProfile } from '../entities/ChildProfile.js';
-import type { Categoria, Estilo, Parentesco, ProveedorIa, Tema } from '../vocabulary.js';
+import type { Categoria, Ensenanza, Estilo, Parentesco, ProveedorIa, Tema } from '../vocabulary.js';
 
 export interface GenerateStoryInput {
   perfil: ChildProfile;
@@ -7,6 +7,8 @@ export interface GenerateStoryInput {
   temas: Tema[];
   /** Estilos elegidos (multi-selección, US-47); no vacío por contrato. */
   estilos: Estilo[];
+  /** Enseñanza/valor a transmitir (US-69); opcional, dirige la moraleja del cuento. */
+  ensenanza?: Ensenanza;
 }
 
 /** Texto del cuento producido por la IA (el dominio le pone id, estado, etc.). */

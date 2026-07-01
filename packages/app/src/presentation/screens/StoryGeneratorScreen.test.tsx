@@ -98,4 +98,34 @@ describe('StoryGeneratorScreen — multi-selección (US-47)', () => {
     expect(screen.getByRole('button', { name: 'Música' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Aventuras' })).toBeInTheDocument();
   });
+
+  it('US-69: envía la enseñanza elegida (selección única opcional)', async () => {
+    render(<StoryGeneratorScreen {...props} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Valentía' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
+
+    await waitFor(() => expect(generateMock).toHaveBeenCalledTimes(1));
+    expect(generateMock.mock.calls[0]![0]).toMatchObject({ ensenanza: 'valentia' });
+  });
+
+  it('US-69: es selección única (elegir otra enseñanza reemplaza la anterior)', async () => {
+    render(<StoryGeneratorScreen {...props} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Valentía' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Amistad y compartir' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
+
+    await waitFor(() => expect(generateMock).toHaveBeenCalledTimes(1));
+    expect(generateMock.mock.calls[0]![0]).toMatchObject({ ensenanza: 'amistad' });
+  });
+
+  it('US-69: sin enseñanza no envía ninguna (opcional)', async () => {
+    render(<StoryGeneratorScreen {...props} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
+
+    await waitFor(() => expect(generateMock).toHaveBeenCalledTimes(1));
+    expect(generateMock.mock.calls[0]![0]!.ensenanza).toBeUndefined();
+  });
 });

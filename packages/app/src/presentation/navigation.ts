@@ -18,6 +18,8 @@ export type RootStackParamList = {
   CreateProfile: undefined;
   Main: undefined;
   Parental: undefined;
+  /** Vitrina de logros del perfil, abierta desde Inicio (US-68). */
+  Achievements: undefined;
   /** Vista de lectura de un cuento abierto desde el Historial (US-27). */
   StoryReader: { story: Story };
 };

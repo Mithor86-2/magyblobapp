@@ -10,6 +10,7 @@ import i18n from '../i18n';
 import type {
   Categoria,
   CodigoIdioma,
+  Ensenanza,
   Estilo,
   Parentesco,
   ProveedorIa,
@@ -19,6 +20,10 @@ import type {
 export const temaLabel = (tema: Tema): string => i18n.t(`vocab.tema.${tema}`);
 
 export const estiloLabel = (estilo: Estilo): string => i18n.t(`vocab.estilo.${estilo}`);
+
+/** Etiqueta legible de la enseñanza/valor del cuento (US-69). */
+export const ensenanzaLabel = (ensenanza: Ensenanza): string =>
+  i18n.t(`vocab.ensenanza.${ensenanza}`);
 
 export const parentescoLabel = (parentesco: Parentesco): string =>
   i18n.t(`vocab.parentesco.${parentesco}`);

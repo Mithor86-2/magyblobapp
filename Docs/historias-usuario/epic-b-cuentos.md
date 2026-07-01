@@ -367,3 +367,35 @@ recorren la entidad `Activity` y su repositorio. Los tres ajustes son:
 - (No funcional) Dado el cambio de prompts, providers, entidades, schema, repos y mappers, Cuando se
   ejecuta el gate, Entonces los tests (prompt, mock, parseResponse, casos de uso, mapper y rutas)
   siguen en verde y `Docs/modelo-datos.md` queda actualizado (regla schema↔modelo).
+
+## US-69 — Cuento a la carta: elegir la enseñanza {#us-69}
+
+**Como** adulto responsable, **quiero** poder elegir (opcionalmente) la enseñanza o valor que
+transmite el cuento, **para** que la historia refuerce una moraleja concreta.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Generador de cuentos / Historial.
+
+**Alcance**
+
+1. **Vocabulario cerrado `ENSENANZAS`** (`amistad | emociones | valentia | honestidad`); la enseñanza
+   es **opcional** (0 o 1) y de **selección única**.
+2. **Prompt:** `buildStoryPrompt` teje la enseñanza elegida (ES/EN) reforzando la enseñanza final
+   (US-28); el `MockProvider` la refleja de forma determinista. Sin enseñanza, el cuento se genera
+   como siempre.
+3. **Persistencia + contrato:** `POST /stories` acepta `ensenanza?` (Zod, enum); `Story.ensenanza`
+   (`String?`, migración) la persiste y `StoryOutput` la devuelve.
+4. **App:** chip único opcional en el generador y **filtro por enseñanza** en el Historial.
+
+**Criterios de aceptación**
+
+- **(Elegir)** Dado el generador, Cuando elijo una enseñanza y genero, Entonces el cuento la recibe
+  en el prompt y la respuesta incluye `ensenanza`.
+- **(Opcional)** Dado el generador, Cuando genero sin elegir enseñanza, Entonces el cuento se crea
+  igual y `ensenanza` queda ausente.
+- **(Única)** Dado que elijo una enseñanza y luego otra, Entonces solo queda seleccionada la última.
+- **(Vocabulario)** Dado `POST /stories` con una `ensenanza` fuera del vocabulario, Entonces responde
+  **400**.
+- **(Persistencia)** Dado un cuento con enseñanza, Cuando se relee del repositorio, Entonces conserva
+  su `ensenanza`.
+- **(Filtro)** Dado el Historial, Cuando filtro por una enseñanza, Entonces solo se listan los cuentos
+  con esa enseñanza; "Todas" no restringe.

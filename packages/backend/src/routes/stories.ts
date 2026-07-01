@@ -10,7 +10,7 @@ import { GenerateStory } from '../application/use-cases/GenerateStory.js';
 import { MarkStoryRead } from '../application/use-cases/MarkStoryRead.js';
 import { NarrateStory } from '../application/use-cases/NarrateStory.js';
 import { SetStoryFavorite } from '../application/use-cases/SetStoryFavorite.js';
-import { ESTILOS, TEMAS } from '../domain/vocabulary.js';
+import { ENSENANZAS, ESTILOS, TEMAS } from '../domain/vocabulary.js';
 import type { AppDeps } from '../dependencies.js';
 
 // US-47: tema y estilo son listas de selección múltiple. Vocabulario cerrado por
@@ -21,6 +21,8 @@ const bodySchema = z
     profileId: z.string().min(1),
     temas: z.array(z.enum(TEMAS)).min(1),
     estilos: z.array(z.enum(ESTILOS)).min(1),
+    // US-69: enseñanza opcional (vocabulario cerrado). Ausente = sin moraleja dirigida.
+    ensenanza: z.enum(ENSENANZAS).optional(),
   })
   .strict();
 

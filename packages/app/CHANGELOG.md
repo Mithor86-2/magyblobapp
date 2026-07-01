@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Pantalla "Mis logros" (US-68).** Vitrina de medallas del perfil (cuentos, actividades, racha y
+  temas) con progreso y estado conseguido/bloqueado, accesible desde Inicio; consume
+  `GET /profiles/:id/achievements`. Gateway `achievements`, tipos y esquema Zod, e i18n ES/EN.
+- **Cuento a la carta: enseñanza (US-69).** Chip de selección única opcional "¿Qué quieres enseñar?"
+  en el generador (envía `ensenanza`) y **filtro por enseñanza** en el Historial; tipos, esquema Zod e
+  i18n ES/EN.
+
 ### Changed
 
 ### Deprecated
