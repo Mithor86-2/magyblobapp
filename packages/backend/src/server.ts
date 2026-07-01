@@ -40,10 +40,12 @@ export async function buildServer(
 
   const resolved =
     deps ??
-    (await import('./infrastructure/composition.js')).buildProductionDeps(config, {
+    (await (
+      await import('./infrastructure/composition.js')
+    ).buildProductionDeps(config, {
       info: (meta, msg) => app.log.info(meta, msg),
       warn: (meta, msg) => app.log.warn(meta, msg),
-    });
+    }));
 
   // Validación de entrada con Zod en las rutas (US-44): los esquemas `body` de cada
   // ruta son Zod y el type-provider infiere el tipo del cuerpo. Sin esquema `response`,
