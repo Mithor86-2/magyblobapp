@@ -3,11 +3,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { BookPages } from '../components/BookPages';
 import { BubblyButton } from '../components/BubblyButton';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { Icon } from '../components/Icon';
 import { NarrationControls } from '../components/NarrationControls';
 import { StoryCover } from '../components/StoryCover';
+import { paginarCuento } from './paginarCuento';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import { api } from '../../composition';
@@ -16,11 +18,12 @@ import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '.
 import type { RootScreenProps } from '../navigation';
 
 /**
- * Vista de lectura de un cuento abierto desde el Historial (US-27): muestra el
- * título y el cuerpo completos y el Autor. El marcado como leído (US-07/US-08) es
- * **explícito** (A2): con el botón "Marcar como leído" o al escuchar la narración
- * completa; ya no se marca solo por abrir la vista, para que "leído" refleje lectura
- * o escucha real (relevante para los logros, US-68).
+ * Vista de lectura de un cuento, abierta desde el Historial (US-27) o tras generarlo
+ * (A1/US-73). Muestra el título, el Autor y el cuerpo **paginado como un libro**
+ * (A2/US-73, `BookPages` + `paginarCuento`) para leerlo pasando página. El marcado
+ * como leído (US-07/US-08) es **explícito** (A2): con el botón "Marcar como leído" o
+ * al escuchar la narración completa; ya no se marca solo por abrir la vista, para que
+ * "leído" refleje lectura o escucha real (relevante para los logros, US-68).
  */
 export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
   const { story } = route.params;
@@ -57,7 +60,8 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
             onToggle={(favorito) => api.stories.setFavorite(story.id, favorito)}
           />
         </View>
-        <Text style={styles.body}>{story.cuerpo}</Text>
+        {/* A2/US-73: el cuerpo se lee paginado como un libro (‹/›), no en un bloque único. */}
+        <BookPages paginas={paginarCuento(story.cuerpo)} />
         <NarrationControls story={story} onFinished={marcarLeido} />
         {leido ? (
           <View style={styles.leidoRow}>
@@ -103,10 +107,6 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.headlineMd,
       color: colors.onSurface,
       flex: 1,
-    },
-    body: {
-      ...typography.bodyLg,
-      color: colors.onSurface,
     },
     leidoRow: {
       flexDirection: 'row',

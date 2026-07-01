@@ -119,6 +119,8 @@ export const en: typeof es = {
     seeActivities: 'See activities',
     myAchievements: 'My achievements',
     achievementsSummary: '{{conseguidos}}/{{total}}',
+    // Encouragement when no achievement has been earned yet (A4/US-73).
+    noAchievementsYet: 'Read stories and do activities to earn your first trophies!',
     adultsZone: 'Adults zone',
   },
 
@@ -227,6 +229,10 @@ export const en: typeof es = {
   reader: {
     markRead: 'Mark as read',
     alreadyRead: 'Read',
+    // Book-style paginated reading (A2/US-73).
+    page: 'Page {{n}} of {{total}}',
+    prevPage: 'Previous page',
+    nextPage: 'Next page',
   },
 
   history: {
