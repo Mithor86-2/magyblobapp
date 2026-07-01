@@ -147,6 +147,8 @@ export type FakeImagen = string | null | ((input: GenerateImageInput) => string 
 export class FakeAIProvider implements AIProvider {
   /** Registra las entradas recibidas por `generateImage` (para asertar el prompt). */
   imagenCalls: GenerateImageInput[] = [];
+  /** Registra las entradas recibidas por `recommendActivities` (p. ej. para asertar el parentesco, US-67). */
+  recommendCalls: RecommendActivitiesInput[] = [];
 
   constructor(private readonly imagen: FakeImagen = null) {}
 
@@ -161,6 +163,7 @@ export class FakeAIProvider implements AIProvider {
   }
 
   async recommendActivities(input: RecommendActivitiesInput) {
+    this.recommendCalls.push(input);
     return Array.from({ length: input.cantidad }, (_unused, i) => ({
       categoria: input.categoria ?? ('arte' as const),
       titulo: `Actividad ${i + 1}`,

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { RecommendActivities } from '../../src/application/use-cases/RecommendActivities.js';
 import { Activity } from '../../src/domain/entities/Activity.js';
 import { ChildProfile } from '../../src/domain/entities/ChildProfile.js';
+import { Guardian } from '../../src/domain/entities/Guardian.js';
 import { DomainError, NotFoundError } from '../../src/domain/errors.js';
 import { Edad } from '../../src/domain/value-objects/Edad.js';
 import { Idioma } from '../../src/domain/value-objects/Idioma.js';
@@ -9,20 +10,38 @@ import {
   FakeAIProvider,
   InMemoryActivityRepository,
   InMemoryChildProfileRepository,
+  InMemoryGuardianRepository,
   relojFijo,
   secuencialIdGenerator,
 } from '../support/doubles.js';
 
+// Hash bcrypt de prueba (formato $2 válido); no se verifica en persistencia in-memory.
+const HASH_DE_PRUEBA = '$2a$10$hashdepruebahashdepruebaha';
+
 describe('RecommendActivities', () => {
   let profiles: InMemoryChildProfileRepository;
+  let guardians: InMemoryGuardianRepository;
   let activities: InMemoryActivityRepository;
   let ai: FakeAIProvider;
   let useCase: RecommendActivities;
 
   beforeEach(async () => {
     profiles = new InMemoryChildProfileRepository();
+    guardians = new InMemoryGuardianRepository();
     activities = new InMemoryActivityRepository();
     ai = new FakeAIProvider();
+    await guardians.save(
+      new Guardian({
+        id: 'g-1',
+        nombre: 'Ana',
+        apellidos: 'García',
+        email: 'ana@example.com',
+        parentesco: 'madre',
+        passwordHash: HASH_DE_PRUEBA,
+        consentimiento: { dado: true, fecha: new Date('2026-06-10T12:00:00.000Z'), version: 'v1' },
+        creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+      }),
+    );
     await profiles.save(
       new ChildProfile({
         id: 'p-1',
@@ -37,11 +56,17 @@ describe('RecommendActivities', () => {
     );
     useCase = new RecommendActivities({
       profiles,
+      guardians,
       activities,
       ai,
       newId: secuencialIdGenerator('act'),
       now: relojFijo(),
     });
+  });
+
+  it('US-67: pasa el parentesco del guardián al proveedor de IA', async () => {
+    await useCase.execute({ profileId: 'p-1', cantidad: 1 });
+    expect(ai.recommendCalls[0]?.parentesco).toBe('madre');
   });
 
   it('genera y persiste la cantidad pedida de actividades', async () => {
