@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Estándar de documentación **_enforced_** (US-65): la regla de lint `jsdoc/require-jsdoc`
+  (`eslint-plugin-jsdoc`) exige un bloque de documentación en los **exports públicos** del backend
+  (clases y funciones exportadas), integrada en el gate `pnpm check`. Se activa solo `require-jsdoc`
+  (no el preset completo) porque la convención del proyecto es **prosa en español**, no TSDoc formal.
+  Documentados los 14 exports que faltaban (mappers de salida, type-guards de vocabulario/cloud/formato,
+  `parseStory`/`parseActivities`, `buildStoryPrompt`/`buildActivitiesPrompt`) y añadidas cabeceras de
+  módulo a las rutas (`profiles`, `stories`, `anonymous`, `activities`).
+
 ### Changed
 
 ### Deprecated

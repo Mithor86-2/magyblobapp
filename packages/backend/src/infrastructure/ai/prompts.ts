@@ -193,6 +193,7 @@ function rellenar(template: string, valores: Record<string, string | number>): s
   );
 }
 
+/** Construye el prompt (system + user) del cuento, aplicando overrides configurables y los params resueltos. */
 export function buildStoryPrompt(
   input: GenerateStoryInput,
   overrides: PromptOverrides = {},
@@ -271,6 +272,7 @@ export function buildImagePrompt(tema: string, estilo: string, titulo: string): 
   );
 }
 
+/** Construye el prompt (system + user) para recomendar actividades, aplicando overrides configurables. */
 export function buildActivitiesPrompt(
   input: RecommendActivitiesInput,
   overrides: PromptOverrides = {},

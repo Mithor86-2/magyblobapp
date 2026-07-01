@@ -1,3 +1,8 @@
+/**
+ * Rutas **públicas** (sin sesión) del modo anónimo efímero: generan cuento y
+ * actividades sin `profileId` y **sin persistir nada**, protegidas por un
+ * rate-limit en memoria. US-50.
+ */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';

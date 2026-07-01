@@ -41,26 +41,32 @@ export type TipoEvento = (typeof TIPOS_EVENTO)[number];
 export const PROVEEDORES_IA = ['mock', 'local', 'cloud'] as const;
 export type ProveedorIa = (typeof PROVEEDORES_IA)[number];
 
+/** Type guard: ¿`value` es un tema del vocabulario cerrado? */
 export function esTema(value: string): value is Tema {
   return (TEMAS as readonly string[]).includes(value);
 }
 
+/** Type guard: ¿`value` es un estilo del vocabulario cerrado? */
 export function esEstilo(value: string): value is Estilo {
   return (ESTILOS as readonly string[]).includes(value);
 }
 
+/** Type guard: ¿`value` es un parentesco válido? */
 export function esParentesco(value: string): value is Parentesco {
   return (PARENTESCOS as readonly string[]).includes(value);
 }
 
+/** Type guard: ¿`value` es una acción de auditoría válida? */
 export function esAccionAudit(value: string): value is AccionAudit {
   return (ACCIONES_AUDIT as readonly string[]).includes(value);
 }
 
+/** Type guard: ¿`value` es un proveedor de IA válido? */
 export function esProveedorIa(value: string): value is ProveedorIa {
   return (PROVEEDORES_IA as readonly string[]).includes(value);
 }
 
+/** Type guard: ¿`value` es un tipo de evento válido? */
 export function esTipoEvento(value: string): value is TipoEvento {
   return (TIPOS_EVENTO as readonly string[]).includes(value);
 }
