@@ -50,11 +50,11 @@ tamaños). Solo cambian los valores de color del tema oscuro; el tema claro no s
 
 ## Tareas
 
-- [ ] ❌ Re-mapear `darkColors` en `tokens.ts` a la paleta del `DESIGN_Dark.md` y actualizar su
+- [x] ✅ Re-mapear `darkColors` en `tokens.ts` a la paleta del `DESIGN_Dark.md` y actualizar su
       bloque de documentación (de "cocoa cálida" a "índigo cósmico / cielo nocturno").
-- [ ] ❌ Comprobar que `ThemeProvider`/`makeSoftShadow` siguen coherentes con la nueva paleta (sin
+- [x] ✅ Comprobar que `ThemeProvider`/`makeSoftShadow` siguen coherentes con la nueva paleta (sin
       cambios de API; el `shadowColor` pasa a teñir con el coral del cielo nocturno).
-- [ ] ❌ Registrar el `DESIGN_Dark.md` en git (hasta ahora estaba sin trackear).
-- [ ] ❌ CHANGELOG (`packages/app`): entrada bajo `## [Unreleased] → Changed`.
-- [ ] ❌ Gate verde: `pnpm check` (typecheck + lint + format:check + test).
-- [ ] ❌ Pruebas con el usuario (visual del tema oscuro) → confirmación → cierre con `cerrar-feature`.
+- [x] ✅ Registrar el `DESIGN_Dark.md` en git (hasta ahora estaba sin trackear).
+- [x] ✅ CHANGELOG (`packages/app`): entrada bajo `## [Unreleased] → Changed`.
+- [x] ✅ Gate verde: `pnpm check` (typecheck + lint + format:check + test).
+- [ ] 🔄 Pruebas con el usuario (visual del tema oscuro) → confirmación → cierre con `cerrar-feature`.
