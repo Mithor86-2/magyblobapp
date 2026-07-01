@@ -694,6 +694,19 @@ pasa de _light-only_ a **tema reactivo** claro/oscuro con selección **Sistema +
 - **DoD:** ✅ `pnpm check` verde (app 194 + backend 311) · ✅ `expo export` · ✅ verificado en emulador
   Android por el usuario (selector de tema operativo).
 
+#### Refinamiento de paleta oscura → "cielo nocturno" (Feature 79, US-66)
+
+Feature `feature/79-tema-dark-design-nocturno` (solo app; cambio de color del tema oscuro). La feature 77
+dejó `darkColors` en un cocoa cálido provisional; con el documento de diseño
+[Docs/Design/stitch_magyblob/DESIGN_Dark.md](Design/stitch_magyblob/DESIGN_Dark.md) se re-mapea al diseño
+aprobado.
+
+- [x] ✅ **`darkColors` = "cielo nocturno" (índigo cósmico):** superficies índigo (`#111125`), coral
+      (acción), púrpura suave (secundario), aqua (terciario), texto lila claro. Un solo objeto tocado
+      (contrato `ColorTokens` intacto); ni `StyleSheet` ni `ThemeProvider` cambian. Quicksand y tokens
+      invariantes (radios/espaciado) se mantienen; el tema claro no cambia.
+- **DoD:** ✅ `pnpm check` verde (app 194 tests) · ✅ verificado en simulador Android por el usuario.
+
 ### Actividades más significativas: ≥6 pasos y trato por parentesco (US-67, integrado el 2026-07-01)
 
 Feature `feature/78-actividades-6-pasos` (solo backend). Actividades más significativas para 2-6 años

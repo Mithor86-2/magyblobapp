@@ -55,3 +55,8 @@ del peque, y que ese ajuste alcance también a las barras del sistema.
 - Dado el requisito de cumplimiento (Docs/cumplimiento-menores.md), Cuando se aplica el
   tema, Entonces todo ocurre **en local** (lectura del esquema del SO y módulos
   build-time de Expo), sin red ni SDK de terceros.
+- Dado el tema **oscuro**, Cuando se pinta la app, Entonces la paleta sigue el diseño
+  "cielo nocturno" (índigo cósmico) de
+  [Docs/Design/stitch_magyblob/DESIGN_Dark.md](../Design/stitch_magyblob/DESIGN_Dark.md):
+  superficies índigo profundas, coral como acción principal, púrpura suave (secundario) y
+  aqua (terciario), con texto claro de alto contraste.
