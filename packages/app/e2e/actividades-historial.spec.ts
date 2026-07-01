@@ -47,14 +47,15 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   const suma = Number(m![1]) + Number(m![2]);
   await page.getByRole('button', { name: String(suma), exact: true }).click();
 
-  // Formulario de alta del adulto (3 campos: nombre, apellidos, email)
-  const campos = page.getByRole('textbox');
-  await expect(campos).toHaveCount(3);
-  await campos.nth(0).fill('Marta');
-  await campos.nth(1).fill('López');
+  // Formulario de alta del adulto. Localizado por testID (robusto ante cambios en
+  // el nº/orden de campos: nombre, apellidos, email y contraseña US-48).
+  await expect(page.getByTestId('alta-nombre')).toBeVisible();
+  await page.getByTestId('alta-nombre').fill('Marta');
+  await page.getByTestId('alta-apellidos').fill('López');
   // Email único por test (ver `_correo.ts`): el backend persiste entre tests y
   // navegadores, así que un email fijo chocaría con "email ya registrado".
-  await campos.nth(2).fill(correo);
+  await page.getByTestId('alta-email').fill(correo);
+  await page.getByTestId('alta-password').fill('Contrasena123');
   await page.getByRole('button', { name: 'Madre' }).click();
   await page.getByRole('button', { name: 'Acepto', exact: true }).click();
   await page.getByRole('button', { name: 'Aceptar y continuar' }).click();

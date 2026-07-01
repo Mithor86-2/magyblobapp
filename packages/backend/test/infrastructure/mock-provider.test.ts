@@ -67,6 +67,33 @@ describe('MockProvider', () => {
     expect(new Set(sinTema).size).toBeGreaterThan(1);
   });
 
+  it('US-54: en inglés también varía el título recorriendo todo el repertorio EN', async () => {
+    // Estos 5 temas (con nombre "Lola") mapean a los 5 índices de plantilla EN, así
+    // se ejercita cada plantilla de título en inglés.
+    const temasDistintos: Tema[] = ['aventuras', 'musica', 'espacio', 'animales', 'magia'];
+    const titulos = await Promise.all(
+      temasDistintos.map((t) =>
+        provider
+          .generateStory({ perfil: perfil('en'), temas: [t], estilos: ['aventura'] })
+          .then((s) => s.titulo),
+      ),
+    );
+    const sinTema = titulos.map((t, i) => t.replace(temasDistintos[i]!, '·'));
+    // Las 5 plantillas EN dan 5 fórmulas distintas.
+    expect(new Set(sinTema).size).toBe(5);
+  });
+
+  it('usa "aventuras" como tema por defecto cuando la lista de temas viene vacía', async () => {
+    // Ejercita la rama de respaldo `temas[0] ?? "aventuras"` (cuerpo y título).
+    const story = await provider.generateStory({
+      perfil: perfil('es'),
+      temas: [],
+      estilos: ['aventura'],
+    });
+    expect(story.titulo).toContain('aventuras');
+    expect(story.cuerpo).toContain('aventuras');
+  });
+
   it('US-69: refleja la enseñanza elegida en una moraleja al final (ES)', async () => {
     const story = await provider.generateStory({
       perfil: perfil('es'),
@@ -139,5 +166,16 @@ describe('MockProvider', () => {
     expect(actividades).toHaveLength(2);
     expect(actividades[0]!.titulo).toContain('activity #');
     expect(actividades[0]!.descripcion).toContain('play and learn at home');
+  });
+
+  it('US-67: en inglés con cantidad 3 la 3.ª actividad usa las 8 plantillas de paso (EN)', async () => {
+    // n=3 → cantidad de pasos = 6 + ((3-1) % 3) = 8, así se ejercita la 8.ª
+    // plantilla de paso EN (la de "celebrate the result together").
+    const actividades = await provider.recommendActivities({ perfil: perfil('en'), cantidad: 3 });
+    const tercera = actividades[2]!;
+    const pasos = (tercera.instrucciones ?? '').match(/\d{1,2}\./g)?.length ?? 0;
+    expect(pasos).toBe(8);
+    expect(tercera.instrucciones).toContain('8.');
+    expect(tercera.instrucciones).toContain('celebrate the result together');
   });
 });

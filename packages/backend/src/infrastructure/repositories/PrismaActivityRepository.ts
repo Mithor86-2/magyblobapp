@@ -26,6 +26,7 @@ export class PrismaActivityRepository implements ActivityRepository {
         completadaEn: activity.completadaEn ?? null,
         valoracion: activity.valoracion ?? null,
         favorito: activity.favorito,
+        creadoEn: activity.creadoEn,
       },
       update: {
         completadaEn: activity.completadaEn ?? null,

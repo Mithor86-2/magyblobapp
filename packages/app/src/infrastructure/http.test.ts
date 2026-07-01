@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../domain/errors';
-import { createApiGateways, getBaseUrl } from './http';
+import { createApiGateways, getBaseUrl, warmUp } from './http';
 
 /**
  * Tests del adaptador HTTP (implementación de los gateways de domain). Se mockea
@@ -308,6 +308,21 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(out).toEqual({ stories: [], activities: [] });
   });
 
+  it('achievements.get hace GET /profiles/:id/achievements (US-68)', async () => {
+    const logros = [
+      { clave: 'primer_cuento', categoria: 'cuentos', meta: 1, progreso: 1, conseguido: true },
+    ];
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(logros));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.achievements.get('p1');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/profiles/p1/achievements`);
+    expect(options.method).toBe('GET');
+    expect(out).toEqual(logros);
+  });
+
   it('mapea un error del backend a ApiError con su tipo', async () => {
     vi.stubGlobal(
       'fetch',
@@ -485,6 +500,28 @@ describe('createApiGateways (adaptador HTTP)', () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.tipo).toBe('malformed');
+  });
+});
+
+describe('warmUp (ping de arranque, US-53)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('hace un ping GET a /health sin bloquear ni lanzar', () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ status: 'ok' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    expect(() => warmUp(BASE)).not.toThrow();
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE}/health`,
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it('no hace nada si fetch no está disponible', () => {
+    vi.stubGlobal('fetch', undefined);
+    expect(() => warmUp(BASE)).not.toThrow();
   });
 });
 
