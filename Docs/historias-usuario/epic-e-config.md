@@ -1,6 +1,6 @@
 # Epic E — Configuración (zona de padres)
 
-Historias: **US-11**, **US-12**, **US-13**, **US-66**. Volver al [índice](README.md).
+Historias: **US-11**, **US-12**, **US-13**, **US-66**, **US-68**. Volver al [índice](README.md).
 
 ## US-11 — Editar perfil · Should
 
@@ -60,3 +60,30 @@ del peque, y que ese ajuste alcance también a las barras del sistema.
   [Docs/Design/stitch_magyblob/DESIGN_Dark.md](../Design/stitch_magyblob/DESIGN_Dark.md):
   superficies índigo profundas, coral como acción principal, púrpura suave (secundario) y
   aqua (terciario), con texto claro de alto contraste.
+
+## US-68 — Configuración del app por JSON con sync versionado a la BD · Should (Mejoras)
+
+Como **responsable técnico** quiero declarar la configuración ajustable en caliente
+(`AppSetting`) en un **JSON versionado** que se aplique a la base de datos, para gestionar
+las migraciones/actualizaciones de configuración de forma reproducible y sin pisar los
+cambios hechos en caliente.
+
+**Criterios de aceptación**
+
+- Dado `packages/backend/prisma/app-settings.json` (fuente única, sin secretos), Cuando se
+  ejecuta el sync, Entonces cada clave se valida (Zod) y su `value` (string/number/boolean/
+  objeto) se normaliza a texto antes de guardarse.
+- Dada una clave **ausente** en la BD, Cuando corre el sync, Entonces se **crea** con su
+  `version` y valor.
+- Dada una clave existente cuya `version` en el JSON es **mayor** que la aplicada, Cuando
+  corre el sync, Entonces se **actualiza** (value + descripción + version).
+- Dada una clave existente con `version` **igual o menor**, Cuando corre el sync, Entonces
+  se **omite** y se **preserva** el valor actual (incluidos los cambios hechos en caliente,
+  p. ej. `ai.cloud`).
+- Dado un arranque limpio del backend con `DATABASE_URL`, Cuando levanta, Entonces aplica el
+  sync automáticamente (sin pasos ocultos); y existe `pnpm --filter @magyblob/backend
+config:sync` para aplicarlo a demanda (idempotente).
+- Dadas claves en la BD **ausentes** del JSON, Cuando corre el sync, Entonces se **conservan**
+  (no se borran) y se reportan como huérfanas en el log.
+- Dado el cumplimiento, Cuando se sincroniza, Entonces el JSON **no** contiene secretos (API
+  keys y `DATABASE_URL` siguen en variables de entorno).
