@@ -11,11 +11,11 @@ import { FavoriteButton } from '../components/FavoriteButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { Icon } from '../components/Icon';
-import { CATEGORIAS, ESTILOS, TEMAS } from '../../domain/types';
+import { CATEGORIAS, ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
 import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
-import { categoriaLabel, estiloLabel, temaLabel } from '../labels';
+import { categoriaLabel, ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import {
@@ -23,6 +23,7 @@ import {
   filtrarCuentos,
   TODOS,
   type FiltroCategoria,
+  type FiltroEnsenanza,
   type FiltroEstilo,
   type FiltroTema,
 } from './historyFilters';
@@ -57,6 +58,8 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   // Filtros en cliente (US-62), estado local; "Todos" por defecto.
   const [temaFiltro, setTemaFiltro] = useState<FiltroTema>(TODOS);
   const [estiloFiltro, setEstiloFiltro] = useState<FiltroEstilo>(TODOS);
+  // US-69: filtro por enseñanza/valor de los cuentos.
+  const [ensenanzaFiltro, setEnsenanzaFiltro] = useState<FiltroEnsenanza>(TODOS);
   const [categoriaFiltro, setCategoriaFiltro] = useState<FiltroCategoria>(TODOS);
   // Favoritos + búsqueda de texto (US-64), también local.
   const [soloFavoritos, setSoloFavoritos] = useState(false);
@@ -100,6 +103,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     estiloFiltro,
     soloFavoritos,
     busqueda,
+    ensenanzaFiltro,
   );
   const actividadesVisibles = filtrarActividades(hechas, categoriaFiltro, soloFavoritos, busqueda);
 
@@ -176,6 +180,27 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
                 label={estiloLabel(estilo)}
                 selected={estiloFiltro === estilo}
                 onPress={() => setEstiloFiltro(estilo)}
+              />
+            ))}
+          </ScrollView>
+
+          <Text style={styles.filterLabel}>{t('history.filterTeaching')}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipRow}
+          >
+            <SelectableChip
+              label={t('history.filterAll')}
+              selected={ensenanzaFiltro === TODOS}
+              onPress={() => setEnsenanzaFiltro(TODOS)}
+            />
+            {ENSENANZAS.map((ensenanza) => (
+              <SelectableChip
+                key={ensenanza}
+                label={ensenanzaLabel(ensenanza)}
+                selected={ensenanzaFiltro === ensenanza}
+                onPress={() => setEnsenanzaFiltro(ensenanza)}
               />
             ))}
           </ScrollView>

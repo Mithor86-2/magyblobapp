@@ -9,6 +9,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Logros / recompensas del niño (US-68).** Catálogo de logros en el dominio
+  (`domain/logros.ts`: cuentos leídos, actividades completadas, racha de días y explorar temas),
+  entidad `Achievement` + repo, caso de uso `GetAchievements` (read-model calculado que reconcilia e
+  idempotentemente persiste los desbloqueos) y ruta `GET /profiles/:id/achievements`. Nueva tabla
+  `achievements` (migración, cascada por perfil). Todo local, sin PII nueva.
+- **Cuento a la carta: enseñanza opcional (US-69).** Vocabulario cerrado `ENSENANZAS`
+  (`amistad | emociones | valentia | honestidad`); `POST /stories` acepta `ensenanza?` (Zod), el
+  prompt la refuerza (ES/EN, `MockProvider` determinista) y se persiste en `Story.ensenanza`
+  (`String?`, migración) devolviéndose en `StoryOutput`.
+
 ### Changed
 
 ### Deprecated
@@ -16,6 +26,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Removed
 
 ### Fixed
+
+- `PrismaActivityRepository` **persiste `creadoEn`** al guardar (como `PrismaStoryRepository`), en vez
+  de depender del `@default(now())`: corrige el round-trip del test de integración que se rompió al
+  añadir `creadoEn` (US-61). Cobertura CORE del backend restaurada al 100% con tests (US-71).
 
 ### Security
 

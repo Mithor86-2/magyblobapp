@@ -9,7 +9,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Pantalla "Mis logros" (US-68).** Vitrina de medallas del perfil (cuentos, actividades, racha y
+  temas) con progreso y estado conseguido/bloqueado, accesible desde Inicio; consume
+  `GET /profiles/:id/achievements`. Gateway `achievements`, tipos y esquema Zod, e i18n ES/EN.
+- **Cuento a la carta: enseñanza (US-69).** Chip de selección única opcional "¿Qué quieres enseñar?"
+  en el generador (envía `ensenanza`) y **filtro por enseñanza** en el Historial; tipos, esquema Zod e
+  i18n ES/EN.
+
 ### Changed
+
+- Refactor interno del cliente HTTP (`fetchWithRetry`): bucle de reintentos acotado + intento final,
+  **sin cambio de comportamiento** (mismos intentos/backoff). Elimina una rama muerta y restaura la
+  cobertura CORE de `http.ts` al 100%; E2E de alta localizado por `testID` (robusto). (US-71)
 
 ### Deprecated
 

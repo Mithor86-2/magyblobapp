@@ -783,3 +783,24 @@ en paralelo): ya no se mitigan a mano, se evitan por diseño. Protocolo en
   después se itera con Metro ya activo. Docs actualizados (READMEs raíz y del app, `estrategia-pruebas.md`).
 - **Coletazo en el E2E nativo (Maestro):** los flows dejan de valer sobre Expo Go; hay que instalar el
   dev build y usar como `appId` el `bundleIdentifier`/`package` de la app (no el de Expo Go).
+
+## Lote US-68/US-69 — Logros y enseñanza (2026-07-01)
+
+### Migraciones Prisma escritas a mano (sin Docker) + `prisma generate` para el gate
+
+- **Contexto:** el gate (`pnpm check`) no levanta Postgres; las migraciones se aplican en
+  `docker compose up` (`migrate deploy`). Al añadir un campo/modelo al `schema.prisma` no se puede
+  correr `prisma migrate dev` (necesita una BD/shadow).
+- **Solución:** escribir el `migration.sql` **a mano** en una carpeta con timestamp mayor que la última
+  (como ya hacían varias migraciones del repo, p. ej. `2026...` con SQL manual) y correr
+  `pnpm --filter @magyblob/backend prisma:generate` (sin BD) para regenerar el cliente. Sin ese
+  `generate`, el **typecheck falla** porque los tipos generados no conocen el campo/modelo nuevo
+  (`Story.ensenanza`, modelo `Achievement`). El cliente generado (`src/generated/prisma`) está
+  gitignoreado (lo rehace `postinstall`), así que no se commitea.
+- **Regla útil:** tras tocar `schema.prisma` → (1) escribir la migración SQL a mano, (2)
+  `prisma:generate`, (3) actualizar `Docs/modelo-datos.md` en el mismo cambio (regla schema↔modelo).
+
+### i18next con `count` para pluralizar etiquetas de logros
+
+- Las etiquetas de objetivo de los logros ("Leer 1 cuento" vs "Leer 5 cuentos") usan las claves
+  `*_one`/`*_other` de i18next con `t(clave, { count })`; evita concatenar el número con un plural fijo.

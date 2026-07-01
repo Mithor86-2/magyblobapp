@@ -3,7 +3,8 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**, **US-60**, **US-65**.
+**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**, **US-60**, **US-65**,
+**US-71**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -1271,3 +1272,22 @@ lógica). Ver el plan [feature-76-doc-estandar](../planes/feature-76-doc-estanda
 - (No funcional) Dada la naturaleza del cambio, Cuando se aplica, Entonces **no se altera la lógica**:
   solo se añaden comentarios de documentación y configuración de lint; los tests existentes siguen en
   verde sin cambios de comportamiento.
+
+## US-71 — CI en verde (cobertura + integración + E2E + proceso) · Should (Mejoras)
+
+Como **responsable técnico** quiero que el pipeline de CI esté en **verde** y que el gate local
+impida volver a publicar en rojo, para que `main`/`develop` reflejen un estado realmente sano.
+
+**Criterios de aceptación**
+
+- Dado el job **Gate** del CI (que corre `pnpm coverage`), Cuando se ejecuta, Entonces todos los
+  ficheros del tier CORE (US-35) cumplen su umbral (100%) — backend y app (`http.ts`) — sin bajar
+  umbrales ni excluir código con tests reales.
+- Dado el job **Integración + E2E backend** (Testcontainers), Cuando se ejecuta, Entonces pasa; en
+  particular el round-trip de `PrismaActivityRepository` persiste `creadoEn` (como `Story`).
+- Dado el job **E2E app** (Playwright), Cuando se ejecuta, Entonces los flujos de alta localizan los
+  campos por `testID` (robusto ante cambios de nº/orden de campos), no por recuento de textbox.
+- Dado el hook **pre-push**, Cuando se hace `git push`, Entonces corre `pnpm check` **y** `pnpm
+coverage`, bloqueando el push si la cobertura baja del umbral (evita reincidir en CI rojo).
+- (No funcional) Dado el alcance, Cuando se aplica, Entonces el comportamiento de producción no cambia
+  (se simplifica `fetchWithRetry` sin alterar intentos/backoff; el resto son tests/proceso).

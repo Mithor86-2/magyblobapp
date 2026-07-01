@@ -12,6 +12,7 @@ import { PrismaChildProfileRepository } from './repositories/PrismaChildProfileR
 import { PrismaStoryRepository } from './repositories/PrismaStoryRepository.js';
 import { PrismaStoryNarrationRepository } from './repositories/PrismaStoryNarrationRepository.js';
 import { PrismaActivityRepository } from './repositories/PrismaActivityRepository.js';
+import { PrismaAchievementRepository } from './repositories/PrismaAchievementRepository.js';
 import { PrismaInteractionEventRepository } from './repositories/PrismaInteractionEventRepository.js';
 import { PrismaAuditLogRepository } from './repositories/PrismaAuditLogRepository.js';
 import { PrismaSettingsRepository } from './repositories/PrismaSettingsRepository.js';
@@ -51,6 +52,7 @@ export async function buildProductionDeps(config: Config, logger?: TTSLogger): P
     stories: new PrismaStoryRepository(prisma),
     narrations: new PrismaStoryNarrationRepository(prisma),
     activities: new PrismaActivityRepository(prisma),
+    achievements: new PrismaAchievementRepository(prisma),
     events: new PrismaInteractionEventRepository(prisma),
     audit: new PrismaAuditLogRepository(prisma),
     ai: createAIProvider(config, { logger, settings }),

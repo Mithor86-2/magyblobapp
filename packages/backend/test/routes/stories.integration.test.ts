@@ -134,4 +134,41 @@ describe('POST /stories (integración)', () => {
     });
     expect(res.statusCode).toBe(400);
   });
+
+  it('US-69: acepta una enseñanza válida y la persiste/devuelve', async () => {
+    const profileId = await crearPerfil();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'], ensenanza: 'amistad' },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(res.json().ensenanza).toBe('amistad');
+    const guardado = await handles.stories.findById(res.json().id as string);
+    expect(guardado?.ensenanza).toBe('amistad');
+  });
+
+  it('US-69: la enseñanza es opcional (201 sin ella)', async () => {
+    const profileId = await crearPerfil();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'] },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(res.json().ensenanza).toBeUndefined();
+  });
+
+  it('US-69: devuelve 400 ante una enseñanza fuera del vocabulario', async () => {
+    const profileId = await crearPerfil();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'], ensenanza: 'obediencia' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
 });

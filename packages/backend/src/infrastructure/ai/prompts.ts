@@ -121,6 +121,41 @@ const ESTILO_PALABRA: Record<CodigoIdioma, Record<string, string>> = {
 };
 
 /**
+ * Descripción legible de cada enseñanza/valor (US-69) por idioma, para tejerla en el
+ * prompt del cuento. El vocabulario del dominio son identificadores ASCII; aquí se
+ * expresan como una frase natural que orienta la moraleja de la historia.
+ */
+const ENSENANZA_FRASE: Record<CodigoIdioma, Record<string, string>> = {
+  es: {
+    amistad: 'la amistad y compartir con los demás',
+    emociones: 'reconocer y calmar las emociones, como el enfado o la tristeza',
+    valentia: 'ser valiente y superar los miedos',
+    honestidad: 'decir la verdad y respetar a los demás',
+  },
+  en: {
+    amistad: 'friendship and sharing with others',
+    emociones: 'recognizing and calming emotions, like anger or sadness',
+    valentia: 'being brave and overcoming fears',
+    honestidad: 'telling the truth and respecting others',
+  },
+};
+
+/**
+ * Instrucción que pide transmitir la enseñanza elegida (US-69), mostrada de forma
+ * natural en la historia y reforzada en la enseñanza final. Cadena vacía si no se
+ * eligió ninguna (el cuento se genera como siempre).
+ */
+function instruccionEnsenanza(ensenanza: string | undefined, idioma: CodigoIdioma): string {
+  if (ensenanza === undefined) return '';
+  const frase = ENSENANZA_FRASE[idioma][ensenanza] ?? ensenanza;
+  return idioma === 'es'
+    ? ` El cuento debe transmitir una enseñanza sobre ${frase}, mostrada de forma natural en la ` +
+        `historia y reforzada en la enseñanza final.`
+    : ` The story must convey a lesson about ${frase}, shown naturally in the story and reinforced ` +
+        `in the final lesson.`;
+}
+
+/**
  * Une una lista en una enumeración legible para el prompt (US-47): traduce cada
  * elemento al idioma con el mapa dado, deja un solo elemento tal cual y une varios
  * con comas + conjunción final "y" (ES) / "and" (EN). P. ej. ["animales","espacio"]
@@ -208,6 +243,8 @@ export function buildStoryPrompt(
   // traducida a la forma natural del idioma del perfil.
   const temas = listaLegible(input.temas, idioma, TEMA_PALABRA);
   const estilos = listaLegible(input.estilos, idioma, ESTILO_PALABRA);
+  // US-69: instrucción de la enseñanza elegida (o '' si no se eligió ninguna).
+  const ensenanzaInstr = instruccionEnsenanza(input.ensenanza, idioma);
   // Longitud: la marcan los params si existen; si no, el "corto (4 a 6 frases)" de siempre.
   const longitud = params
     ? instruccionFormato(params, idioma)
@@ -229,13 +266,15 @@ export function buildStoryPrompt(
     idiomaNombre: idioma === 'es' ? 'español' : 'inglés',
     intereses: gustos,
     tono,
+    // US-69: frase legible de la enseñanza (o '' si ninguna) para plantillas configurables.
+    ensenanza: input.ensenanza ? (ENSENANZA_FRASE[idioma][input.ensenanza] ?? input.ensenanza) : '',
     formato: params?.formato ?? 'cuento',
     palabrasMin: params?.palabrasMin ?? '',
     palabrasMax: params?.palabrasMax ?? '',
     rima: params?.rima ? (idioma === 'es' ? 'sí' : 'yes') : 'no',
   };
 
-  const prompt = overrides.template
+  const promptBase = overrides.template
     ? rellenar(overrides.template, valores)
     : idioma === 'es'
       ? `${apertura} para ${nombre}, de ${edad.value} años, sobre "${temas}" con un estilo ` +
@@ -247,7 +286,12 @@ export function buildStoryPrompt(
         `Return a short title and the body. Invent an original, different title each time ` +
         `(do not reuse the pattern "${nombre} and the ... adventure").`;
 
-  return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
+  // US-69: la enseñanza se añade al final del prompt para honrarla también con
+  // plantillas configuradas (que no referencian `{ensenanza}`); '' si no hay ninguna.
+  return {
+    system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma],
+    prompt: promptBase + ensenanzaInstr,
+  };
 }
 
 /**

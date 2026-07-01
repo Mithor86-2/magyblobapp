@@ -6,7 +6,7 @@ import type {
   RecommendActivitiesInput,
 } from '../../domain/ai/AIProvider.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';
-import { CATEGORIAS, type Categoria } from '../../domain/vocabulary.js';
+import { CATEGORIAS, type Categoria, type Ensenanza } from '../../domain/vocabulary.js';
 import {
   buildActivitiesPrompt,
   buildStoryPrompt,
@@ -39,6 +39,9 @@ export class MockProvider implements AIProvider {
     const titulo = tituloVariado(nombre, input.temas, idioma);
     // US-61: prompt representativo (el que usarían los proveedores reales por defecto).
     const prompt = joinPromptParts(buildStoryPrompt(input));
+    // US-69: si se eligió una enseñanza, la mock la refleja de forma determinista en
+    // una frase de moraleja al final (cadena vacía si no hay enseñanza).
+    const moraleja = moralejaMock(input.ensenanza, idioma);
     if (idioma === 'es') {
       return {
         titulo,
@@ -47,7 +50,7 @@ export class MockProvider implements AIProvider {
           `Un día partió en un viaje lleno de color y risas. ` +
           `Por el camino hizo nuevos amigos que le ayudaron a ser valiente. ` +
           `Juntos descubrieron que lo más bonito de ${tema} es compartirlo. ` +
-          `Y ${nombre} volvió a casa feliz, listo para soñar otra aventura.`,
+          `Y ${nombre} volvió a casa feliz, listo para soñar otra aventura.${moraleja}`,
         proveedor: 'mock',
         prompt,
       };
@@ -59,7 +62,7 @@ export class MockProvider implements AIProvider {
         `One day they set off on a journey full of color and laughter. ` +
         `Along the way they made new friends who helped them be brave. ` +
         `Together they discovered that the best part of ${tema} is sharing it. ` +
-        `And ${nombre} came back home happy, ready to dream up another adventure.`,
+        `And ${nombre} came back home happy, ready to dream up another adventure.${moraleja}`,
       proveedor: 'mock',
       prompt,
     };
@@ -189,6 +192,30 @@ const PLANTILLAS_TITULO: Record<CodigoIdioma, ((nombre: string, tema: string) =>
     (nombre, tema) => `${nombre} and the secret of ${tema}`,
   ],
 };
+
+/**
+ * Frase de moraleja de la mock por enseñanza (US-69), determinista y por idioma. Se
+ * añade al final del cuerpo cuando el adulto eligió una enseñanza; '' si no eligió.
+ */
+const MORALEJA_MOCK: Record<CodigoIdioma, Record<Ensenanza, string>> = {
+  es: {
+    amistad: ' Y aprendió que la amistad y compartir hacen todo más bonito.',
+    emociones: ' Y aprendió a reconocer y calmar lo que sentía.',
+    valentia: ' Y aprendió que ser valiente es intentarlo aunque dé un poquito de miedo.',
+    honestidad: ' Y aprendió que decir la verdad y respetar a los demás está muy bien.',
+  },
+  en: {
+    amistad: ' And they learned that friendship and sharing make everything nicer.',
+    emociones: ' And they learned to recognize and calm what they felt.',
+    valentia: ' And they learned that being brave means trying even when it feels a little scary.',
+    honestidad: ' And they learned that telling the truth and respecting others feels great.',
+  },
+};
+
+/** Devuelve la frase de moraleja mock para la enseñanza elegida, o '' si no hay ninguna. */
+function moralejaMock(ensenanza: Ensenanza | undefined, idioma: CodigoIdioma): string {
+  return ensenanza ? MORALEJA_MOCK[idioma][ensenanza] : '';
+}
 
 /** Hash estable y simple (no criptográfico) de una cadena a entero no negativo. */
 function hashCadena(texto: string): number {
