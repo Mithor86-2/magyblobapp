@@ -44,12 +44,15 @@ export function BookPages({
   paginas,
   portada,
   finLabel,
+  finImagen,
 }: {
   paginas: string[];
   /** Nodo de portada (título + imagen); si se pasa, es la 1ª página del libro (US-83 #5). */
   portada?: ReactNode;
-  /** Etiqueta de la última página ("FIN"); si se pasa, se añade al final (US-83 #5). */
+  /** Etiqueta de la última página ("¡Fin de la historia!"); si se pasa, se añade al final. */
   finLabel?: string;
+  /** Imagen a mostrar también en la página final (portada del libro); opcional. */
+  finImagen?: ReactNode;
 }) {
   const { t } = useTranslation();
   const styles = useThemedStyles(makeStyles);
@@ -134,12 +137,15 @@ export function BookPages({
             <View style={styles.portada}>{portada}</View>
           ) : item.tipo === 'fin' ? (
             <View style={styles.fin}>
+              {finImagen}
               <Text style={styles.finText}>{finLabel}</Text>
             </View>
           ) : (
-            <Text style={styles.body} accessibilityRole="text">
-              {item.texto}
-            </Text>
+            <View style={styles.texto}>
+              <Text style={styles.body} accessibilityRole="text">
+                {item.texto}
+              </Text>
+            </View>
           )}
         </Animated.View>
       </GestureDetector>
@@ -197,11 +203,17 @@ const makeStyles = (colors: ColorTokens) =>
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
+      gap: spacing.md,
     },
     finText: {
-      ...typography.displayLg,
+      ...typography.headlineMd,
       color: '#1a1a1a',
-      letterSpacing: 2,
+      textAlign: 'center',
+    },
+    // Página de texto: contenido centrado verticalmente dentro de la hoja.
+    texto: {
+      flex: 1,
+      justifyContent: 'center',
     },
     body: {
       ...typography.bodyLg,

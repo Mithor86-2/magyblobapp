@@ -84,12 +84,20 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
             onToggle={(favorito) => api.stories.setFavorite(story.id, favorito)}
           />
         </View>
-        {/* US-83 (#1/#5): el cuento se lee como un libro con page-curl real — portada con
-            título, la historia paginada y una página final "FIN". */}
+        {/* US-83 (#1/#5): el cuento se lee como un libro — portada con título, la historia
+            paginada y una página final con la portada y "¡Fin de la historia!". */}
         <BookPages
           paginas={paginarCuento(story.cuerpo)}
           portada={portada}
           finLabel={t('reader.end')}
+          finImagen={
+            <StoryCover
+              generada={story.portada}
+              tema={story.tema}
+              style={styles.coverFin}
+              accessibilityLabel={story.titulo}
+            />
+          }
         />
         <NarrationControls story={story} onFinished={marcarLeido} />
         {leido ? (
@@ -145,6 +153,12 @@ const makeStyles = (colors: ColorTokens) =>
       // Texto oscuro fijo para contrastar sobre la hoja blanca en cualquier tema.
       color: '#1a1a1a',
       textAlign: 'center',
+    },
+    // Portada (más pequeña) que también se muestra en la página final "¡Fin de la historia!".
+    coverFin: {
+      width: '70%',
+      height: 150,
+      borderRadius: radius.md,
     },
     leidoRow: {
       flexDirection: 'row',

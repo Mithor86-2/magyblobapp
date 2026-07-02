@@ -249,7 +249,7 @@ export const en: typeof es = {
     continueStory: 'Continue the story',
     continueError: 'Could not continue the story.',
     // Book's last page (US-83, adjustment #5).
-    end: 'THE END',
+    end: '⭐ The end of the story! ⭐',
   },
 
   history: {

@@ -25,7 +25,8 @@ describe('BookPages (US-83)', () => {
 
   it('la hoja se pinta en fondo blanco tipo papel', () => {
     render(<BookPages paginas={PAGINAS} />);
-    const hoja = screen.getByText('Primera página').parentElement as HTMLElement;
+    // El texto va dentro de un contenedor centrado; la hoja blanca es su abuelo.
+    const hoja = screen.getByText('Primera página').parentElement?.parentElement as HTMLElement;
     expect(hoja).toHaveStyle({ backgroundColor: 'rgb(255, 255, 255)' });
   });
 
@@ -62,11 +63,16 @@ describe('BookPages (US-83)', () => {
     expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeDisabled();
   });
 
-  it('#5: portada primero, historia en medio y "FIN" al final', () => {
+  it('#5: portada primero, historia en medio y fin con imagen al final', () => {
     render(
-      <BookPages paginas={['Había una vez']} portada={<Text>Mi portada</Text>} finLabel="FIN" />,
+      <BookPages
+        paginas={['Había una vez']}
+        portada={<Text>Mi portada</Text>}
+        finLabel="¡Fin de la historia!"
+        finImagen={<Text>Imagen fin</Text>}
+      />,
     );
-    // Total = portada (1) + texto (1) + FIN (1) = 3; empieza en la portada.
+    // Total = portada (1) + texto (1) + fin (1) = 3; empieza en la portada.
     expect(screen.getByText('Mi portada')).toBeInTheDocument();
     expect(screen.getByText('Página 1 de 3')).toBeInTheDocument();
 
@@ -74,7 +80,9 @@ describe('BookPages (US-83)', () => {
     expect(screen.getByText('Había una vez')).toBeInTheDocument();
 
     siguiente();
-    expect(screen.getByText('FIN')).toBeInTheDocument();
+    // La página de fin muestra la imagen de portada y el texto de fin.
+    expect(screen.getByText('Imagen fin')).toBeInTheDocument();
+    expect(screen.getByText('¡Fin de la historia!')).toBeInTheDocument();
     expect(screen.getByText('Página 3 de 3')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeDisabled();
   });

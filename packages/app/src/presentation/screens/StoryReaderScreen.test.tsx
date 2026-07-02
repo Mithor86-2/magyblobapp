@@ -103,10 +103,10 @@ describe('StoryReaderScreen — marcar leído explícito (A2)', () => {
     // 1ª página del libro: título del cuento + imagen de portada (role img).
     expect(screen.getByText('El zorro valiente')).toBeInTheDocument();
     expect(screen.getAllByRole('img').length).toBeGreaterThan(0);
-    // Avanzar hasta el final: la historia (1 página) y luego la página "FIN".
+    // Avanzar hasta el final: la historia (1 página) y luego la página de fin.
     fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
     fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
-    expect(screen.getByText('FIN')).toBeInTheDocument();
+    expect(screen.getByText(/Fin de la historia/)).toBeInTheDocument();
   });
 
   it('US-78: "Continuar la historia" genera el capítulo nuevo y abre su lector', async () => {
