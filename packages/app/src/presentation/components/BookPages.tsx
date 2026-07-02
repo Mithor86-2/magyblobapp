@@ -1,25 +1,42 @@
-import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import PageFlipper, { type PageFlipperInstance } from 'react-native-page-flipper';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 
+/** Duración (ms) de cada media fase del giro (salida / entrada). */
+const FASE_MS = 180;
+/** Umbral de arrastre (px) para considerar que se pasa de página al soltar. */
+const UMBRAL = 60;
+
 /**
- * Lector **paginado como un libro** con **page-curl real** (US-83, ajustes #1 + #5;
- * sustituye la aproximación reanimated de US-79). El pase de página lo aporta
- * `react-native-page-flipper` (curl real iOS/Android/Web sobre gesture-handler +
- * reanimated + linear-gradient), tanto arrastrando como con los controles ‹ / ›
- * (deshabilitados en los extremos), con el indicador "Página n de total".
+ * Lector **paginado como un libro** (US-73/US-74/US-79/US-83): muestra una página a la vez
+ * y permite pasar página **arrastrando** (efecto de pliegue/page-curl) o con los controles
+ * ‹ / › (deshabilitados en los extremos), con el indicador "Página n de total".
  *
- * El libro se compone de: una **portada** opcional (1ª página: título + imagen de
- * portada, US-83 #5), las **páginas de texto** (`paginas`, ya troceadas por
- * `paginarCuento`), y una **página final "FIN"** opcional (`finLabel`). Cada ítem se
- * serializa a `data` (string[], el contrato de la librería) y se pinta en `renderPage`.
+ * **Estructura de libro (US-83 #5):** una **portada** opcional (1ª página: título + imagen),
+ * las **páginas de texto** (`paginas`, ya troceadas por `paginarCuento`) y una **página final
+ * "FIN"** opcional (`finLabel`).
  *
- * El índice de página es estado de React sincronizado por `onFlippedEnd`, así los
- * botones ‹/›, el gesto y el indicador comparten la misma verdad; bajo Vitest la
- * librería está aliasada a un stub que refleja el índice (los ‹/› siguen verificables).
+ * **Giro de hoja con reanimated + gesture-handler.** Un valor compartido `drag` controla el
+ * giro (`rotateY` + `perspective` + traslación + escala) siguiendo el dedo; al soltar o pulsar
+ * ‹/› se anima en dos medias fases (la hoja actual gira hacia el canto, se cambia el índice y
+ * la nueva entra desde el lado opuesto). El índice es estado de React, así que los botones/gesto
+ * comparten `irA` y los tests ejercitan la navegación sin el hilo nativo.
+ *
+ * _Nota (US-83): se evaluó `react-native-page-flipper` para un curl "real", pero su versión
+ * publicada (1.0.1) crashea con Reanimated 4 / New Architecture ("undefined is not a function"
+ * en `BookPagePortrait`), así que se mantiene el pliegue con reanimated. Ver `Docs/memory.md`._
  */
 type ItemLibro = { tipo: 'portada' } | { tipo: 'texto'; texto: string } | { tipo: 'fin' };
 
@@ -44,64 +61,106 @@ export function BookPages({
     ...paginas.map((texto) => ({ tipo: 'texto', texto }) as const),
     ...(finLabel ? [{ tipo: 'fin' } as const] : []),
   ];
-  // Sin contenido: una página en blanco (indicador "1/1"), sin intentar rellenar.
+  // Sin contenido: una página en blanco (indicador "1/1").
   const itemsSeguro: ItemLibro[] = items.length > 0 ? items : [{ tipo: 'texto', texto: '' }];
   const total = itemsSeguro.length;
-  // `data` de PageFlipper es string[]: serializamos cada ítem y lo deserializamos al pintar.
-  const data = itemsSeguro.map((it) => JSON.stringify(it));
 
-  const flipper = useRef<PageFlipperInstance>(null);
   const [indice, setIndice] = useState(0);
+  // Giro/arrastre de la hoja (hilo de UI): 0 = asentada; ±width = de canto.
+  const drag = useSharedValue(0);
 
   const enPrimera = indice <= 0;
   const enUltima = indice >= total - 1;
 
-  const renderPage = useCallback(
-    (raw: string) => {
-      const item = JSON.parse(raw) as ItemLibro;
-      if (item.tipo === 'portada') {
-        return <View style={[styles.page, styles.pagePortada]}>{portada}</View>;
-      }
-      if (item.tipo === 'fin') {
-        return (
-          <View style={[styles.page, styles.pageFin]}>
-            <Text style={styles.finText}>{finLabel}</Text>
-          </View>
-        );
-      }
-      return (
-        <View style={styles.page}>
-          <Text style={styles.body} accessibilityRole="text">
-            {item.texto}
-          </Text>
-        </View>
-      );
+  // Cambia el índice (estado React). Lo llama el callback del giro vía runOnJS.
+  const cambiarIndice = useCallback((siguiente: number) => setIndice(siguiente), []);
+
+  // Anima el pase de página en dos medias fases (salida → cambio → entrada). La
+  // dirección fija el sentido del giro. Lo usan los botones ‹/› y el fin del gesto.
+  const irA = useCallback(
+    (siguiente: number) => {
+      if (siguiente < 0 || siguiente > total - 1 || siguiente === indice) return;
+      const dir = siguiente > indice ? 1 : -1; // avanzar (+1) / retroceder (-1)
+      drag.value = withTiming(-dir * width, { duration: FASE_MS }, (fin) => {
+        if (!fin) return;
+        runOnJS(cambiarIndice)(siguiente);
+        drag.value = dir * width;
+        drag.value = withTiming(0, { duration: FASE_MS });
+      });
     },
-    [portada, finLabel, styles],
+    [indice, total, width, drag, cambiarIndice],
   );
 
-  // Tamaño de página: ancho acotado al contenedor, alto proporcional (páginas parejas).
-  const pageWidth = Math.round(Math.min(width - spacing.md * 2, 520));
-  const pageHeight = Math.max(280, Math.min(460, Math.round(height * 0.46)));
+  // Arrastre horizontal: sigue al dedo y, al soltar, pasa de página si supera el umbral.
+  const pan = Gesture.Pan()
+    .activeOffsetX([-15, 15])
+    .onUpdate((e) => {
+      drag.value = e.translationX;
+    })
+    .onEnd((e) => {
+      if (e.translationX <= -UMBRAL && indice < total - 1) {
+        runOnJS(irA)(indice + 1);
+      } else if (e.translationX >= UMBRAL && indice > 0) {
+        runOnJS(irA)(indice - 1);
+      } else {
+        drag.value = withSpring(0);
+      }
+    });
+
+  // La hoja gira sobre rotateY con perspectiva, se desplaza y se encoge un poco al
+  // levantarse (efecto de pliegue), siguiendo `drag`.
+  const hojaStyle = useAnimatedStyle(() => {
+    const rot = interpolate(drag.value, [-width, 0, width], [-60, 0, 60], Extrapolation.CLAMP);
+    const escala = interpolate(Math.abs(drag.value), [0, width], [1, 0.9], Extrapolation.CLAMP);
+    return {
+      transform: [
+        { perspective: 1000 },
+        { translateX: drag.value * 0.28 },
+        { rotateY: `${rot}deg` },
+        { scale: escala },
+      ],
+    };
+  });
+
+  // Sombra del pliegue: oscurece el canto hacia el que gira la hoja y se intensifica con
+  // el arrastre, simulando el relieve de una página que se levanta.
+  const sombraStyle = useAnimatedStyle(() => {
+    const opacidad = interpolate(Math.abs(drag.value), [0, width], [0, 0.55], Extrapolation.CLAMP);
+    const haciaIzquierda = drag.value < 0;
+    return {
+      opacity: opacidad,
+      left: haciaIzquierda ? 0 : undefined,
+      right: haciaIzquierda ? undefined : 0,
+    };
+  });
+
+  // Alto mínimo proporcional acotado: páginas de tamaño consistente sin recortar texto.
+  const pageMinHeight = Math.max(240, Math.min(420, Math.round(height * 0.42)));
+  const item = itemsSeguro[indice] ?? itemsSeguro[0]!;
 
   return (
     <View style={styles.container}>
-      <View style={{ height: pageHeight }}>
-        <PageFlipper
-          ref={flipper}
-          data={data}
-          renderPage={renderPage}
-          pageSize={{ width: pageWidth, height: pageHeight }}
-          portrait
-          singleImageMode
-          contentContainerStyle={styles.flipper}
-          onFlippedEnd={(i) => setIndice(i)}
-        />
-      </View>
+      <GestureDetector gesture={pan}>
+        <Animated.View style={[styles.page, { minHeight: pageMinHeight }, hojaStyle]}>
+          {item.tipo === 'portada' ? (
+            <View style={styles.portada}>{portada}</View>
+          ) : item.tipo === 'fin' ? (
+            <View style={styles.fin}>
+              <Text style={styles.finText}>{finLabel}</Text>
+            </View>
+          ) : (
+            <Text style={styles.body} accessibilityRole="text">
+              {item.texto}
+            </Text>
+          )}
+          {/* Sombra del pliegue (aproximación de curl): banda oscura en el canto que gira. */}
+          <Animated.View pointerEvents="none" style={[styles.sombraPliegue, sombraStyle]} />
+        </Animated.View>
+      </GestureDetector>
 
       <View style={styles.controls}>
         <Pressable
-          onPress={() => flipper.current?.previousPage()}
+          onPress={() => irA(indice - 1)}
           disabled={enPrimera}
           accessibilityRole="button"
           accessibilityLabel={t('reader.prevPage')}
@@ -114,7 +173,7 @@ export function BookPages({
         <Text style={styles.indicator}>{t('reader.page', { n: indice + 1, total })}</Text>
 
         <Pressable
-          onPress={() => flipper.current?.nextPage()}
+          onPress={() => irA(indice + 1)}
           disabled={enUltima}
           accessibilityRole="button"
           accessibilityLabel={t('reader.nextPage')}
@@ -133,22 +192,27 @@ const makeStyles = (colors: ColorTokens) =>
     container: {
       gap: spacing.sm,
     },
-    flipper: {
-      backgroundColor: 'transparent',
-    },
-    // Hoja tipo papel: blanco literal (independiente del tema) con relleno holgado.
+    // Hoja tipo papel: blanco literal (independiente del tema) con sombra/borde suave.
     page: {
-      flex: 1,
       backgroundColor: '#ffffff',
       borderRadius: radius.md,
       padding: spacing.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: 'rgba(0, 0, 0, 0.08)',
+      shadowColor: '#000000',
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
     },
-    pagePortada: {
+    portada: {
+      flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.sm,
     },
-    pageFin: {
+    fin: {
+      flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -161,6 +225,15 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.bodyLg,
       // Texto oscuro fijo para contrastar sobre la hoja blanca en cualquier tema.
       color: '#1a1a1a',
+    },
+    // Banda de sombra del pliegue: ~40% del ancho pegada a un canto.
+    sombraPliegue: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      width: '40%',
+      backgroundColor: '#000000',
+      borderRadius: radius.md,
     },
     controls: {
       flexDirection: 'row',

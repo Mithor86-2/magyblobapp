@@ -1415,32 +1415,34 @@ pantalla estoy sin depender solo de la pestaña activa.
 - **(Con título)** Dada una pantalla con `title`, Entonces se muestra como cabecera (rol heading).
 - **(Sin título)** Dada una pantalla sin `title`, Entonces no se muestra cabecera de sección.
 
-## US-83 — Lector como libro con page-curl real + FIN {#us-83}
+## US-83 — Lector como libro (portada + historia + FIN) {#us-83}
 
-> **Ajuste (lote 3 de ideas, #1 + #5).** Sustituye la aproximación reanimated de US-79 por un
-> page-curl **real** con `react-native-page-flipper` (decisión en [memory.md](../memory.md)).
+> **Ajuste (lote 3 de ideas, #1 + #5).** Se **intentó** un curl "real" con `react-native-page-flipper`
+> pero se **descartó** (crashea con Reanimated 4 / New Architecture, v1.0.1 sin mantenimiento); el
+> lector mantiene el **pliegue con Reanimated** (US-79) y se le añade la **estructura de libro**
+> (decisión en [memory.md](../memory.md)).
 
-**Como** niño (con el adulto), **quiero** leer el cuento como un libro de verdad —portada con el
-título, la historia página a página con pliegue real y una página final "FIN"—, **para** que la
-lectura sea inmersiva.
+**Como** niño (con el adulto), **quiero** leer el cuento como un libro —portada con el título, la
+historia página a página con efecto de pliegue y una página final "FIN"—, **para** que la lectura sea
+inmersiva.
 
 **Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
 
 **Alcance**
 
-1. **`react-native-page-flipper`** (curl real iOS/Android/Web sobre gesture-handler + reanimated +
-   linear-gradient) en `BookPages` vía `renderPage`, conservando los controles ‹ / › (ref
-   `nextPage`/`previousPage`), el indicador "Página n de total" y la accesibilidad.
-2. **Estructura de libro:** 1ª página = portada (imagen + título del cuento), páginas intermedias =
-   la historia paginada (`paginarCuento`), última página = **"FIN"** (`reader.end`, ES/EN).
-3. **Tests:** la librería se aliasa a un stub que refleja el índice (los ‹/› siguen verificables);
+1. **Pliegue con Reanimated + gesture-handler** en `BookPages` (giro `rotateY`/escala + sombra de
+   canto siguiendo el arrastre), con controles ‹ / ›, indicador "Página n de total" y accesibilidad.
+2. **Estructura de libro:** `BookPages` admite `portada` (1ª página = imagen + título del cuento) y
+   `finLabel`; páginas intermedias = la historia paginada (`paginarCuento`), última = **"FIN"**
+   (`reader.end`, ES/EN).
+3. **Tests:** reanimated/gesture-handler se aliasan a stubs (los ‹/› siguen verificables);
    `expo export` web validado. **Requiere dev build** (libs nativas, como desde US-66/US-79).
 
 **Criterios de aceptación**
 
 - **(Portada)** Dado un cuento abierto, Entonces la primera página muestra el título y la imagen de
   portada.
-- **(Pase)** Cuando arrastro o pulso › / ‹, Entonces la página pasa con curl y el indicador se
+- **(Pase)** Cuando arrastro o pulso › / ‹, Entonces la página pasa con pliegue y el indicador se
   actualiza; en los extremos los botones se deshabilitan.
 - **(Fin)** Dada la última página, Entonces muestra "FIN".
 

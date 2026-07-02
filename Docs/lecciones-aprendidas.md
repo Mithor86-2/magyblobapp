@@ -852,15 +852,15 @@ arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Histo
 
 ### Lote de ajustes 3 (US-83..US-88)
 
-- **`react-native-page-flipper` renderiza por `renderPage`, `data` es `string[]`.** Para un lector de
-  **texto** (no imágenes) se serializa cada página a JSON en `data` y se deserializa en `renderPage`
-  (el tipo de página —portada/texto/FIN— viaja en el objeto). El componente es **uncontrolled** (gestiona
-  su índice interno); para conservar los botones ‹/› y el indicador se usa su **ref**
-  (`nextPage`/`previousPage`) y se sincroniza el índice con `onFlippedEnd(index)`.
-- **Stub de Vitest para la librería nativa del curl.** Como reanimated/gesture-handler, se aliasa
-  `react-native-page-flipper` a un stub (`test/react-native-page-flipper-stub.tsx`) que mantiene su
-  propio índice, pinta `renderPage(data[index])` y expone el ref — así la navegación ‹/› sigue siendo
-  verificable sin el hilo nativo.
+- **`react-native-page-flipper` NO es compatible con Reanimated 4 / New Architecture.** Se adoptó
+  para un curl "real" (su `renderPage` admite nodos, así que serializando `data: string[]` a JSON
+  servía para texto), pasó el gate y el `expo export` web, pero en **dev build (Android/iOS) crashea en
+  runtime**: `Render Error: undefined is not a function` en `BookPagePortrait` al abrir el cuento (la
+  v1.0.1, sin mantenimiento, usa APIs de reanimated antiguas). **Lección:** el gate + export web NO
+  garantizan que una librería nativa cargue en el runtime nuevo — hay que probar en **dev build**
+  antes de comprometerse. Se revirtió al **pliegue con reanimated** (US-79) + estructura de libro
+  (portada/FIN); se quitaron `react-native-page-flipper`/`react-native-linear-gradient`/
+  `expo-linear-gradient` y su stub/alias de Vitest.
 - **react-native-web pinta `Image` con `resizeMode="contain"` como dos nodos con rol `img`** (un
   contenedor `div[role=img]` + un `<img>`), ambos con el nombre accesible. En tests, usar
   `getAllByRole('img', { name })` en vez de `getByRole` (que falla por "multiple elements").

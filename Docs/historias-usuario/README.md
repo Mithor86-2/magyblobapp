@@ -112,7 +112,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-80 | Nombre de sección en la cabecera                       | Should    | Mejoras | Toda la app (pestañas)              | [F](epic-f-plataforma.md#us-80)  |
 | US-81 | Pasos de actividad plegables                           | Should    | Mejoras | Actividades / Historial             | [C](epic-c-actividades.md#us-81) |
 | US-82 | Búsqueda global (cuentos + actividades)                | Should    | Mejoras | Búsqueda                            | [D](epic-d-historial.md#us-82)   |
-| US-83 | Lector como libro con page-curl real + FIN             | Should    | Mejoras | Lector                              | [F](epic-f-plataforma.md#us-83)  |
+| US-83 | Lector como libro (portada + historia + FIN)           | Should    | Mejoras | Lector                              | [F](epic-f-plataforma.md#us-83)  |
 | US-84 | Historial: buscador tras "Lo último"                   | Should    | Mejoras | Historial                           | [D](epic-d-historial.md#us-84)   |
 | US-85 | Cerrar sesión vuelve al Dashboard                      | Should    | Mejoras | Zona de adultos / Dashboard         | [F](epic-f-plataforma.md#us-85)  |
 | US-86 | Cabeceras con animación de rebote                      | Could     | Mejoras | Toda la app (cabeceras)             | [F](epic-f-plataforma.md#us-86)  |

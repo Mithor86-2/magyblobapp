@@ -840,13 +840,14 @@ Ocho ajustes de UI/UX (captura del Dashboard en Android). Plan en
 [planes/coordinacion-ajustes-ideas-3.md](planes/coordinacion-ajustes-ideas-3.md) (+ un plan por
 feature). Ejecutado en **una rama**, commits por feature (Ola 1 = ficheros disjuntos; F5 transversal
 al final). Solo app; integración prevista **sin release** (entradas en `## [Unreleased]` del app).
-Decisiones: **#1** adoptar `react-native-page-flipper` (supera US-79 / Skia); **#6** añadir 4º color.
+Decisiones: **#1** se intentó `react-native-page-flipper` pero se **descartó** (crashea con Reanimated
+4/new arch) y se mantiene el pliegue con reanimated; **#6** añadir 4º color; **#7/#8** revertidos.
 
-- [x] ✅ **F1 — Lector como libro con page-curl real + FIN (US-83, #1/#5).** `BookPages` sobre
-      `react-native-page-flipper` (curl real; `renderPage` con nodos de texto vía `data` JSON); el
-      lector se estructura como libro: portada (imagen + título) → historia → "FIN". Stub de Vitest
-      para la librería. Deps: `react-native-page-flipper`, `react-native-linear-gradient`,
-      `expo-linear-gradient`. Requiere dev build.
+- [x] ✅ **F1 — Lector como libro: portada + historia + FIN (US-83, #1/#5).** `BookPages` admite
+      `portada` (imagen + título) y `finLabel` ("FIN") además de la historia paginada; el pase de página
+      mantiene el **pliegue con Reanimated** (giro + sombra, arrastre y ‹/›). _Se intentó
+      `react-native-page-flipper` para un curl "real" pero **crashea con Reanimated 4 / New Architecture**
+      (v1.0.1, sin mantenimiento); se descartó y se quitaron esas deps._ Requiere dev build.
 - [x] ✅ **F2 — Buscador del Historial reubicado (US-84, #2).** Baja a tras "Lo último" y encima del
       toggle [Cuentos | Actividades]; búsqueda en vivo + filtros del modal intactos.
 - [x] ✅ **F3 — Cerrar sesión vuelve al Dashboard (US-85, #3).** `ParentalScreen` resetea a `Dashboard`

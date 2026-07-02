@@ -875,18 +875,18 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
 - **Continuar la historia: título numerado, no inventado (US-78).** `ContinueStory` deriva el título
   del cuento origen incrementando el número de capítulo (`siguienteTitulo`: "…"→"… 2"→"… 3"), en vez de
   usar el que genere la IA, para que los capítulos encadenen un título coherente.
-- **Page-curl real con `react-native-page-flipper`; supera US-79 (US-83, lote de ajustes 3).** A
-  petición del usuario se **adopta la librería dedicada** `react-native-page-flipper` (curl real
-  iOS/Android/Web sobre gesture-handler + reanimated + `react-native-linear-gradient` nativo +
-  `expo-linear-gradient` en web), que **sustituye** la aproximación reanimated (sombra + giro) de
-  US-79. Encaje clave: su `renderPage` admite **nodos arbitrarios**, así que sirve para páginas de
-  **texto** (no solo imágenes) — se serializa cada página a `data: string[]` (JSON) y se deserializa
-  en `renderPage`. `BookPages` conserva su API y controles ‹/› usando el **ref** de la librería
-  (`nextPage`/`previousPage`/`goToPage`) y sincroniza el índice con `onFlippedEnd(index)`. El lector
-  se estructura como libro (US-83 #5): portada (imagen + título) → historia → página "FIN". Bajo
-  Vitest la librería se **aliasa a un stub** que mantiene su propio índice y expone el ref (los ‹/›
-  siguen verificables). Comparado con Skia/Riveo (descartado en US-79 por peso nativo y export
-  web/tests), page-flipper reutiliza deps ya presentes y soporta web. Sigue requiriendo **dev build**.
+- **Lector como libro: `react-native-page-flipper` adoptado y luego DESCARTADO por incompatibilidad;
+  se mantiene el pliegue con Reanimated (US-83, lote de ajustes 3).** Se intentó el curl "real" con
+  `react-native-page-flipper` (a petición del usuario), pero su versión publicada (**1.0.1**, sin
+  mantenimiento) **crashea en runtime con Reanimated 4 / New Architecture** (RN 0.85): "undefined is
+  not a function" en `BookPagePortrait` al abrir el cuento (usa APIs de reanimated antiguas). Se
+  **revirtió**: se quitaron `react-native-page-flipper` + `react-native-linear-gradient` +
+  `expo-linear-gradient` y `BookPages` vuelve al **pliegue con reanimated + gesture-handler** de US-79
+  (giro `rotateY`/escala + sombra de canto, arrastre y ‹/›). **Lo que sí se conserva de US-83 #5** es
+  la **estructura de libro**: `BookPages` admite `portada` (1ª página: imagen + título) y `finLabel`
+  (última página "FIN"), además de las páginas de texto (`paginarCuento`). Skia/Riveo sigue descartado
+  (US-79). Conclusión: en este stack (Reanimated 4 / new arch) no hay librería de curl fiable; el
+  pliegue propio con reanimated es la opción sostenible. Requiere **dev build** (reanimated/gesture).
 - **4º color de acción + sombra del botón por tono propio (US-87, lote de ajustes 3).** La paleta gana
   un color `quaternary` (ámbar) para tener **4 colores de acción distinguibles** (coral/cielo/menta/
   ámbar) y que cada acción mantenga su color entre pantallas. El borde inferior "squishy" de

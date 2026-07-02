@@ -9,12 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- **Lector como libro con page-curl real (US-83, ajustes #1 + #5).** El lector adopta
-  `react-native-page-flipper` (curl real iOS/Android/Web sobre gesture-handler + reanimated +
-  linear-gradient) en `BookPages`: la 1ª página es la **portada** (imagen + título del cuento), luego
-  la historia paginada y una página final **"FIN"**. Sustituye la aproximación reanimated de US-79
-  (ver decisión en `Docs/memory.md`). Bajo Vitest la librería se aliasa a un stub que refleja el
-  índice, así los controles ‹/› siguen verificables.
+- **Lector como libro: portada + historia + "FIN" (US-83, ajustes #1 + #5).** `BookPages` acepta una
+  **portada** (1ª página: imagen + título del cuento) y una página final **"FIN"**, además de la
+  historia paginada. El pase de página mantiene el **pliegue con Reanimated** (giro + sombra de canto,
+  arrastre y ‹/›). _(Se intentó el curl "real" con `react-native-page-flipper`, pero su versión 1.0.1
+  crashea con Reanimated 4 / New Architecture; se descartó y se quitaron esas dependencias — ver
+  `Docs/memory.md`.)_
 - **Cabeceras con rebote en loop (US-86, ajuste #4).** Nuevo `BouncingHeaderImage`: la imagen de
   cabecera oscila suavemente arriba↔abajo en bucle infinito (reanimated `withRepeat`).
 - **4º color de acción "ámbar" (US-87, ajuste #6).** Nueva variante `quaternary` de `BubblyButton` y
