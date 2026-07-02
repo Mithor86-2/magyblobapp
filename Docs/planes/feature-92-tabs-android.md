@@ -1,5 +1,11 @@
 # Plan — Feature 92: Pestañas, activo llena el botón + visibilidad Android (US-88, ajustes #7 + #8)
 
+> **↩️ REVERTIDA (tras pruebas del usuario).** Se implementó (fondo activo cubriendo todo el ítem con
+> un `tabBarButton` propio + inset inferior con `makeTabBarStyle`), pero el usuario pidió **dejar los
+> botones del tab como estaban antes del lote**. Se revirtió `App.tsx` al `TabIcon` con "blob" y al
+> `tabBarStyle` original, y se eliminaron `tabBarStyle.ts`/`tabBarStyle.test.ts`. El plan queda como
+> registro histórico.
+
 Rama: `feature/87-ajustes-ideas-3` (lote). Fichero propio: `App.tsx` (config del tab navigator).
 
 ## Objetivo

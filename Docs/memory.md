@@ -895,6 +895,6 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
   **Corrección tras pruebas:** la regla real es "**sin dos acciones del mismo color en una misma
   pantalla**" (no solo color fijo por acción) — se reasignó Crear cuenta→ámbar (chocaba con Generar
   cuento coral) y Búsqueda(Inicio)→cielo (chocaba con Ver actividades menta); dos acciones comparten
-  color solo si nunca coinciden en pantalla. Y el resalte de **pestaña activa** pasó a un `tabBarButton`
-  **propio** (envuelve icono+etiqueta en una píldora) porque `tabBarActiveBackgroundColor` no rellenaba
-  el ítem completo en Android.
+  color solo si nunca coinciden en pantalla. **Los cambios de la barra de pestañas (US-88 #7/#8) se
+  revirtieron** a petición del usuario: se dejó el tab como estaba antes del lote (blob alrededor del
+  icono + `tabBarStyle` original); el resalte "todo el botón" y el inset inferior quedan descartados.

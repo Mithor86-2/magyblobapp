@@ -864,16 +864,13 @@ arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Histo
 - **react-native-web pinta `Image` con `resizeMode="contain"` como dos nodos con rol `img`** (un
   contenedor `div[role=img]` + un `<img>`), ambos con el nombre accesible. En tests, usar
   `getAllByRole('img', { name })` en vez de `getByRole` (que falla por "multiple elements").
-- **Edge-to-edge de Android (Expo SDK 54+): la tab bar queda bajo la barra de navegación del sistema.**
-  Se reserva el inset inferior en `tabBarStyle` (`useSafeAreaInsets`, helper puro `makeTabBarStyle`)
-  sumándolo al alto y al `paddingBottom` para que las pestañas activas se vean completas.
-- **Resaltado de pestaña activa en "todo el botón": usar `tabBarButton` propio, NO
-  `tabBarActiveBackgroundColor`.** El primer intento (`tabBarActiveBackgroundColor` + `tabBarItemStyle`
-  redondeado) **no rellenaba de forma fiable** el ítem completo en Android (seguía viéndose el resalte
-  solo alrededor del icono). Solución: un `tabBarButton` personalizado que envuelve el contenido del
-  ítem (`children` = icono + etiqueta) en una `View` que se rellena (`secondaryContainer`, píldora
-  redondeada) cuando `accessibilityState.selected` — cubre todo el botón sin depender del render
-  interno del navegador.
+- **Barra de pestañas (US-88 #7/#8): implementada y luego REVERTIDA por preferencia del usuario.** Se
+  probaron dos enfoques para el resalte "todo el botón" —`tabBarActiveBackgroundColor` +
+  `tabBarItemStyle` (no rellenaba de forma fiable en Android) y un `tabBarButton` propio (sí cubría
+  todo el ítem)— y el inset inferior con `useSafeAreaInsets`/`makeTabBarStyle` para el edge-to-edge de
+  Android. Tras las pruebas, el usuario pidió **dejar el tab como estaba antes** (blob alrededor del
+  icono + `tabBarStyle` original), así que se revirtió. Lección para futuros cambios de tab: validar el
+  aspecto en dispositivo **antes** de invertir esfuerzo, porque el estilo previo era el preferido.
 - **Colores de botón: regla "sin dos acciones del mismo color en una misma pantalla".** No basta con
   "cada acción, un color fijo"; hay que garantizar que las acciones **co-visibles** tengan colores
   distintos (aparecieron colisiones Generar cuento/Crear cuenta y Ver actividades/Buscar). Con 4

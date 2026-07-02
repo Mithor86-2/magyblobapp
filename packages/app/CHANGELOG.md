@@ -31,10 +31,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   ser un **tono oscuro de su propio color** (antes era siempre el borde coral).
 - **Buscador del Historial reubicado (US-84, ajuste #2).** El campo de búsqueda baja a **después de
   "Lo último"** y **encima del toggle [Cuentos | Actividades]**.
-- **Barra de pestañas (US-88, ajustes #7 + #8).** El estado activo colorea **todo el botón** (icono +
-  etiqueta) como una píldora mediante un `tabBarButton` **propio** (envuelve el contenido del ítem en
-  una vista que se rellena al estar activa), no solo el icono; y la barra reserva el **inset inferior**
-  del sistema (edge-to-edge de Android) para no quedar tapada por la barra de navegación.
+- _(US-88 revertida, ajustes #7 + #8.)_ Tras las pruebas, la barra de pestañas se **deja como estaba
+  antes del lote**: el resaltado del activo es el "blob" alrededor del icono y el `tabBarStyle` original
+  (sin `tabBarButton` propio ni inset inferior). Los cambios de tabulador se descartan a petición del
+  usuario.
 - **Cerrar sesión vuelve al Dashboard (US-85, ajuste #3).** Tras el logout se navega al `Dashboard`
   (inicio sin sesión con "Prueba un cuento / Prueba unas actividades"), no a `Welcome`.
 

@@ -1513,6 +1513,10 @@ interfaz sea coherente y agradable.
 
 ## US-88 — Pestañas: activo llena el botón + visibilidad Android {#us-88}
 
+> **↩️ REVERTIDA (tras pruebas del usuario, lote 3 de ideas #7 + #8).** Se implementó pero se decidió
+> **dejar los botones del tab como estaban antes del lote** (blob alrededor del icono + `tabBarStyle`
+> original). Se conserva la historia como registro; su alcance ya no está en el código.
+
 > **Ajuste (lote 3 de ideas, #7 + #8).**
 
 **Como** persona usuaria de Android, **quiero** que la pestaña activa se resalte en todo el botón y que

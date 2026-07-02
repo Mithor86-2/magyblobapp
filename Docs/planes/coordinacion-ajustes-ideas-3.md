@@ -27,14 +27,14 @@ Leyenda: ✅ hecho · 🔄 en curso · ⬜ pendiente
 
 ## Features
 
-| Feature                              | Ajustes | US    | Plan                                                                 |
-| ------------------------------------ | ------- | ----- | -------------------------------------------------------------------- |
-| F1 — Lector como libro + curl real   | #1, #5  | US-83 | [feature-87-lector-libro-curl.md](feature-87-lector-libro-curl.md)   |
-| F2 — Historial: bajar buscador       | #2      | US-84 | [feature-88-historial-buscador.md](feature-88-historial-buscador.md) |
-| F3 — Cerrar sesión → Dashboard       | #3      | US-85 | [feature-89-logout-dashboard.md](feature-89-logout-dashboard.md)     |
-| F4 — Cabeceras con rebote            | #4      | US-86 | [feature-90-cabeceras-rebote.md](feature-90-cabeceras-rebote.md)     |
-| F5 — Color botones + sombra por tono | #6      | US-87 | [feature-91-color-botones.md](feature-91-color-botones.md)           |
-| F6 — Pestañas: activo + Android      | #7, #8  | US-88 | [feature-92-tabs-android.md](feature-92-tabs-android.md)             |
+| Feature                                         | Ajustes | US    | Plan                                                                 |
+| ----------------------------------------------- | ------- | ----- | -------------------------------------------------------------------- |
+| F1 — Lector como libro + curl real              | #1, #5  | US-83 | [feature-87-lector-libro-curl.md](feature-87-lector-libro-curl.md)   |
+| F2 — Historial: bajar buscador                  | #2      | US-84 | [feature-88-historial-buscador.md](feature-88-historial-buscador.md) |
+| F3 — Cerrar sesión → Dashboard                  | #3      | US-85 | [feature-89-logout-dashboard.md](feature-89-logout-dashboard.md)     |
+| F4 — Cabeceras con rebote                       | #4      | US-86 | [feature-90-cabeceras-rebote.md](feature-90-cabeceras-rebote.md)     |
+| F5 — Color botones + sombra por tono            | #6      | US-87 | [feature-91-color-botones.md](feature-91-color-botones.md)           |
+| ~~F6 — Pestañas: activo + Android~~ (revertida) | #7, #8  | US-88 | [feature-92-tabs-android.md](feature-92-tabs-android.md)             |
 
 ## Cierre
 

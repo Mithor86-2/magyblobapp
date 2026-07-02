@@ -856,7 +856,8 @@ Decisiones: **#1** adoptar `react-native-page-flipper` (supera US-79 / Skia); **
 - [x] ✅ **F5 — Color de botón consistente + sombra por tono + 4º color (US-87, #6).** Variante
       `quaternary` (ámbar) + bordes por variante (tono oscuro del propio color); mapa fijo entre
       pantallas (crear=coral · ya tengo=cielo · búsqueda=menta · logros=ámbar · logout=rojo).
-- [x] ✅ **F6 — Pestañas: activo llena el botón + visibilidad Android (US-88, #7/#8).** Fondo activo
-      cubre todo el ítem (píldora) + inset inferior del sistema (`makeTabBarStyle`) para edge-to-edge.
+- [~] ↩️ **F6 — Pestañas (US-88, #7/#8): REVERTIDA.** Se implementó (fondo activo cubriendo el ítem +
+  inset inferior), pero tras las pruebas del usuario se **revirtió al estado previo** (blob alrededor
+  del icono y `tabBarStyle` original) a petición suya. Se elimina el helper `makeTabBarStyle`.
 - **DoD:** ✅ `pnpm check` verde (**backend 407 + app 268**) + cobertura estratégica OK · ⏳ pruebas en
   dev por el usuario (dev build) y confirmación antes del `finish`.

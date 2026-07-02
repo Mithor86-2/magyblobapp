@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -10,11 +10,8 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import {
-  createBottomTabNavigator,
-  type BottomTabBarButtonProps,
-} from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
 import { DashboardScreen } from './src/presentation/screens/DashboardScreen';
@@ -37,7 +34,6 @@ import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
 import './src/i18n';
 import { resolveInitialRoute } from './src/presentation/initialRoute';
-import { makeTabBarStyle } from './src/presentation/tabBarStyle';
 import { trackNavigation } from './src/infrastructure/telemetry';
 import type {
   MainTabParamList,
@@ -120,63 +116,27 @@ function LecturaScreen(props: RootScreenProps<'StoryReader'>) {
   );
 }
 
-/** Icono de pestaña: icono lucide coloreado según el estado (activo/inactivo). */
+/** Icono de pestaña: icono lucide dentro de un "blob" pastel cuando está activo. */
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
   const { colors } = useTheme();
-  return <Icon name={name} size={24} color={focused ? colors.primary : colors.onSurfaceVariant} />;
-}
-
-/**
- * Botón de pestaña **personalizado** (US-88 #7). El resaltado del activo cubre **todo el
- * botón** (icono + etiqueta) como una píldora redondeada, no solo el icono: envolvemos el
- * contenido que pinta el navegador (`children`) en una vista que se rellena con
- * `secondaryContainer` cuando la pestaña está seleccionada. Se hace con un botón propio en
- * vez de `tabBarActiveBackgroundColor` porque este último no rellenaba de forma fiable el
- * área completa del ítem en Android.
- */
-function TabBarButton({
-  children,
-  onPress,
-  onLongPress,
-  accessibilityState,
-  accessibilityLabel,
-  testID,
-}: BottomTabBarButtonProps) {
-  const { colors } = useTheme();
   const styles = makeStyles(colors);
-  const focused = accessibilityState?.selected ?? false;
   return (
-    <Pressable
-      onPress={onPress}
-      onLongPress={onLongPress}
-      accessibilityRole="button"
-      accessibilityState={accessibilityState}
-      accessibilityLabel={accessibilityLabel}
-      testID={testID}
-      style={styles.tabButtonOuter}
-    >
-      <View style={[styles.tabButtonInner, focused && styles.tabButtonInnerActive]}>
-        {children}
-      </View>
-    </Pressable>
+    <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
+      <Icon name={name} size={24} color={focused ? colors.primary : colors.onSurfaceVariant} />
+    </View>
   );
 }
 
 function MainTabs() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  // #8: reservar el inset inferior del sistema (edge-to-edge de Android en SDK 54+) para
-  // que las pestañas activas no queden bajo la barra de navegación del sistema.
-  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.onSurfaceVariant,
-        // #7: botón propio que rellena todo el ítem activo (icono + etiqueta) como píldora.
-        tabBarButton: (props) => <TabBarButton {...props} />,
-        tabBarStyle: makeTabBarStyle(insets, colors),
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.outline },
         tabBarLabelStyle: { fontFamily: fonts.bold, fontSize: 13 },
       }}
     >
@@ -371,21 +331,14 @@ const makeStyles = (colors: ColorTokens) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    // Botón de pestaña: el exterior ocupa su celda (flex:1) con un poco de aire; el interior
-    // es la "píldora" que se rellena cuando la pestaña está activa (US-88 #7).
-    tabButtonOuter: {
-      flex: 1,
-      paddingHorizontal: 6,
-      paddingVertical: 6,
-    },
-    tabButtonInner: {
-      flex: 1,
-      borderRadius: radius.lg,
+    tabIcon: {
+      width: 56,
+      height: 32,
+      borderRadius: radius.pill,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 4,
     },
-    tabButtonInnerActive: {
+    tabIconActive: {
       backgroundColor: colors.secondaryContainer,
     },
   });
