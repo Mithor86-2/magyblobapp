@@ -10,6 +10,7 @@ import { ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
 import type { Ensenanza, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
+import { ensenanzaIcon, estiloIcon, temaIcon } from '../chipIcons';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { api } from '../../composition';
 import { useSlowHint } from '../hooks/useSlowHint';
@@ -136,6 +137,8 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
             label={temaLabel(tema)}
             selected={temas.includes(tema)}
             onPress={() => toggleTema(tema)}
+            icon={temaIcon(tema)}
+            color="tertiary"
           />
         ))}
       </View>
@@ -148,6 +151,8 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
             label={estiloLabel(s)}
             selected={estilos.includes(s)}
             onPress={() => toggleEstilo(s)}
+            icon={estiloIcon(s)}
+            color="secondary"
           />
         ))}
       </View>
@@ -161,6 +166,8 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
             label={ensenanzaLabel(e)}
             selected={ensenanza === e}
             onPress={() => toggleEnsenanza(e)}
+            icon={ensenanzaIcon(e)}
+            color="quaternary"
           />
         ))}
       </View>
@@ -174,6 +181,8 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
           })}
           selected={usarNombre}
           onPress={() => setUsarNombre((v) => !v)}
+          icon="name"
+          color="primary"
         />
       </View>
 

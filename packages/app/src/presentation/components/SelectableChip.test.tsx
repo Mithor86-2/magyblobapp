@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+
+// `Icon` usa lucide-react-native (no carga bajo Vitest); lo sustituimos por un doble que
+// expone el nombre del icono para poder verificar que el chip lo renderiza (US-89).
+vi.mock('./Icon', () => ({
+  Icon: ({ name }: { name: string }) => name,
+}));
+
 import { SelectableChip } from './SelectableChip';
 
 /**
@@ -32,5 +39,28 @@ describe('SelectableChip', () => {
 
     fireEvent.click(chip);
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('#1: renderiza el icono indicado delante de la etiqueta', () => {
+    render(
+      <SelectableChip
+        label="Animales"
+        selected
+        onPress={vi.fn()}
+        icon="tema-animales"
+        color="tertiary"
+      />,
+    );
+    // El doble de Icon expone el nombre; el chip sigue localizándose por su etiqueta.
+    expect(screen.getByRole('button', { name: /Animales/ })).toBeInTheDocument();
+    expect(screen.getByText('tema-animales')).toBeInTheDocument();
+  });
+
+  it('#1: el chip seleccionado se pinta con el color de su categoría', () => {
+    render(<SelectableChip label="Amistad" selected onPress={vi.fn()} color="quaternary" />);
+    // lightColors.quaternary = #8a5300 → rgb(138, 83, 0).
+    expect(screen.getByRole('button', { name: /Amistad/ })).toHaveStyle({
+      backgroundColor: 'rgb(138, 83, 0)',
+    });
   });
 });
