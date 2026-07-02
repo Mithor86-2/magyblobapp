@@ -9,6 +9,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Historial con pestañas Cuentos/Actividades (US-74, A3).** Franja "Lo último" con el último cuento y
+  la última actividad, y un **toggle Cuentos / Actividades** (por defecto Cuentos) que muestra la lista
+  completa del tipo elegido; la búsqueda/filtros aplican a la pestaña activa. i18n ES/EN
+  (`history.tabStories`, `history.tabActivities`, `history.latest`, `history.lastStory`,
+  `history.lastActivity`).
 - **Lectura tipo libro (US-73, A2).** El lector muestra el cuento **paginado** (una página a la vez)
   con swipe horizontal, botones ‹ / ›, indicador "Página {n} de {total}" y **animación de giro**
   (`Animated` de RN, sin librerías nuevas). Nuevo paginador puro `paginarCuento` (robusto ante cuerpo
@@ -36,6 +41,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- **Cuento paginado por la IA, mínimo 4 páginas (US-74, A1).** El prompt pide dividir el cuento en ≥4
+  páginas (párrafos separados por línea en blanco) y `paginarCuento` respeta esos cortes garantizando
+  ≥4 páginas; el modo `mock` también genera ≥4 páginas. (Requiere sincronizar `app-settings.json` a la
+  BD, US-70.)
+- **Giro 3D al pasar página (US-74, A2).** El lector pasa página con un efecto **3D** (`rotateY` con
+  perspectiva, dirección según avance/retroceso) sobre **fondo blanco tipo papel**, en vez del giro
+  leve anterior.
 - **Generar cuento navega al lector (US-73, A1).** Al generar se abre el `StoryReader` y el generador
   deja de mostrar el cuento en línea (queda como formulario). Una sola pantalla de lectura.
 - **Marcar cuento como leído explícito (A2).** Ya no se marca leído solo por abrir el lector: se marca

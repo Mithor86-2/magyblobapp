@@ -1349,3 +1349,27 @@ vea **sus trofeos** para motivarse.
   ánimo**. (A4)
 - (No funcional) Dado el alcance, Cuando se aplica, Entonces solo cambia `packages/app`; gate +
   cobertura (CORE/IMPORTANT US-35) + E2E siguen en verde.
+
+## US-74 — Libro por páginas (IA) + giro 3D + Historial con pestañas · Should (Mejoras) {#us-74}
+
+Como **niño/a** quiero **leer el cuento como un libro de verdad** (páginas que la IA ya divide, con un
+**giro 3D** al pasarlas sobre hoja blanca) y **encontrar rápido** en el historial mis cuentos y mis
+actividades por separado, viendo lo más reciente de cada uno al entrar.
+
+**Criterios de aceptación**
+
+- Dado el prompt de generación, Cuando la IA crea un cuento, Entonces devuelve el cuerpo **dividido en
+  al menos 4 páginas** (párrafos separados por línea en blanco); el modo `mock` también produce ≥4
+  páginas. (A1)
+- Dado el lector, Cuando pagina el cuento, Entonces **respeta los cortes de página de la IA** y
+  garantiza **≥4 páginas** (subdividiendo si hiciera falta); un cuerpo vacío sigue mostrando una página
+  en blanco. (A1)
+- Dado el lector, Cuando paso de página (‹ / › o swipe), Entonces se ve un **efecto de giro 3D**
+  (`rotateY` con perspectiva, dirección según avance/retroceso) y la página se muestra sobre **fondo
+  blanco tipo papel** con texto oscuro, independiente del tema. (A2)
+- Dado el Historial, Cuando entro, Entonces veo arriba **"Lo último"** con el **último cuento** y la
+  **última actividad**, y debajo un **toggle Cuentos / Actividades** (por defecto Cuentos) que muestra
+  la lista completa del tipo elegido; la búsqueda/filtros aplican a la pestaña activa. (A3)
+- (No funcional) Dado el alcance, Cuando se aplica, Entonces el cambio de prompt requiere
+  **sincronizar el JSON de settings a la BD** (dev/prod, US-70) y gate + cobertura + E2E siguen en
+  verde.
