@@ -24,11 +24,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   por categoría; en Cuentos los chips de temas (cielo), estilos (menta), enseñanza (ámbar) y usar-nombre
   (coral) tienen color e icono propios; los iconos de tema se reutilizan en los intereses al crear el
   perfil y en el Dashboard. Helper `chipIcons.ts` + nuevos iconos lucide en `Icon`.
-- **Avatar del niño con animación por fases + estrellas al tocar (US-90, lote 4 #2).** Nuevo
-  `AnimatedAvatar`: secuencia en bucle — rebote suave ~3s, pausa 1s, giro a la derecha, pausa 1s, giro
-  a la izquierda, pausa 1s, y repite (reanimated `withSequence`/`withDelay`/`withRepeat`). Al **tocar**
-  el avatar (Inicio y cabecera de Cuentos) lanza un **estallido de estrellas** que salen y se
-  desvanecen. También se usa (sin toque) en el avatar seleccionado del `AvatarPicker`.
+- **Avatar del niño con animación idle continua + pop y estrellas al tocar (US-90, lote 4 #2).** Nuevo
+  `AnimatedAvatar`: balanceo orgánico **continuo y sin pausas** (bucle ~3,5 s) que combina rebote
+  vertical (2 por bucle) y vaivén izquierda↔derecha (1 por bucle) por interpolación de seno
+  (`ease-in-out` natural, loop perfecto sin cortes). Al **tocar** el avatar (Inicio y cabecera de
+  Cuentos): salto rápido de **escala** (feedback táctil) + **ráfaga de estrellas** desde el centro
+  hacia afuera. También se usa (sin toque) en el avatar seleccionado del `AvatarPicker`.
 - **Número de página impreso en cada hoja (US-91, lote 4 #3).** Cada hoja del libro muestra su número
   de página, además del indicador "Página n de total".
 
