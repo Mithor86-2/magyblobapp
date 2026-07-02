@@ -1414,3 +1414,117 @@ pantalla estoy sin depender solo de la pestaña activa.
 
 - **(Con título)** Dada una pantalla con `title`, Entonces se muestra como cabecera (rol heading).
 - **(Sin título)** Dada una pantalla sin `title`, Entonces no se muestra cabecera de sección.
+
+## US-83 — Lector como libro con page-curl real + FIN {#us-83}
+
+> **Ajuste (lote 3 de ideas, #1 + #5).** Sustituye la aproximación reanimated de US-79 por un
+> page-curl **real** con `react-native-page-flipper` (decisión en [memory.md](../memory.md)).
+
+**Como** niño (con el adulto), **quiero** leer el cuento como un libro de verdad —portada con el
+título, la historia página a página con pliegue real y una página final "FIN"—, **para** que la
+lectura sea inmersiva.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
+
+**Alcance**
+
+1. **`react-native-page-flipper`** (curl real iOS/Android/Web sobre gesture-handler + reanimated +
+   linear-gradient) en `BookPages` vía `renderPage`, conservando los controles ‹ / › (ref
+   `nextPage`/`previousPage`), el indicador "Página n de total" y la accesibilidad.
+2. **Estructura de libro:** 1ª página = portada (imagen + título del cuento), páginas intermedias =
+   la historia paginada (`paginarCuento`), última página = **"FIN"** (`reader.end`, ES/EN).
+3. **Tests:** la librería se aliasa a un stub que refleja el índice (los ‹/› siguen verificables);
+   `expo export` web validado. **Requiere dev build** (libs nativas, como desde US-66/US-79).
+
+**Criterios de aceptación**
+
+- **(Portada)** Dado un cuento abierto, Entonces la primera página muestra el título y la imagen de
+  portada.
+- **(Pase)** Cuando arrastro o pulso › / ‹, Entonces la página pasa con curl y el indicador se
+  actualiza; en los extremos los botones se deshabilitan.
+- **(Fin)** Dada la última página, Entonces muestra "FIN".
+
+## US-85 — Cerrar sesión vuelve al Dashboard {#us-85}
+
+> **Ajuste (lote 3 de ideas, #3).**
+
+**Como** persona adulta, **quiero** que al cerrar sesión aparezca el inicio sin sesión con "Prueba un
+cuento / Prueba unas actividades", **para** poder seguir usando la app o volver a entrar.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Zona de adultos / Dashboard.
+
+**Alcance**
+
+1. `ParentalScreen`: el logout hace `reset` al `Dashboard` (coherente con `resolveInitialRoute`: sin
+   `guardian` → `Dashboard`), no a `Welcome`.
+
+**Criterios de aceptación**
+
+- **(Logout)** Dado que cierro sesión, Entonces aterrizo en el Dashboard con las opciones de prueba
+  de cuento y actividades.
+
+## US-86 — Cabeceras con animación de rebote {#us-86}
+
+> **Ajuste (lote 3 de ideas, #4).**
+
+**Como** niño, **quiero** que las imágenes de cabecera se muevan suavemente arriba y abajo, **para**
+que la app se sienta viva y acogedora.
+
+**Prioridad:** Could · **Fase:** Mejoras · **Pantalla:** Toda la app (cabeceras).
+
+**Alcance**
+
+1. `BouncingHeaderImage`: envuelve la imagen de cabecera en un `translateY` en bucle infinito
+   (reanimated `withRepeat` + `withTiming`, amplitud ~8px), conservando `resizeMode="contain"` y el
+   rol de accesibilidad. Se usa desde `Screen` sin cambiar el layout.
+
+**Criterios de aceptación**
+
+- **(Rebote)** Dada una pantalla con cabecera, Entonces la imagen oscila suavemente en bucle sin
+  afectar al scroll ni al contenido.
+
+## US-87 — Colores de botón consistentes + sombra por tono {#us-87}
+
+> **Ajuste (lote 3 de ideas, #6).**
+
+**Como** persona usuaria, **quiero** que los botones de acción tengan colores distintos entre sí pero
+fijos entre pantallas, y que su "sombra" sea del mismo color del botón (más oscura), **para** que la
+interfaz sea coherente y agradable.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (botones).
+
+**Alcance**
+
+1. 4º color de paleta (`quaternary`, ámbar) + variante de `BubblyButton`; el borde inferior
+   ("sombra") de cada botón pasa a un **tono oscuro de su propio color** (tokens `*Border` por
+   variante), no el borde coral fijo.
+2. Mapa fijo entre pantallas: Crear cuenta=coral, Ya tengo cuenta=cielo, Búsqueda=menta, Mis
+   logros=ámbar, Cerrar sesión=rojo.
+
+**Criterios de aceptación**
+
+- **(Distintos y fijos)** Dado un botón de acción, Entonces su color es el mismo en todas las
+  pantallas y distinto del de las otras acciones.
+- **(Sombra)** Dado un botón, Entonces su borde inferior es un tono oscuro de su propio color.
+
+## US-88 — Pestañas: activo llena el botón + visibilidad Android {#us-88}
+
+> **Ajuste (lote 3 de ideas, #7 + #8).**
+
+**Como** persona usuaria de Android, **quiero** que la pestaña activa se resalte en todo el botón y que
+la barra inferior se vea completa, **para** navegar sin que la tape la barra del sistema.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Pestañas (Main).
+
+**Alcance**
+
+1. **#7:** el fondo del ítem activo cubre todo el botón (icono + etiqueta) como píldora
+   (`tabBarActiveBackgroundColor` + `tabBarItemStyle` redondeado), no solo el icono.
+2. **#8:** `tabBarStyle` reserva el inset inferior del sistema (`useSafeAreaInsets`), calculado en el
+   helper puro `makeTabBarStyle`, para no quedar bajo la barra de navegación (edge-to-edge SDK 54+).
+
+**Criterios de aceptación**
+
+- **(Activo)** Dada una pestaña activa, Entonces el resaltado cubre icono y etiqueta.
+- **(Android)** Dado Android con barra de navegación, Entonces la barra de pestañas se ve completa por
+  encima de ella.

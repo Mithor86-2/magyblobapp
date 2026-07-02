@@ -21,12 +21,12 @@ oscuro de su propio color** (hoy es siempre el borde coral).
 
 ## Tareas
 
-- ⬜ `tokens.ts`: añadir 4º color `quaternary` + `onQuaternary` + `quaternaryBorder` a `ColorTokens`,
-  `lightColors` y `darkColors`; añadir bordes por variante `secondaryBorder`, `tertiaryBorder`,
-  `errorBorder` (tono oscuro de cada color). `primaryBorder` ya existe.
-- ⬜ `BubblyButton.tsx`: mapa `variantBorder(colors)` paralelo a `variantBg`; `borderBottomColor`
-  pasa a ser el del variante. Añadir variante `quaternary` (icono en `onQuaternary`).
-- ⬜ Asignar variantes consistentes en: `DashboardScreen`, `HomeScreen`, `WelcomeScreen`,
-  `LoginScreen`, `ParentalScreen`, `HistoryScreen`, `StoryGeneratorScreen`.
-- ⬜ Tests: `BubblyButton.test.tsx` (cada variante pinta su bg + su borde; variante `quaternary`
-  renderiza) y `ThemeProvider.test` (tokens nuevos presentes en ambas paletas).
+- [x] ✅ `tokens.ts`: añadir 4º color `quaternary` + `onQuaternary` + `quaternaryBorder` a `ColorTokens`,
+      `lightColors` y `darkColors`; añadir bordes por variante `secondaryBorder`, `tertiaryBorder`,
+      `errorBorder` (tono oscuro de cada color). `primaryBorder` ya existe.
+- [x] ✅ `BubblyButton.tsx`: mapa `variantBorder(colors)` paralelo a `variantBg`; `borderBottomColor`
+      pasa a ser el del variante. Añadir variante `quaternary` (icono en `onQuaternary`).
+- [x] ✅ Asignar variantes consistentes en: `DashboardScreen`, `HomeScreen`, `WelcomeScreen`,
+      `LoginScreen`, `ParentalScreen`, `HistoryScreen`, `StoryGeneratorScreen`.
+- [x] ✅ Tests: `BubblyButton.test.tsx` (cada variante pinta su bg + su borde; variante `quaternary`
+      renderiza) y `ThemeProvider.test` (tokens nuevos presentes en ambas paletas).

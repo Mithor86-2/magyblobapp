@@ -11,11 +11,11 @@ Rama: `feature/87-ajustes-ideas-3` (lote). Fichero propio: `App.tsx` (config del
 
 ## Tareas
 
-- ⬜ #7: rediseñar `TabIcon` / opciones del tab para que el fondo activo (`secondaryContainer`)
-  rellene la celda del ítem (usar `tabBarActiveBackgroundColor` o `tabBarItemStyle` + fondo por
-  ítem que cubra icono y etiqueta), conservando iconos lucide y colores del tema.
-- ⬜ #8: `tabBarStyle` con alto adecuado + `paddingBottom` del safe-area inset inferior
-  (`useSafeAreaInsets`) para no quedar bajo la nav bar de Android; revisar `androidNavigationBar`
-  en `app.json`.
-- ⬜ Si se extrae un helper puro de estilo de tab (`makeTabBarStyle(insets, colors)`), añadir test.
-  Verificación principal: **manual** + **Maestro Android** (`onboarding.android.yaml`).
+- [x] ✅ #7: rediseñar `TabIcon` / opciones del tab para que el fondo activo (`secondaryContainer`)
+      rellene la celda del ítem (usar `tabBarActiveBackgroundColor` o `tabBarItemStyle` + fondo por
+      ítem que cubra icono y etiqueta), conservando iconos lucide y colores del tema.
+- [x] ✅ #8: `tabBarStyle` con alto adecuado + `paddingBottom` del safe-area inset inferior
+      (`useSafeAreaInsets`) para no quedar bajo la nav bar de Android; revisar `androidNavigationBar`
+      en `app.json`.
+- [x] ✅ Si se extrae un helper puro de estilo de tab (`makeTabBarStyle(insets, colors)`), añadir test.
+      Verificación principal: **manual** + **Maestro Android** (`onboarding.android.yaml`).

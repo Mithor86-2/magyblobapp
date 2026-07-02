@@ -179,3 +179,26 @@ niño en un solo sitio.
 - **(Sin texto)** Dado el campo vacío, Entonces se muestra una pista y ningún resultado.
 - **(Sin coincidencias)** Dado un texto sin resultados, Entonces se muestra el mensaje de vacío.
 - **(Abrir cuento)** Cuando toco un cuento del resultado, Entonces se abre el lector con ese cuento.
+
+## US-84 — Historial: buscador tras "Lo último" {#us-84}
+
+> **Ajuste (lote 3 de ideas, #2).**
+
+**Como** persona usuaria, **quiero** que el buscador del Historial esté después de la sección "Lo
+último" y encima del toggle [Cuentos | Actividades], **para** ver primero los destacados y luego
+buscar.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Historial.
+
+**Alcance**
+
+1. En `HistoryScreen`, el campo de búsqueda en vivo + la barra de filtros se renderizan **tras** el
+   bloque de destacados ("Lo último") y **antes** del toggle segmentado; la búsqueda en vivo y los
+   filtros del modal siguen combinándose igual.
+
+**Criterios de aceptación**
+
+- **(Orden)** Dado el Historial cargado, Entonces el buscador aparece tras "Lo último" y encima del
+  toggle Cuentos/Actividades.
+- **(Búsqueda)** Cuando escribo en el buscador, Entonces la lista de la pestaña activa se filtra en
+  vivo.

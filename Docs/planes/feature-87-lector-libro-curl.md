@@ -10,20 +10,20 @@ paginado; última página = **"FIN"**. El pase de página es un **curl real** (a
 
 ## Tareas
 
-- ⬜ Añadir deps a `packages/app`: `react-native-page-flipper`, `react-native-linear-gradient`,
-  `expo-linear-gradient`. Registrar en `allowBuilds` raíz si el postinstall lo pide.
-- ⬜ `BookPages.tsx`: reescribir el interior para usar `PageFlipper` (`data` = páginas, `renderPage`
-  = hoja de papel con el texto) conservando el API `<BookPages paginas={string[]} />`, el indicador
-  "Página n/total" y los controles ‹/› (flip programático). Accesibilidad intacta.
-- ⬜ `StoryReaderScreen.tsx`: construir las páginas del libro con un helper puro
-  `construirPaginasLibro(story)` → `[{tipo:'portada'}]` + `paginarCuento(cuerpo)` + `[{tipo:'fin'}]`,
-  reutilizando `StoryCover` para la portada. `paginarCuento.ts` sin cambios.
-- ⬜ Harness Vitest: stubs de `react-native-page-flipper`, `react-native-linear-gradient`,
-  `expo-linear-gradient` junto a los de reanimated/gesture-handler.
-- ⬜ Tests: `BookPages.test.tsx` (navegación con la lib mockeada), `StoryReaderScreen.test.tsx`
-  (1ª pág. título+portada, última "FIN"), `construirPaginasLibro` (unidad pura). `paginarCuento.test.ts`
-  intacto.
-- ⬜ Docs: decisión en `memory.md` (adopción page-flipper, supera US-79) + validación de librerías.
+- [x] ✅ Añadir deps a `packages/app`: `react-native-page-flipper`, `react-native-linear-gradient`,
+      `expo-linear-gradient`. Registrar en `allowBuilds` raíz si el postinstall lo pide.
+- [x] ✅ `BookPages.tsx`: reescribir el interior para usar `PageFlipper` (`data` = páginas, `renderPage`
+      = hoja de papel con el texto) conservando el API `<BookPages paginas={string[]} />`, el indicador
+      "Página n/total" y los controles ‹/› (flip programático). Accesibilidad intacta.
+- [x] ✅ `StoryReaderScreen.tsx`: construir las páginas del libro con un helper puro
+      `construirPaginasLibro(story)` → `[{tipo:'portada'}]` + `paginarCuento(cuerpo)` + `[{tipo:'fin'}]`,
+      reutilizando `StoryCover` para la portada. `paginarCuento.ts` sin cambios.
+- [x] ✅ Harness Vitest: stubs de `react-native-page-flipper`, `react-native-linear-gradient`,
+      `expo-linear-gradient` junto a los de reanimated/gesture-handler.
+- [x] ✅ Tests: `BookPages.test.tsx` (navegación con la lib mockeada), `StoryReaderScreen.test.tsx`
+      (1ª pág. título+portada, última "FIN"), `construirPaginasLibro` (unidad pura). `paginarCuento.test.ts`
+      intacto.
+- [x] ✅ Docs: decisión en `memory.md` (adopción page-flipper, supera US-79) + validación de librerías.
 
 ## Validación de librerías (#1, entregable)
 

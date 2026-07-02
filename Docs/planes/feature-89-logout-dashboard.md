@@ -10,7 +10,7 @@ tiene.
 
 ## Tareas
 
-- ⬜ `ParentalScreen.tsx`: `navigation.reset` del logout apunta a **`Dashboard`** (coherente con
-  `resolveInitialRoute`: sin `guardian` → `Dashboard`).
-- ⬜ Test nuevo `ParentalScreen.test.tsx`: al confirmar el logout se llama `logout()` del store y
-  `navigation.reset` con `routes: [{ name: 'Dashboard' }]`.
+- [x] ✅ `ParentalScreen.tsx`: `navigation.reset` del logout apunta a **`Dashboard`** (coherente con
+      `resolveInitialRoute`: sin `guardian` → `Dashboard`).
+- [x] ✅ Test nuevo `ParentalScreen.test.tsx`: al confirmar el logout se llama `logout()` del store y
+      `navigation.reset` con `routes: [{ name: 'Dashboard' }]`.

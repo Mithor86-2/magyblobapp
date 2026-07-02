@@ -9,7 +9,31 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Lector como libro con page-curl real (US-83, ajustes #1 + #5).** El lector adopta
+  `react-native-page-flipper` (curl real iOS/Android/Web sobre gesture-handler + reanimated +
+  linear-gradient) en `BookPages`: la 1ª página es la **portada** (imagen + título del cuento), luego
+  la historia paginada y una página final **"FIN"**. Sustituye la aproximación reanimated de US-79
+  (ver decisión en `Docs/memory.md`). Bajo Vitest la librería se aliasa a un stub que refleja el
+  índice, así los controles ‹/› siguen verificables.
+- **Cabeceras con rebote en loop (US-86, ajuste #4).** Nuevo `BouncingHeaderImage`: la imagen de
+  cabecera oscila suavemente arriba↔abajo en bucle infinito (reanimated `withRepeat`).
+- **4º color de acción "ámbar" (US-87, ajuste #6).** Nueva variante `quaternary` de `BubblyButton` y
+  tokens `quaternary`/`onQuaternary`/`quaternaryBorder` (claro y oscuro) para distinguir "Mis logros".
+
 ### Changed
+
+- **Colores de botón consistentes + sombra por tono propio (US-87, ajuste #6).** Cada acción mantiene
+  su color en todas las pantallas: Crear cuenta=coral, Ya tengo cuenta=cielo (`accent`),
+  Búsqueda=menta (`secondary`), Mis logros=ámbar (`quaternary`), Cerrar sesión=rojo (`danger`). El
+  borde inferior ("sombra") de cada botón pasa a ser un **tono oscuro de su propio color** (antes era
+  siempre el borde coral).
+- **Buscador del Historial reubicado (US-84, ajuste #2).** El campo de búsqueda baja a **después de
+  "Lo último"** y **encima del toggle [Cuentos | Actividades]**.
+- **Barra de pestañas (US-88, ajustes #7 + #8).** El estado activo colorea **todo el botón** (icono +
+  etiqueta) como una píldora, no solo el icono; y la barra reserva el **inset inferior** del sistema
+  (edge-to-edge de Android) para no quedar tapada por la barra de navegación.
+- **Cerrar sesión vuelve al Dashboard (US-85, ajuste #3).** Tras el logout se navega al `Dashboard`
+  (inicio sin sesión con "Prueba un cuento / Prueba unas actividades"), no a `Welcome`.
 
 ### Deprecated
 

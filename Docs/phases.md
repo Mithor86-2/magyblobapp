@@ -833,3 +833,30 @@ nombre, reforzado para IA real), **US-78** (continuar historia + título numerad
 con pase de página por gesto + pliegue, sin Skia), **US-80** (nombre de sección en cabecera), **US-81**
 (pasos plegables, visibles al generar), **US-82** (búsqueda global) y el buscador del Historial en vivo.
 Pendiente aparte: compilar y adjuntar la APK de v1.7.0 (build nativa).
+
+### Lote de ajustes 3 de `ideas.txt` (US-83…US-88, rama `feature/87-ajustes-ideas-3`, sin release)
+
+Ocho ajustes de UI/UX (captura del Dashboard en Android). Plan en
+[planes/coordinacion-ajustes-ideas-3.md](planes/coordinacion-ajustes-ideas-3.md) (+ un plan por
+feature). Ejecutado en **una rama**, commits por feature (Ola 1 = ficheros disjuntos; F5 transversal
+al final). Solo app; integración prevista **sin release** (entradas en `## [Unreleased]` del app).
+Decisiones: **#1** adoptar `react-native-page-flipper` (supera US-79 / Skia); **#6** añadir 4º color.
+
+- [x] ✅ **F1 — Lector como libro con page-curl real + FIN (US-83, #1/#5).** `BookPages` sobre
+      `react-native-page-flipper` (curl real; `renderPage` con nodos de texto vía `data` JSON); el
+      lector se estructura como libro: portada (imagen + título) → historia → "FIN". Stub de Vitest
+      para la librería. Deps: `react-native-page-flipper`, `react-native-linear-gradient`,
+      `expo-linear-gradient`. Requiere dev build.
+- [x] ✅ **F2 — Buscador del Historial reubicado (US-84, #2).** Baja a tras "Lo último" y encima del
+      toggle [Cuentos | Actividades]; búsqueda en vivo + filtros del modal intactos.
+- [x] ✅ **F3 — Cerrar sesión vuelve al Dashboard (US-85, #3).** `ParentalScreen` resetea a `Dashboard`
+      (con "Prueba un cuento / actividades"), no a `Welcome`.
+- [x] ✅ **F4 — Cabeceras con rebote en loop (US-86, #4).** `BouncingHeaderImage` (translateY en bucle,
+      reanimated `withRepeat`), usado desde `Screen`.
+- [x] ✅ **F5 — Color de botón consistente + sombra por tono + 4º color (US-87, #6).** Variante
+      `quaternary` (ámbar) + bordes por variante (tono oscuro del propio color); mapa fijo entre
+      pantallas (crear=coral · ya tengo=cielo · búsqueda=menta · logros=ámbar · logout=rojo).
+- [x] ✅ **F6 — Pestañas: activo llena el botón + visibilidad Android (US-88, #7/#8).** Fondo activo
+      cubre todo el ítem (píldora) + inset inferior del sistema (`makeTabBarStyle`) para edge-to-edge.
+- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 268**) + cobertura estratégica OK · ⏳ pruebas en
+  dev por el usuario (dev build) y confirmación antes del `finish`.

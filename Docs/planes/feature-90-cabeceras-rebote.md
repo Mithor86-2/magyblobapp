@@ -9,10 +9,10 @@ no distractor).
 
 ## Tareas
 
-- ⬜ Extraer un componente `BouncingHeaderImage` (en `components/`) que envuelve la `Image` de
-  cabecera en un `Animated.View` (reanimated) con `translateY` en bucle:
-  `withRepeat(withTiming(amplitud, { duration ~1600ms, easing suave }), -1, true)`; amplitud ~6–10px.
-- ⬜ `Screen.tsx`: usar `BouncingHeaderImage` en lugar de la `Image` directa, conservando `Appear`,
-  `resizeMode="contain"`, alto proporcional y accesibilidad (`accessibilityRole="image"`).
-- ⬜ Test `Screen.test.tsx`: sigue renderizando la imagen de cabecera cuando se pasa
-  `headerImageName` (animación decorativa, reanimated mockeado).
+- [x] ✅ Extraer un componente `BouncingHeaderImage` (en `components/`) que envuelve la `Image` de
+      cabecera en un `Animated.View` (reanimated) con `translateY` en bucle:
+      `withRepeat(withTiming(amplitud, { duration ~1600ms, easing suave }), -1, true)`; amplitud ~6–10px.
+- [x] ✅ `Screen.tsx`: usar `BouncingHeaderImage` en lugar de la `Image` directa, conservando `Appear`,
+      `resizeMode="contain"`, alto proporcional y accesibilidad (`accessibilityRole="image"`).
+- [x] ✅ Test `Screen.test.tsx`: sigue renderizando la imagen de cabecera cuando se pasa
+      `headerImageName` (animación decorativa, reanimated mockeado).

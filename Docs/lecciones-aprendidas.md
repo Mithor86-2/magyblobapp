@@ -849,3 +849,24 @@ false` para que funcione igual en nativo y en react-native-web.
 arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Historial siguen montadas y
   **visibles** en react-navigation web). No era el bug: la actividad **sí** estaba en el Historial. Lección:
   acotar la aserción a la sección con un `testID` (`history-activities`) en vez de `.first()`/`filter({visible})`.
+
+### Lote de ajustes 3 (US-83..US-88)
+
+- **`react-native-page-flipper` renderiza por `renderPage`, `data` es `string[]`.** Para un lector de
+  **texto** (no imágenes) se serializa cada página a JSON en `data` y se deserializa en `renderPage`
+  (el tipo de página —portada/texto/FIN— viaja en el objeto). El componente es **uncontrolled** (gestiona
+  su índice interno); para conservar los botones ‹/› y el indicador se usa su **ref**
+  (`nextPage`/`previousPage`) y se sincroniza el índice con `onFlippedEnd(index)`.
+- **Stub de Vitest para la librería nativa del curl.** Como reanimated/gesture-handler, se aliasa
+  `react-native-page-flipper` a un stub (`test/react-native-page-flipper-stub.tsx`) que mantiene su
+  propio índice, pinta `renderPage(data[index])` y expone el ref — así la navegación ‹/› sigue siendo
+  verificable sin el hilo nativo.
+- **react-native-web pinta `Image` con `resizeMode="contain"` como dos nodos con rol `img`** (un
+  contenedor `div[role=img]` + un `<img>`), ambos con el nombre accesible. En tests, usar
+  `getAllByRole('img', { name })` en vez de `getByRole` (que falla por "multiple elements").
+- **Edge-to-edge de Android (Expo SDK 54+): la tab bar queda bajo la barra de navegación del sistema.**
+  Se reserva el inset inferior en `tabBarStyle` (`useSafeAreaInsets`, helper puro `makeTabBarStyle`)
+  sumándolo al alto y al `paddingBottom` para que las pestañas activas se vean completas.
+- **Resaltado de pestaña activa en "todo el botón":** con `tabBarActiveBackgroundColor` +
+  `tabBarItemStyle` redondeado (margen) el fondo activo envuelve icono **y** etiqueta como una píldora,
+  en vez de un blob solo alrededor del icono.
