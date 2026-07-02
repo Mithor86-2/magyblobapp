@@ -22,6 +22,7 @@ import { ParentalScreen } from './src/presentation/screens/ParentalScreen';
 import { AchievementsScreen } from './src/presentation/screens/AchievementsScreen';
 import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
 import { StoryReaderScreen } from './src/presentation/screens/StoryReaderScreen';
+import { SearchResultsScreen } from './src/presentation/screens/SearchResultsScreen';
 import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
@@ -290,6 +291,11 @@ function ThemedApp() {
               name="StoryReader"
               component={LecturaScreen}
               options={{ title: t('nav.storyReader') }}
+            />
+            <Stack.Screen
+              name="SearchResults"
+              component={SearchResultsScreen}
+              options={{ title: t('nav.search') }}
             />
           </Stack.Navigator>
         </NavigationContainer>

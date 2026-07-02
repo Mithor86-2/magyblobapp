@@ -22,6 +22,8 @@ export type RootStackParamList = {
   Achievements: undefined;
   /** Vista de lectura de un cuento abierto desde el Historial (US-27). */
   StoryReader: { story: Story };
+  /** Búsqueda global (cuentos + actividades) del perfil activo (US-82). */
+  SearchResults: undefined;
 };
 
 export type MainTabParamList = {

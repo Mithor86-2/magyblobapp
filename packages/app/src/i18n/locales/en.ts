@@ -58,6 +58,15 @@ export const en: typeof es = {
     parental: 'Adults zone',
     achievements: 'My achievements',
     storyReader: 'Story',
+    search: 'Search',
+  },
+  search: {
+    placeholder: 'Search stories and activities',
+    stories: 'Stories',
+    activities: 'Activities',
+    hint: 'Type to search your library.',
+    empty: 'No results for “{{q}}”.',
+    errorLoad: 'Could not load your library.',
   },
 
   tabs: {
@@ -118,6 +127,7 @@ export const en: typeof es = {
     createStory: 'Create a story',
     seeActivities: 'See activities',
     myAchievements: 'My achievements',
+    search: 'Search',
     achievementsSummary: '{{conseguidos}}/{{total}}',
     // Encouragement when no achievement has been earned yet (A4/US-73).
     noAchievementsYet: 'Read stories and do activities to earn your first trophies!',

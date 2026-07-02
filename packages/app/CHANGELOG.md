@@ -9,6 +9,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Búsqueda global de cuentos y actividades (US-82).** Nueva pantalla `SearchResults` (stack raíz,
+  accesible desde Inicio con el botón "Buscar") con un campo de texto que, sobre la biblioteca del
+  perfil (`GET /profiles/:id/history`), lista en un mismo sitio los **cuentos y actividades** que
+  coinciden (reutiliza `filtrarCuentos`/`filtrarActividades`); tocar un cuento abre el lector. i18n
+  ES/EN (`nav.search`, `search.*`, `home.search`).
 - **Nombre de sección en la cabecera (US-80).** `Screen` acepta `title`, mostrado fijo arriba a la
   izquierda de la barra de cabecera (junto al botón de la zona de adultos); las 4 pestañas
   (Inicio · Actividades · Cuentos · Historial) lo pasan reutilizando las etiquetas `tabs.*` (ES/EN).

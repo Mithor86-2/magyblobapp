@@ -60,6 +60,15 @@ export const es = {
     parental: 'Zona de adultos',
     achievements: 'Mis logros',
     storyReader: 'Cuento',
+    search: 'Buscar',
+  },
+  search: {
+    placeholder: 'Buscar cuentos y actividades',
+    stories: 'Cuentos',
+    activities: 'Actividades',
+    hint: 'Escribe para buscar en tu biblioteca.',
+    empty: 'No hay resultados para «{{q}}».',
+    errorLoad: 'No se pudo cargar tu biblioteca.',
   },
 
   // Pestañas (App.tsx).
@@ -121,6 +130,7 @@ export const es = {
     createStory: 'Crear un cuento',
     seeActivities: 'Ver actividades',
     myAchievements: 'Mis logros',
+    search: 'Buscar',
     achievementsSummary: '{{conseguidos}}/{{total}}',
     // Ánimo cuando aún no hay ningún logro conseguido (A4/US-73).
     noAchievementsYet: '¡Lee cuentos y haz actividades para ganar tus primeros trofeos!',
