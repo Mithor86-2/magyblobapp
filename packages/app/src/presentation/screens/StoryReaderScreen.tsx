@@ -76,7 +76,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
   );
 
   return (
-    <Screen>
+    <Screen tightTop>
       <View style={styles.card}>
         <View style={styles.favoriteRow}>
           <FavoriteButton

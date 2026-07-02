@@ -138,7 +138,10 @@ export function BookPages({
           ) : item.tipo === 'fin' ? (
             <View style={styles.fin}>
               {finImagen}
-              <Text style={styles.finText}>{finLabel}</Text>
+              {/* En una sola línea con las estrellas: encoge la fuente si no cabe. */}
+              <Text style={styles.finText} numberOfLines={1} adjustsFontSizeToFit>
+                {finLabel}
+              </Text>
             </View>
           ) : (
             <View style={styles.texto}>
@@ -209,6 +212,8 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.headlineMd,
       color: '#1a1a1a',
       textAlign: 'center',
+      // Ocupa el ancho de la hoja para que `adjustsFontSizeToFitWidth` acote y encoja a 1 línea.
+      alignSelf: 'stretch',
     },
     // Página de texto: contenido centrado verticalmente dentro de la hoja.
     texto: {
