@@ -9,6 +9,14 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Lector con page-curl por gesto (US-79).** `BookPages` se reescribe con
+  `react-native-gesture-handler` + `react-native-reanimated` (+ `react-native-worklets`): pasar
+  página **arrastrando** con giro 3D (`rotateY` + `perspective`) en el hilo de UI, conservando los
+  botones ‹ / › y el indicador. La hoja tiene **alto consistente** (proporcional a la pantalla) para
+  que las páginas no salten de tamaño. `App` se envuelve en `GestureHandlerRootView` y se añade
+  `babel.config.js` (el plugin de worklets lo aporta `babel-preset-expo`). Bajo Vitest ambas libs se
+  aliasan a stubs inertes (la navegación por ‹/› sigue verificándose). **Requiere dev build** (Expo
+  Go no sirve con estos módulos nativos, como ya ocurría desde US-66).
 - **Búsqueda global de cuentos y actividades (US-82).** Nueva pantalla `SearchResults` (stack raíz,
   accesible desde Inicio con el botón "Buscar") con un campo de texto que, sobre la biblioteca del
   perfil (`GET /profiles/:id/history`), lista en un mismo sitio los **cuentos y actividades** que

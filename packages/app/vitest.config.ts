@@ -83,6 +83,15 @@ export default defineConfig({
         new URL('./test/expo-navigation-bar-stub.ts', import.meta.url),
       ),
       'expo-system-ui': fileURLToPath(new URL('./test/expo-system-ui-stub.ts', import.meta.url)),
+      // US-79: reanimated y gesture-handler son nativos y no cargan bajo Vitest; se
+      // aliasan a stubs inertes para poder renderizar `BookPages` (los ‹/› siguen
+      // navegando por estado de React; el arrastre se verifica a mano/E2E).
+      'react-native-reanimated': fileURLToPath(
+        new URL('./test/react-native-reanimated-stub.ts', import.meta.url),
+      ),
+      'react-native-gesture-handler': fileURLToPath(
+        new URL('./test/react-native-gesture-handler-stub.ts', import.meta.url),
+      ),
     },
   },
   define: {
