@@ -12,6 +12,7 @@ import type { AnonymousActivity, AnonymousStory, Estilo, Tema } from '../../doma
 import { ApiError } from '../../domain/errors';
 import { estiloLabel, temaLabel } from '../labels';
 import { api } from '../../composition';
+import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
@@ -45,6 +46,9 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
   // Contadores efímeros (no persistentes): se reinician al cerrar la app.
   const [cuentosUsados, setCuentosUsados] = useState(0);
   const [actividadesUsadas, setActividadesUsadas] = useState(0);
+  // Aviso de espera larga (US-53, cold-start de Render free).
+  const lentoStory = useSlowHint(loadingStory);
+  const lentoActivities = useSlowHint(loadingActivities);
 
   const quedanCuentos = cuentosUsados < LIMITE_GRATIS;
   const quedanActividades = actividadesUsadas < LIMITE_GRATIS;
@@ -169,6 +173,12 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.statusText}>{t('dashboard.creatingStory')}</Text>
+          {lentoStory ? (
+            <>
+              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
+              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
+            </>
+          ) : null}
         </View>
       ) : null}
 
@@ -206,6 +216,12 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.statusText}>{t('dashboard.preparingActivities')}</Text>
+          {lentoActivities ? (
+            <>
+              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
+              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
+            </>
+          ) : null}
         </View>
       ) : null}
 

@@ -80,12 +80,18 @@ export class Activity {
     this.creadoEn = props.creadoEn;
   }
 
-  /** Marca la actividad como completada con una valoración de 1 a 3 estrellas. */
-  completar(valoracion: number, cuando: Date): void {
-    if (!Number.isInteger(valoracion) || valoracion < 1 || valoracion > 3) {
-      throw new DomainError(`Valoración inválida: ${valoracion}. Debe ser 1, 2 o 3.`);
+  /**
+   * Marca la actividad como completada. La **valoración es opcional** (US-72): pulsar
+   * "Realizado" la deja hecha sin obligar a puntuar; si se pasa `valoracion`, debe ser
+   * 1, 2 o 3. Volver a llamarla con una valoración la actualiza sin desmarcar lo hecho.
+   */
+  completar(valoracion: number | undefined, cuando: Date): void {
+    if (valoracion !== undefined) {
+      if (!Number.isInteger(valoracion) || valoracion < 1 || valoracion > 3) {
+        throw new DomainError(`Valoración inválida: ${valoracion}. Debe ser 1, 2 o 3.`);
+      }
+      this.valoracion = valoracion;
     }
-    this.valoracion = valoracion;
     this.completadaEn = cuando;
   }
 

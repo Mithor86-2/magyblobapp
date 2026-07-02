@@ -21,6 +21,12 @@ export const en: typeof es = {
       divertido: 'Fun',
       educativo: 'Educational',
     },
+    ensenanza: {
+      amistad: 'Friendship & sharing',
+      emociones: 'Managing emotions',
+      valentia: 'Bravery',
+      honestidad: 'Honesty & respect',
+    },
     parentesco: {
       madre: 'Mother',
       padre: 'Father',
@@ -50,7 +56,17 @@ export const en: typeof es = {
     selectProfile: 'Choose profile',
     createProfile: 'Create profile',
     parental: 'Adults zone',
+    achievements: 'My achievements',
     storyReader: 'Story',
+    search: 'Search',
+  },
+  search: {
+    placeholder: 'Search stories and activities',
+    stories: 'Stories',
+    activities: 'Activities',
+    hint: 'Type to search your library.',
+    empty: 'No results for “{{q}}”.',
+    errorLoad: 'Could not load your library.',
   },
 
   tabs: {
@@ -71,6 +87,12 @@ export const en: typeof es = {
     password: 'Password',
     // Content generation date (US-62); {{fecha}} is already localized.
     generatedOn: 'Created on {{fecha}}',
+    // Long-wait notice (US-53, Render free cold start).
+    slowHint: 'This is taking longer than usual. Please wait a moment…',
+    slowHintServer: 'The first time, the server may take up to ~1 minute to wake up.',
+    search: 'Search',
+    clear: 'Clear',
+    close: 'Close',
   },
 
   welcome: {
@@ -104,7 +126,34 @@ export const en: typeof es = {
     subtitle: "Let's learn and play together. Pick a magical story or an activity for today.",
     createStory: 'Create a story',
     seeActivities: 'See activities',
+    myAchievements: 'My achievements',
+    search: 'Search',
+    achievementsSummary: '{{conseguidos}}/{{total}}',
+    // Encouragement when no achievement has been earned yet (A4/US-73).
+    noAchievementsYet: 'Read stories and do activities to earn your first trophies!',
     adultsZone: 'Adults zone',
+  },
+
+  // Child achievements / rewards (US-68).
+  achievements: {
+    title: 'My achievements',
+    subtitle: 'Earn medals by reading stories and doing activities.',
+    summary: '{{desbloqueados}} of {{total}} achievements',
+    progress: '{{progreso}}/{{meta}}',
+    unlocked: 'Unlocked!',
+    empty: 'No achievements yet. Start playing!',
+    errorLoad: 'Could not load the achievements.',
+    catCuentos: 'Stories',
+    catActividades: 'Activities',
+    catRacha: 'Consistency',
+    catTemas: 'Explorer',
+    goalCuentos_one: 'Read {{count}} story',
+    goalCuentos_other: 'Read {{count}} stories',
+    goalActividades_one: 'Complete {{count}} activity',
+    goalActividades_other: 'Complete {{count}} activities',
+    goalRacha_one: '{{count}} day in a row',
+    goalRacha_other: '{{count}} days in a row',
+    goalTema: 'Explore {{tema}}',
   },
 
   login: {
@@ -177,12 +226,28 @@ export const en: typeof es = {
     youFallback: 'you',
     themes: 'Themes',
     styles: 'Styles',
+    teaching: 'What do you want to teach?',
+    teachingHint: 'Optional: pick a value for the moral.',
+    nameField: 'Use the name?',
+    useName: "Use {{nombre}}'s name",
     creating: 'Creating a magical story…',
     retryHint: 'Tap “Generate story” to try again.',
     generateAnother: 'Generate another',
     generate: 'Generate story',
     needThemeStyle: 'Choose at least one theme and one style.',
     errorGenerate: 'Could not generate the story.',
+  },
+
+  reader: {
+    markRead: 'Mark as read',
+    alreadyRead: 'Read',
+    // Book-style paginated reading (A2/US-73).
+    page: 'Page {{n}} of {{total}}',
+    prevPage: 'Previous page',
+    nextPage: 'Next page',
+    // Continue the story (US-78).
+    continueStory: 'Continue the story',
+    continueError: 'Could not continue the story.',
   },
 
   history: {
@@ -200,14 +265,26 @@ export const en: typeof es = {
     // History filters (US-62).
     filterTheme: 'Theme',
     filterStyle: 'Style',
+    filterTeaching: 'Teaching',
     filterCategory: 'Category',
     filterAll: 'All',
+    filtersTitle: 'Filters',
+    searchWithCount: 'Search ({{count}})',
+    filters: 'Filters',
+    filtersWithCount: 'Filters ({{count}})',
+    applyFilters: 'Apply',
     noMatchStories: 'No story matches the filter.',
     noMatchActivities: 'No activity matches the filter.',
     // Favorites and search (US-64).
     searchLabel: 'Search',
     searchPlaceholder: 'Search by title, theme, category…',
     onlyFavorites: 'Only favorites',
+    // Highlights + tabs (A3/US-74).
+    latest: 'Latest',
+    lastStory: 'Last story',
+    lastActivity: 'Last activity',
+    tabStories: 'Stories',
+    tabActivities: 'Activities',
   },
 
   favorite: {
@@ -237,6 +314,8 @@ export const en: typeof es = {
     minutes: '{{min}} min',
     level: 'Level {{nivel}}',
     howTo: 'How to do it',
+    showSteps: 'Show steps',
+    hideSteps: 'Hide steps',
     done: 'Done!',
     howWasIt: 'How was it?',
     markDone: 'Done',

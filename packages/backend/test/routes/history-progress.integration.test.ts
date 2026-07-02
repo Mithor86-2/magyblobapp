@@ -137,4 +137,34 @@ describe('Historial y progreso (integración)', () => {
     expect(body.stories).toHaveLength(1);
     expect(body.activities).toHaveLength(2);
   });
+
+  it('el historial devuelve una actividad completada con su valoración', async () => {
+    // Regresión del bug "las actividades realizadas no se ven en el historial": tras
+    // completar una actividad, GET /history debe devolverla con su `valoracion` (el
+    // filtro `valoracion != null` de la app es lo que la muestra en la pestaña Historial).
+    const profileId = await crearPerfil();
+    const rec = await app.inject({
+      method: 'POST',
+      url: '/activities/recommend',
+      headers: authHeaders(app),
+      payload: { profileId, cantidad: 1 },
+    });
+    const activityId = rec.json()[0].id as string;
+    await app.inject({
+      method: 'POST',
+      url: `/activities/${activityId}/complete`,
+      headers: authHeaders(app),
+      payload: { valoracion: 3 },
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/profiles/${profileId}/history`,
+      headers: authHeaders(app),
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { activities: { id: string; valoracion?: number }[] };
+    const completada = body.activities.find((a) => a.id === activityId);
+    expect(completada?.valoracion).toBe(3);
+  });
 });

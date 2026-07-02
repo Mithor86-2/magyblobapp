@@ -5,6 +5,7 @@ import { Activity, type ActivityProps } from '../../src/domain/entities/Activity
 import { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js';
 import { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import { AuditLog } from '../../src/domain/entities/AuditLog.js';
+import { Achievement } from '../../src/domain/entities/Achievement.js';
 import { DomainError } from '../../src/domain/errors.js';
 import { HASH_DE_PRUEBA } from '../support/doubles.js';
 
@@ -119,6 +120,19 @@ describe('Story', () => {
     // @ts-expect-error valor inválido a propósito
     expect(() => build({ proveedor: 'gpt' })).toThrow(DomainError);
   });
+
+  it('US-69: acepta una enseñanza del vocabulario cerrado', () => {
+    expect(build({ ensenanza: 'amistad' }).ensenanza).toBe('amistad');
+  });
+
+  it('US-69: la enseñanza es opcional (ausente por defecto)', () => {
+    expect(build().ensenanza).toBeUndefined();
+  });
+
+  it('US-69: rechaza una enseñanza fuera del vocabulario', () => {
+    // @ts-expect-error valor inválido a propósito
+    expect(() => build({ ensenanza: 'obediencia' })).toThrow(DomainError);
+  });
 });
 
 describe('Activity', () => {
@@ -157,6 +171,13 @@ describe('Activity', () => {
     a.completar(3, fecha);
     expect(a.valoracion).toBe(3);
     expect(a.completadaEn).toBe(fecha);
+  });
+
+  it('completar sin valoración marca la fecha y deja la valoración vacía (US-72)', () => {
+    const a = build();
+    a.completar(undefined, fecha);
+    expect(a.completadaEn).toBe(fecha);
+    expect(a.valoracion).toBeUndefined();
   });
 
   it.each([0, 4, -1, 2.5])('completar rechaza valoración %s', (valoracion) => {
@@ -231,5 +252,23 @@ describe('AuditLog', () => {
 
   it('exige una entidad afectada', () => {
     expect(() => new AuditLog({ ...base, entidad: '  ', accion: 'crear' })).toThrow(DomainError);
+  });
+});
+
+describe('Achievement', () => {
+  const base = { id: 'ac-1', profileId: 'p-1', clave: 'cuentos_leidos_5', desbloqueadoEn: fecha };
+
+  it('materializa un logro válido (US-68)', () => {
+    const logro = new Achievement(base);
+    expect(logro.clave).toBe('cuentos_leidos_5');
+    expect(logro.profileId).toBe('p-1');
+  });
+
+  it('exige un profileId no vacío', () => {
+    expect(() => new Achievement({ ...base, profileId: '  ' })).toThrow(DomainError);
+  });
+
+  it('exige una clave no vacía', () => {
+    expect(() => new Achievement({ ...base, clave: '  ' })).toThrow(DomainError);
   });
 });

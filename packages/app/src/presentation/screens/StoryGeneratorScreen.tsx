@@ -1,35 +1,41 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
+import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
-import { ESTILOS, TEMAS } from '../../domain/types';
-import type { Estilo, Story, Tema } from '../../domain/types';
+import { ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
+import type { Ensenanza, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
-import { estiloLabel, temaLabel } from '../labels';
+import { ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
 import { avatarEmoji } from '../components/AvatarPicker';
-import { AuthorBadge } from '../components/AuthorBadge';
-import { NarrationControls } from '../components/NarrationControls';
-import { StoryCover } from '../components/StoryCover';
 import { api } from '../../composition';
+import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
-import type { TabScreenProps } from '../navigation';
+import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
+import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /**
  * Pantalla del **generador de cuentos** para el perfil activo. Permite elegir uno o
- * varios temas y estilos (multi-selección, US-47/US-54), lanza la generación contra
- * el `api` inyectado y muestra el cuento con su portada, narración y favorito.
- * Degrada con un mensaje si la petición falla.
+ * varios temas y estilos (multi-selección, US-47/US-54) y una enseñanza opcional
+ * (US-69), y lanza la generación contra el `api` inyectado. Al generar con éxito
+ * **navega al lector** (`StoryReader` del stack raíz, A1/US-73), donde se lee el
+ * cuento paginado; la pantalla se queda solo con el formulario. Degrada con un
+ * mensaje si la petición falla.
  */
-export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
+export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const profile = useAppStore((s) => s.currentProfile);
+
+  // Zona de adultos (A6): el botón fijo del header navega al stack raíz.
+  const openParental = () =>
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
 
   // US-54: el generador ofrece TODOS los temas del vocabulario (antes se limitaba a
   // los intereses del perfil y ocultaba magia/música). Los intereses del perfil quedan
@@ -41,9 +47,16 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   // intereses del perfil preseleccionados para que "Generar" funcione sin tocar nada.
   const [temas, setTemas] = useState<Tema[]>(interesesPerfil);
   const [estilos, setEstilos] = useState<Estilo[]>(['aventura']);
+  // US-69: enseñanza opcional de selección única (undefined = ninguna). Tocar el chip
+  // ya elegido lo deselecciona.
+  const [ensenanza, setEnsenanza] = useState<Ensenanza | undefined>(undefined);
+  // US-76: usar el nombre del niño en el cuento (por defecto sí). Si se desactiva, el
+  // backend genera con un protagonista genérico y no recibe el nombre.
+  const [usarNombre, setUsarNombre] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [story, setStory] = useState<Story | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Aviso de espera larga (US-53, cold-start de Render free).
+  const lento = useSlowHint(loading);
 
   const puedeGenerar = temas.length > 0 && estilos.length > 0;
 
@@ -55,6 +68,10 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
     setEstilos((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
   }
 
+  function toggleEnsenanza(e: Ensenanza) {
+    setEnsenanza((prev) => (prev === e ? undefined : e));
+  }
+
   async function onGenerate() {
     if (!profile) return;
     if (!puedeGenerar) {
@@ -63,11 +80,24 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
     }
     setLoading(true);
     setError(null);
-    setStory(null);
-    trackAction('story.generate', { temas: temas.join(','), estilos: estilos.join(',') });
+    trackAction('story.generate', {
+      temas: temas.join(','),
+      estilos: estilos.join(','),
+      ensenanza: ensenanza ?? 'ninguna',
+    });
     try {
-      const result = await api.stories.generate({ profileId: profile.id, temas, estilos });
-      setStory(result);
+      const result = await api.stories.generate({
+        profileId: profile.id,
+        temas,
+        estilos,
+        ensenanza,
+        usarNombre,
+      });
+      // A1/US-73: al generar, se abre el lector (StoryReader del stack raíz) con el
+      // cuento; el generador se queda solo con el formulario.
+      navigation
+        .getParent<NativeStackNavigationProp<RootStackParamList>>()
+        ?.navigate('StoryReader', { story: result });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('storyGenerator.errorGenerate'));
     } finally {
@@ -78,9 +108,11 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
   return (
     <Screen
       headerImageName="cuentos"
+      title={t('tabs.cuentos')}
+      headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton
-          label={story ? t('storyGenerator.generateAnother') : t('storyGenerator.generate')}
+          label={t('storyGenerator.generate')}
           onPress={onGenerate}
           loading={loading}
           disabled={!puedeGenerar}
@@ -120,10 +152,41 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
         ))}
       </View>
 
+      <Text style={styles.fieldLabel}>{t('storyGenerator.teaching')}</Text>
+      <Text style={styles.fieldHint}>{t('storyGenerator.teachingHint')}</Text>
+      <View style={styles.chips}>
+        {ENSENANZAS.map((e) => (
+          <SelectableChip
+            key={e}
+            label={ensenanzaLabel(e)}
+            selected={ensenanza === e}
+            onPress={() => toggleEnsenanza(e)}
+          />
+        ))}
+      </View>
+
+      {/* US-76: usar (o no) el nombre del niño como protagonista del cuento. */}
+      <Text style={styles.fieldLabel}>{t('storyGenerator.nameField')}</Text>
+      <View style={styles.chips}>
+        <SelectableChip
+          label={t('storyGenerator.useName', {
+            nombre: profile?.nombre ?? t('storyGenerator.youFallback'),
+          })}
+          selected={usarNombre}
+          onPress={() => setUsarNombre((v) => !v)}
+        />
+      </View>
+
       {loading ? (
         <View style={styles.statusBox}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.statusText}>{t('storyGenerator.creating')}</Text>
+          {lento ? (
+            <>
+              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
+              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
+            </>
+          ) : null}
         </View>
       ) : null}
 
@@ -131,21 +194,6 @@ export function StoryGeneratorScreen(_props: TabScreenProps<'Cuentos'>) {
         <View style={[styles.statusBox, styles.errorBox]}>
           <Text style={styles.errorText}>{error}</Text>
           <Text style={styles.statusText}>{t('storyGenerator.retryHint')}</Text>
-        </View>
-      ) : null}
-
-      {story ? (
-        <View style={styles.storyCard}>
-          <StoryCover
-            generada={story.portada}
-            tema={story.tema}
-            style={styles.storyCover}
-            accessibilityLabel={story.titulo}
-          />
-          <Text style={styles.storyTitle}>{story.titulo}</Text>
-          <Text style={styles.storyBody}>{story.cuerpo}</Text>
-          <NarrationControls story={story} />
-          <AuthorBadge proveedor={story.proveedor} />
         </View>
       ) : null}
     </Screen>
@@ -168,6 +216,10 @@ const makeStyles = (colors: ColorTokens) =>
     },
     fieldLabel: {
       ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    fieldHint: {
+      ...typography.bodyMd,
       color: colors.onSurfaceVariant,
     },
     chips: {
@@ -194,25 +246,5 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.labelBold,
       color: colors.onErrorContainer,
       textAlign: 'center',
-    },
-    storyCard: {
-      backgroundColor: colors.surfaceContainer,
-      borderRadius: radius.lg,
-      padding: spacing.md,
-      gap: spacing.sm,
-      ...makeSoftShadow(colors),
-    },
-    storyCover: {
-      width: '100%',
-      height: 180,
-      borderRadius: radius.md,
-    },
-    storyTitle: {
-      ...typography.headlineMd,
-      color: colors.onSurface,
-    },
-    storyBody: {
-      ...typography.bodyLg,
-      color: colors.onSurface,
     },
   });

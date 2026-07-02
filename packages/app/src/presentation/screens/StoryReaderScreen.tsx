@@ -1,37 +1,65 @@
-import { useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { AuthorBadge } from '../components/AuthorBadge';
+import { BookPages } from '../components/BookPages';
+import { BubblyButton } from '../components/BubblyButton';
 import { FavoriteButton } from '../components/FavoriteButton';
+import { Icon } from '../components/Icon';
 import { NarrationControls } from '../components/NarrationControls';
 import { StoryCover } from '../components/StoryCover';
+import { paginarCuento } from './paginarCuento';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
+import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
-import { useThemedStyles } from '../theme/ThemeProvider';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 /**
- * Vista de lectura de un cuento abierto desde el Historial (US-27): muestra el
- * título y el cuerpo completos y el Autor. Al abrirla marca el cuento como leído
- * (US-07/US-08), reutilizando `stories.markRead`; el Historial lo refleja al volver.
+ * Vista de lectura de un cuento, abierta desde el Historial (US-27) o tras generarlo
+ * (A1/US-73). Muestra el título, el Autor y el cuerpo **paginado como un libro**
+ * (A2/US-73, `BookPages` + `paginarCuento`) para leerlo pasando página. El marcado
+ * como leído (US-07/US-08) es **explícito** (A2): con el botón "Marcar como leído" o
+ * al escuchar la narración completa; ya no se marca solo por abrir la vista, para que
+ * "leído" refleje lectura o escucha real (relevante para los logros, US-68).
  */
-export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
+export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryReader'>) {
   const { story } = route.params;
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
   const fecha = formatearFecha(story.creadoEn, idioma);
 
-  useEffect(() => {
-    if (story.estado !== 'leido') {
-      // Marca leído en segundo plano; si falla, el refresco del Historial lo corrige.
-      void api.stories.markRead(story.id).catch(() => {});
+  const [leido, setLeido] = useState(story.estado === 'leido');
+  // US-78: "Continuar la historia" — genera un capítulo nuevo y abre su lector.
+  const [continuando, setContinuando] = useState(false);
+  const [errorContinuar, setErrorContinuar] = useState<string | null>(null);
+
+  const continuar = useCallback(async () => {
+    setContinuando(true);
+    setErrorContinuar(null);
+    try {
+      const siguiente = await api.stories.continueStory(story.id);
+      navigation.push('StoryReader', { story: siguiente });
+    } catch (e) {
+      setErrorContinuar(e instanceof ApiError ? e.message : t('reader.continueError'));
+    } finally {
+      setContinuando(false);
     }
-  }, [story.id, story.estado]);
+  }, [story.id, navigation, t]);
+
+  // Marca el cuento como leído (idempotente): optimista en la UI; si falla, el
+  // refresco del Historial lo corregirá. Lo usan el botón y el fin de la narración.
+  const marcarLeido = useCallback(() => {
+    if (leido) return;
+    setLeido(true);
+    void api.stories.markRead(story.id).catch(() => {});
+  }, [leido, story.id]);
 
   return (
     <Screen>
@@ -49,8 +77,31 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
             onToggle={(favorito) => api.stories.setFavorite(story.id, favorito)}
           />
         </View>
-        <Text style={styles.body}>{story.cuerpo}</Text>
-        <NarrationControls story={story} />
+        {/* A2/US-73: el cuerpo se lee paginado como un libro (‹/›), no en un bloque único. */}
+        <BookPages paginas={paginarCuento(story.cuerpo)} />
+        <NarrationControls story={story} onFinished={marcarLeido} />
+        {leido ? (
+          <View style={styles.leidoRow}>
+            <Icon name="check" size="sm" color={colors.tertiary} />
+            <Text style={styles.leidoText}>{t('reader.alreadyRead')}</Text>
+          </View>
+        ) : (
+          <BubblyButton
+            label={t('reader.markRead')}
+            icon="check"
+            variant="accent"
+            onPress={marcarLeido}
+          />
+        )}
+        {/* US-78: continuar la historia con un capítulo nuevo generado por IA. */}
+        <BubblyButton
+          label={t('reader.continueStory')}
+          icon="arrow-right"
+          variant="secondary"
+          onPress={continuar}
+          loading={continuando}
+        />
+        {errorContinuar ? <Text style={styles.errorContinuar}>{errorContinuar}</Text> : null}
         <AuthorBadge proveedor={story.proveedor} />
         {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
       </View>
@@ -83,12 +134,22 @@ const makeStyles = (colors: ColorTokens) =>
       color: colors.onSurface,
       flex: 1,
     },
-    body: {
-      ...typography.bodyLg,
-      color: colors.onSurface,
+    leidoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    leidoText: {
+      ...typography.labelBold,
+      color: colors.tertiary,
     },
     fecha: {
       ...typography.labelBold,
       color: colors.onSurfaceVariant,
+    },
+    errorContinuar: {
+      ...typography.labelBold,
+      color: colors.error,
+      textAlign: 'center',
     },
   });

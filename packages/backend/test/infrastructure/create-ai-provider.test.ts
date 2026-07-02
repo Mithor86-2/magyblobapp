@@ -136,6 +136,45 @@ describe('createAIProvider', () => {
     expect(fetchSpy).toHaveBeenCalled();
   });
 
+  it('con settings, generateImage delega en el modo base y devuelve null (US-59)', async () => {
+    // El hot-swap de texto no genera portada: delega en el base (mock → null). Sin
+    // GEMINI_API_KEY no se envuelve en ImageCapableProvider, así que devuelve null.
+    const ai = createAIProvider(config({ aiProvider: 'mock', cloudApiKeys: {} }), {
+      settings: settingsConCloud(null),
+    });
+    const imagen = await ai.generateImage({
+      titulo: 'Un cuento',
+      tema: 'animales',
+      estilo: 'aventura',
+    });
+    expect(imagen).toBeNull();
+  });
+
+  it('con GEMINI_API_KEY envuelve en ImageCapableProvider y genera la portada (US-59)', async () => {
+    // buildImageProvider devuelve GeminiImageProvider (rama image !== null) y
+    // createAIProvider envuelve el proveedor de texto en ImageCapableProvider.
+    const fetchSpy = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ predictions: [{ bytesBase64Encoded: 'QUJD' }] }), {
+          status: 200,
+        }),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    const ai = createAIProvider(
+      config({ aiProvider: 'mock', cloudApiKeys: { gemini: 'gm-test' } }),
+    );
+    const imagen = await ai.generateImage({
+      titulo: 'Un cuento',
+      tema: 'animales',
+      estilo: 'aventura',
+    });
+    expect(imagen).toContain('data:image/');
+    expect(fetchSpy).toHaveBeenCalled();
+    // El texto sigue viniendo del modo base a través del decorador.
+    const result = await ai.generateStory(story);
+    expect(result.titulo).toBeTruthy();
+  });
+
   it('si el proveedor cloud falla, cae a mock (no propaga el error)', async () => {
     const fetchSpy = vi.fn(async () => new Response('boom', { status: 500 }));
     vi.stubGlobal('fetch', fetchSpy);

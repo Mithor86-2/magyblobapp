@@ -86,6 +86,8 @@ explota desde el Historial; toca cuentos (épica B) y actividades (épica C) por
 
 ## US-64 — Favoritos (UI) y búsqueda de texto en el Historial · Should (Mejoras)
 
+> **Ajuste (lote 2 de ideas #4):** la búsqueda del Historial pasa a un campo EN LÍNEA siempre visible que filtra en vivo (como el de Inicio); el modal queda solo con los filtros y se combinan.
+
 Como **padre/tutor** quiero **marcar como favoritos** los cuentos y actividades que más nos gustan y
 **buscar por texto** en el Historial, para reencontrar rápido lo que busco.
 
@@ -120,3 +122,60 @@ los filtros de US-62) y un **campo de búsqueda de texto** que filtra **en clien
   los combino, Entonces las listas respetan **todos** a la vez.
 - Dado un cuento o actividad **sin** el campo `favorito` (backend antiguo), Cuando se muestra,
   Entonces se trata como **no favorito** y no se produce ningún error.
+
+## US-68 — Logros / recompensas del niño {#us-68}
+
+**Como** niño, **quiero** ganar medallas al leer cuentos y completar actividades, **para** sentirme
+motivado a seguir aprendiendo y jugando.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Mis logros (abierta desde Inicio).
+
+**Alcance**
+
+1. **Catálogo (4 categorías):** cuentos leídos (hitos 1/5/10/25), actividades completadas
+   (1/5/10/25), racha de días seguidos de uso (3/7) y explorar temas (un logro por tema). El catálogo
+   vive en el **dominio** (`domain/logros.ts`), calculado sin IO sobre `Story`/`Activity`.
+2. **Persistencia (nueva entidad `Achievement`):** guarda solo el hecho del desbloqueo
+   (`clave` + `desbloqueadoEn`), idempotente por `profileId`+`clave`; cascada con el perfil (GDPR).
+3. **Lectura + reconciliación:** `GET /profiles/:id/achievements` devuelve el catálogo con progreso y
+   estado; **reconcilia** persistiendo los logros recién conseguidos. El estado es correcto aunque la
+   persistencia falle (sale del cálculo).
+4. **App:** pantalla "Mis logros" (rejilla de medallas conseguidas/bloqueadas con progreso), accesible
+   desde Inicio; i18n ES/EN. Todo local, sin PII nueva.
+
+**Criterios de aceptación**
+
+- **(Vacío)** Dado un perfil sin actividad, Cuando abro Mis logros, Entonces todo el catálogo aparece
+  como no conseguido y no se persiste nada.
+- **(Desbloqueo)** Dado que leo un cuento de un tema, Cuando consulto los logros, Entonces se marcan
+  conseguidos el hito "1 cuento" y el logro de ese tema, y quedan persistidos.
+- **(Progreso)** Dado un logro no conseguido, Entonces muestra su progreso `progreso/meta`.
+- **(Idempotencia)** Dado que consulto los logros dos veces, Entonces los desbloqueos no se duplican y
+  conservan su fecha original.
+- **(Racha)** Dado uso en días de calendario consecutivos, Cuando alcanzo 3 días seguidos, Entonces
+  se desbloquea la racha de 3 (un hueco reinicia el conteo; se guarda la máxima alcanzada).
+- **(Sesión)** Dado que no hay sesión, Cuando llamo al endpoint, Entonces responde **401**.
+- **(Cumplimiento)** Dado el cálculo, Entonces es **local**, sin terceros ni PII nueva (el logro se
+  refiere al niño por `profileId`) y se borra en cascada con el perfil.
+
+## US-82 — Búsqueda global (cuentos + actividades) {#us-82}
+
+**Como** adulto responsable, **quiero** una pantalla de búsqueda que liste a la vez los cuentos y las
+actividades que coinciden con el texto, **para** encontrar cualquier contenido de la biblioteca del
+niño en un solo sitio.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Búsqueda (stack raíz).
+
+**Alcance**
+
+1. **Pantalla `SearchResults`** accesible desde Inicio ("Buscar"); campo de texto que, sobre
+   `GET /profiles/:id/history`, filtra con `filtrarCuentos`/`filtrarActividades` (US-64) y muestra dos
+   secciones (Cuentos, Actividades). Tocar un cuento abre el lector; las actividades son de solo lectura.
+
+**Criterios de aceptación**
+
+- **(Coincidencias)** Dado texto de búsqueda, Entonces se listan los cuentos y actividades cuyo
+  título/cuerpo/descripción/etc. contienen el texto (normalizado, sin acentos ni mayúsculas).
+- **(Sin texto)** Dado el campo vacío, Entonces se muestra una pista y ningún resultado.
+- **(Sin coincidencias)** Dado un texto sin resultados, Entonces se muestra el mensaje de vacío.
+- **(Abrir cuento)** Cuando toco un cuento del resultado, Entonces se abre el lector con ese cuento.

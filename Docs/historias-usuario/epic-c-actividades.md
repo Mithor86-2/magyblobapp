@@ -54,3 +54,47 @@ instrucciones detalladas para poder realizarlas paso a paso con mi hijo/a de 2 a
 - Dado `AI_PROVIDER=mock` o IA caída, Cuando pido actividades, Entonces el fallback a mock devuelve
   instrucciones con **al menos 6 pasos** numerados (política "sanea, no rechaza": `instrucciones`
   sigue opcional y saneada, sin validación dura de recuento).
+
+## US-77 — Trato al adulto por parentesco + nombre {#us-77}
+
+> **Ajuste (lote 2 de ideas):** el seed `prompt.activity.system` (v6) refuerza que la IA use el trato del adulto CON su nombre ("mamá Ana", "abuela Ana") tal cual se le indica; antes la IA real solo ponía el trato.
+
+**Como** adulto responsable, **quiero** que las instrucciones de las actividades se dirijan a mí por mi
+parentesco y mi nombre (p. ej. "abuela Ana"), **para** que la guía sea cercana y personal.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** — (prompts actividades).
+
+**Alcance**
+
+1. **`terminoCuidador`** combina el trato por parentesco con el nombre del adulto de la sesión
+   ("mamá Ana", "abuela/o Ana"); sin nombre (anónimo) mantiene el trato genérico (US-67).
+2. **`RecommendActivities`** pasa `guardian.nombre` al `AIProvider`; el prompt y el `MockProvider` lo usan.
+
+**Criterios de aceptación**
+
+- **(Con nombre)** Dado un guardián "Ana" con parentesco "madre", Cuando se recomiendan actividades,
+  Entonces el trato en las instrucciones es "mamá Ana".
+- **(Sin nombre)** Dado el modo anónimo (sin nombre), Entonces se usa el trato genérico ("la persona
+  adulta").
+
+## US-81 — Pasos de actividad plegables {#us-81}
+
+> **Ajuste (lote 2 de ideas):** `ActivityCard` acepta `pasosVisiblesInicial`; el generador (`ActivitiesScreen`) lo pasa `true` para que los pasos salgan VISIBLES al generar; en Historial/Búsqueda siguen plegados.
+
+**Como** adulto responsable, **quiero** que los pasos de la actividad estén ocultos tras un botón,
+**para** ver primero el resumen y desplegar el paso a paso solo cuando lo necesito.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Actividades / Historial.
+
+**Alcance**
+
+1. **`ActivityCard`:** las instrucciones empiezan **plegadas**; un botón **"Ver pasos"** las despliega
+   y, desplegadas, el botón pasa a **"Ocultar pasos"**. i18n ES/EN. Si no hay instrucciones, no hay botón.
+
+**Criterios de aceptación**
+
+- **(Plegado)** Dada una actividad con instrucciones, Cuando se muestra, Entonces los pasos están
+  ocultos y se ve "Ver pasos".
+- **(Desplegar/Plegar)** Cuando pulso "Ver pasos" se muestran los pasos y el botón pasa a "Ocultar
+  pasos"; al pulsarlo se vuelven a ocultar.
+- **(Sin pasos)** Dada una actividad sin instrucciones, Entonces no aparece el botón de pasos.

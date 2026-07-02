@@ -32,6 +32,15 @@ describe('CompleteActivity', () => {
     expect(guardada?.completadaEn).toBeInstanceOf(Date);
   });
 
+  it('completa la actividad sin valoración (US-72): marca la fecha, valoración vacía', async () => {
+    const out = await useCase.execute({ activityId: 'a-1' });
+    expect(out.completadaEn).toBe('2026-06-10T12:00:00.000Z');
+    expect(out.valoracion).toBeUndefined();
+    const guardada = await activities.findById('a-1');
+    expect(guardada?.completadaEn).toBeInstanceOf(Date);
+    expect(guardada?.valoracion).toBeUndefined();
+  });
+
   it('rechaza una valoración fuera de 1-3', async () => {
     await expect(useCase.execute({ activityId: 'a-1', valoracion: 5 })).rejects.toThrow(
       DomainError,

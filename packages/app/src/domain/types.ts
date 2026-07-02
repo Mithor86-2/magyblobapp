@@ -16,6 +16,10 @@ export type Tema = (typeof TEMAS)[number];
 export const ESTILOS = ['aventura', 'divertido', 'educativo'] as const;
 export type Estilo = (typeof ESTILOS)[number];
 
+/** Enseñanza/valor opcional que dirige la moraleja del cuento (US-69). */
+export const ENSENANZAS = ['amistad', 'emociones', 'valentia', 'honestidad'] as const;
+export type Ensenanza = (typeof ENSENANZAS)[number];
+
 export const CATEGORIAS = ['arte', 'musica', 'logica'] as const;
 export type Categoria = (typeof CATEGORIAS)[number];
 
@@ -97,6 +101,10 @@ export interface GenerateStoryRequest {
   temas: Tema[];
   /** Estilos elegidos (multi-selección, US-47); al menos uno. */
   estilos: Estilo[];
+  /** Enseñanza/valor a transmitir (US-69); opcional, ausente ⇒ sin moraleja dirigida. */
+  ensenanza?: Ensenanza;
+  /** Usar (o no) el nombre del niño en el cuento (US-76); ausente ⇒ por defecto sí. */
+  usarNombre?: boolean;
 }
 
 export interface Story {
@@ -104,6 +112,8 @@ export interface Story {
   profileId: string;
   tema: Tema;
   estilo: Estilo;
+  /** Enseñanza/valor elegida (US-69); ausente ⇒ no se eligió ninguna. */
+  ensenanza?: Ensenanza;
   titulo: string;
   cuerpo: string;
   idioma: CodigoIdioma;
@@ -188,4 +198,23 @@ export interface Activity {
 export interface History {
   stories: Story[];
   activities: Activity[];
+}
+
+// --- Logros / recompensas (US-68) ---
+export const CATEGORIAS_LOGRO = ['cuentos', 'actividades', 'racha', 'temas'] as const;
+export type CategoriaLogro = (typeof CATEGORIAS_LOGRO)[number];
+
+/** Estado de un logro del catálogo para pintar la medalla (US-68). */
+export interface Achievement {
+  /** Clave estable del logro (p. ej. `cuentos_leidos_5`, `tema_animales`). */
+  clave: string;
+  categoria: CategoriaLogro;
+  /** Umbral a alcanzar. */
+  meta: number;
+  /** Progreso actual (0..meta). */
+  progreso: number;
+  /** ¿Está conseguido? */
+  conseguido: boolean;
+  /** Fecha ISO del desbloqueo; ausente si aún no está conseguido. */
+  desbloqueadoEn?: string;
 }

@@ -6,7 +6,16 @@
  * `CATEGORIAS`, …) como única fuente de verdad de los valores válidos.
  */
 import { z } from 'zod';
-import { CATEGORIAS, ESTILOS, IDIOMAS, PARENTESCOS, PROVEEDORES_IA, TEMAS } from '../domain/types';
+import {
+  CATEGORIAS,
+  CATEGORIAS_LOGRO,
+  ENSENANZAS,
+  ESTILOS,
+  IDIOMAS,
+  PARENTESCOS,
+  PROVEEDORES_IA,
+  TEMAS,
+} from '../domain/types';
 
 export const guardianSchema = z.object({
   id: z.string(),
@@ -42,6 +51,8 @@ export const storySchema = z.object({
   profileId: z.string(),
   tema: z.enum(TEMAS),
   estilo: z.enum(ESTILOS),
+  // US-69: enseñanza elegida; opcional (ausente ⇒ no se eligió ninguna).
+  ensenanza: z.enum(ENSENANZAS).optional(),
   titulo: z.string(),
   cuerpo: z.string(),
   idioma: z.enum(IDIOMAS),
@@ -102,3 +113,14 @@ export const historySchema = z.object({
   stories: z.array(storySchema),
   activities: z.array(activitySchema),
 });
+
+/** Logro del catálogo (US-68): estado de una medalla. */
+export const achievementSchema = z.object({
+  clave: z.string(),
+  categoria: z.enum(CATEGORIAS_LOGRO),
+  meta: z.number(),
+  progreso: z.number(),
+  conseguido: z.boolean(),
+  desbloqueadoEn: z.string().optional(),
+});
+export const achievementListSchema = z.array(achievementSchema);

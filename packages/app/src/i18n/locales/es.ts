@@ -22,6 +22,12 @@ export const es = {
       divertido: 'Divertido',
       educativo: 'Educativo',
     },
+    ensenanza: {
+      amistad: 'Amistad y compartir',
+      emociones: 'Gestionar emociones',
+      valentia: 'Valentía',
+      honestidad: 'Honestidad y respeto',
+    },
     parentesco: {
       madre: 'Madre',
       padre: 'Padre',
@@ -52,7 +58,17 @@ export const es = {
     selectProfile: 'Elegir perfil',
     createProfile: 'Crear perfil',
     parental: 'Zona de adultos',
+    achievements: 'Mis logros',
     storyReader: 'Cuento',
+    search: 'Buscar',
+  },
+  search: {
+    placeholder: 'Buscar cuentos y actividades',
+    stories: 'Cuentos',
+    activities: 'Actividades',
+    hint: 'Escribe para buscar en tu biblioteca.',
+    empty: 'No hay resultados para «{{q}}».',
+    errorLoad: 'No se pudo cargar tu biblioteca.',
   },
 
   // Pestañas (App.tsx).
@@ -74,6 +90,12 @@ export const es = {
     password: 'Contraseña',
     // Fecha de generación del contenido (US-62); {{fecha}} ya viene localizada.
     generatedOn: 'Creado el {{fecha}}',
+    // Aviso de espera larga (US-53, cold-start de Render free).
+    slowHint: 'Este proceso está tardando más de lo usual. Espera un momento…',
+    slowHintServer: 'La primera vez el servidor puede tardar hasta ~1 minuto en despertar.',
+    search: 'Buscar',
+    clear: 'Limpiar',
+    close: 'Cerrar',
   },
 
   welcome: {
@@ -107,7 +129,34 @@ export const es = {
     subtitle: 'Vamos a aprender y jugar juntos. Elige un cuento mágico o una actividad para hoy.',
     createStory: 'Crear un cuento',
     seeActivities: 'Ver actividades',
+    myAchievements: 'Mis logros',
+    search: 'Buscar',
+    achievementsSummary: '{{conseguidos}}/{{total}}',
+    // Ánimo cuando aún no hay ningún logro conseguido (A4/US-73).
+    noAchievementsYet: '¡Lee cuentos y haz actividades para ganar tus primeros trofeos!',
     adultsZone: 'Zona de personas adultas',
+  },
+
+  // Logros / recompensas del niño (US-68).
+  achievements: {
+    title: 'Mis logros',
+    subtitle: 'Gana medallas leyendo cuentos y haciendo actividades.',
+    summary: '{{desbloqueados}} de {{total}} logros',
+    progress: '{{progreso}}/{{meta}}',
+    unlocked: '¡Conseguido!',
+    empty: 'Aún no hay logros. ¡Empieza a jugar!',
+    errorLoad: 'No se pudieron cargar los logros.',
+    catCuentos: 'Cuentos',
+    catActividades: 'Actividades',
+    catRacha: 'Constancia',
+    catTemas: 'Explorador',
+    goalCuentos_one: 'Leer {{count}} cuento',
+    goalCuentos_other: 'Leer {{count}} cuentos',
+    goalActividades_one: 'Completar {{count}} actividad',
+    goalActividades_other: 'Completar {{count}} actividades',
+    goalRacha_one: '{{count}} día seguido',
+    goalRacha_other: '{{count}} días seguidos',
+    goalTema: 'Explorar {{tema}}',
   },
 
   login: {
@@ -180,12 +229,28 @@ export const es = {
     youFallback: 'ti',
     themes: 'Temas',
     styles: 'Estilos',
+    teaching: '¿Qué quieres enseñar?',
+    teachingHint: 'Opcional: elige un valor para la moraleja.',
+    nameField: '¿Usar el nombre?',
+    useName: 'Usar el nombre de {{nombre}}',
     creating: 'Creando un cuento mágico…',
     retryHint: 'Toca «Generar cuento» para reintentar.',
     generateAnother: 'Generar otro',
     generate: 'Generar cuento',
     needThemeStyle: 'Elige al menos un tema y un estilo.',
     errorGenerate: 'No se pudo generar el cuento.',
+  },
+
+  reader: {
+    markRead: 'Marcar como leído',
+    alreadyRead: 'Leído',
+    // Lectura paginada como libro (A2/US-73).
+    page: 'Página {{n}} de {{total}}',
+    prevPage: 'Página anterior',
+    nextPage: 'Página siguiente',
+    // Continuar la historia (US-78).
+    continueStory: 'Continuar la historia',
+    continueError: 'No se pudo continuar la historia.',
   },
 
   history: {
@@ -203,14 +268,26 @@ export const es = {
     // Filtros del historial (US-62).
     filterTheme: 'Tema',
     filterStyle: 'Estilo',
+    filterTeaching: 'Enseñanza',
     filterCategory: 'Categoría',
     filterAll: 'Todos',
+    filtersTitle: 'Filtros',
+    searchWithCount: 'Buscar ({{count}})',
+    filters: 'Filtros',
+    filtersWithCount: 'Filtros ({{count}})',
+    applyFilters: 'Aplicar',
     noMatchStories: 'Ningún cuento coincide con el filtro.',
     noMatchActivities: 'Ninguna actividad coincide con el filtro.',
     // Favoritos y búsqueda (US-64).
     searchLabel: 'Buscar',
     searchPlaceholder: 'Busca por título, tema, categoría…',
     onlyFavorites: 'Solo favoritos',
+    // Destacados + pestañas (A3/US-74).
+    latest: 'Lo último',
+    lastStory: 'Último cuento',
+    lastActivity: 'Última actividad',
+    tabStories: 'Cuentos',
+    tabActivities: 'Actividades',
   },
 
   favorite: {
@@ -241,6 +318,8 @@ export const es = {
     minutes: '{{min}} min',
     level: 'Nivel {{nivel}}',
     howTo: 'Cómo hacerlo',
+    showSteps: 'Ver pasos',
+    hideSteps: 'Ocultar pasos',
     done: '¡Hecha!',
     howWasIt: '¿Qué tal estuvo?',
     markDone: 'Realizado',

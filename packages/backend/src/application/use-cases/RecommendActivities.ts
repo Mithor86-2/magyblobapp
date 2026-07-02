@@ -53,6 +53,8 @@ export class RecommendActivities {
       categoria,
       cantidad,
       parentesco: guardian?.parentesco,
+      // US-77: el nombre del adulto para combinarlo con su trato ("abuela Ana").
+      nombreCuidador: guardian?.nombre,
     });
 
     // Dedup simple: descartar las que ya existan para el perfil (por título) y las

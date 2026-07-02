@@ -19,6 +19,118 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.7.0] - 2026-07-02
+
+### Changed
+
+- **Pasos visibles al generar actividades (US-81, ajuste).** `ActivityCard` acepta
+  `pasosVisiblesInicial`; el generador (`ActivitiesScreen`) lo pasa `true` para que las actividades
+  recién generadas muestren el paso a paso de inmediato; en Historial/Búsqueda siguen plegados.
+- **Buscador del Historial en vivo (US-64, ajuste #4).** La búsqueda pasa de vivir en el modal a un
+  **campo en línea siempre visible** que filtra la pestaña activa a medida que se escribe (como el de
+  Inicio); el modal queda solo con los **filtros** (botón "Filtros (N)"). Búsqueda + filtros se combinan.
+- **Efecto de pliegue del lector más marcado (US-79, ajuste #5).** `BookPages` añade una sombra de
+  pliegue en el canto que gira y un giro/escala más pronunciados siguiendo el arrastre, para aproximar
+  un page-curl **sin** añadir `@shopify/react-native-skia`.
+
+### Added
+
+- **Continuar la historia desde el lector (US-78).** Botón "Continuar la historia" en `StoryReaderScreen`
+  que llama al gateway `stories.continueStory` (`POST /stories/:id/continue`) y **abre el capítulo
+  nuevo** en el lector (`navigation.push`), con estado de carga y aviso de error. i18n ES/EN
+  (`reader.continueStory`, `reader.continueError`).
+- **Opción de usar el nombre del niño (US-76).** Toggle "Usar el nombre de {niño}" en el generador
+  (activo por defecto); el gateway `stories.generate` envía `usarNombre`. i18n ES/EN
+  (`storyGenerator.nameField`, `storyGenerator.useName`).
+- **Lector con page-curl por gesto (US-79).** `BookPages` se reescribe con
+  `react-native-gesture-handler` + `react-native-reanimated` (+ `react-native-worklets`): pasar
+  página **arrastrando** con giro 3D (`rotateY` + `perspective`) en el hilo de UI, conservando los
+  botones ‹ / › y el indicador. La hoja tiene **alto consistente** (proporcional a la pantalla) para
+  que las páginas no salten de tamaño. `App` se envuelve en `GestureHandlerRootView` y se añade
+  `babel.config.js` (el plugin de worklets lo aporta `babel-preset-expo`). Bajo Vitest ambas libs se
+  aliasan a stubs inertes (la navegación por ‹/› sigue verificándose). **Requiere dev build** (Expo
+  Go no sirve con estos módulos nativos, como ya ocurría desde US-66).
+- **Búsqueda global de cuentos y actividades (US-82).** Nueva pantalla `SearchResults` (stack raíz,
+  accesible desde Inicio con el botón "Buscar") con un campo de texto que, sobre la biblioteca del
+  perfil (`GET /profiles/:id/history`), lista en un mismo sitio los **cuentos y actividades** que
+  coinciden (reutiliza `filtrarCuentos`/`filtrarActividades`); tocar un cuento abre el lector. i18n
+  ES/EN (`nav.search`, `search.*`, `home.search`).
+- **Nombre de sección en la cabecera (US-80).** `Screen` acepta `title`, mostrado fijo arriba a la
+  izquierda de la barra de cabecera (junto al botón de la zona de adultos); las 4 pestañas
+  (Inicio · Actividades · Cuentos · Historial) lo pasan reutilizando las etiquetas `tabs.*` (ES/EN).
+- **Pasos de actividad plegables (US-81).** En `ActivityCard` las instrucciones empiezan **ocultas**
+  con un botón **"Ver pasos"**; al desplegarlas se muestran los pasos y el botón pasa a **"Ocultar
+  pasos"**. i18n ES/EN (`activityCard.showSteps`, `activityCard.hideSteps`).
+- **Historial con pestañas Cuentos/Actividades (US-74, A3).** Franja "Lo último" con el último cuento y
+  la última actividad, y un **toggle Cuentos / Actividades** (por defecto Cuentos) que muestra la lista
+  completa del tipo elegido; la búsqueda/filtros aplican a la pestaña activa. i18n ES/EN
+  (`history.tabStories`, `history.tabActivities`, `history.latest`, `history.lastStory`,
+  `history.lastActivity`).
+- **Lectura tipo libro (US-73, A2).** El lector muestra el cuento **paginado** (una página a la vez)
+  con swipe horizontal, botones ‹ / ›, indicador "Página {n} de {total}" y **animación de giro**
+  (`Animated` de RN, sin librerías nuevas). Nuevo paginador puro `paginarCuento` (robusto ante cuerpo
+  de una línea, multipárrafo o vacío) y componente `BookPages`; i18n ES/EN (`reader.page`, `‹`/`›`).
+- **Trofeos ganados en Inicio (US-73, A4).** Bajo la barra de progreso de logros, fila de **🏆
+  pequeños** (uno por logro conseguido, acotada con "+N"); mensaje de ánimo si aún no hay ninguno
+  (`home.noAchievementsYet`, ES/EN).
+- **Cerrar el buscador del Historial (US-73, A3).** Botón **"X"** arriba a la derecha del modal de
+  búsqueda (icono `close`, etiqueta accesible "Cerrar").
+- **Pantalla "Mis logros" (US-68).** Vitrina de medallas del perfil (cuentos, actividades, racha y
+  temas) con progreso y estado conseguido/bloqueado, accesible desde Inicio; consume
+  `GET /profiles/:id/achievements`. Gateway `achievements`, tipos y esquema Zod, e i18n ES/EN.
+- **Cuento a la carta: enseñanza (US-69).** Chip de selección única opcional "¿Qué quieres enseñar?"
+  en el generador (envía `ensenanza`) y **filtro por enseñanza** en el Historial; tipos, esquema Zod e
+  i18n ES/EN.
+- **Aviso de espera larga en cold-start (A1).** Hook `useSlowHint` que, tras ~6 s cargando, muestra
+  "esto está tardando más de lo usual…" (más el matiz de que el servidor puede tardar ~1 min en
+  despertar) en Generador, Actividades y Dashboard.
+- **Resumen de logros en Home (A4).** Tarjeta con "conseguidos/total" y `ProgressBar` que lleva a
+  Mis logros.
+- **Botón fijo a la zona de adultos (A6).** `AdultsButton` en el header compartido (`Screen`), visible
+  en las 4 pestañas.
+- **Animaciones de entrada (A5).** Wrapper `Appear` (`Animated` integrado: translateY + escala) en
+  imágenes de cabecera, botón principal del footer, tarjetas de actividad/cuento y medallas de logros.
+
+### Changed
+
+- **Cuento paginado por la IA, mínimo 4 páginas (US-74, A1).** El prompt pide dividir el cuento en ≥4
+  páginas (párrafos separados por línea en blanco) y `paginarCuento` respeta esos cortes garantizando
+  ≥4 páginas; el modo `mock` también genera ≥4 páginas. (Requiere sincronizar `app-settings.json` a la
+  BD, US-70.)
+- **Giro 3D al pasar página (US-74, A2).** El lector pasa página con un efecto **3D** (`rotateY` con
+  perspectiva, dirección según avance/retroceso) sobre **fondo blanco tipo papel**, en vez del giro
+  leve anterior.
+- **Generar cuento navega al lector (US-73, A1).** Al generar se abre el `StoryReader` y el generador
+  deja de mostrar el cuento en línea (queda como formulario). Una sola pantalla de lectura.
+- **Marcar cuento como leído explícito (A2).** Ya no se marca leído solo por abrir el lector: se marca
+  con el botón "Marcar como leído" (en la vista de lectura y en el resultado del generador, en color
+  `accent` para distinguirlo del botón de escuchar) o al terminar de escuchar la narración
+  (`onFinished` en `useNarration`).
+- **Historial reorganizado (A3).** Búsqueda de texto y todos los filtros pasan a un **modal** ("Buscar"
+  con contador de filtros activos + "Limpiar"); el título del cuento se muestra completo.
+- **Timeouts tolerantes al cold-start de Render (A1).** Warm-up con reintentos (`/health`, ~70 s) y
+  timeouts más holgados (base 30→60 s, generación 90→120 s) para no abortar mientras la instancia
+  suspendida de Render free despierta.
+- Refactor interno del cliente HTTP (`fetchWithRetry`): bucle de reintentos acotado + intento final,
+  **sin cambio de comportamiento** (mismos intentos/backoff). Elimina una rama muerta y restaura la
+  cobertura CORE de `http.ts` al 100%; E2E de alta localizado por `testID` (robusto). (US-72)
+- **"Realizado" marca la actividad al instante (US-72).** El botón la completa sin obligar a puntuar
+  (valoración opcional, editable después con las estrellas); el estado "hecha" se rige por
+  `completadaEn`. Simplifica el flujo de dos pasos.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- **Las actividades marcadas como realizadas ya se ven en el Historial (US-72).** El Historial
+  considera "hecha" una actividad por su `completadaEn` (no por la `valoracion`), coherente con el
+  backend, y ya no depende del segundo paso (puntuar) para registrarla. Cubierto por E2E (marcar
+  realizada → aparece en el Historial); añadido `testID="history-activities"` para acotar la aserción.
+
+### Security
+
 ## [1.6.0] - 2026-07-01
 
 ### Changed

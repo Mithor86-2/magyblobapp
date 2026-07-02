@@ -6,6 +6,7 @@ import type { ChildProfileRepository } from './domain/repositories/ChildProfileR
 import type { StoryRepository } from './domain/repositories/StoryRepository.js';
 import type { StoryNarrationRepository } from './domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from './domain/repositories/ActivityRepository.js';
+import type { AchievementRepository } from './domain/repositories/AchievementRepository.js';
 import type { InteractionEventRepository } from './domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from './domain/repositories/AuditLogRepository.js';
 import type { PasswordHasher } from './domain/auth/PasswordHasher.js';
@@ -22,6 +23,8 @@ export interface AppDeps {
   stories: StoryRepository;
   narrations: StoryNarrationRepository;
   activities: ActivityRepository;
+  /** Logros desbloqueados por perfil (US-68). */
+  achievements: AchievementRepository;
   events: InteractionEventRepository;
   audit: AuditLogRepository;
   ai: AIProvider;

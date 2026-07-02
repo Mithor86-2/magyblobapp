@@ -12,6 +12,7 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
 import { DashboardScreen } from './src/presentation/screens/DashboardScreen';
 import { WelcomeScreen } from './src/presentation/screens/WelcomeScreen';
@@ -19,8 +20,10 @@ import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
 import { LoginScreen } from './src/presentation/screens/LoginScreen';
 import { SelectProfileScreen } from './src/presentation/screens/SelectProfileScreen';
 import { ParentalScreen } from './src/presentation/screens/ParentalScreen';
+import { AchievementsScreen } from './src/presentation/screens/AchievementsScreen';
 import { CreateProfileScreen } from './src/presentation/screens/CreateProfileScreen';
 import { StoryReaderScreen } from './src/presentation/screens/StoryReaderScreen';
+import { SearchResultsScreen } from './src/presentation/screens/SearchResultsScreen';
 import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorScreen';
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
@@ -281,9 +284,19 @@ function ThemedApp() {
               options={{ title: t('nav.parental') }}
             />
             <Stack.Screen
+              name="Achievements"
+              component={AchievementsScreen}
+              options={{ title: t('nav.achievements') }}
+            />
+            <Stack.Screen
               name="StoryReader"
               component={LecturaScreen}
               options={{ title: t('nav.storyReader') }}
+            />
+            <Stack.Screen
+              name="SearchResults"
+              component={SearchResultsScreen}
+              options={{ title: t('nav.search') }}
             />
           </Stack.Navigator>
         </NavigationContainer>
@@ -300,11 +313,13 @@ function ThemedApp() {
  */
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <ThemedApp />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <ThemedApp />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

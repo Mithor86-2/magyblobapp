@@ -19,6 +19,65 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.7.0] - 2026-07-02
+
+### Changed
+
+- **Actividades: trato con nombre también en IA real (US-77, ajuste).** El seed
+  `prompt.activity.system` (v6) instruye usar el trato del adulto EXACTAMENTE como se indica, con su
+  nombre ("mamá Ana", "abuela Ana"), y el ejemplo lo incluye; antes la IA real descartaba el nombre.
+- **Continuar la historia: título numerado (US-78, ajuste).** `ContinueStory` deriva el título del
+  cuento origen incrementando el número de capítulo ("Joaquín en el bosque" → "… 2" → "… 3") con la
+  función `siguienteTitulo`, en vez de usar el título que invente la IA.
+
+### Added
+
+- **Continuar la historia (US-78).** Nuevo caso de uso `ContinueStory` y ruta
+  `POST /stories/:id/continue` que genera un **capítulo nuevo** de un cuento existente: pasa el cuerpo
+  del cuento origen como contexto al `AIProvider`, hereda tema/estilo/enseñanza y persiste un `Story`
+  nuevo **enlazado** al original (`Story.continuacionDe`, columna `continuacionDe` TEXT nullable,
+  migración; solo BD, no en el DTO). Reutiliza la portada del origen. `MockProvider` produce una
+  continuación determinista (ES/EN). Publica `cuento_generado`.
+- **Opción de usar el nombre del niño en el cuento (US-76).** `POST /stories` acepta `usarNombre?`
+  (Zod, por defecto `true`); si es `false`, el prompt usa un protagonista genérico ("nuestro pequeño
+  amigo" / "our little friend") y pide no inventar un nombre propio (menos PII enviada al proveedor).
+  `MockProvider` refleja el protagonista genérico.
+- **Logros / recompensas del niño (US-68).** Catálogo de logros en el dominio
+  (`domain/logros.ts`: cuentos leídos, actividades completadas, racha de días y explorar temas),
+  entidad `Achievement` + repo, caso de uso `GetAchievements` (read-model calculado que reconcilia e
+  idempotentemente persiste los desbloqueos) y ruta `GET /profiles/:id/achievements`. Nueva tabla
+  `achievements` (migración, cascada por perfil). Todo local, sin PII nueva.
+- **Cuento a la carta: enseñanza opcional (US-69).** Vocabulario cerrado `ENSENANZAS`
+  (`amistad | emociones | valentia | honestidad`); `POST /stories` acepta `ensenanza?` (Zod), el
+  prompt la refuerza (ES/EN, `MockProvider` determinista) y se persiste en `Story.ensenanza`
+  (`String?`, migración) devolviéndose en `StoryOutput`.
+
+### Changed
+
+- **Páginas del cuento con al menos 3 frases (US-75).** El system prompt de `generateStory` (ES/EN y
+  seed `prompt.story.system` v4) pide que cada página sea un párrafo autoconclusivo de **≥3 frases**
+  (antes "un párrafo breve"); el cuerpo del `MockProvider` se amplía a ≥3 frases por página, sin
+  romper el mínimo de ≥4 páginas (US-74).
+- **Trato al adulto por parentesco + nombre en actividades (US-77).** `terminoCuidador` combina el
+  trato con el nombre del adulto de la sesión ("mamá Ana", "abuela/o Ana"); `RecommendActivities` pasa
+  `guardian.nombre` al `AIProvider` y el prompt/mock lo usan. Sin nombre (anónimo) → trato genérico.
+- **"Realizado" sin valoración obligatoria (US-72).** `Activity.completar` acepta la valoración como
+  **opcional** (solo valida 1-3 si viene) y `POST /activities/:id/complete` la admite ausente; el
+  estado "hecha" se rige por `completadaEn` (coherente con cómo se cuentan las actividades completadas
+  para los logros). Sin migración: `valoracion` y `completadaEn` ya eran nullable.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- `PrismaActivityRepository` **persiste `creadoEn`** al guardar (como `PrismaStoryRepository`), en vez
+  de depender del `@default(now())`: corrige el round-trip del test de integración que se rompió al
+  añadir `creadoEn` (US-61). Cobertura CORE del backend restaurada al 100% con tests (US-72).
+
+### Security
+
 ## [1.6.0] - 2026-07-01
 
 ### Added

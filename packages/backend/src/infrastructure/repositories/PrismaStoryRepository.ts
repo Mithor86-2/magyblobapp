@@ -2,7 +2,7 @@ import type { Story as PrismaStory } from '../../generated/prisma/index.js';
 import { Story } from '../../domain/entities/Story.js';
 import type { StoryRepository } from '../../domain/repositories/StoryRepository.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';
-import type { Estilo, EstadoStory, ProveedorIa, Tema } from '../../domain/vocabulary.js';
+import type { Ensenanza, Estilo, EstadoStory, ProveedorIa, Tema } from '../../domain/vocabulary.js';
 import type { PrismaClient } from '../db/prismaClient.js';
 
 /** Repositorio de cuentos sobre PostgreSQL (Prisma). */
@@ -17,6 +17,7 @@ export class PrismaStoryRepository implements StoryRepository {
         profileId: story.profileId,
         tema: story.tema,
         estilo: story.estilo,
+        ensenanza: story.ensenanza ?? null,
         titulo: story.titulo,
         cuerpo: story.cuerpo,
         idioma: story.idioma,
@@ -24,6 +25,7 @@ export class PrismaStoryRepository implements StoryRepository {
         proveedor: story.proveedor,
         portada: story.portada ?? null,
         prompt: story.prompt ?? null,
+        continuacionDe: story.continuacionDe ?? null,
         favorito: story.favorito,
         creadoEn: story.creadoEn,
       },
@@ -52,12 +54,14 @@ function toStory(row: PrismaStory): Story {
     profileId: row.profileId,
     tema: row.tema as Tema,
     estilo: row.estilo as Estilo,
+    ensenanza: (row.ensenanza ?? undefined) as Ensenanza | undefined,
     titulo: row.titulo,
     cuerpo: row.cuerpo,
     idioma: row.idioma as CodigoIdioma,
     proveedor: row.proveedor as ProveedorIa,
     portada: row.portada ?? undefined,
     prompt: row.prompt ?? undefined,
+    continuacionDe: row.continuacionDe ?? undefined,
     estado: row.estado as EstadoStory,
     favorito: row.favorito,
     creadoEn: row.creadoEn,

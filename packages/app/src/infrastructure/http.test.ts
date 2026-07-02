@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../domain/errors';
-import { createApiGateways, getBaseUrl } from './http';
+import { createApiGateways, getBaseUrl, warmUp } from './http';
 
 /**
  * Tests del adaptador HTTP (implementación de los gateways de domain). Se mockea
@@ -237,6 +237,33 @@ describe('createApiGateways (adaptador HTTP)', () => {
     });
   });
 
+  it('stories.generate envía usarNombre cuando se indica (US-76)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(STORY));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.stories.generate({
+      profileId: 'p1',
+      temas: ['magia'],
+      estilos: ['aventura'],
+      usarNombre: false,
+    });
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(JSON.parse(options.body)).toMatchObject({ usarNombre: false });
+  });
+
+  it('stories.continueStory hace POST /stories/:id/continue (US-78)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...STORY, id: 's2' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.stories.continueStory('s1');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/stories/s1/continue`);
+    expect(options.method).toBe('POST');
+    expect(out.id).toBe('s2');
+  });
+
   it('stories.markRead hace POST /stories/:id/read', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...STORY, estado: 'leido' }));
     vi.stubGlobal('fetch', fetchMock);
@@ -306,6 +333,21 @@ describe('createApiGateways (adaptador HTTP)', () => {
     expect(url).toBe(`${BASE}/profiles/p1/history`);
     expect(options.method).toBe('GET');
     expect(out).toEqual({ stories: [], activities: [] });
+  });
+
+  it('achievements.get hace GET /profiles/:id/achievements (US-68)', async () => {
+    const logros = [
+      { clave: 'primer_cuento', categoria: 'cuentos', meta: 1, progreso: 1, conseguido: true },
+    ];
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(logros));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.achievements.get('p1');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/profiles/p1/achievements`);
+    expect(options.method).toBe('GET');
+    expect(out).toEqual(logros);
   });
 
   it('mapea un error del backend a ApiError con su tipo', async () => {
@@ -433,9 +475,10 @@ describe('createApiGateways (adaptador HTTP)', () => {
     const pending = api.stories
       .generate({ profileId: 'p1', temas: ['magia'], estilos: ['aventura'] })
       .catch((e) => e);
-    // Generación usa 90 s de timeout; ante `timeout` se reintenta hasta 2 veces con
-    // backoff (500 ms, 1000 ms): hay que dejar correr los 3 intentos completos (US-53).
-    await vi.advanceTimersByTimeAsync(90_000 * 3 + 500 + 1000);
+    // Generación usa 120 s de timeout (holgura cold-start Render, A1); ante `timeout` se
+    // reintenta hasta 2 veces con backoff (500 ms, 1000 ms): hay que dejar correr los 3
+    // intentos completos (US-53).
+    await vi.advanceTimersByTimeAsync(120_000 * 3 + 500 + 1000);
     const error = await pending;
 
     expect(error).toBeInstanceOf(ApiError);
@@ -485,6 +528,54 @@ describe('createApiGateways (adaptador HTTP)', () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error.tipo).toBe('malformed');
+  });
+});
+
+describe('warmUp (ping de arranque, US-53)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('hace un ping GET a /health sin bloquear ni lanzar', () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ status: 'ok' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    expect(() => warmUp(BASE)).not.toThrow();
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE}/health`,
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it('no hace nada si fetch no está disponible', () => {
+    vi.stubGlobal('fetch', undefined);
+    expect(() => warmUp(BASE)).not.toThrow();
+  });
+
+  it('reintenta con backoff si el ping falla, sin bloquear ni lanzar (US-53)', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockRejectedValue(new Error('backend caído'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    warmUp(BASE);
+    // Deja correr los reintentos con su backoff (500 + 1000 + 2000 ms).
+    await vi.advanceTimersByTimeAsync(500 + 1000 + 2000 + 50);
+
+    // 1 intento + WARMUP_RETRIES (2) reintentos = 3 pings a /health.
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    vi.useRealTimers();
+  });
+
+  it('reintenta si /health responde no-ok (sin lanzar) (US-53)', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503 } as Response);
+    vi.stubGlobal('fetch', fetchMock);
+
+    warmUp(BASE);
+    await vi.advanceTimersByTimeAsync(500 + 1000 + 2000 + 50);
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    vi.useRealTimers();
   });
 });
 
@@ -642,7 +733,7 @@ describe('sesión autenticada (US-45)', () => {
     const pending = createApiGateways(BASE)
       .guardians.refresh('rt-1')
       .catch((e) => e);
-    await vi.advanceTimersByTimeAsync(30_000);
+    await vi.advanceTimersByTimeAsync(60_000);
     const error = await pending;
 
     expect(error).toBeInstanceOf(ApiError);

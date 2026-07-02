@@ -3,7 +3,8 @@
 Historias: **US-06**, **US-17**, **US-18**, **US-14**, **US-15**, **US-23**, **US-24**,
 **US-25**, **US-29**, **US-30**, **US-31**, **US-32**, **US-33**, **US-34**, **US-35**, **US-36**,
 **US-37**, **US-38**, **US-39**, **US-40**, **US-41**, **US-42**, **US-43**, **US-44**, **US-45**,
-**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**, **US-60**, **US-65**.
+**US-46**, **US-50**, **US-51**, **US-52**, **US-56**, **US-57**, **US-58**, **US-60**, **US-65**,
+**US-71**.
 Volver al [índice](README.md).
 
 ## US-06 — Arranque reproducible · Must
@@ -1271,3 +1272,145 @@ lógica). Ver el plan [feature-76-doc-estandar](../planes/feature-76-doc-estanda
 - (No funcional) Dada la naturaleza del cambio, Cuando se aplica, Entonces **no se altera la lógica**:
   solo se añaden comentarios de documentación y configuración de lint; los tests existentes siguen en
   verde sin cambios de comportamiento.
+
+## US-71 — Ajustes UX + robustez cold-start {#us-71}
+
+**Como** usuario, **quiero** una app más robusta ante el arranque en frío del servidor y con una
+navegación y un historial más cómodos, **para** una mejor experiencia.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app.
+
+**Alcance (6 ajustes)**
+
+1. **Cold-start de Render (A1):** warm-up con reintentos + timeouts holgados (base 60 s, generación
+   120 s) y aviso "esto tarda más de lo usual" tras ~6 s (`useSlowHint`) en Generador/Actividades/Dashboard.
+2. **Marcar leído explícito (A2):** botón "Marcar como leído" o al terminar la narración; ya no se marca
+   solo por abrir el lector.
+3. **Actividades + buscador (A3):** actividades realizadas visibles en Historial y contadas en logros
+   (test de regresión); búsqueda y filtros en un modal ("Buscar" con contador + "Limpiar"); título completo.
+4. **Resumen de logros en Home (A4):** conseguidos/total + barra de progreso hacia Mis logros.
+5. **Animaciones de entrada (A5):** wrapper `Appear` (translateY + escala) en imágenes, tarjetas y botón principal.
+6. **Botón fijo a zona de adultos (A6):** en el header compartido, visible en las 4 pestañas.
+
+**Criterios de aceptación**
+
+- **(A1)** Dado un backend dormido, Cuando genero contenido, Entonces la petición no se aborta antes de
+  ~60 s (120 s en generación) y, si tarda >6 s, aparece el aviso de espera.
+- **(A2)** Dado el lector, Cuando lo abro, Entonces el cuento **no** se marca leído; Cuando pulso el
+  botón o termino la narración, Entonces sí se marca leído.
+- **(A3)** Dado que completo una actividad, Cuando abro el Historial, Entonces aparece; y Cuando abro
+  Mis logros, Entonces cuenta para el logro de actividades. El buscador vive en un modal; "Limpiar" resetea.
+- **(A4)** Dado un perfil con logros, Cuando abro Inicio, Entonces veo "conseguidos/total" con barra que
+  lleva a Mis logros.
+- **(A5)** Dado que entro a una pantalla, Entonces imágenes, tarjetas y el botón principal aparecen con
+  una animación de entrada sin ocultar el contenido.
+- **(A6)** Dado que estoy en cualquiera de las 4 pestañas, Entonces hay un botón fijo en el header que
+  lleva a la zona de adultos (tras su puerta parental).
+
+## US-72 — CI en verde (cobertura + integración + E2E + proceso) · Should (Mejoras) {#us-72}
+
+Como **responsable técnico** quiero que el pipeline de CI esté en **verde** y que el gate local
+impida volver a publicar en rojo, para que `main`/`develop` reflejen un estado realmente sano.
+
+**Criterios de aceptación**
+
+- Dado el job **Gate** del CI (que corre `pnpm coverage`), Cuando se ejecuta, Entonces todos los
+  ficheros del tier CORE (US-35) cumplen su umbral (100%) — backend y app (`http.ts`) — sin bajar
+  umbrales ni excluir código con tests reales.
+- Dado el job **Integración + E2E backend** (Testcontainers), Cuando se ejecuta, Entonces pasa; en
+  particular el round-trip de `PrismaActivityRepository` persiste `creadoEn` (como `Story`).
+- Dado el job **E2E app** (Playwright), Cuando se ejecuta, Entonces los flujos de alta localizan los
+  campos por `testID` (robusto ante cambios de nº/orden de campos), no por recuento de textbox.
+- Dado el hook **pre-push**, Cuando se hace `git push`, Entonces corre `pnpm check` **y** `pnpm
+coverage`, bloqueando el push si la cobertura baja del umbral (evita reincidir en CI rojo).
+- (No funcional) Dado el alcance, Cuando se aplica, Entonces el comportamiento de producción no cambia
+  (se simplifica `fetchWithRetry` sin alterar intentos/backoff; el resto son tests/proceso).
+
+## US-73 — Lectura tipo libro + pulido UX · Should (Mejoras) {#us-73}
+
+Como **niño/a** quiero **leer el cuento como un libro** (páginas que paso una a una) nada más
+generarlo, y como **adulto** quiero **cerrar con claridad** el buscador del historial y que el niño
+vea **sus trofeos** para motivarse.
+
+**Criterios de aceptación**
+
+- Dado el generador de cuentos, Cuando pulso **"Generar cuento"** y el cuento se genera, Entonces se
+  **navega al lector** (`StoryReader`) y el generador ya **no** muestra el cuento en línea (queda como
+  formulario). (A1)
+- Dado el lector, Cuando se muestra el cuento, Entonces el cuerpo aparece **paginado** (una página a la
+  vez) con **swipe horizontal** y botones **‹ / ›**, un indicador **"Página {n} de {total}"** y una
+  **animación de giro** al cambiar de página (API `Animated` de RN, sin librerías nuevas). (A2)
+- Dado un cuerpo de una sola línea (mock) o multipárrafo (LLM real) o vacío, Cuando se pagina, Entonces
+  el paginado es robusto (nunca 0 páginas; reparte por párrafos y, si hace falta, por frases). (A2)
+- Dado el **modal de búsqueda** del Historial, Cuando está abierto, Entonces muestra un botón **"X"**
+  arriba a la derecha con etiqueta accesible "Cerrar" que lo cierra. (A3)
+- Dado el resumen de logros de Inicio, Cuando hay logros conseguidos, Entonces se muestra una fila de
+  **🏆 pequeños** (uno por logro, acotada con "+N" si hay muchos); si no hay ninguno, un **mensaje de
+  ánimo**. (A4)
+- (No funcional) Dado el alcance, Cuando se aplica, Entonces solo cambia `packages/app`; gate +
+  cobertura (CORE/IMPORTANT US-35) + E2E siguen en verde.
+
+## US-74 — Libro por páginas (IA) + giro 3D + Historial con pestañas · Should (Mejoras) {#us-74}
+
+Como **niño/a** quiero **leer el cuento como un libro de verdad** (páginas que la IA ya divide, con un
+**giro 3D** al pasarlas sobre hoja blanca) y **encontrar rápido** en el historial mis cuentos y mis
+actividades por separado, viendo lo más reciente de cada uno al entrar.
+
+**Criterios de aceptación**
+
+- Dado el prompt de generación, Cuando la IA crea un cuento, Entonces devuelve el cuerpo **dividido en
+  al menos 4 páginas** (párrafos separados por línea en blanco); el modo `mock` también produce ≥4
+  páginas. (A1)
+- Dado el lector, Cuando pagina el cuento, Entonces **respeta los cortes de página de la IA** y
+  garantiza **≥4 páginas** (subdividiendo si hiciera falta); un cuerpo vacío sigue mostrando una página
+  en blanco. (A1)
+- Dado el lector, Cuando paso de página (‹ / › o swipe), Entonces se ve un **efecto de giro 3D**
+  (`rotateY` con perspectiva, dirección según avance/retroceso) y la página se muestra sobre **fondo
+  blanco tipo papel** con texto oscuro, independiente del tema. (A2)
+- Dado el Historial, Cuando entro, Entonces veo arriba **"Lo último"** con el **último cuento** y la
+  **última actividad**, y debajo un **toggle Cuentos / Actividades** (por defecto Cuentos) que muestra
+  la lista completa del tipo elegido; la búsqueda/filtros aplican a la pestaña activa. (A3)
+- (No funcional) Dado el alcance, Cuando se aplica, Entonces el cambio de prompt requiere
+  **sincronizar el JSON de settings a la BD** (dev/prod, US-70) y gate + cobertura + E2E siguen en
+  verde.
+
+## US-79 — Lector con page-curl por gesto {#us-79}
+
+> **Ajuste (lote 2 de ideas):** se refuerza el efecto de pliegue (sombra en el canto + giro/escala) siguiendo el arrastre, como aproximación de page-curl SIN Skia (se descartó `/react-native-skia`).
+
+**Como** niño (con el adulto), **quiero** pasar página del cuento arrastrando con un giro tipo libro,
+**para** que la lectura sea más natural y fluida; y que las páginas se vean del mismo tamaño.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
+
+**Alcance**
+
+1. **`react-native-gesture-handler` + `react-native-reanimated`** (+ `react-native-worklets`):
+   `BookPages` pasa página **arrastrando** con giro 3D (`rotateY` + `perspective`) en el hilo de UI,
+   conservando los botones ‹ / › y el indicador. Hoja de **alto consistente** (proporcional a la
+   pantalla). `App` en `GestureHandlerRootView`; `babel.config.js` con `babel-preset-expo`.
+2. **Tests:** ambas libs se aliasan a stubs bajo Vitest (la navegación ‹/› sigue verificándose);
+   `expo export` web validado. **Requiere dev build** (Expo Go no sirve, como desde US-66).
+
+**Criterios de aceptación**
+
+- **(Botones)** Dado el lector, Cuando pulso › / ‹, Entonces avanza/retrocede la página y el indicador
+  se actualiza; en los extremos los botones se deshabilitan.
+- **(Tamaño)** Dadas páginas de distinta longitud, Entonces la hoja mantiene un alto consistente.
+
+## US-80 — Nombre de sección en la cabecera {#us-80}
+
+**Como** persona usuaria, **quiero** ver el nombre de la sección en la cabecera, **para** saber en qué
+pantalla estoy sin depender solo de la pestaña activa.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (pestañas).
+
+**Alcance**
+
+1. **`Screen`** acepta `title`, mostrado fijo arriba a la izquierda de la barra de cabecera (junto al
+   botón de la zona de adultos); las 4 pestañas lo pasan reutilizando las etiquetas `tabs.*` (ES/EN).
+
+**Criterios de aceptación**
+
+- **(Con título)** Dada una pantalla con `title`, Entonces se muestra como cabecera (rol heading).
+- **(Sin título)** Dada una pantalla sin `title`, Entonces no se muestra cabecera de sección.

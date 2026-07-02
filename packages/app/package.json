@@ -1,6 +1,6 @@
 {
   "name": "@magyblob/app",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "App móvil (Expo + Zustand). Slice vertical del HITO 1 (Fase 4).",
   "main": "index.ts",
@@ -38,9 +38,12 @@
     "react": "19.2.3",
     "react-i18next": "^17.0.8",
     "react-native": "0.85.3",
+    "react-native-gesture-handler": "~2.31.2",
+    "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
     "react-native-svg": "15.15.4",
+    "react-native-worklets": "0.8.3",
     "zod": "^4.4.3",
     "zustand": "^5.0.2"
   },

@@ -18,6 +18,7 @@ import type { z } from 'zod';
 import { ApiError } from '../domain/errors';
 import { trackApi } from './telemetry';
 import {
+  achievementListSchema,
   activityListSchema,
   activitySchema,
   anonymousActivityListSchema,
@@ -52,8 +53,14 @@ const DEFAULT_BASE_URL = 'http://localhost:3000';
  * y la primera petición tarda; 30 s de base y 90 s para la generación de IA evitan
  * abortar una petición que sí iba a responder.
  */
-const DEFAULT_TIMEOUT_MS = 30_000;
-const GENERATION_TIMEOUT_MS = 90_000;
+// Render free suspende la instancia por inactividad; el primer request tras el
+// spin-down puede tardar 50 s o más en despertar. Los timeouts se dan holgura para
+// no abortar durante ese arranque en frío (base 60 s, generación 120 s).
+const DEFAULT_TIMEOUT_MS = 60_000;
+const GENERATION_TIMEOUT_MS = 120_000;
+// Presupuesto del ping de warm-up: cubre de sobra el spin-up (~50 s+) de Render free.
+const WARMUP_TIMEOUT_MS = 70_000;
+const WARMUP_RETRIES = 2;
 
 /**
  * Reintento con backoff ante fallos transitorios (US-53): un `timeout` o un fallo
@@ -83,18 +90,38 @@ export function getBaseUrl(): string {
 }
 
 /**
- * Ping de warm-up al arrancar (US-53): despierta el backend en frío de Render con
- * una petición a `/health` para que la primera acción del usuario no pague el cold
- * start. No bloquea la interfaz ni propaga errores (si falla, la petición real lo
- * reintentará con su propio backoff); fija un timeout amplio acorde al arranque.
+ * Ping de warm-up al arrancar (US-53, reforzado para Render free): despierta el
+ * backend en frío pidiendo `/health` para que la primera acción del usuario no pague
+ * el cold start. Como Render free **suspende** la instancia por inactividad y el
+ * despertar puede tardar 50 s o más, usa un timeout amplio (`WARMUP_TIMEOUT_MS`) y
+ * **reintenta** hasta que responda (o agotar `WARMUP_RETRIES`). No bloquea la
+ * interfaz ni propaga errores; es best-effort en segundo plano.
  */
 export function warmUp(baseUrl: string = getBaseUrl()): void {
   if (typeof fetch !== 'function') return;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
-  void fetch(`${baseUrl}/health`, { signal: controller.signal })
-    .catch(() => undefined)
-    .finally(() => clearTimeout(timer));
+
+  async function pingOnce(): Promise<boolean> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), WARMUP_TIMEOUT_MS);
+    // Sin `finally` con `return` (evita una rama fantasma de v8 en cobertura): se
+    // guarda el resultado, se limpia el timer y se retorna una sola vez.
+    let ok = false;
+    try {
+      const res = await fetch(`${baseUrl}/health`, { signal: controller.signal });
+      ok = res.ok;
+    } catch {
+      ok = false;
+    }
+    clearTimeout(timer);
+    return ok;
+  }
+
+  void (async () => {
+    for (let intento = 0; intento <= WARMUP_RETRIES; intento++) {
+      if (await pingOnce()) return;
+      await delay(RETRY_BASE_DELAY_MS * 2 ** intento);
+    }
+  })();
 }
 
 interface RequestOptions {
@@ -176,16 +203,18 @@ async function request<TResponse>(
   // el cold start de Render o una red intermitente se recuperan con un segundo intento.
   // Los errores HTTP llegan como `response` (no lanzan aquí) y no se reintentan.
   async function fetchWithRetry(token: string | null): Promise<Response> {
-    for (let intento = 0; ; intento++) {
+    // `fetchOnce` solo lanza `ApiError` **transitorio** (`timeout`/`network`): los errores
+    // HTTP del backend llegan como `response` (no lanzan aquí) y no se reintentan. Por eso
+    // todo fallo capturado en este bucle es reintentable: backoff hasta MAX_RETRIES y un
+    // intento final fuera del `try` cuyo error se propaga tal cual (sin ramas muertas).
+    for (let intento = 0; intento < MAX_RETRIES; intento++) {
       try {
         return await fetchOnce(token);
-      } catch (error) {
-        const transitorio =
-          error instanceof ApiError && (error.tipo === 'timeout' || error.tipo === 'network');
-        if (!transitorio || intento >= MAX_RETRIES) throw error;
+      } catch {
         await delay(RETRY_BASE_DELAY_MS * 2 ** intento);
       }
     }
+    return await fetchOnce(token);
   }
 
   let response = await fetchWithRetry(auth ? (session?.getAccessToken() ?? null) : null);
@@ -293,6 +322,15 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
           anonymousStorySchema,
         ),
+      // US-78: continúa un cuento; devuelve el capítulo nuevo (mismo esquema Story).
+      continueStory: (storyId: string) =>
+        request(
+          baseUrl,
+          `/stories/${storyId}/continue`,
+          { method: 'POST', timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
+          storySchema,
+          session,
+        ),
       markRead: (storyId: string) =>
         request(
           baseUrl,
@@ -329,10 +367,11 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
           anonymousActivityListSchema,
         ),
-      complete: (activityId: string, valoracion: number) =>
+      complete: (activityId: string, valoracion?: number) =>
         request(
           baseUrl,
           `/activities/${activityId}/complete`,
+          // `valoracion` opcional (US-72): si es undefined, el body queda `{}` al serializar.
           { method: 'POST', body: { valoracion }, auth: true },
           activitySchema,
           session,
@@ -354,6 +393,17 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           `/profiles/${profileId}/history`,
           { method: 'GET', auth: true },
           historySchema,
+          session,
+        ),
+    },
+    achievements: {
+      // US-68: catálogo de logros del perfil (la ruta reconcilia los desbloqueos).
+      get: (profileId: string) =>
+        request(
+          baseUrl,
+          `/profiles/${profileId}/achievements`,
+          { method: 'GET', auth: true },
+          achievementListSchema,
           session,
         ),
     },

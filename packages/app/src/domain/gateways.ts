@@ -8,6 +8,7 @@
  * "cliente", para que cada pantalla dependa solo de lo que usa.
  */
 import type {
+  Achievement,
   Activity,
   AnonymousActivity,
   AnonymousStory,
@@ -44,6 +45,8 @@ export interface StoryGateway {
   generate(request: GenerateStoryRequest): Promise<Story>;
   /** Genera un cuento en modo anónimo efímero, sin sesión ni persistencia (US-50). */
   generateAnonymous(request: GenerateStoryAnonymousRequest): Promise<AnonymousStory>;
+  /** Continúa un cuento existente: genera un capítulo nuevo enlazado y lo devuelve (US-78). */
+  continueStory(storyId: string): Promise<Story>;
   /** Marca un cuento como leído (US-07). */
   markRead(storyId: string): Promise<Story>;
   /** Marca/desmarca un cuento como favorito (US-64); idempotente, devuelve el cuento actualizado. */
@@ -56,14 +59,19 @@ export interface ActivityGateway {
   recommend(request: RecommendActivitiesRequest): Promise<Activity[]>;
   /** Recomienda actividades en modo anónimo efímero, sin sesión ni persistencia (US-50). */
   recommendAnonymous(request: RecommendActivitiesAnonymousRequest): Promise<AnonymousActivity[]>;
-  /** Registra una actividad completada con valoración 1-3 (US-10). */
-  complete(activityId: string, valoracion: number): Promise<Activity>;
+  /** Registra una actividad como completada; la valoración 1-3 es opcional (US-10/US-72). */
+  complete(activityId: string, valoracion?: number): Promise<Activity>;
   /** Marca/desmarca una actividad como favorita (US-64); idempotente, devuelve la actividad actualizada. */
   setFavorite(activityId: string, favorito: boolean): Promise<Activity>;
 }
 
 export interface HistoryGateway {
   get(profileId: string): Promise<History>;
+}
+
+export interface AchievementGateway {
+  /** Catálogo de logros del perfil con su progreso y estado de desbloqueo (US-68). */
+  get(profileId: string): Promise<Achievement[]>;
 }
 
 /** Conjunto de gateways que el composition root cablea y la presentación consume. */
@@ -73,4 +81,5 @@ export interface Api {
   stories: StoryGateway;
   activities: ActivityGateway;
   history: HistoryGateway;
+  achievements: AchievementGateway;
 }

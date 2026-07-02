@@ -783,3 +783,69 @@ en paralelo): ya no se mitigan a mano, se evitan por diseño. Protocolo en
   después se itera con Metro ya activo. Docs actualizados (READMEs raíz y del app, `estrategia-pruebas.md`).
 - **Coletazo en el E2E nativo (Maestro):** los flows dejan de valer sobre Expo Go; hay que instalar el
   dev build y usar como `appId` el `bundleIdentifier`/`package` de la app (no el de Expo Go).
+
+## Lote US-68/US-69 — Logros y enseñanza (2026-07-01)
+
+### Migraciones Prisma escritas a mano (sin Docker) + `prisma generate` para el gate
+
+- **Contexto:** el gate (`pnpm check`) no levanta Postgres; las migraciones se aplican en
+  `docker compose up` (`migrate deploy`). Al añadir un campo/modelo al `schema.prisma` no se puede
+  correr `prisma migrate dev` (necesita una BD/shadow).
+- **Solución:** escribir el `migration.sql` **a mano** en una carpeta con timestamp mayor que la última
+  (como ya hacían varias migraciones del repo, p. ej. `2026...` con SQL manual) y correr
+  `pnpm --filter @magyblob/backend prisma:generate` (sin BD) para regenerar el cliente. Sin ese
+  `generate`, el **typecheck falla** porque los tipos generados no conocen el campo/modelo nuevo
+  (`Story.ensenanza`, modelo `Achievement`). El cliente generado (`src/generated/prisma`) está
+  gitignoreado (lo rehace `postinstall`), así que no se commitea.
+- **Regla útil:** tras tocar `schema.prisma` → (1) escribir la migración SQL a mano, (2)
+  `prisma:generate`, (3) actualizar `Docs/modelo-datos.md` en el mismo cambio (regla schema↔modelo).
+
+### i18next con `count` para pluralizar etiquetas de logros
+
+- Las etiquetas de objetivo de los logros ("Leer 1 cuento" vs "Leer 5 cuentos") usan las claves
+  `*_one`/`*_other` de i18next con `t(clave, { count })`; evita concatenar el número con un plural fijo.
+
+## Lote de ajustes UX + cold-start (2026-07-01, rama `feature/81-ajustes-ux-render`)
+
+### `toBeVisible()` de jest-dom trata `opacity: 0` como NO visible → animaciones de entrada sin opacidad
+
+- **Síntoma:** al envolver tarjetas/imágenes/botones en un wrapper de animación de entrada que arranca
+  con `opacity: 0` (fade-in), decenas de tests con `expect(...).toBeVisible()` fallaban (react-native-web
+  renderiza `opacity:0` y jest-dom lo considera invisible), aunque el elemento estaba montado.
+- **Causa:** en tests no se avanza el reloj de animación (Animated JS driver usa RAF), así que la opacidad
+  se queda en ~0 en el momento de la aserción.
+- **Solución:** el wrapper `Appear` anima **`translateY` + `scale`** (0.98→1) y **no la opacidad** (queda
+  en 1). Sigue siendo una entrada atractiva y no altera la visibilidad para los tests. `useNativeDriver:
+false` para que funcione igual en nativo y en react-native-web.
+
+### Tests de timeout de red: al cambiar los presupuestos hay que ajustar el avance de timers
+
+- Subir `DEFAULT_TIMEOUT_MS` (30→60 s) y el de generación (90→120 s) por el cold start de Render rompió
+  dos tests de `http.test.ts` que avanzaban los timers al valor antiguo. Regla: los tests con
+  `vi.advanceTimersByTimeAsync(...)` deben avanzar al **nuevo** presupuesto (×nº de reintentos + backoff).
+
+### `renderHook` + timers falsos: envolver `advanceTimersByTime` en `act`
+
+- Un hook que hace `setState` desde un `setTimeout` (p. ej. `useSlowHint`) no refleja el cambio si se
+  avanzan los timers fuera de `act(...)`. Envolver `act(() => vi.advanceTimersByTime(ms))`.
+
+## Actividades realizadas en el Historial (2026-07-01, rama `feature/72-actividades-historial`, US-72)
+
+### "Hecha" debe definirse por `completadaEn`, no por `valoracion`
+
+- **Síntoma:** una actividad marcada como realizada podía no aparecer en el Historial.
+- **Causa:** la app decidía "hecha" por `valoracion != null`, pero completar era un flujo de **dos pasos**
+  ("Realizado" solo revelaba las estrellas; la actividad se guardaba al **tocar una estrella**). Si el
+  toque no registraba o no se puntuaba, no se completaba. Además el backend ya contaba las completadas por
+  **`completadaEn`** (`domain/logros.ts`), así que la app era incoherente con el propio backend.
+- **Solución:** valoración **opcional** (dominio, DTO, ruta Zod); "Realizado" completa al instante
+  (`onComplete()` sin valoración) y las estrellas quedan editables para puntuar después; el estado "hecha"
+  y el filtro del Historial pasan a `completadaEn != null`. Sin migración (`valoracion`/`completadaEn` ya
+  eran nullable).
+
+### Reproducir con E2E antes de "arreglar": el tab navigator mantiene pestañas montadas
+
+- El primer E2E que reproducía el flujo falló por **strict mode** de Playwright: `getByText('Actividad de
+arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Historial siguen montadas y
+  **visibles** en react-navigation web). No era el bug: la actividad **sí** estaba en el Historial. Lección:
+  acotar la aserción a la sección con un `testID` (`history-activities`) en vez de `.first()`/`filter({visible})`.

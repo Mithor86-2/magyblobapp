@@ -10,9 +10,9 @@ import { correoUnico } from './_correo';
  *  - Historial de cuentos (US-08): el cuento generado aparece en "Cuentos mágicos".
  *
  * Se localiza por rol/nombre accesible (coherente con US-30), no por estructura ni
- * estilos. El contenido es determinista (modo mock, `MockProvider`): el cuento se
- * titula «{nombre} y la aventura de {tema}» y las actividades «Actividad de
- * {categoria} nº {n}». Valida el export web (Chromium), no la app nativa.
+ * estilos. El contenido es determinista (modo mock, `MockProvider`), pero el **título
+ * del cuento varía** (US-54), así que el historial se localiza por el prefijo estable de
+ * la etiqueta accesible «Leer el cuento …», no por el título exacto. Valida el export web.
  *
  * Cada test de Playwright arranca con un contexto/página nuevos, así que el
  * onboarding se rehace dentro del propio test (el helper de abajo). El backend
@@ -21,10 +21,8 @@ import { correoUnico } from './_correo';
  * registrado".
  */
 
-/** Nombre del niño usado en este spec; aparece en el título del cuento del mock. */
+/** Nombre del niño usado en este spec (aparece en el cuerpo del cuento del mock). */
 const NOMBRE_NINO = 'Lucia';
-/** Tema preseleccionado a partir del interés "Animales" → valor de vocabulario `animales`. */
-const TITULO_CUENTO = new RegExp(`${NOMBRE_NINO} y la aventura de animales`);
 
 /**
  * Recorre el onboarding (bienvenida → puerta parental → alta del adulto → crear
@@ -47,14 +45,15 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   const suma = Number(m![1]) + Number(m![2]);
   await page.getByRole('button', { name: String(suma), exact: true }).click();
 
-  // Formulario de alta del adulto (3 campos: nombre, apellidos, email)
-  const campos = page.getByRole('textbox');
-  await expect(campos).toHaveCount(3);
-  await campos.nth(0).fill('Marta');
-  await campos.nth(1).fill('López');
+  // Formulario de alta del adulto. Localizado por testID (robusto ante cambios en
+  // el nº/orden de campos: nombre, apellidos, email y contraseña US-48).
+  await expect(page.getByTestId('alta-nombre')).toBeVisible();
+  await page.getByTestId('alta-nombre').fill('Marta');
+  await page.getByTestId('alta-apellidos').fill('López');
   // Email único por test (ver `_correo.ts`): el backend persiste entre tests y
   // navegadores, así que un email fijo chocaría con "email ya registrado".
-  await campos.nth(2).fill(correo);
+  await page.getByTestId('alta-email').fill(correo);
+  await page.getByTestId('alta-password').fill('Contrasena123');
   await page.getByRole('button', { name: 'Madre' }).click();
   await page.getByRole('button', { name: 'Acepto', exact: true }).click();
   await page.getByRole('button', { name: 'Aceptar y continuar' }).click();
@@ -70,13 +69,27 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   await page.getByRole('button', { name: '¡Listo!' }).click();
 
   // Pestaña "Cuentos" → generar un cuento (queda en el historial del perfil)
-  await page.getByText('Cuentos', { exact: true }).first().click();
+  await page.getByText('Cuentos', { exact: true }).last().click();
   await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible();
   await page.getByRole('button', { name: 'Generar cuento' }).click();
 
-  // El cuento (mock determinista) aparece con el nombre del niño
-  await expect(page.getByText(/Había una vez/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(new RegExp(NOMBRE_NINO)).first()).toBeVisible();
+  // A1/A2 (US-73): al generar se navega al LECTOR (Stack raíz) con el cuento PAGINADO.
+  // La primera página empieza con "Había una vez <nombre>, …" (mock determinista) y hay
+  // indicador de página. Se asienta la frase completa (única del lector visible; el nombre
+  // suelto también aparece oculto en las pestañas montadas detrás y daría un falso "hidden").
+  await expect(page.getByText(new RegExp(`Había una vez ${NOMBRE_NINO}`))).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByText(/Página 1 de/)).toBeVisible();
+
+  // El lector es una pantalla del stack raíz montada SOBRE las pestañas y este navegador
+  // no está enganchado al historial del navegador (no hay `linking`), así que `goBack()` no
+  // sirve. Recargar rearranca la app: la sesión y el perfil persisten (US-49/US-50) y la
+  // ruta inicial resuelve a las pestañas (`Main`); el cuento ya quedó guardado en backend.
+  await page.reload();
+  await expect(page.getByText('Historial', { exact: true }).first()).toBeVisible({
+    timeout: 30_000,
+  });
 }
 
 test('actividades: generar recomendadas y marcar una como realizada', async ({
@@ -85,7 +98,7 @@ test('actividades: generar recomendadas y marcar una como realizada', async ({
   await completarOnboarding(page, correoUnico(testInfo));
 
   // Ir a la pestaña "Actividades"
-  await page.getByText('Actividades', { exact: true }).first().click();
+  await page.getByText('Actividades', { exact: true }).last().click();
   await expect(page.getByText('Actividades para hoy')).toBeVisible();
 
   // Generar actividades recomendadas (US-09)
@@ -106,17 +119,44 @@ test('actividades: generar recomendadas y marcar una como realizada', async ({
   await expect(page.getByText('¡Hecha!').first()).toBeVisible();
 });
 
-test('historial: el cuento generado aparece en "Cuentos mágicos"', async ({ page }, testInfo) => {
+test('historial: la actividad marcada como realizada aparece en la sección Actividades', async ({
+  page,
+}, testInfo) => {
   await completarOnboarding(page, correoUnico(testInfo));
 
-  // Ir a la pestaña "Historial"
-  await page.getByText('Historial', { exact: true }).first().click();
+  // Ir a "Actividades", generar y marcar la primera como realizada (US-10).
+  await page.getByText('Actividades', { exact: true }).last().click();
+  await expect(page.getByText('Actividades para hoy')).toBeVisible();
+  await page.getByRole('button', { name: 'Generar actividades' }).click();
+  await expect(page.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Realizado' }).first().click();
+  await page.getByRole('button', { name: '3 estrellas' }).first().click();
+  await expect(page.getByText('¡Hecha!').first()).toBeVisible();
+
+  // Ir al Historial: la actividad realizada debe aparecer en la pestaña Actividades con
+  // "¡Hecha!" (reproduce el bug: marcar realizada → verla en el Historial). El Historial
+  // (US-74) arranca en la pestaña Cuentos, así que pulsamos el toggle "Actividades" (por
+  // testID, para no chocar con la pestaña inferior homónima) y acotamos por su testID de sección.
+  await page.getByText('Historial', { exact: true }).last().click();
+  await expect(page.getByText('Tu historial')).toBeVisible();
+  await page.getByTestId('history-tab-activities').click();
+  const seccion = page.getByTestId('history-activities');
+  await expect(seccion.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
+  await expect(seccion.getByText('¡Hecha!')).toBeVisible();
+});
+
+test('historial: el cuento generado aparece en la pestaña Cuentos', async ({ page }, testInfo) => {
+  await completarOnboarding(page, correoUnico(testInfo));
+
+  // Ir a la pestaña "Historial" (arranca en el toggle "Cuentos", US-74)
+  await page.getByText('Historial', { exact: true }).last().click();
   await expect(page.getByText('Tu historial')).toBeVisible();
 
-  // El cuento recién generado aparece bajo la sección "Cuentos mágicos" (US-08).
-  await expect(page.getByText('Cuentos mágicos')).toBeVisible();
-  // La tarjeta de cuento es un botón con etiqueta accesible "Leer el cuento {título}".
-  await expect(
-    page.getByRole('button', { name: new RegExp(`Leer el cuento ${TITULO_CUENTO.source}`) }),
-  ).toBeVisible({ timeout: 30_000 });
+  // El cuento recién generado aparece en la lista de Cuentos (US-08). La tarjeta es un botón
+  // con etiqueta accesible "Leer el cuento {título}"; el título varía (US-54), basta el prefijo.
+  // Acotamos a la sección por su testID (los destacados "Lo último" repiten la tarjeta).
+  const seccion = page.getByTestId('history-stories');
+  await expect(seccion.getByRole('button', { name: /^Leer el cuento / }).first()).toBeVisible({
+    timeout: 30_000,
+  });
 });

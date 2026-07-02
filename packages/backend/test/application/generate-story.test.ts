@@ -158,6 +158,73 @@ describe('GenerateStory', () => {
     ).rejects.toThrow(DomainError);
   });
 
+  // --- Enseñanza / valor (US-69) ---
+
+  it('US-69: persiste y devuelve la enseñanza elegida', async () => {
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+      ensenanza: 'amistad',
+    });
+    expect(out.ensenanza).toBe('amistad');
+    const guardado = await stories.findById(out.id);
+    expect(guardado?.ensenanza).toBe('amistad');
+  });
+
+  it('US-69: la enseñanza es opcional (sin ella el cuento se genera igual)', async () => {
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(out.ensenanza).toBeUndefined();
+  });
+
+  it('US-69: rechaza una enseñanza fuera del vocabulario', async () => {
+    await expect(
+      useCase.execute({
+        profileId: 'p-1',
+        temas: ['animales'],
+        estilos: ['aventura'],
+        ensenanza: 'obediencia',
+      }),
+    ).rejects.toThrow(DomainError);
+  });
+
+  // --- Usar el nombre del niño (US-76) ---
+
+  it('US-76: pasa usarNombre al proveedor de IA cuando se indica', async () => {
+    const ai = new FakeAIProvider();
+    useCase = new GenerateStory({
+      profiles,
+      stories,
+      ai,
+      newId: secuencialIdGenerator('s'),
+      now: relojFijo(),
+    });
+    await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+      usarNombre: false,
+    });
+    expect(ai.storyCalls[0]?.usarNombre).toBe(false);
+  });
+
+  it('US-76: por defecto (sin usarNombre) el proveedor no recibe false', async () => {
+    const ai = new FakeAIProvider();
+    useCase = new GenerateStory({
+      profiles,
+      stories,
+      ai,
+      newId: secuencialIdGenerator('s'),
+      now: relojFijo(),
+    });
+    await useCase.execute({ profileId: 'p-1', temas: ['animales'], estilos: ['aventura'] });
+    expect(ai.storyCalls[0]?.usarNombre).toBeUndefined();
+  });
+
   // --- Portada de imagen (US-59) ---
 
   it('persiste la portada generada cuando el proveedor la devuelve', async () => {

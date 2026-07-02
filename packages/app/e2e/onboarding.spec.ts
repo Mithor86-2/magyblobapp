@@ -23,12 +23,13 @@ test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ pa
   const suma = Number(m![1]) + Number(m![2]);
   await page.getByRole('button', { name: String(suma), exact: true }).click();
 
-  // Formulario de alta del adulto (3 campos de texto en orden: nombre, apellidos, email)
-  const campos = page.getByRole('textbox');
-  await expect(campos).toHaveCount(3);
-  await campos.nth(0).fill('Ana');
-  await campos.nth(1).fill('García');
-  await campos.nth(2).fill(correoUnico(testInfo));
+  // Formulario de alta del adulto. Se localiza por testID (robusto ante cambios en
+  // el nº o el orden de campos: nombre, apellidos, email y contraseña US-48).
+  await expect(page.getByTestId('alta-nombre')).toBeVisible();
+  await page.getByTestId('alta-nombre').fill('Ana');
+  await page.getByTestId('alta-apellidos').fill('García');
+  await page.getByTestId('alta-email').fill(correoUnico(testInfo));
+  await page.getByTestId('alta-password').fill('Contrasena123');
   await page.getByRole('button', { name: 'Madre' }).click();
   await page.getByRole('button', { name: 'Acepto', exact: true }).click();
   await page.getByRole('button', { name: 'Aceptar y continuar' }).click();
@@ -44,11 +45,14 @@ test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ pa
   await page.getByRole('button', { name: '¡Listo!' }).click();
 
   // Pestañas: ir a "Cuentos" y generar
-  await page.getByText('Cuentos', { exact: true }).first().click();
+  await page.getByText('Cuentos', { exact: true }).last().click();
   await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible();
   await page.getByRole('button', { name: 'Generar cuento' }).click();
 
-  // El cuento (mock determinista) aparece con el nombre del niño
-  await expect(page.getByText(/Había una vez/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(/Mateo/).first()).toBeVisible();
+  // A1/A2 (US-73): al generar se abre el LECTOR con el cuento PAGINADO. La primera
+  // página empieza con "Había una vez <nombre>, …" (mock determinista) y hay indicador
+  // de página. Se asienta la frase completa (única del lector visible; el nombre suelto
+  // también aparece oculto en las pestañas montadas detrás y daría un falso "hidden").
+  await expect(page.getByText(/Había una vez Mateo/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Página 1 de/)).toBeVisible();
 });

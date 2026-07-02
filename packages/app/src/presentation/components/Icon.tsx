@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   BookOpen,
+  Check,
   Cloud,
   Home,
   Library,
@@ -10,10 +11,12 @@ import {
   Pause,
   Play,
   Puzzle,
+  Search,
   Sparkles,
   Square,
   Star,
   UserRound,
+  X,
   type LucideIcon,
 } from 'lucide-react-native';
 import { useTheme } from '../theme/ThemeProvider';
@@ -41,6 +44,9 @@ const ICONS = {
   // Acciones / navegación.
   'arrow-right': ArrowRight,
   adults: UserRound,
+  check: Check,
+  search: Search,
+  close: X,
   // Valoración (estrella; usar `fill` para el estado lleno).
   rating: Star,
   // Favorito (estrella; relleno cuando es favorito, US-64).

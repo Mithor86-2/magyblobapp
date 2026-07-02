@@ -42,31 +42,72 @@ describe('ActivityCard', () => {
   it('US-54: muestra las instrucciones como lista de pasos cuando existen', () => {
     render(<ActivityCard activity={{ ...base, instrucciones: '1. Coge el papel. 2. Pinta.' }} />);
 
-    expect(screen.getByText('Cómo hacerlo')).toBeVisible();
-    // Cada paso es un elemento propio (lista), no un párrafo único.
+    // US-81: los pasos empiezan ocultos; solo se ofrece "Ver pasos".
+    expect(screen.getByRole('button', { name: 'Ver pasos' })).toBeVisible();
+    expect(screen.queryByText('Coge el papel.')).not.toBeInTheDocument();
+
+    // Al pulsar "Ver pasos" se despliegan como lista (cada paso su elemento).
+    fireEvent.click(screen.getByRole('button', { name: 'Ver pasos' }));
     expect(screen.getByText('Coge el papel.')).toBeVisible();
     expect(screen.getByText('Pinta.')).toBeVisible();
+
+    // El botón pasa a "Ocultar pasos" y al pulsarlo se repliegan.
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar pasos' }));
+    expect(screen.queryByText('Coge el papel.')).not.toBeInTheDocument();
   });
 
-  it('US-54: si no hay instrucciones, no muestra la sección "Cómo hacerlo"', () => {
+  it('US-81: si no hay instrucciones, no muestra el botón de pasos', () => {
     render(<ActivityCard activity={base} />);
 
-    expect(screen.queryByText('Cómo hacerlo')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ver pasos' })).not.toBeInTheDocument();
   });
 
-  it('con onComplete: al marcar "Realizado" pide la valoración y la notifica', () => {
+  it('US-81 (ajuste): con pasosVisiblesInicial los pasos salen visibles y ofrece "Ocultar pasos"', () => {
+    render(
+      <ActivityCard
+        activity={{ ...base, instrucciones: '1. Coge el papel. 2. Pinta.' }}
+        pasosVisiblesInicial
+      />,
+    );
+
+    // Los pasos se ven sin pulsar nada, y el botón está en modo "Ocultar pasos".
+    expect(screen.getByText('Coge el papel.')).toBeVisible();
+    expect(screen.getByText('Pinta.')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Ocultar pasos' })).toBeVisible();
+  });
+
+  it('US-72: al pulsar "Realizado" completa al instante, sin exigir valoración', () => {
     const onComplete = vi.fn();
     render(<ActivityCard activity={base} onComplete={onComplete} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Realizado' }));
-    expect(screen.getByText('¿Qué tal estuvo?')).toBeVisible();
+    // Se notifica sin valoración (la actividad queda hecha ya).
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete.mock.calls[0][0]).toBeUndefined();
+  });
 
+  it('US-72: hecha pero sin puntuar (con onComplete) invita a valorar y notifica la estrella', () => {
+    const onComplete = vi.fn();
+    render(
+      <ActivityCard
+        activity={{ ...base, completadaEn: '2026-06-10T12:00:00.000Z' }}
+        onComplete={onComplete}
+      />,
+    );
+
+    // Ya no ofrece "Realizado" (está hecha) y las estrellas quedan editables.
+    expect(screen.queryByRole('button', { name: 'Realizado' })).not.toBeInTheDocument();
+    expect(screen.getByText('¿Qué tal estuvo?')).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: '3 estrellas' }));
     expect(onComplete).toHaveBeenCalledWith(3);
   });
 
-  it('si ya está valorada, muestra "¡Hecha!" y no ofrece marcarla de nuevo', () => {
-    render(<ActivityCard activity={{ ...base, valoracion: 2 }} onComplete={vi.fn()} />);
+  it('si ya está hecha y valorada, muestra "¡Hecha!" y no ofrece marcarla de nuevo', () => {
+    render(
+      <ActivityCard
+        activity={{ ...base, completadaEn: '2026-06-10T12:00:00.000Z', valoracion: 2 }}
+      />,
+    );
 
     expect(screen.getByText('¡Hecha!')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Realizado' })).not.toBeInTheDocument();

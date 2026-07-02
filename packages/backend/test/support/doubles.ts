@@ -9,6 +9,7 @@ import type { Guardian } from '../../src/domain/entities/Guardian.js';
 import type { Story } from '../../src/domain/entities/Story.js';
 import type { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import type { Activity } from '../../src/domain/entities/Activity.js';
+import type { Achievement } from '../../src/domain/entities/Achievement.js';
 import type { InteractionEvent } from '../../src/domain/entities/InteractionEvent.js';
 import type { AuditLog } from '../../src/domain/entities/AuditLog.js';
 import type { ChildProfileRepository } from '../../src/domain/repositories/ChildProfileRepository.js';
@@ -16,6 +17,7 @@ import type { GuardianRepository } from '../../src/domain/repositories/GuardianR
 import type { StoryRepository } from '../../src/domain/repositories/StoryRepository.js';
 import type { StoryNarrationRepository } from '../../src/domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from '../../src/domain/repositories/ActivityRepository.js';
+import type { AchievementRepository } from '../../src/domain/repositories/AchievementRepository.js';
 import type { InteractionEventRepository } from '../../src/domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from '../../src/domain/repositories/AuditLogRepository.js';
 import type { SettingsRepository } from '../../src/domain/repositories/SettingsRepository.js';
@@ -109,6 +111,22 @@ export class InMemoryActivityRepository implements ActivityRepository {
   }
 }
 
+/** Repositorio de logros en memoria para tests (idempotente por profileId+clave). */
+export class InMemoryAchievementRepository implements AchievementRepository {
+  readonly items: Achievement[] = [];
+
+  async findByProfile(profileId: string): Promise<Achievement[]> {
+    return this.items.filter((a) => a.profileId === profileId);
+  }
+
+  async unlock(achievement: Achievement): Promise<void> {
+    const existe = this.items.some(
+      (a) => a.profileId === achievement.profileId && a.clave === achievement.clave,
+    );
+    if (!existe) this.items.push(achievement);
+  }
+}
+
 /** Repositorio de eventos en memoria para tests. */
 export class InMemoryInteractionEventRepository implements InteractionEventRepository {
   readonly items: InteractionEvent[] = [];
@@ -149,13 +167,20 @@ export class FakeAIProvider implements AIProvider {
   imagenCalls: GenerateImageInput[] = [];
   /** Registra las entradas recibidas por `recommendActivities` (p. ej. para asertar el parentesco, US-67). */
   recommendCalls: RecommendActivitiesInput[] = [];
+  /** Registra las entradas recibidas por `generateStory` (para asertar usarNombre/contexto, US-76/78). */
+  storyCalls: GenerateStoryInput[] = [];
 
   constructor(private readonly imagen: FakeImagen = null) {}
 
   async generateStory(input: GenerateStoryInput) {
+    this.storyCalls.push(input);
+    // US-76: refleja el protagonista genérico si el adulto no usa el nombre del niño.
+    const proto = input.usarNombre === false ? 'nuestro pequeño amigo' : input.perfil.nombre;
+    // US-78: marca la continuación si viene contexto del cuento previo.
+    const cont = (input.contexto ?? '').trim().length > 0 ? ' (continuación)' : '';
     return {
-      titulo: `Cuento de ${input.perfil.nombre} sobre ${input.temas.join(', ')}`,
-      cuerpo: `Había una vez una historia ${input.estilos.join(', ')} en ${input.perfil.idioma.value}.`,
+      titulo: `Cuento de ${proto} sobre ${input.temas.join(', ')}${cont}`,
+      cuerpo: `Había una vez una historia ${input.estilos.join(', ')} en ${input.perfil.idioma.value}.${cont}`,
       proveedor: 'mock' as const,
       // US-61: prompt representativo para que el caso de uso lo persista.
       prompt: `prompt-cuento:${input.temas.join(',')}|${input.estilos.join(',')}`,

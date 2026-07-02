@@ -5,7 +5,7 @@
  * **favorito** y por una **búsqueda de texto** normalizada. El valor especial
  * `TODOS` significa "sin filtro" (la opción por defecto de los chips).
  */
-import type { Activity, Categoria, Estilo, Story, Tema } from '../../domain/types';
+import type { Activity, Categoria, Ensenanza, Estilo, Story, Tema } from '../../domain/types';
 
 /** Opción por defecto de los chips: no filtra (muestra todo). */
 export const TODOS = 'todos' as const;
@@ -13,6 +13,7 @@ export const TODOS = 'todos' as const;
 export type FiltroTema = Tema | typeof TODOS;
 export type FiltroEstilo = Estilo | typeof TODOS;
 export type FiltroCategoria = Categoria | typeof TODOS;
+export type FiltroEnsenanza = Ensenanza | typeof TODOS;
 
 /**
  * Normaliza un texto para comparar por subcadena sin distinguir mayúsculas ni
@@ -29,9 +30,31 @@ function coincide(texto: string, consulta: string): boolean {
 }
 
 /**
- * Filtra los cuentos por tema, estilo, favorito y búsqueda de texto. `TODOS` en
- * tema/estilo no restringe; `soloFavoritos` deja solo los marcados; la `busqueda`
- * (normalizada) compara contra título, cuerpo, tema y estilo. Combina todos a la vez.
+ * Devuelve el cuento **más reciente** por `creadoEn` (ISO, desc) para la franja de
+ * destacados "Lo último" del Historial (A3/US-74), o `undefined` si no hay cuentos.
+ * Los que no traen `creadoEn` van al final (se ordenan como cadena vacía).
+ */
+export function ultimoCuento(stories: Story[]): Story | undefined {
+  return [...stories].sort((a, b) => (b.creadoEn ?? '').localeCompare(a.creadoEn ?? ''))[0];
+}
+
+/**
+ * Devuelve la actividad **completada más reciente** por `completadaEn` (ISO, desc)
+ * para la franja de destacados "Lo último" del Historial (A3/US-74), o `undefined` si
+ * no hay actividades hechas. Solo considera las que tienen `completadaEn`.
+ */
+export function ultimaActividad(activities: Activity[]): Activity | undefined {
+  return [...activities]
+    .filter((a) => a.completadaEn != null)
+    .sort((a, b) => (b.completadaEn ?? '').localeCompare(a.completadaEn ?? ''))[0];
+}
+
+/**
+ * Filtra los cuentos por tema, estilo, favorito, búsqueda de texto y enseñanza
+ * (US-69). `TODOS` en tema/estilo/enseñanza no restringe; `soloFavoritos` deja solo
+ * los marcados; la `busqueda` (normalizada) compara contra título, cuerpo, tema y
+ * estilo. Combina todos a la vez. La `ensenanza` va al final para no cambiar el orden
+ * de los parámetros ya existentes (US-62/US-64).
  */
 export function filtrarCuentos(
   stories: Story[],
@@ -39,12 +62,14 @@ export function filtrarCuentos(
   estilo: FiltroEstilo,
   soloFavoritos = false,
   busqueda = '',
+  ensenanza: FiltroEnsenanza = TODOS,
 ): Story[] {
   const q = normalizar(busqueda.trim());
   return stories.filter(
     (s) =>
       (tema === TODOS || s.tema === tema) &&
       (estilo === TODOS || s.estilo === estilo) &&
+      (ensenanza === TODOS || s.ensenanza === ensenanza) &&
       (!soloFavoritos || s.favorito === true) &&
       (q === '' ||
         coincide(s.titulo, q) ||

@@ -107,6 +107,22 @@ describe('FallbackProvider', () => {
     expect(actividades.every((a) => a.proveedor === 'mock')).toBe(true);
   });
 
+  it('US-59: generateImage delega en el primary sin tocar el fallback', async () => {
+    const primary = new OkProvider();
+    const fallback = new MockProvider();
+    const primarySpy = vi.spyOn(primary, 'generateImage');
+    const fallbackSpy = vi.spyOn(fallback, 'generateImage');
+    const provider = new FallbackProvider(primary, fallback);
+    const imagen = await provider.generateImage({
+      titulo: 'Un cuento',
+      tema: 'animales',
+      estilo: 'aventura',
+    });
+    expect(imagen).toBe('data:image/png;base64,PRIMARY');
+    expect(primarySpy).toHaveBeenCalledOnce();
+    expect(fallbackSpy).not.toHaveBeenCalled();
+  });
+
   it('describe en el warn los fallos que no son Error (p. ej. un string)', async () => {
     const logger: AILogger = { warn: vi.fn() };
     // Proveedor que lanza un valor que no es Error: se debe describir con String(error).

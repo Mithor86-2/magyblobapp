@@ -1,5 +1,5 @@
 import type { ChildProfile } from '../entities/ChildProfile.js';
-import type { Categoria, Estilo, Parentesco, ProveedorIa, Tema } from '../vocabulary.js';
+import type { Categoria, Ensenanza, Estilo, Parentesco, ProveedorIa, Tema } from '../vocabulary.js';
 
 export interface GenerateStoryInput {
   perfil: ChildProfile;
@@ -7,6 +7,21 @@ export interface GenerateStoryInput {
   temas: Tema[];
   /** Estilos elegidos (multi-selección, US-47); no vacío por contrato. */
   estilos: Estilo[];
+  /** Enseñanza/valor a transmitir (US-69); opcional, dirige la moraleja del cuento. */
+  ensenanza?: Ensenanza;
+  /**
+   * Si el cuento usa el nombre real del niño como protagonista (US-76). Por defecto
+   * `true` (compatibilidad). Si es `false`, el protagonista es genérico ("nuestro
+   * pequeño amigo" / "our little friend") y el prompt pide no inventar un nombre
+   * propio: menos PII enviada al proveedor (minimización, cumplimiento).
+   */
+  usarNombre?: boolean;
+  /**
+   * Contexto del cuento anterior para generar una **continuación** (US-78): el cuerpo
+   * (o su resumen) del cuento origen. Si viene, el prompt pide continuar la historia
+   * en un capítulo nuevo en vez de empezar de cero. Ausente en la generación normal.
+   */
+  contexto?: string;
 }
 
 /** Texto del cuento producido por la IA (el dominio le pone id, estado, etc.). */
@@ -35,6 +50,12 @@ export interface RecommendActivitiesInput {
    * abuela"…) en vez de "el adulto". Ausente (p. ej. modo anónimo) → trato genérico.
    */
   parentesco?: Parentesco;
+  /**
+   * Nombre del adulto acompañante (el guardián con sesión, US-77). Si viene, las
+   * instrucciones combinan el trato con el nombre ("abuela Ana", "mamá Ana"). Ausente
+   * (p. ej. modo anónimo) → solo el trato genérico por parentesco.
+   */
+  nombreCuidador?: string;
 }
 
 export interface GeneratedActivity {

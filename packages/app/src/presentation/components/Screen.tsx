@@ -6,12 +6,14 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Appear } from './Appear';
 import { useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, radius, spacing } from '../theme/tokens';
+import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 
 /**
  * Nombre lógico de cada cabecera ilustrada (US-58). El mapa a la imagen usa
@@ -54,10 +56,24 @@ export function Screen({
   children,
   footer,
   headerImageName,
+  headerAction,
+  title,
 }: {
   children: ReactNode;
   footer?: ReactNode;
   headerImageName?: HeaderImageName;
+  /**
+   * Acción fija arriba a la derecha, por encima del contenido y del scroll (A6): la
+   * usan las pestañas para el botón de la zona de adultos. Fija = no se desplaza con
+   * el scroll (posicionada sobre el área segura).
+   */
+  headerAction?: ReactNode;
+  /**
+   * Nombre de la sección (US-80): si se pasa, se muestra fijo arriba a la izquierda de
+   * la barra de cabecera, alineado con `headerAction`. Ayuda a saber en qué pantalla se
+   * está sin depender solo de la pestaña activa.
+   */
+  title?: string;
 }) {
   const { height } = useWindowDimensions();
   const styles = useThemedStyles(makeStyles);
@@ -70,22 +86,42 @@ export function Screen({
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        {/* A6/US-80: barra fija con el nombre de sección (izquierda) y las acciones
+            (zona de adultos, derecha), dentro del área segura y por encima del scroll. */}
+        {title || headerAction ? (
+          <View style={styles.headerBar}>
+            {title ? (
+              <Text style={styles.headerTitle} accessibilityRole="header" numberOfLines={1}>
+                {title}
+              </Text>
+            ) : (
+              <View />
+            )}
+            {headerAction ?? <View />}
+          </View>
+        ) : null}
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {headerImageName ? (
-            <Image
-              source={headerImages[headerImageName]}
-              style={[styles.header, { height: headerHeight }]}
-              resizeMode="contain"
-              accessibilityRole="image"
-            />
+            <Appear>
+              <Image
+                source={headerImages[headerImageName]}
+                style={[styles.header, { height: headerHeight }]}
+                resizeMode="contain"
+                accessibilityRole="image"
+              />
+            </Appear>
           ) : null}
           <View style={styles.body}>{children}</View>
         </ScrollView>
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
+        {footer ? (
+          <View style={styles.footer}>
+            <Appear>{footer}</Appear>
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -121,5 +157,17 @@ const makeStyles = (colors: ColorTokens) =>
       paddingHorizontal: spacing.containerPadding,
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
+    },
+    headerBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.containerPadding,
+      paddingTop: spacing.sm,
+    },
+    headerTitle: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+      flexShrink: 1,
     },
   });

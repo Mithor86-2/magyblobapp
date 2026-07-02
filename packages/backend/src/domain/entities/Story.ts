@@ -1,8 +1,10 @@
 import { DomainError } from '../errors.js';
 import {
+  esEnsenanza,
   esEstilo,
   esProveedorIa,
   esTema,
+  type Ensenanza,
   type Estilo,
   type EstadoStory,
   type ProveedorIa,
@@ -15,6 +17,11 @@ export interface StoryProps {
   profileId: string;
   tema: Tema;
   estilo: Estilo;
+  /**
+   * Enseñanza/valor que dirige la moraleja del cuento (US-69). Opcional: el adulto
+   * puede elegir una o ninguna. Si se indica, debe pertenecer al vocabulario cerrado.
+   */
+  ensenanza?: Ensenanza;
   titulo: string;
   cuerpo: string;
   idioma: CodigoIdioma;
@@ -31,6 +38,12 @@ export interface StoryProps {
    * (filas antiguas o modo anónimo no lo tienen).
    */
   prompt?: string;
+  /**
+   * Id del cuento del que este es continuación (US-78). Ausente en un cuento inicial;
+   * presente cuando se generó con "Continuar la historia" para poder encadenar
+   * capítulos. Se persiste en BD; no se expone en el DTO público.
+   */
+  continuacionDe?: string;
   estado?: EstadoStory;
   /** Marcado como favorito por el tutor (US-63); por defecto `false`. */
   favorito?: boolean;
@@ -46,12 +59,14 @@ export class Story {
   readonly profileId: string;
   readonly tema: Tema;
   readonly estilo: Estilo;
+  readonly ensenanza?: Ensenanza;
   readonly titulo: string;
   readonly cuerpo: string;
   readonly idioma: CodigoIdioma;
   readonly proveedor: ProveedorIa;
   readonly portada?: string;
   readonly prompt?: string;
+  readonly continuacionDe?: string;
   estado: EstadoStory;
   favorito: boolean;
   readonly creadoEn: Date;
@@ -59,6 +74,8 @@ export class Story {
   constructor(props: StoryProps) {
     if (!esTema(props.tema)) throw new DomainError(`Tema inválido: "${props.tema}".`);
     if (!esEstilo(props.estilo)) throw new DomainError(`Estilo inválido: "${props.estilo}".`);
+    if (props.ensenanza !== undefined && !esEnsenanza(props.ensenanza))
+      throw new DomainError(`Enseñanza inválida: "${props.ensenanza}".`);
     if (props.titulo.trim() === '') throw new DomainError('El cuento necesita un título.');
     if (props.cuerpo.trim() === '') throw new DomainError('El cuento no puede estar vacío.');
     if (!esProveedorIa(props.proveedor))
@@ -68,12 +85,14 @@ export class Story {
     this.profileId = props.profileId;
     this.tema = props.tema;
     this.estilo = props.estilo;
+    this.ensenanza = props.ensenanza;
     this.titulo = props.titulo;
     this.cuerpo = props.cuerpo;
     this.idioma = props.idioma;
     this.proveedor = props.proveedor;
     this.portada = props.portada;
     this.prompt = props.prompt;
+    this.continuacionDe = props.continuacionDe;
     this.estado = props.estado ?? 'nuevo';
     this.favorito = props.favorito ?? false;
     this.creadoEn = props.creadoEn;

@@ -722,3 +722,102 @@ y con las instrucciones dirigidas al adulto por su parentesco. Integrada en `dev
       `RecommendActivities` resuelve el parentesco vía `GuardianRepository`.
 - **DoD:** ✅ `pnpm check` verde (backend 317 + app 194) · ✅ verificado por el usuario en la app
   (Groq): actividades con ≥6 pasos y trato por parentesco.
+
+### Logros del niño (US-68) + Cuento con enseñanza (US-69) — integrado el 2026-07-01, sin release
+
+Feature `feature/80-logros-ensenanza` (backend + app). Lote de dos mejoras de cara al usuario,
+implementadas juntas en una rama (plan en
+[planes/coordinacion-logros-ensenanza.md](planes/coordinacion-logros-ensenanza.md),
+[planes/feature-68-logros.md](planes/feature-68-logros.md),
+[planes/feature-69-cuento-ensenanza.md](planes/feature-69-cuento-ensenanza.md)). Integrada en
+`develop` **sin release** (entradas en `## [Unreleased]` del CHANGELOG de backend y app, a versionar
+más adelante).
+
+- [x] ✅ **Cuento a la carta: enseñanza opcional (US-69).** Vocabulario `ENSENANZAS`
+      (`amistad | emociones | valentia | honestidad`); `POST /stories` acepta `ensenanza?` (Zod), el
+      prompt la refuerza (ES/EN, `MockProvider` determinista), se persiste en `Story.ensenanza`
+      (`String?`, migración) y se devuelve en el DTO. App: chip único opcional en el generador y
+      **filtro por enseñanza** en el Historial; i18n ES/EN.
+- [x] ✅ **Logros / recompensas del niño (US-68).** Catálogo en el dominio (`domain/logros.ts`:
+      cuentos leídos 1/5/10/25, actividades 1/5/10/25, racha 3/7, un logro por tema), entidad
+      `Achievement` + repo Prisma (tabla `achievements`, migración, cascada por perfil) y caso de uso
+      `GetAchievements` (read-model calculado que **reconcilia** persistiendo los desbloqueos de forma
+      idempotente). Ruta `GET /profiles/:id/achievements`. App: pantalla **Mis logros** (rejilla de
+      medallas con progreso/estado) accesible desde Inicio; gateway, esquema Zod e i18n ES/EN.
+      _Decisión de diseño:_ reconciliación en la lectura (endpoint GET idempotente) en vez del EventBus,
+      para mínima superficie; el estado mostrado es correcto aunque falle la persistencia (sale del cálculo).
+- **DoD:** ✅ `pnpm check` verde (**backend 357 + app 203**); integrado en `develop` sin release ·
+  ⏳ pruebas con el usuario (manual: cuento con enseñanza + filtro en Historial + pantalla Mis logros).
+
+### Lote de ajustes UX + robustez cold-start (US-71, integrado el 2026-07-01, sin release)
+
+Feature `feature/81-ajustes-ux-render`. Seis ajustes de cara al usuario (plan en
+[planes/ajustes-ux-render.md](planes/ajustes-ux-render.md)). Solo app (más un test de regresión
+backend). Integrado en `develop` **sin release** (entradas en `## [Unreleased]` del CHANGELOG del app).
+
+- [x] ✅ **A1 · Robustez cold-start de Render.** Render free suspende la instancia por inactividad
+      (primer request 50 s+): warm-up con reintentos y timeout largo (`WARMUP_TIMEOUT_MS` 70 s),
+      timeouts tolerantes (base 30→60 s, generación 90→120 s) y aviso escalado "esto tarda más de lo
+      usual…" vía hook `useSlowHint` en Generador/Actividades/Dashboard.
+- [x] ✅ **A2 · Marcar leído explícito.** Se quita el auto-marcado al abrir el lector; se marca con el
+      botón "Marcar como leído" o al **terminar la narración** (`onFinished` en `useNarration`).
+- [x] ✅ **A3 · Actividades en logros/historial + buscador.** Test de regresión confirma que una
+      actividad completada aparece en el historial y desbloquea su logro (el backend ya era correcto).
+      Historial reorganizado: búsqueda y todos los filtros en un **modal** ("Buscar" con contador de
+      filtros activos + "Limpiar"); **título del cuento completo**.
+- [x] ✅ **A4 · Resumen de logros en Home.** Tarjeta con "conseguidos/total" + `ProgressBar` que lleva a
+      Mis logros (carga al enfocar, degrada en silencio).
+- [x] ✅ **A6 · Botón fijo a la zona de adultos.** `AdultsButton` en el `headerAction` del `Screen`
+      (fijo arriba a la derecha) en las 4 pestañas; se retira el enlace inferior de Inicio.
+- [x] ✅ **A5 · Animaciones de entrada.** Wrapper `Appear` (`Animated` integrado; anima translateY+scale,
+      no opacidad) en imágenes de cabecera, footer (botón principal), `ActivityCard`, medallas de logros
+      y tarjetas de cuento.
+- **DoD:** ✅ `pnpm check` verde (**backend 357 + app 216**) · ⏳ pruebas en dev por el usuario.
+
+### Lote de ajustes de `ideas.txt` (US-75…US-82, rama `feature/85-ajustes-ideas`, sin release)
+
+Ocho ajustes de producto de `ideas.txt` (numerados 1, 3–9) sobre la app madura, ejecutados en una
+rama como lote (precedente US-71). Plan de coordinación en
+[planes/coordinacion-ajustes-ideas.md](planes/coordinacion-ajustes-ideas.md). Integrado en `develop`
+**sin release** (entradas en `## [Unreleased]` de los CHANGELOG de backend y app, a versionar más
+adelante).
+
+- [x] ✅ **Backend de contenido (US-75/76/77/78).** ≥3 frases por página en el system prompt (ES/EN) y
+      el `MockProvider` + seed alineado (US-75); `POST /stories` acepta `usarNombre?` (protagonista
+      genérico si `false`, menos PII) (US-76); `terminoCuidador` combina parentesco + nombre del adulto
+      ("mamá Ana") pasando `guardian.nombre` desde `RecommendActivities` (US-77); **Continuar la
+      historia**: caso de uso `ContinueStory` + `POST /stories/:id/continue`, `Story.continuacionDe`
+      (migración), capítulo nuevo enlazado que hereda tema/estilo/enseñanza y reutiliza portada (US-78).
+- [x] ✅ **Lector con page-curl por gesto (US-79).** `BookPages` reescrito con
+      `react-native-gesture-handler` + `react-native-reanimated` (+ `react-native-worklets`): arrastre
+      con giro 3D en el hilo de UI, ‹/› e indicador conservados, hoja de alto consistente; `App` en
+      `GestureHandlerRootView`, `babel.config.js`; stubs de test y `expo export` web validado. Requiere
+      dev build (como US-66).
+- [x] ✅ **Nombre de sección en la cabecera (US-80).** `Screen` acepta `title`; las 4 pestañas muestran
+      el nombre de sección (reutiliza `tabs.*`).
+- [x] ✅ **Pasos de actividad plegables (US-81).** `ActivityCard` oculta los pasos tras "Ver pasos" /
+      "Ocultar pasos".
+- [x] ✅ **Búsqueda global (US-82).** Pantalla `SearchResults` (accesible desde Inicio) que lista cuentos
+      y actividades coincidentes reutilizando `historyFilters`.
+- [x] ✅ **App conectada (US-76/78).** Toggle "Usar el nombre de {niño}" en el generador (envía
+      `usarNombre`) y botón "Continuar la historia" en el lector (gateway `continueStory`, abre el
+      capítulo nuevo).
+- **DoD:** ✅ `pnpm check` verde (**backend 401 + app 253**) · ⏳ pruebas en dev por el usuario (dev build).
+
+### Lote de ajustes 2 de `ideas.txt` (correcciones de US-77/78/81/64/79, rama `feature/86-ajustes-ideas-2`, sin release)
+
+Cinco correcciones detectadas en las pruebas en dev del lote anterior. Plan en
+[planes/coordinacion-ajustes-ideas-2.md](planes/coordinacion-ajustes-ideas-2.md). Integrado en
+`develop` **sin release** (entradas en `## [Unreleased]` de backend y app).
+
+- [x] ✅ **Actividades con parentesco + nombre en IA real (US-77).** Seed `prompt.activity.system` v6:
+      usar el trato + nombre tal cual ("mamá Ana", "abuela Ana"); el código ya lo componía.
+- [x] ✅ **Título de continuación numerado (US-78).** `ContinueStory` usa `siguienteTitulo(origen.titulo)`
+      ("Joaquín en el bosque" → "… 2" → "… 3") en vez del título inventado por la IA.
+- [x] ✅ **Pasos visibles al generar actividades (US-81).** `ActivityCard` acepta `pasosVisiblesInicial`;
+      `ActivitiesScreen` lo pasa `true`; Historial/Búsqueda siguen plegados.
+- [x] ✅ **Buscador del Historial en vivo (US-64).** La búsqueda pasa a un campo en línea siempre visible
+      (como Inicio) que filtra en vivo; el modal queda solo con filtros ("Filtros (N)"); se combinan.
+- [x] ✅ **Efecto de pliegue del lector sin Skia (US-79).** `BookPages` añade sombra de pliegue + giro/
+      escala más marcados siguiendo el arrastre (aproximación de page-curl; se descartó Skia).
+- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 255**) · ⏳ pruebas en dev por el usuario (dev build).

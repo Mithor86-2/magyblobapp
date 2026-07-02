@@ -59,14 +59,22 @@ const INSTRUCCION_SEGURIDAD: Record<CodigoIdioma, string> = {
     'peligro real, ni temas para adultos; termina siempre con un final feliz y ' +
     'tranquilo. Cuando escribas un cuento o una fábula, sigue esta estructura: ' +
     'presenta al personaje, una situación inicial, un amigo que ayuda, una ' +
-    'resolución positiva y una enseñanza final.',
+    'resolución positiva y una enseñanza final. Entrega el cuento dividido en ' +
+    'AL MENOS 4 páginas: cada página es un párrafo autoconclusivo de AL MENOS 3 ' +
+    'frases (por ejemplo Introducción, Enigma, Cómplice, Resolución y Cierre), y ' +
+    'separa cada párrafo del siguiente con una línea en blanco (un doble salto de línea).',
   en:
     'You are a storyteller for children aged 2 to 6. Always write in English, ' +
     'with simple language, short sentences and a tender tone. Use soft onomatopoeia ' +
     '(like "plink-plink", "boing-boing", "shhh"). Never include fear, violence or ' +
     'real danger, or adult themes; always end with a happy, calm ending. When you ' +
     'write a story or a fable, follow this structure: introduce the character, an ' +
-    'initial situation, a friend who helps, a positive resolution and a final lesson.',
+    'initial situation, a friend who helps, a positive resolution and a final lesson. ' +
+    'Deliver the story split into AT LEAST 4 pages: each page is a short, ' +
+    'self-contained paragraph (for example Introduction, Riddle, Sidekick, ' +
+    'Resolution and Closing), each page being a self-contained paragraph of AT LEAST ' +
+    '3 sentences, and separate each paragraph from the next with a blank line (a ' +
+    'double line break).',
 };
 
 /**
@@ -83,6 +91,49 @@ function tonoPorEdad(edad: number, idioma: CodigoIdioma): string {
   if (edad <= 3) return 'Use very short, simple sentences, easy words and lots of repetition.';
   if (edad === 4) return 'Use short sentences and simple vocabulary.';
   return 'You may use a bit more detail and vocabulary, keeping it simple.';
+}
+
+/**
+ * Nombre del protagonista para el prompt (US-76). Por defecto es el nombre real del
+ * niño; si `usarNombre` es `false`, se sustituye por un protagonista genérico y
+ * cariñoso ("nuestro pequeño amigo" / "our little friend") para no enviar el nombre
+ * del niño al proveedor (minimización de PII).
+ */
+export function protagonista(
+  nombre: string,
+  usarNombre: boolean | undefined,
+  idioma: CodigoIdioma,
+): string {
+  if (usarNombre === false) return idioma === 'es' ? 'nuestro pequeño amigo' : 'our little friend';
+  return nombre;
+}
+
+/**
+ * Instrucción para que el modelo NO invente un nombre propio cuando el adulto elige
+ * no usar el nombre del niño (US-76). Cadena vacía si sí se usa el nombre.
+ */
+function instruccionSinNombre(usarNombre: boolean | undefined, idioma: CodigoIdioma): string {
+  if (usarNombre !== false) return '';
+  return idioma === 'es'
+    ? ' No uses ningún nombre propio para el protagonista; refiérete a él como "nuestro pequeño amigo".'
+    : ' Do not use any proper name for the main character; refer to them as "our little friend".';
+}
+
+/**
+ * Instrucción para continuar un cuento anterior (US-78): se antepone el contexto del
+ * cuento origen (su cuerpo o resumen) y se pide un capítulo nuevo que siga la historia
+ * en vez de empezar de cero. Cadena vacía si no es una continuación.
+ */
+function instruccionContinuacion(contexto: string | undefined, idioma: CodigoIdioma): string {
+  const previo = contexto?.trim();
+  if (!previo) return '';
+  return idioma === 'es'
+    ? ` Esta es la CONTINUACIÓN de un cuento anterior. Cuento previo: "${previo}". ` +
+        'Escribe un capítulo nuevo que siga esa historia con los mismos personajes, ' +
+        'sin repetir lo ya contado y con un final feliz y tranquilo.'
+    : ` This is the CONTINUATION of a previous story. Previous story: "${previo}". ` +
+        'Write a new chapter that follows that story with the same characters, ' +
+        'without repeating what was already told and with a happy, calm ending.';
 }
 
 /** Lista legible de intereses del perfil para enriquecer el prompt (US-26). */
@@ -119,6 +170,41 @@ const ESTILO_PALABRA: Record<CodigoIdioma, Record<string, string>> = {
   es: { aventura: 'aventura', divertido: 'divertido', educativo: 'educativo' },
   en: { aventura: 'adventure', divertido: 'fun', educativo: 'educational' },
 };
+
+/**
+ * Descripción legible de cada enseñanza/valor (US-69) por idioma, para tejerla en el
+ * prompt del cuento. El vocabulario del dominio son identificadores ASCII; aquí se
+ * expresan como una frase natural que orienta la moraleja de la historia.
+ */
+const ENSENANZA_FRASE: Record<CodigoIdioma, Record<string, string>> = {
+  es: {
+    amistad: 'la amistad y compartir con los demás',
+    emociones: 'reconocer y calmar las emociones, como el enfado o la tristeza',
+    valentia: 'ser valiente y superar los miedos',
+    honestidad: 'decir la verdad y respetar a los demás',
+  },
+  en: {
+    amistad: 'friendship and sharing with others',
+    emociones: 'recognizing and calming emotions, like anger or sadness',
+    valentia: 'being brave and overcoming fears',
+    honestidad: 'telling the truth and respecting others',
+  },
+};
+
+/**
+ * Instrucción que pide transmitir la enseñanza elegida (US-69), mostrada de forma
+ * natural en la historia y reforzada en la enseñanza final. Cadena vacía si no se
+ * eligió ninguna (el cuento se genera como siempre).
+ */
+function instruccionEnsenanza(ensenanza: string | undefined, idioma: CodigoIdioma): string {
+  if (ensenanza === undefined) return '';
+  const frase = ENSENANZA_FRASE[idioma][ensenanza] ?? ensenanza;
+  return idioma === 'es'
+    ? ` El cuento debe transmitir una enseñanza sobre ${frase}, mostrada de forma natural en la ` +
+        `historia y reforzada en la enseñanza final.`
+    : ` The story must convey a lesson about ${frase}, shown naturally in the story and reinforced ` +
+        `in the final lesson.`;
+}
 
 /**
  * Une una lista en una enumeración legible para el prompt (US-47): traduce cada
@@ -201,6 +287,11 @@ export function buildStoryPrompt(
 ): PromptParts {
   const idioma = input.perfil.idioma.value;
   const { nombre, edad, intereses } = input.perfil;
+  // US-76: protagonista real o genérico según `usarNombre` (default = usar el nombre).
+  const proto = protagonista(nombre, input.usarNombre, idioma);
+  const sinNombreInstr = instruccionSinNombre(input.usarNombre, idioma);
+  // US-78: si hay contexto previo, se pide continuar la historia (capítulo nuevo).
+  const continuacionInstr = instruccionContinuacion(input.contexto, idioma);
   const tono = tonoPorEdad(edad.value, idioma);
   const gustos = listaIntereses(intereses, idioma);
   const apertura = aperturaFormato(params, idioma);
@@ -208,6 +299,8 @@ export function buildStoryPrompt(
   // traducida a la forma natural del idioma del perfil.
   const temas = listaLegible(input.temas, idioma, TEMA_PALABRA);
   const estilos = listaLegible(input.estilos, idioma, ESTILO_PALABRA);
+  // US-69: instrucción de la enseñanza elegida (o '' si no se eligió ninguna).
+  const ensenanzaInstr = instruccionEnsenanza(input.ensenanza, idioma);
   // Longitud: la marcan los params si existen; si no, el "corto (4 a 6 frases)" de siempre.
   const longitud = params
     ? instruccionFormato(params, idioma)
@@ -215,7 +308,8 @@ export function buildStoryPrompt(
       ? ' Que sea corto, de 4 a 6 frases.'
       : ' Keep it short, 4 to 6 sentences.';
   const valores = {
-    nombre,
+    // US-76: el protagonista puede ser genérico si el adulto no usa el nombre del niño.
+    nombre: proto,
     edad: edad.value,
     // US-47: listas legibles. Se conservan `{tema}`/`{estilo}` como alias de la lista
     // para no romper plantillas configuradas con los placeholders antiguos.
@@ -229,25 +323,33 @@ export function buildStoryPrompt(
     idiomaNombre: idioma === 'es' ? 'español' : 'inglés',
     intereses: gustos,
     tono,
+    // US-69: frase legible de la enseñanza (o '' si ninguna) para plantillas configurables.
+    ensenanza: input.ensenanza ? (ENSENANZA_FRASE[idioma][input.ensenanza] ?? input.ensenanza) : '',
     formato: params?.formato ?? 'cuento',
     palabrasMin: params?.palabrasMin ?? '',
     palabrasMax: params?.palabrasMax ?? '',
     rima: params?.rima ? (idioma === 'es' ? 'sí' : 'yes') : 'no',
   };
 
-  const prompt = overrides.template
+  const promptBase = overrides.template
     ? rellenar(overrides.template, valores)
     : idioma === 'es'
-      ? `${apertura} para ${nombre}, de ${edad.value} años, sobre "${temas}" con un estilo ` +
-        `${estilos}. ${nombre} es protagonista y le gustan ${gustos}. ${tono}${longitud} ` +
+      ? `${apertura} para ${proto}, de ${edad.value} años, sobre "${temas}" con un estilo ` +
+        `${estilos}. ${proto} es protagonista y le gustan ${gustos}. ${tono}${longitud} ` +
         `Devuelve un título breve y el cuerpo. Inventa un título original y distinto cada vez ` +
-        `(no repitas la fórmula "${nombre} y la aventura de ...").`
-      : `${apertura} for ${nombre}, aged ${edad.value}, about "${temas}" in a ${estilos} ` +
-        `style. ${nombre} is the main character and likes ${gustos}. ${tono}${longitud} ` +
+        `(no repitas la fórmula "${proto} y la aventura de ...").`
+      : `${apertura} for ${proto}, aged ${edad.value}, about "${temas}" in a ${estilos} ` +
+        `style. ${proto} is the main character and likes ${gustos}. ${tono}${longitud} ` +
         `Return a short title and the body. Invent an original, different title each time ` +
-        `(do not reuse the pattern "${nombre} and the ... adventure").`;
+        `(do not reuse the pattern "${proto} and the ... adventure").`;
 
-  return { system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma], prompt };
+  // US-69: la enseñanza se añade al final del prompt para honrarla también con
+  // plantillas configuradas (que no referencian `{ensenanza}`); '' si no hay ninguna.
+  // US-76: instrucción de no inventar nombre; US-78: instrucción de continuación.
+  return {
+    system: overrides.system ?? INSTRUCCION_SEGURIDAD[idioma],
+    prompt: promptBase + ensenanzaInstr + sinNombreInstr + continuacionInstr,
+  };
 }
 
 /**
@@ -291,13 +393,39 @@ const TERMINO_CUIDADOR: Record<CodigoIdioma, Record<Parentesco, string>> = {
 };
 
 /**
- * Término con el que las instrucciones se dirigen al adulto acompañante (US-67): su
- * parentesco ("mamá", "papá", "la abuela o el abuelo"…) en vez de "el adulto". Sin
- * parentesco (p. ej. modo anónimo) devuelve un trato genérico.
+ * Trato corto y **componible con el nombre** del adulto (US-77): "mamá Ana", "abuela
+ * Ana". Se usa solo cuando hay nombre; para el trato sin nombre se usa el disyuntivo
+ * de `TERMINO_CUIDADOR`. Sin dato de género, el abuelo/a y el tutor/a se abrevian con
+ * forma barra. `otro` no lleva trato (solo el nombre).
  */
-export function terminoCuidador(parentesco: Parentesco | undefined, idioma: CodigoIdioma): string {
-  if (parentesco === undefined) return idioma === 'es' ? 'la persona adulta' : 'the grown-up';
-  return TERMINO_CUIDADOR[idioma][parentesco];
+const TERMINO_CUIDADOR_CORTO: Record<CodigoIdioma, Record<Parentesco, string>> = {
+  es: { madre: 'mamá', padre: 'papá', abuelo_a: 'abuela/o', tutor_legal: 'tutor/a', otro: '' },
+  en: { madre: 'mom', padre: 'dad', abuelo_a: 'grandma/pa', tutor_legal: 'guardian', otro: '' },
+};
+
+/**
+ * Término con el que las instrucciones se dirigen al adulto acompañante (US-67, US-77):
+ * su parentesco ("mamá", "papá", "la abuela o el abuelo"…) en vez de "el adulto", y
+ * **combinado con su nombre** cuando se conoce ("mamá Ana", "abuela/o Ana"). Sin
+ * parentesco (p. ej. modo anónimo) devuelve un trato genérico; con `otro` + nombre
+ * usa solo el nombre.
+ */
+export function terminoCuidador(
+  parentesco: Parentesco | undefined,
+  idioma: CodigoIdioma,
+  nombre?: string,
+): string {
+  const base =
+    parentesco === undefined
+      ? idioma === 'es'
+        ? 'la persona adulta'
+        : 'the grown-up'
+      : TERMINO_CUIDADOR[idioma][parentesco];
+  const n = nombre?.trim();
+  if (!n) return base;
+  // US-77: combinar trato + nombre. Sin parentesco o `otro` → solo el nombre.
+  const corto = parentesco === undefined ? '' : TERMINO_CUIDADOR_CORTO[idioma][parentesco];
+  return corto ? `${corto} ${n}` : n;
 }
 
 /**
@@ -315,7 +443,8 @@ export function buildActivitiesPrompt(
   const categorias = CATEGORIAS.join(', ');
   const tono = tonoPorEdad(edad.value, idioma);
   const gustos = listaIntereses(intereses, idioma);
-  const cuidador = terminoCuidador(input.parentesco, idioma);
+  // US-67/US-77: trato del adulto por su parentesco, combinado con su nombre si se conoce.
+  const cuidador = terminoCuidador(input.parentesco, idioma, input.nombreCuidador);
   // Trato del adulto acompañante en las instrucciones: su parentesco, no "el adulto" (US-67).
   const trato =
     idioma === 'es'

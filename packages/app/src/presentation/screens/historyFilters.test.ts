@@ -69,6 +69,28 @@ describe('filtrarCuentos', () => {
   });
 });
 
+describe('filtrarCuentos — enseñanza (US-69)', () => {
+  const conEnsenanza = [
+    story('1', 'animales', 'aventura', { ensenanza: 'amistad' }),
+    story('2', 'espacio', 'educativo', { ensenanza: 'valentia' }),
+    story('3', 'magia', 'divertido'),
+  ];
+
+  it('TODOS no restringe por enseñanza', () => {
+    expect(filtrarCuentos(conEnsenanza, TODOS, TODOS, false, '', TODOS)).toHaveLength(3);
+  });
+
+  it('filtra por la enseñanza elegida', () => {
+    const out = filtrarCuentos(conEnsenanza, TODOS, TODOS, false, '', 'amistad');
+    expect(out.map((s) => s.id)).toEqual(['1']);
+  });
+
+  it('combina enseñanza con tema', () => {
+    const out = filtrarCuentos(conEnsenanza, 'espacio', TODOS, false, '', 'valentia');
+    expect(out.map((s) => s.id)).toEqual(['2']);
+  });
+});
+
 describe('filtrarActividades', () => {
   it('con TODOS muestra todas las actividades', () => {
     expect(filtrarActividades(actividades, TODOS)).toHaveLength(3);
