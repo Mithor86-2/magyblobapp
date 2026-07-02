@@ -49,15 +49,25 @@ interface ActivityCardProps {
    * estrellas quedan editables para puntuar (o cambiar la puntuación) con `onComplete(n)`.
    */
   onComplete?: (valoracion?: number) => void;
+  /**
+   * Si los pasos arrancan visibles (US-81 ajuste). Por defecto `false` (plegados, con
+   * "Ver pasos") en Historial/Búsqueda; el generador de actividades lo pasa `true` para
+   * que las actividades recién generadas muestren el paso a paso de inmediato.
+   */
+  pasosVisiblesInicial?: boolean;
 }
 
 /** Tarjeta de actividad: emoji + categoría + título + descripción + progreso. */
-export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
+export function ActivityCard({
+  activity,
+  onComplete,
+  pasosVisiblesInicial = false,
+}: ActivityCardProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
-  // US-81: los pasos empiezan plegados; "Ver pasos" los despliega y "Ocultar pasos" los repliega.
-  const [mostrarPasos, setMostrarPasos] = useState(false);
+  // US-81: los pasos se pliegan/despliegan; arrancan según `pasosVisiblesInicial`.
+  const [mostrarPasos, setMostrarPasos] = useState(pasosVisiblesInicial);
   const color = categoriaColor(colors)[activity.categoria];
   const meta = [
     activity.duracionMin ? t('activityCard.minutes', { min: activity.duracionMin }) : null,

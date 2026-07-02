@@ -141,6 +141,7 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
           key={activity.id}
           activity={activity}
           onComplete={(v) => onComplete(activity.id, v)}
+          pasosVisiblesInicial
         />
       ))}
     </Screen>

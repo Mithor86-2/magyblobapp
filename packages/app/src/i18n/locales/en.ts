@@ -268,8 +268,11 @@ export const en: typeof es = {
     filterTeaching: 'Teaching',
     filterCategory: 'Category',
     filterAll: 'All',
-    filtersTitle: 'Search and filters',
+    filtersTitle: 'Filters',
     searchWithCount: 'Search ({{count}})',
+    filters: 'Filters',
+    filtersWithCount: 'Filters ({{count}})',
+    applyFilters: 'Apply',
     noMatchStories: 'No story matches the filter.',
     noMatchActivities: 'No activity matches the filter.',
     // Favorites and search (US-64).
