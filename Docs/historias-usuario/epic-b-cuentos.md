@@ -399,3 +399,68 @@ transmite el cuento, **para** que la historia refuerce una moraleja concreta.
   su `ensenanza`.
 - **(Filtro)** Dado el Historial, Cuando filtro por una enseñanza, Entonces solo se listan los cuentos
   con esa enseñanza; "Todas" no restringe.
+
+## US-75 — Páginas del cuento con al menos 3 frases {#us-75}
+
+**Como** adulto responsable, **quiero** que cada página del cuento tenga al menos tres frases, **para**
+que la lectura por páginas tenga sustancia y no queden páginas de una sola línea.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** — (prompts backend) / Lector.
+
+**Alcance**
+
+1. **System prompt (ES/EN)** de `generateStory`: cada página es un párrafo autoconclusivo de **al
+   menos 3 frases**, manteniendo el mínimo de **≥4 páginas** (US-74) separadas por línea en blanco.
+2. **Seed** `prompt.story.system` alineado (versión subida) con el default de código.
+3. **MockProvider:** el cuerpo determinista (ES/EN) tiene ≥3 frases por página (nuevo y continuación).
+
+**Criterios de aceptación**
+
+- **(Prompt)** Dado el system prompt, Entonces exige "al menos 3 frases" por página (ES y EN).
+- **(Mock)** Dado el `MockProvider`, Cuando genera un cuento, Entonces cada página (párrafo `\n\n`)
+  tiene ≥3 frases y hay ≥4 páginas.
+
+## US-76 — Opción de usar el nombre del niño {#us-76}
+
+**Como** adulto responsable, **quiero** poder elegir si el cuento usa el nombre real del niño o un
+protagonista genérico, **para** minimizar los datos personales enviados al proveedor de IA.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Generador de cuentos.
+
+**Alcance**
+
+1. **Contrato:** `POST /stories` acepta `usarNombre?` (Zod boolean, por defecto `true`).
+2. **Prompt/Mock:** si es `false`, el protagonista es genérico ("nuestro pequeño amigo" / "our little
+   friend") y el prompt pide **no** inventar un nombre propio; no se envía el nombre del niño.
+3. **App:** toggle "Usar el nombre de {niño}" en el generador (activo por defecto).
+
+**Criterios de aceptación**
+
+- **(Por defecto)** Dado el generador, Cuando genero sin tocar el toggle, Entonces se envía
+  `usarNombre: true` y el cuento usa el nombre del niño.
+- **(Desactivado)** Dado que desactivo el toggle, Cuando genero, Entonces se envía `usarNombre: false`
+  y ni el título ni el cuerpo contienen el nombre del niño.
+
+## US-78 — Continuar la historia {#us-78}
+
+**Como** adulto responsable, **quiero** poder continuar un cuento ya generado con un capítulo nuevo,
+**para** alargar las historias favoritas del niño.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
+
+**Alcance**
+
+1. **Backend:** caso de uso `ContinueStory` + ruta `POST /stories/:id/continue`; pasa el cuerpo del
+   cuento origen como **contexto** al `AIProvider`, hereda tema/estilo/enseñanza, reutiliza la portada
+   y persiste un `Story` **nuevo** enlazado (`continuacionDe`, migración; solo BD). Publica
+   `cuento_generado`. `MockProvider` produce una continuación determinista (ES/EN).
+2. **App:** botón "Continuar la historia" en el lector que llama al gateway y **abre** el capítulo
+   nuevo (`navigation.push`), con carga y error.
+
+**Criterios de aceptación**
+
+- **(Continuación)** Dado un cuento existente, Cuando pulso "Continuar la historia", Entonces se crea
+  un cuento nuevo con `continuacionDe` = id del origen, mismo perfil y tema/estilo heredados, y se abre
+  en el lector.
+- **(Contexto)** Dado el origen, Entonces el proveedor recibe su cuerpo como contexto para continuar.
+- **(No existe)** Dado `POST /stories/:id/continue` con un id inexistente, Entonces responde **404**.

@@ -1373,3 +1373,42 @@ actividades por separado, viendo lo más reciente de cada uno al entrar.
 - (No funcional) Dado el alcance, Cuando se aplica, Entonces el cambio de prompt requiere
   **sincronizar el JSON de settings a la BD** (dev/prod, US-70) y gate + cobertura + E2E siguen en
   verde.
+
+## US-79 — Lector con page-curl por gesto {#us-79}
+
+**Como** niño (con el adulto), **quiero** pasar página del cuento arrastrando con un giro tipo libro,
+**para** que la lectura sea más natural y fluida; y que las páginas se vean del mismo tamaño.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
+
+**Alcance**
+
+1. **`react-native-gesture-handler` + `react-native-reanimated`** (+ `react-native-worklets`):
+   `BookPages` pasa página **arrastrando** con giro 3D (`rotateY` + `perspective`) en el hilo de UI,
+   conservando los botones ‹ / › y el indicador. Hoja de **alto consistente** (proporcional a la
+   pantalla). `App` en `GestureHandlerRootView`; `babel.config.js` con `babel-preset-expo`.
+2. **Tests:** ambas libs se aliasan a stubs bajo Vitest (la navegación ‹/› sigue verificándose);
+   `expo export` web validado. **Requiere dev build** (Expo Go no sirve, como desde US-66).
+
+**Criterios de aceptación**
+
+- **(Botones)** Dado el lector, Cuando pulso › / ‹, Entonces avanza/retrocede la página y el indicador
+  se actualiza; en los extremos los botones se deshabilitan.
+- **(Tamaño)** Dadas páginas de distinta longitud, Entonces la hoja mantiene un alto consistente.
+
+## US-80 — Nombre de sección en la cabecera {#us-80}
+
+**Como** persona usuaria, **quiero** ver el nombre de la sección en la cabecera, **para** saber en qué
+pantalla estoy sin depender solo de la pestaña activa.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (pestañas).
+
+**Alcance**
+
+1. **`Screen`** acepta `title`, mostrado fijo arriba a la izquierda de la barra de cabecera (junto al
+   botón de la zona de adultos); las 4 pestañas lo pasan reutilizando las etiquetas `tabs.*` (ES/EN).
+
+**Criterios de aceptación**
+
+- **(Con título)** Dada una pantalla con `title`, Entonces se muestra como cabecera (rol heading).
+- **(Sin título)** Dada una pantalla sin `title`, Entonces no se muestra cabecera de sección.
