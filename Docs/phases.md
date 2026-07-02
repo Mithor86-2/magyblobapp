@@ -821,3 +821,15 @@ Cinco correcciones detectadas en las pruebas en dev del lote anterior. Plan en
 - [x] ✅ **Efecto de pliegue del lector sin Skia (US-79).** `BookPages` añade sombra de pliegue + giro/
       escala más marcados siguiendo el arrastre (aproximación de page-curl; se descartó Skia).
 - **DoD:** ✅ `pnpm check` verde (**backend 407 + app 255**) · ⏳ pruebas en dev por el usuario (dev build).
+
+### Release v1.7.0 — publicada en `main` (2026-07-02)
+
+Primera release tras los lotes de este ciclo. Se integró `develop` → `main` (PR #4, CI verde: gate +
+integración/E2E backend + E2E app), se asignó la versión con **versionado diferido** (raíz/backend/app
+`1.6.0 → 1.7.0`, CHANGELOG fechado) y se publicó el **tag `v1.7.0`** y la **GitHub Release** (latest).
+
+Incluye: **US-75** (≥3 frases/página), **US-76** (usar nombre opcional), **US-77** (trato parentesco +
+nombre, reforzado para IA real), **US-78** (continuar historia + título numerado), **US-79** (lector
+con pase de página por gesto + pliegue, sin Skia), **US-80** (nombre de sección en cabecera), **US-81**
+(pasos plegables, visibles al generar), **US-82** (búsqueda global) y el buscador del Historial en vivo.
+Pendiente aparte: compilar y adjuntar la APK de v1.7.0 (build nativa).

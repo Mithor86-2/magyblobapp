@@ -861,3 +861,17 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
 - **Enseñanza como campo opcional persistido (US-69).** Frente a US-47 (multi-tema sin migración), aquí
   **sí** se persiste `Story.ensenanza` (migración) porque el requisito era **filtrar por ella en el
   Historial**. Es un enum del vocabulario cerrado (no texto libre) → sin PII nueva.
+
+- **Pase de página del lector: reanimated + gesture-handler; Skia descartado (US-79).** El lector
+  (`BookPages`) pasa página con `react-native-gesture-handler` + `react-native-reanimated`
+  (+ `react-native-worklets`), animando en el hilo de UI con `useSharedValue`/`useAnimatedStyle` y
+  `withTiming` en dos medias fases (salida→cambio→entrada); los botones ‹/› y el gesto comparten el
+  mismo `irA`, y el índice es estado de React para poder testear sin el hilo nativo (stubs de
+  reanimated/gesture-handler bajo Vitest). Se **evaluó `@shopify/react-native-skia`** (shader de
+  page-curl del repo de referencia) y se **descartó** por su peso nativo y las implicaciones en el
+  export web / harness de tests; en su lugar se aproxima el pliegue con sombra + giro/escala. `App`
+  se envuelve en `GestureHandlerRootView` y `babel.config.js` usa `babel-preset-expo` (aporta el
+  plugin de worklets). Requiere **dev build** (Expo Go no sirve con estos módulos nativos).
+- **Continuar la historia: título numerado, no inventado (US-78).** `ContinueStory` deriva el título
+  del cuento origen incrementando el número de capítulo (`siguienteTitulo`: "…"→"… 2"→"… 3"), en vez de
+  usar el que genere la IA, para que los capítulos encadenen un título coherente.
