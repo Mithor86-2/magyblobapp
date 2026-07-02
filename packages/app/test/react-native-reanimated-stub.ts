@@ -21,7 +21,16 @@ export const useAnimatedStyle = (fn: () => object): object => {
 };
 
 export const withSpring = <T>(valor: T): T => valor;
-export const withTiming = <T>(valor: T): T => valor;
+// Invoca el callback de fin de forma síncrona (como si la animación acabara al instante),
+// para que el cambio de página (que ocurre en ese callback) siga siendo verificable en tests.
+export const withTiming = <T>(
+  valor: T,
+  _config?: unknown,
+  callback?: (finished: boolean) => void,
+): T => {
+  if (typeof callback === 'function') callback(true);
+  return valor;
+};
 export const runOnJS =
   <A extends unknown[]>(fn: (...args: A) => unknown) =>
   (...args: A) =>

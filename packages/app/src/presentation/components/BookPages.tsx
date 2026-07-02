@@ -9,9 +9,15 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
+
+/** Duración (ms) de cada media fase del giro (salida / entrada). */
+const FASE_MS = 180;
+/** Umbral de arrastre (px) para considerar que se pasa de página al soltar. */
+const UMBRAL = 60;
 
 /**
  * Lector **paginado como un libro** (A2/US-73, US-74, US-79): muestra una sola página
@@ -20,21 +26,17 @@ import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
  * total". El texto se paginó antes con `paginarCuento` (lógica pura); este componente
  * solo presenta y navega.
  *
- * **Arrastre con giro 3D (US-79).** El gesto horizontal lo maneja
- * `react-native-gesture-handler` y la animación corre en el hilo de UI con
- * `react-native-reanimated`: mientras se arrastra, la hoja gira sobre `rotateY` (con
- * `perspective`) siguiendo el dedo; al soltar, si se superó el umbral se pasa de página
- * (avanzar/retroceder según el sentido) y si no, la hoja vuelve a su sitio con un
- * muelle. El índice de página es estado de React, así que los botones ‹/› y el gesto
- * comparten la misma navegación y los tests pueden ejercitarla sin el hilo nativo.
+ * **Giro de hoja con reanimated + gesture-handler (US-79).** Un único valor compartido
+ * `drag` (en el hilo de UI) controla el giro: durante el arrastre sigue al dedo
+ * (`rotateY` + `perspective` + traslación) y, al soltar o pulsar ‹/›, se anima en dos
+ * medias fases —la hoja actual gira hacia el canto, se cambia el índice y la nueva
+ * entra desde el lado opuesto— de modo que **tanto el gesto como los botones** muestran
+ * el mismo pase de página. El índice es estado de React (los botones/gesto comparten
+ * `irA`), así que los tests pueden ejercitar la navegación sin el hilo nativo.
  *
- * **Hoja de tamaño consistente (US-79).** La hoja tiene un alto mínimo proporcional a
- * la pantalla para que todas las páginas se vean del mismo tamaño (sin el salto entre
- * páginas cortas y largas), pintada sobre papel blanco literal (`#ffffff`) e
- * independiente del tema (claro u oscuro); los controles siguen usando tokens de tema.
- *
- * Accesible: los botones llevan `accessibilityLabel` localizable (reader.prevPage /
- * reader.nextPage) y el cuerpo es texto legible por lector de pantalla.
+ * **Hoja de tamaño consistente (US-79).** Alto mínimo proporcional a la pantalla para
+ * que todas las páginas se vean igual, sobre papel blanco literal (`#ffffff`)
+ * independiente del tema; los controles usan tokens de tema.
  */
 export function BookPages({ paginas }: { paginas: string[] }) {
   const { t } = useTranslation();
@@ -43,28 +45,38 @@ export function BookPages({ paginas }: { paginas: string[] }) {
 
   const total = Math.max(paginas.length, 1);
   const [indice, setIndice] = useState(0);
-  // Desplazamiento horizontal del arrastre (hilo de UI); 0 = hoja asentada.
-  const dragX = useSharedValue(0);
+  // Giro/arrastre de la hoja (hilo de UI): 0 = asentada; ±width = de canto.
+  const drag = useSharedValue(0);
 
   const enPrimera = indice <= 0;
   const enUltima = indice >= total - 1;
 
-  // Cambia de página (estado React) y reasienta la hoja. Lo comparten botones y gesto.
+  // Cambia el índice (estado React). Lo llama el callback del giro vía runOnJS.
+  const cambiarIndice = useCallback((siguiente: number) => setIndice(siguiente), []);
+
+  // Anima el pase de página en dos medias fases (salida → cambio → entrada). La
+  // dirección fija el sentido del giro. Lo usan los botones ‹/› y el fin del gesto.
   const irA = useCallback(
     (siguiente: number) => {
       if (siguiente < 0 || siguiente > total - 1 || siguiente === indice) return;
-      setIndice(siguiente);
-      dragX.value = 0;
+      const dir = siguiente > indice ? 1 : -1; // avanzar (+1) / retroceder (-1)
+      // Fase 1: la hoja actual gira hasta el canto (avanzar → hacia la izquierda).
+      drag.value = withTiming(-dir * width, { duration: FASE_MS }, (fin) => {
+        if (!fin) return;
+        runOnJS(cambiarIndice)(siguiente);
+        // Fase 2: la nueva hoja entra desde el lado opuesto hasta asentarse.
+        drag.value = dir * width;
+        drag.value = withTiming(0, { duration: FASE_MS });
+      });
     },
-    [indice, total, dragX],
+    [indice, total, width, drag, cambiarIndice],
   );
 
-  // Gesto de arrastre: sigue el dedo y, al soltar, pasa de página si se supera el umbral.
-  const UMBRAL = 60;
+  // Arrastre horizontal: sigue al dedo y, al soltar, pasa de página si supera el umbral.
   const pan = Gesture.Pan()
-    .activeOffsetX([-20, 20])
+    .activeOffsetX([-15, 15])
     .onUpdate((e) => {
-      dragX.value = e.translationX;
+      drag.value = e.translationX;
     })
     .onEnd((e) => {
       if (e.translationX <= -UMBRAL && indice < total - 1) {
@@ -72,18 +84,25 @@ export function BookPages({ paginas }: { paginas: string[] }) {
       } else if (e.translationX >= UMBRAL && indice > 0) {
         runOnJS(irA)(indice - 1);
       } else {
-        dragX.value = withSpring(0);
+        drag.value = withSpring(0);
       }
     });
 
-  // La hoja gira sobre rotateY siguiendo el arrastre (page-curl) con perspectiva.
+  // La hoja gira sobre rotateY con perspectiva y se desplaza un poco, siguiendo `drag`.
   const hojaStyle = useAnimatedStyle(() => {
-    const rot = interpolate(dragX.value, [-width, 0, width], [45, 0, -45], Extrapolation.CLAMP);
+    const rot = interpolate(drag.value, [-width, 0, width], [-55, 0, 55], Extrapolation.CLAMP);
+    const opacidad = interpolate(
+      Math.abs(drag.value),
+      [0, width * 0.5],
+      [1, 0.35],
+      Extrapolation.CLAMP,
+    );
     return {
+      opacity: opacidad,
       transform: [
-        { perspective: 1000 },
+        { perspective: 1200 },
+        { translateX: drag.value * 0.35 },
         { rotateY: `${rot}deg` },
-        { translateX: dragX.value * 0.15 },
       ],
     };
   });
