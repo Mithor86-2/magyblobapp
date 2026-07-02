@@ -155,3 +155,25 @@ motivado a seguir aprendiendo y jugando.
 - **(Sesión)** Dado que no hay sesión, Cuando llamo al endpoint, Entonces responde **401**.
 - **(Cumplimiento)** Dado el cálculo, Entonces es **local**, sin terceros ni PII nueva (el logro se
   refiere al niño por `profileId`) y se borra en cascada con el perfil.
+
+## US-82 — Búsqueda global (cuentos + actividades) {#us-82}
+
+**Como** adulto responsable, **quiero** una pantalla de búsqueda que liste a la vez los cuentos y las
+actividades que coinciden con el texto, **para** encontrar cualquier contenido de la biblioteca del
+niño en un solo sitio.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Búsqueda (stack raíz).
+
+**Alcance**
+
+1. **Pantalla `SearchResults`** accesible desde Inicio ("Buscar"); campo de texto que, sobre
+   `GET /profiles/:id/history`, filtra con `filtrarCuentos`/`filtrarActividades` (US-64) y muestra dos
+   secciones (Cuentos, Actividades). Tocar un cuento abre el lector; las actividades son de solo lectura.
+
+**Criterios de aceptación**
+
+- **(Coincidencias)** Dado texto de búsqueda, Entonces se listan los cuentos y actividades cuyo
+  título/cuerpo/descripción/etc. contienen el texto (normalizado, sin acentos ni mayúsculas).
+- **(Sin texto)** Dado el campo vacío, Entonces se muestra una pista y ningún resultado.
+- **(Sin coincidencias)** Dado un texto sin resultados, Entonces se muestra el mensaje de vacío.
+- **(Abrir cuento)** Cuando toco un cuento del resultado, Entonces se abre el lector con ese cuento.

@@ -38,6 +38,12 @@ export interface StoryProps {
    * (filas antiguas o modo anónimo no lo tienen).
    */
   prompt?: string;
+  /**
+   * Id del cuento del que este es continuación (US-78). Ausente en un cuento inicial;
+   * presente cuando se generó con "Continuar la historia" para poder encadenar
+   * capítulos. Se persiste en BD; no se expone en el DTO público.
+   */
+  continuacionDe?: string;
   estado?: EstadoStory;
   /** Marcado como favorito por el tutor (US-63); por defecto `false`. */
   favorito?: boolean;
@@ -60,6 +66,7 @@ export class Story {
   readonly proveedor: ProveedorIa;
   readonly portada?: string;
   readonly prompt?: string;
+  readonly continuacionDe?: string;
   estado: EstadoStory;
   favorito: boolean;
   readonly creadoEn: Date;
@@ -85,6 +92,7 @@ export class Story {
     this.proveedor = props.proveedor;
     this.portada = props.portada;
     this.prompt = props.prompt;
+    this.continuacionDe = props.continuacionDe;
     this.estado = props.estado ?? 'nuevo';
     this.favorito = props.favorito ?? false;
     this.creadoEn = props.creadoEn;

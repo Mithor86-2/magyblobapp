@@ -773,3 +773,33 @@ backend). Integrado en `develop` **sin release** (entradas en `## [Unreleased]` 
       no opacidad) en imágenes de cabecera, footer (botón principal), `ActivityCard`, medallas de logros
       y tarjetas de cuento.
 - **DoD:** ✅ `pnpm check` verde (**backend 357 + app 216**) · ⏳ pruebas en dev por el usuario.
+
+### Lote de ajustes de `ideas.txt` (US-75…US-82, rama `feature/85-ajustes-ideas`, sin release)
+
+Ocho ajustes de producto de `ideas.txt` (numerados 1, 3–9) sobre la app madura, ejecutados en una
+rama como lote (precedente US-71). Plan de coordinación en
+[planes/coordinacion-ajustes-ideas.md](planes/coordinacion-ajustes-ideas.md). Integrado en `develop`
+**sin release** (entradas en `## [Unreleased]` de los CHANGELOG de backend y app, a versionar más
+adelante).
+
+- [x] ✅ **Backend de contenido (US-75/76/77/78).** ≥3 frases por página en el system prompt (ES/EN) y
+      el `MockProvider` + seed alineado (US-75); `POST /stories` acepta `usarNombre?` (protagonista
+      genérico si `false`, menos PII) (US-76); `terminoCuidador` combina parentesco + nombre del adulto
+      ("mamá Ana") pasando `guardian.nombre` desde `RecommendActivities` (US-77); **Continuar la
+      historia**: caso de uso `ContinueStory` + `POST /stories/:id/continue`, `Story.continuacionDe`
+      (migración), capítulo nuevo enlazado que hereda tema/estilo/enseñanza y reutiliza portada (US-78).
+- [x] ✅ **Lector con page-curl por gesto (US-79).** `BookPages` reescrito con
+      `react-native-gesture-handler` + `react-native-reanimated` (+ `react-native-worklets`): arrastre
+      con giro 3D en el hilo de UI, ‹/› e indicador conservados, hoja de alto consistente; `App` en
+      `GestureHandlerRootView`, `babel.config.js`; stubs de test y `expo export` web validado. Requiere
+      dev build (como US-66).
+- [x] ✅ **Nombre de sección en la cabecera (US-80).** `Screen` acepta `title`; las 4 pestañas muestran
+      el nombre de sección (reutiliza `tabs.*`).
+- [x] ✅ **Pasos de actividad plegables (US-81).** `ActivityCard` oculta los pasos tras "Ver pasos" /
+      "Ocultar pasos".
+- [x] ✅ **Búsqueda global (US-82).** Pantalla `SearchResults` (accesible desde Inicio) que lista cuentos
+      y actividades coincidentes reutilizando `historyFilters`.
+- [x] ✅ **App conectada (US-76/78).** Toggle "Usar el nombre de {niño}" en el generador (envía
+      `usarNombre`) y botón "Continuar la historia" en el lector (gateway `continueStory`, abre el
+      capítulo nuevo).
+- **DoD:** ✅ `pnpm check` verde (**backend 401 + app 253**) · ⏳ pruebas en dev por el usuario (dev build).

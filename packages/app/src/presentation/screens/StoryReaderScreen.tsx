@@ -12,6 +12,7 @@ import { StoryCover } from '../components/StoryCover';
 import { paginarCuento } from './paginarCuento';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
+import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
@@ -25,7 +26,7 @@ import type { RootScreenProps } from '../navigation';
  * al escuchar la narración completa; ya no se marca solo por abrir la vista, para que
  * "leído" refleje lectura o escucha real (relevante para los logros, US-68).
  */
-export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
+export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryReader'>) {
   const { story } = route.params;
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -35,6 +36,22 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
   const fecha = formatearFecha(story.creadoEn, idioma);
 
   const [leido, setLeido] = useState(story.estado === 'leido');
+  // US-78: "Continuar la historia" — genera un capítulo nuevo y abre su lector.
+  const [continuando, setContinuando] = useState(false);
+  const [errorContinuar, setErrorContinuar] = useState<string | null>(null);
+
+  const continuar = useCallback(async () => {
+    setContinuando(true);
+    setErrorContinuar(null);
+    try {
+      const siguiente = await api.stories.continueStory(story.id);
+      navigation.push('StoryReader', { story: siguiente });
+    } catch (e) {
+      setErrorContinuar(e instanceof ApiError ? e.message : t('reader.continueError'));
+    } finally {
+      setContinuando(false);
+    }
+  }, [story.id, navigation, t]);
 
   // Marca el cuento como leído (idempotente): optimista en la UI; si falla, el
   // refresco del Historial lo corregirá. Lo usan el botón y el fin de la narración.
@@ -76,6 +93,15 @@ export function StoryReaderScreen({ route }: RootScreenProps<'StoryReader'>) {
             onPress={marcarLeido}
           />
         )}
+        {/* US-78: continuar la historia con un capítulo nuevo generado por IA. */}
+        <BubblyButton
+          label={t('reader.continueStory')}
+          icon="arrow-right"
+          variant="secondary"
+          onPress={continuar}
+          loading={continuando}
+        />
+        {errorContinuar ? <Text style={styles.errorContinuar}>{errorContinuar}</Text> : null}
         <AuthorBadge proveedor={story.proveedor} />
         {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
       </View>
@@ -120,5 +146,10 @@ const makeStyles = (colors: ColorTokens) =>
     fecha: {
       ...typography.labelBold,
       color: colors.onSurfaceVariant,
+    },
+    errorContinuar: {
+      ...typography.labelBold,
+      color: colors.error,
+      textAlign: 'center',
     },
   });

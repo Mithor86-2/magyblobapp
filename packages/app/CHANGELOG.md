@@ -9,6 +9,32 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Continuar la historia desde el lector (US-78).** Botón "Continuar la historia" en `StoryReaderScreen`
+  que llama al gateway `stories.continueStory` (`POST /stories/:id/continue`) y **abre el capítulo
+  nuevo** en el lector (`navigation.push`), con estado de carga y aviso de error. i18n ES/EN
+  (`reader.continueStory`, `reader.continueError`).
+- **Opción de usar el nombre del niño (US-76).** Toggle "Usar el nombre de {niño}" en el generador
+  (activo por defecto); el gateway `stories.generate` envía `usarNombre`. i18n ES/EN
+  (`storyGenerator.nameField`, `storyGenerator.useName`).
+- **Lector con page-curl por gesto (US-79).** `BookPages` se reescribe con
+  `react-native-gesture-handler` + `react-native-reanimated` (+ `react-native-worklets`): pasar
+  página **arrastrando** con giro 3D (`rotateY` + `perspective`) en el hilo de UI, conservando los
+  botones ‹ / › y el indicador. La hoja tiene **alto consistente** (proporcional a la pantalla) para
+  que las páginas no salten de tamaño. `App` se envuelve en `GestureHandlerRootView` y se añade
+  `babel.config.js` (el plugin de worklets lo aporta `babel-preset-expo`). Bajo Vitest ambas libs se
+  aliasan a stubs inertes (la navegación por ‹/› sigue verificándose). **Requiere dev build** (Expo
+  Go no sirve con estos módulos nativos, como ya ocurría desde US-66).
+- **Búsqueda global de cuentos y actividades (US-82).** Nueva pantalla `SearchResults` (stack raíz,
+  accesible desde Inicio con el botón "Buscar") con un campo de texto que, sobre la biblioteca del
+  perfil (`GET /profiles/:id/history`), lista en un mismo sitio los **cuentos y actividades** que
+  coinciden (reutiliza `filtrarCuentos`/`filtrarActividades`); tocar un cuento abre el lector. i18n
+  ES/EN (`nav.search`, `search.*`, `home.search`).
+- **Nombre de sección en la cabecera (US-80).** `Screen` acepta `title`, mostrado fijo arriba a la
+  izquierda de la barra de cabecera (junto al botón de la zona de adultos); las 4 pestañas
+  (Inicio · Actividades · Cuentos · Historial) lo pasan reutilizando las etiquetas `tabs.*` (ES/EN).
+- **Pasos de actividad plegables (US-81).** En `ActivityCard` las instrucciones empiezan **ocultas**
+  con un botón **"Ver pasos"**; al desplegarlas se muestran los pasos y el botón pasa a **"Ocultar
+  pasos"**. i18n ES/EN (`activityCard.showSteps`, `activityCard.hideSteps`).
 - **Historial con pestañas Cuentos/Actividades (US-74, A3).** Franja "Lo último" con el último cuento y
   la última actividad, y un **toggle Cuentos / Actividades** (por defecto Cuentos) que muestra la lista
   completa del tipo elegido; la búsqueda/filtros aplican a la pestaña activa. i18n ES/EN

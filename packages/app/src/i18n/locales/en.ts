@@ -58,6 +58,15 @@ export const en: typeof es = {
     parental: 'Adults zone',
     achievements: 'My achievements',
     storyReader: 'Story',
+    search: 'Search',
+  },
+  search: {
+    placeholder: 'Search stories and activities',
+    stories: 'Stories',
+    activities: 'Activities',
+    hint: 'Type to search your library.',
+    empty: 'No results for “{{q}}”.',
+    errorLoad: 'Could not load your library.',
   },
 
   tabs: {
@@ -118,6 +127,7 @@ export const en: typeof es = {
     createStory: 'Create a story',
     seeActivities: 'See activities',
     myAchievements: 'My achievements',
+    search: 'Search',
     achievementsSummary: '{{conseguidos}}/{{total}}',
     // Encouragement when no achievement has been earned yet (A4/US-73).
     noAchievementsYet: 'Read stories and do activities to earn your first trophies!',
@@ -218,6 +228,8 @@ export const en: typeof es = {
     styles: 'Styles',
     teaching: 'What do you want to teach?',
     teachingHint: 'Optional: pick a value for the moral.',
+    nameField: 'Use the name?',
+    useName: "Use {{nombre}}'s name",
     creating: 'Creating a magical story…',
     retryHint: 'Tap “Generate story” to try again.',
     generateAnother: 'Generate another',
@@ -233,6 +245,9 @@ export const en: typeof es = {
     page: 'Page {{n}} of {{total}}',
     prevPage: 'Previous page',
     nextPage: 'Next page',
+    // Continue the story (US-78).
+    continueStory: 'Continue the story',
+    continueError: 'Could not continue the story.',
   },
 
   history: {
@@ -296,6 +311,8 @@ export const en: typeof es = {
     minutes: '{{min}} min',
     level: 'Level {{nivel}}',
     howTo: 'How to do it',
+    showSteps: 'Show steps',
+    hideSteps: 'Hide steps',
     done: 'Done!',
     howWasIt: 'How was it?',
     markDone: 'Done',

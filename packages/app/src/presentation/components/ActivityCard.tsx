@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { Activity, Categoria } from '../../domain/types';
 import { categoriaLabel } from '../labels';
@@ -55,6 +56,8 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  // US-81: los pasos empiezan plegados; "Ver pasos" los despliega y "Ocultar pasos" los repliega.
+  const [mostrarPasos, setMostrarPasos] = useState(false);
   const color = categoriaColor(colors)[activity.categoria];
   const meta = [
     activity.duracionMin ? t('activityCard.minutes', { min: activity.duracionMin }) : null,
@@ -85,13 +88,25 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
       <Text style={styles.descripcion}>{activity.descripcion}</Text>
       {activity.instrucciones ? (
         <View style={styles.instrucciones}>
-          <Text style={styles.instruccionesTitulo}>{t('activityCard.howTo')}</Text>
-          {pasosDeInstrucciones(activity.instrucciones).map((paso, i) => (
-            <View key={i} style={styles.pasoFila}>
-              <Text style={styles.pasoNum}>{i + 1}.</Text>
-              <Text style={styles.instruccionesTexto}>{paso}</Text>
-            </View>
-          ))}
+          {/* US-81: los pasos se ocultan por defecto; el botón los muestra/oculta. */}
+          <Pressable
+            onPress={() => setMostrarPasos((v) => !v)}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: mostrarPasos }}
+            style={styles.pasosToggle}
+          >
+            <Text style={styles.pasosToggleText}>
+              {mostrarPasos ? t('activityCard.hideSteps') : t('activityCard.showSteps')}
+            </Text>
+          </Pressable>
+          {mostrarPasos
+            ? pasosDeInstrucciones(activity.instrucciones).map((paso, i) => (
+                <View key={i} style={styles.pasoFila}>
+                  <Text style={styles.pasoNum}>{i + 1}.</Text>
+                  <Text style={styles.instruccionesTexto}>{paso}</Text>
+                </View>
+              ))
+            : null}
         </View>
       ) : null}
       {meta.length > 0 ? <Text style={styles.meta}>{meta.join(' · ')}</Text> : null}
@@ -167,6 +182,14 @@ const makeStyles = (colors: ColorTokens) =>
     instruccionesTitulo: {
       ...typography.labelBold,
       color: colors.onSurface,
+    },
+    pasosToggle: {
+      alignSelf: 'flex-start',
+      paddingVertical: spacing.xs,
+    },
+    pasosToggleText: {
+      ...typography.labelBold,
+      color: colors.primary,
     },
     pasoFila: {
       flexDirection: 'row',

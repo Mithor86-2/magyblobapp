@@ -59,6 +59,7 @@ erDiagram
         string   proveedor "IA efectiva: mock | local | cloud"
         string   portada   "opcional — data URL de portada (US-59)"
         text     prompt    "opcional — prompt usado (system+user), solo BD (US-61)"
+        string   continuacionDe "opcional — id del cuento origen si es continuación (US-78), solo BD"
         boolean  favorito  "marcado como favorito (US-63); por defecto false"
         datetime creadoEn
     }
@@ -163,6 +164,18 @@ vocabulario cerrado (`amistad | emociones | valentia | honestidad`) que el adult
 la moraleja del cuento; se teje en el prompt (reforzando la "enseñanza final" de US-28) y se **expone
 en el DTO** para poder filtrar por ella en el Historial. Filas anteriores a la migración quedan `NULL`
 (no se eligió ninguna). No añade PII: es un enum, no texto libre.
+
+**Continuar la historia (US-78).** `Story.continuacionDe` es un campo **opcional** (`NULL`-able) que
+guarda el `id` del cuento del que este es continuación, para poder encadenar capítulos. Se rellena al
+generar con "Continuar la historia" (caso de uso `ContinueStory`, ruta `POST /stories/:id/continue`),
+que crea un `Story` **nuevo** heredando tema/estilo/enseñanza del origen y reutilizando su portada. Es
+un id interno, **solo BD** (no se expone en el DTO). No es una FK con cascada propia: la continuación
+cuelga del mismo `ChildProfile` que el origen (misma cascada de borrado). Filas anteriores → `NULL`.
+
+**Páginas del cuento con ≥3 frases (US-75) / usar el nombre (US-76).** No cambian el esquema: son
+reglas del **prompt** y del `MockProvider` (cada página ≥3 frases; protagonista genérico si el adulto
+desactiva el uso del nombre — menos PII enviada al proveedor). `usarNombre` viaja en la petición pero
+no se persiste.
 
 **Logros / recompensas (US-68).** `Achievement` materializa la gamificación: solo guarda el **hecho**
 de haber desbloqueado un logro (`clave` + `desbloqueadoEn`), no una copia del estado. El progreso y el

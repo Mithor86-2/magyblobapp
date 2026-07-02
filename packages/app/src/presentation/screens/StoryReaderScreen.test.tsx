@@ -9,13 +9,22 @@ import type { Story } from '../../domain/types';
  * el botón "Marcar como leído" o cuando la narración termina (`onFinished`). Se
  * sustituyen IO (`api`), narración (audio nativo) e `Icon` (SVG) que jsdom no carga.
  */
-const { markReadMock, setFavoriteMock, narrationOnFinished } = vi.hoisted(() => ({
-  markReadMock: vi.fn(),
-  setFavoriteMock: vi.fn(),
-  narrationOnFinished: { current: undefined as undefined | (() => void) },
-}));
+const { markReadMock, setFavoriteMock, continueStoryMock, narrationOnFinished } = vi.hoisted(
+  () => ({
+    markReadMock: vi.fn(),
+    setFavoriteMock: vi.fn(),
+    continueStoryMock: vi.fn(),
+    narrationOnFinished: { current: undefined as undefined | (() => void) },
+  }),
+);
 vi.mock('../../composition', () => ({
-  api: { stories: { markRead: markReadMock, setFavorite: setFavoriteMock } },
+  api: {
+    stories: {
+      markRead: markReadMock,
+      setFavorite: setFavoriteMock,
+      continueStory: continueStoryMock,
+    },
+  },
 }));
 // Capturamos el `onFinished` que el lector pasa a NarrationControls para simular
 // "narración escuchada completa" sin montar el audio real.
@@ -45,10 +54,13 @@ const STORY: Story = {
   proveedor: 'mock',
 };
 
+const pushMock = vi.fn();
+
 function renderReader(story: Story = STORY) {
-  const props = { route: { params: { story } } } as unknown as ComponentProps<
-    typeof StoryReaderScreen
-  >;
+  const props = {
+    route: { params: { story } },
+    navigation: { push: pushMock },
+  } as unknown as ComponentProps<typeof StoryReaderScreen>;
   return render(<StoryReaderScreen {...props} />);
 }
 
@@ -84,5 +96,18 @@ describe('StoryReaderScreen — marcar leído explícito (A2)', () => {
     renderReader({ ...STORY, estado: 'leido' });
     expect(screen.getByText('Leído')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Marcar como leído' })).not.toBeInTheDocument();
+  });
+
+  it('US-78: "Continuar la historia" genera el capítulo nuevo y abre su lector', async () => {
+    continueStoryMock.mockReset();
+    pushMock.mockReset();
+    const siguiente = { ...STORY, id: 's2', titulo: 'El zorro valiente — la aventura continúa' };
+    continueStoryMock.mockResolvedValue(siguiente);
+    renderReader();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar la historia' }));
+    expect(continueStoryMock).toHaveBeenCalledWith('s1');
+    await screen.findByText('El zorro valiente'); // sigue montado hasta que resuelve
+    expect(pushMock).toHaveBeenCalledWith('StoryReader', { story: siguiente });
   });
 });

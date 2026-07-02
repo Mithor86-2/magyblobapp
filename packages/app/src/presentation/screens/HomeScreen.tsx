@@ -52,8 +52,18 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
   const openAchievements = () =>
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Achievements');
 
+  // US-82: búsqueda global (cuentos + actividades), pantalla del stack raíz.
+  const openSearch = () =>
+    navigation
+      .getParent<NativeStackNavigationProp<RootStackParamList>>()
+      ?.navigate('SearchResults');
+
   return (
-    <Screen headerImageName="home" headerAction={<AdultsButton onPress={openParental} />}>
+    <Screen
+      headerImageName="home"
+      title={t('tabs.inicio')}
+      headerAction={<AdultsButton onPress={openParental} />}
+    >
       <View style={styles.hero}>
         <Text style={styles.avatar}>{profile ? avatarEmoji(profile.avatar) : '✨'}</Text>
         <Text style={styles.title}>
@@ -110,6 +120,7 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
           onPress={openAchievements}
           variant="secondary"
         />
+        <BubblyButton label={t('home.search')} onPress={openSearch} variant="secondary" />
       </View>
     </Screen>
   );

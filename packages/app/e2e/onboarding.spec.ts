@@ -45,7 +45,7 @@ test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ pa
   await page.getByRole('button', { name: '¡Listo!' }).click();
 
   // Pestañas: ir a "Cuentos" y generar
-  await page.getByText('Cuentos', { exact: true }).first().click();
+  await page.getByText('Cuentos', { exact: true }).last().click();
   await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible();
   await page.getByRole('button', { name: 'Generar cuento' }).click();
 

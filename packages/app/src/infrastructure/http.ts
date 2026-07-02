@@ -322,6 +322,15 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
           anonymousStorySchema,
         ),
+      // US-78: continúa un cuento; devuelve el capítulo nuevo (mismo esquema Story).
+      continueStory: (storyId: string) =>
+        request(
+          baseUrl,
+          `/stories/${storyId}/continue`,
+          { method: 'POST', timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
+          storySchema,
+          session,
+        ),
       markRead: (storyId: string) =>
         request(
           baseUrl,

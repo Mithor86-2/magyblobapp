@@ -60,6 +60,15 @@ export const es = {
     parental: 'Zona de adultos',
     achievements: 'Mis logros',
     storyReader: 'Cuento',
+    search: 'Buscar',
+  },
+  search: {
+    placeholder: 'Buscar cuentos y actividades',
+    stories: 'Cuentos',
+    activities: 'Actividades',
+    hint: 'Escribe para buscar en tu biblioteca.',
+    empty: 'No hay resultados para «{{q}}».',
+    errorLoad: 'No se pudo cargar tu biblioteca.',
   },
 
   // Pestañas (App.tsx).
@@ -121,6 +130,7 @@ export const es = {
     createStory: 'Crear un cuento',
     seeActivities: 'Ver actividades',
     myAchievements: 'Mis logros',
+    search: 'Buscar',
     achievementsSummary: '{{conseguidos}}/{{total}}',
     // Ánimo cuando aún no hay ningún logro conseguido (A4/US-73).
     noAchievementsYet: '¡Lee cuentos y haz actividades para ganar tus primeros trofeos!',
@@ -221,6 +231,8 @@ export const es = {
     styles: 'Estilos',
     teaching: '¿Qué quieres enseñar?',
     teachingHint: 'Opcional: elige un valor para la moraleja.',
+    nameField: '¿Usar el nombre?',
+    useName: 'Usar el nombre de {{nombre}}',
     creating: 'Creando un cuento mágico…',
     retryHint: 'Toca «Generar cuento» para reintentar.',
     generateAnother: 'Generar otro',
@@ -236,6 +248,9 @@ export const es = {
     page: 'Página {{n}} de {{total}}',
     prevPage: 'Página anterior',
     nextPage: 'Página siguiente',
+    // Continuar la historia (US-78).
+    continueStory: 'Continuar la historia',
+    continueError: 'No se pudo continuar la historia.',
   },
 
   history: {
@@ -300,6 +315,8 @@ export const es = {
     minutes: '{{min}} min',
     level: 'Nivel {{nivel}}',
     howTo: 'Cómo hacerlo',
+    showSteps: 'Ver pasos',
+    hideSteps: 'Ocultar pasos',
     done: '¡Hecha!',
     howWasIt: '¿Qué tal estuvo?',
     markDone: 'Realizado',

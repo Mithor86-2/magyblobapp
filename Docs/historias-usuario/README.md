@@ -17,14 +17,14 @@ Should = HITO 2 · Could = si hay margen.
 
 ## Documentos por épica
 
-| Épica | Documento                                           | Historias                                                                                                                                                                                                                                                                       |
-| ----- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02, US-48, US-49                                                                                                                                                                                                                          |
-| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28, US-47, US-54, US-55, US-59, US-61, US-69                                                                                                                                                                                       |
-| C     | [Actividades](epic-c-actividades.md)                | US-09, US-10, US-67                                                                                                                                                                                                                                                             |
-| D     | [Historial](epic-d-historial.md)                    | US-08, US-27, US-62, US-63, US-64, US-68                                                                                                                                                                                                                                        |
-| E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13, US-66, US-70                                                                                                                                                                                                                                               |
-| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45, US-46, US-50, US-51, US-52, US-53, US-56, US-57, US-58, US-60, US-65, US-71, US-72, US-73, US-74 |
+| Épica | Documento                                           | Historias                                                                                                                                                                                                                                                                                     |
+| ----- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A     | [Perfil y cuenta del adulto](epic-a-perfil.md)      | US-16, US-19, US-20, US-21, US-01, US-02, US-48, US-49                                                                                                                                                                                                                                        |
+| B     | [Generación de cuentos](epic-b-cuentos.md)          | US-03, US-04, US-05, US-07, US-22, US-26, US-28, US-47, US-54, US-55, US-59, US-61, US-69, US-75, US-76, US-78                                                                                                                                                                                |
+| C     | [Actividades](epic-c-actividades.md)                | US-09, US-10, US-67, US-77, US-81                                                                                                                                                                                                                                                             |
+| D     | [Historial](epic-d-historial.md)                    | US-08, US-27, US-62, US-63, US-64, US-68, US-82                                                                                                                                                                                                                                               |
+| E     | [Configuración (zona de padres)](epic-e-config.md)  | US-11, US-12, US-13, US-66, US-70                                                                                                                                                                                                                                                             |
+| F     | [Plataforma y no-funcionales](epic-f-plataforma.md) | US-06, US-17, US-18, US-14, US-15, US-23, US-24, US-25, US-29, US-30, US-31, US-32, US-33, US-34, US-35, US-36, US-37, US-38, US-39, US-40, US-41, US-42, US-43, US-44, US-45, US-46, US-50, US-51, US-52, US-53, US-56, US-57, US-58, US-60, US-65, US-71, US-72, US-73, US-74, US-79, US-80 |
 
 ## Trazabilidad (historia → fase → pantalla)
 
@@ -104,6 +104,14 @@ Should = HITO 2 · Could = si hay margen.
 | US-72 | CI en verde (coverage/integración/E2E)                | Should    | Mejoras | — (calidad/CI)                      | [F](epic-f-plataforma.md#us-72)  |
 | US-73 | Lectura tipo libro + pulido UX                        | Should    | Mejoras | Lector / Historial / Inicio         | [F](epic-f-plataforma.md#us-73)  |
 | US-74 | Libro por páginas (IA) + giro 3D + Historial pestañas | Should    | Mejoras | Lector / Historial                  | [F](epic-f-plataforma.md#us-74)  |
+| US-75 | Páginas del cuento con ≥3 frases                      | Should    | Mejoras | — (prompts backend)                 | [B](epic-b-cuentos.md#us-75)     |
+| US-76 | Opción de usar el nombre del niño                     | Should    | Mejoras | Generador / prompts                 | [B](epic-b-cuentos.md#us-76)     |
+| US-77 | Trato al adulto por parentesco + nombre               | Should    | Mejoras | — (prompts actividades)             | [C](epic-c-actividades.md#us-77) |
+| US-78 | Continuar la historia (capítulo nuevo)                | Should    | Mejoras | Lector / backend                    | [B](epic-b-cuentos.md#us-78)     |
+| US-79 | Lector con page-curl por gesto (reanimated)           | Should    | Mejoras | Lector                              | [F](epic-f-plataforma.md#us-79)  |
+| US-80 | Nombre de sección en la cabecera                      | Should    | Mejoras | Toda la app (pestañas)              | [F](epic-f-plataforma.md#us-80)  |
+| US-81 | Pasos de actividad plegables                          | Should    | Mejoras | Actividades / Historial             | [C](epic-c-actividades.md#us-81) |
+| US-82 | Búsqueda global (cuentos + actividades)               | Should    | Mejoras | Búsqueda                            | [D](epic-d-historial.md#us-82)   |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

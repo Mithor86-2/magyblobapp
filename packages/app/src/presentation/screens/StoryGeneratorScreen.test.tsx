@@ -83,6 +83,8 @@ describe('StoryGeneratorScreen — multi-selección (US-47)', () => {
       profileId: 'p1',
       temas: ['animales', 'espacio', 'magia'],
       estilos: ['aventura', 'divertido'],
+      // US-76: por defecto se usa el nombre del niño (el toggle arranca activo).
+      usarNombre: true,
     });
   });
 
@@ -136,6 +138,17 @@ describe('StoryGeneratorScreen — multi-selección (US-47)', () => {
 
     await waitFor(() => expect(generateMock).toHaveBeenCalledTimes(1));
     expect(generateMock.mock.calls[0]![0]!.ensenanza).toBeUndefined();
+  });
+
+  it('US-76: por defecto envía usarNombre=true y al desactivar el toggle envía false', async () => {
+    render(<StoryGeneratorScreen {...props} />);
+
+    // El toggle "Usar el nombre de Lola" arranca activo → usarNombre true por defecto.
+    fireEvent.click(screen.getByRole('button', { name: 'Usar el nombre de Lola' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
+
+    await waitFor(() => expect(generateMock).toHaveBeenCalledTimes(1));
+    expect(generateMock.mock.calls[0]![0]).toMatchObject({ usarNombre: false });
   });
 
   it('A1/US-73: tras generar navega al lector con el cuento y no lo muestra en línea', async () => {

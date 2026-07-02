@@ -50,6 +50,9 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
   // US-69: enseñanza opcional de selección única (undefined = ninguna). Tocar el chip
   // ya elegido lo deselecciona.
   const [ensenanza, setEnsenanza] = useState<Ensenanza | undefined>(undefined);
+  // US-76: usar el nombre del niño en el cuento (por defecto sí). Si se desactiva, el
+  // backend genera con un protagonista genérico y no recibe el nombre.
+  const [usarNombre, setUsarNombre] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Aviso de espera larga (US-53, cold-start de Render free).
@@ -88,6 +91,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
         temas,
         estilos,
         ensenanza,
+        usarNombre,
       });
       // A1/US-73: al generar, se abre el lector (StoryReader del stack raíz) con el
       // cuento; el generador se queda solo con el formulario.
@@ -104,6 +108,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
   return (
     <Screen
       headerImageName="cuentos"
+      title={t('tabs.cuentos')}
       headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton
@@ -158,6 +163,18 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
             onPress={() => toggleEnsenanza(e)}
           />
         ))}
+      </View>
+
+      {/* US-76: usar (o no) el nombre del niño como protagonista del cuento. */}
+      <Text style={styles.fieldLabel}>{t('storyGenerator.nameField')}</Text>
+      <View style={styles.chips}>
+        <SelectableChip
+          label={t('storyGenerator.useName', {
+            nombre: profile?.nombre ?? t('storyGenerator.youFallback'),
+          })}
+          selected={usarNombre}
+          onPress={() => setUsarNombre((v) => !v)}
+        />
       </View>
 
       {loading ? (

@@ -42,16 +42,24 @@ describe('ActivityCard', () => {
   it('US-54: muestra las instrucciones como lista de pasos cuando existen', () => {
     render(<ActivityCard activity={{ ...base, instrucciones: '1. Coge el papel. 2. Pinta.' }} />);
 
-    expect(screen.getByText('Cómo hacerlo')).toBeVisible();
-    // Cada paso es un elemento propio (lista), no un párrafo único.
+    // US-81: los pasos empiezan ocultos; solo se ofrece "Ver pasos".
+    expect(screen.getByRole('button', { name: 'Ver pasos' })).toBeVisible();
+    expect(screen.queryByText('Coge el papel.')).not.toBeInTheDocument();
+
+    // Al pulsar "Ver pasos" se despliegan como lista (cada paso su elemento).
+    fireEvent.click(screen.getByRole('button', { name: 'Ver pasos' }));
     expect(screen.getByText('Coge el papel.')).toBeVisible();
     expect(screen.getByText('Pinta.')).toBeVisible();
+
+    // El botón pasa a "Ocultar pasos" y al pulsarlo se repliegan.
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar pasos' }));
+    expect(screen.queryByText('Coge el papel.')).not.toBeInTheDocument();
   });
 
-  it('US-54: si no hay instrucciones, no muestra la sección "Cómo hacerlo"', () => {
+  it('US-81: si no hay instrucciones, no muestra el botón de pasos', () => {
     render(<ActivityCard activity={base} />);
 
-    expect(screen.queryByText('Cómo hacerlo')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ver pasos' })).not.toBeInTheDocument();
   });
 
   it('US-72: al pulsar "Realizado" completa al instante, sin exigir valoración', () => {
