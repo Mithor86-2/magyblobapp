@@ -150,6 +150,10 @@ export function BookPages({
               </Text>
             </View>
           )}
+          {/* Número de página impreso en la hoja (US-91), como un libro real. */}
+          <Text style={styles.numeroPagina} testID="page-number">
+            {indice + 1}
+          </Text>
         </Animated.View>
       </GestureDetector>
 
@@ -219,6 +223,13 @@ const makeStyles = (colors: ColorTokens) =>
     texto: {
       flex: 1,
       justifyContent: 'center',
+    },
+    // Número de página impreso al pie de la hoja (US-91).
+    numeroPagina: {
+      ...typography.labelBold,
+      color: '#8a8a8a',
+      textAlign: 'center',
+      marginTop: spacing.sm,
     },
     body: {
       ...typography.bodyLg,

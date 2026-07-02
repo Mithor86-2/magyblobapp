@@ -30,6 +30,13 @@ describe('BookPages (US-83)', () => {
     expect(hoja).toHaveStyle({ backgroundColor: 'rgb(255, 255, 255)' });
   });
 
+  it('#3: imprime el número de página en la hoja y cambia al pasar', () => {
+    render(<BookPages paginas={PAGINAS} />);
+    expect(screen.getByTestId('page-number')).toHaveTextContent('1');
+    siguiente();
+    expect(screen.getByTestId('page-number')).toHaveTextContent('2');
+  });
+
   it('› avanza a la siguiente página y ‹ vuelve', () => {
     render(<BookPages paginas={PAGINAS} />);
     siguiente();
