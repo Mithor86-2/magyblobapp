@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import {
-  Image,
   type ImageSourcePropType,
   KeyboardAvoidingView,
   Platform,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Appear } from './Appear';
+import { BouncingHeaderImage } from './BouncingHeaderImage';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 
@@ -107,11 +107,10 @@ export function Screen({
         >
           {headerImageName ? (
             <Appear>
-              <Image
+              {/* US-86 (ajuste #4): la cabecera rebota suavemente en loop (translateY). */}
+              <BouncingHeaderImage
                 source={headerImages[headerImageName]}
                 style={[styles.header, { height: headerHeight }]}
-                resizeMode="contain"
-                accessibilityRole="image"
               />
             </Appear>
           ) : null}
