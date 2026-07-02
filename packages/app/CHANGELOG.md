@@ -71,6 +71,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+- **Vitest 2 → 3 (chore/vitest-3).** Actualiza `vitest` y `@vitest/coverage-v8` a `^3.2.6`, cerrando
+  la vulnerabilidad **crítica** de Vitest (`<3.2.6`). Solo afecta a tooling de test
+  (`devDependencies`); no se envía al bundle de la app (compilado por EAS/Metro). Los 272 tests y los
+  umbrales de coverage siguen en verde sin cambios de configuración. Residuos dev-only (vite/esbuild
+  vía vitest; uuid vía el toolchain de Expo) se difieren a Dependabot/Expo.
+
 ## [1.7.0] - 2026-07-02
 
 ### Changed
