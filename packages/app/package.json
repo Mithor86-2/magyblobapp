@@ -53,6 +53,7 @@
     "@testing-library/react": "^16.3.2",
     "@types/react": "~19.2.2",
     "@vitest/coverage-v8": "^2.1.9",
+    "babel-preset-expo": "~56.0.15",
     "jsdom": "^29.1.1",
     "react-dom": "19.2.3",
     "react-native-web": "^0.21.2",

@@ -17,6 +17,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- **`babel-preset-expo` declarado como devDependency del app.** `babel.config.js` (US-79) referencia
+  `babel-preset-expo`, pero solo estaba disponible por transitividad; en un build nativo limpio (EAS /
+  `gradlew assembleRelease`) con pnpm estricto, Metro fallaba al bundlear con `Cannot find module
+'babel-preset-expo'`. Se añade como dependencia directa para que la APK/AAB compile.
+
 ### Security
 
 ## [1.7.0] - 2026-07-02

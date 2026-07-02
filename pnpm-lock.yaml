@@ -147,6 +147,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^2.1.9
         version: 2.1.9(vitest@2.1.9(@types/node@22.19.20)(jsdom@29.1.1)(lightningcss@1.32.0)(terser@5.48.0))
+      babel-preset-expo:
+        specifier: ~56.0.15
+        version: 56.0.15(@babel/core@7.29.7)(@babel/runtime@7.29.7)(expo@56.0.11)(react-refresh@0.14.2)
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
