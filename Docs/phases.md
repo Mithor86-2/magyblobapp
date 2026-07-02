@@ -862,3 +862,21 @@ Decisiones: **#1** se intentó `react-native-page-flipper` pero se **descartó**
   del icono y `tabBarStyle` original) a petición suya. Se elimina el helper `makeTabBarStyle`.
 - **DoD:** ✅ `pnpm check` verde (**backend 407 + app 268**) + cobertura estratégica OK · ⏳ pruebas en
   dev por el usuario (dev build) y confirmación antes del `finish`.
+
+### Lote de ajustes 4 de `ideas.txt` (US-89…US-91, misma rama `feature/87-ajustes-ideas-3`, sin release)
+
+Tres mejoras visuales tras probar el lote 3 en dev. Plan en
+[planes/coordinacion-ajustes-ideas-4.md](planes/coordinacion-ajustes-ideas-4.md). Se ejecuta en la
+**misma rama** (el lote 3 sigue sin integrar), commits por feature; integración **sin release**.
+
+- [x] ✅ **F1 — Chips por categoría: color + icono (US-89, #1).** `SelectableChip` con `icon` y `color`
+      por categoría (temas=cielo, estilos=menta, enseñanza=ámbar, usar-nombre=coral); iconos lucide por
+      opción (`chipIcons.ts` + `Icon`), reutilizados en Cuentos, Crear perfil (intereses) y Dashboard.
+- [x] ✅ **F2 — Animación suave del avatar (US-90, #2).** `AnimatedAvatar` (giro leve + rebote en bucle,
+      reanimated) en Inicio, cabecera de Cuentos y avatar seleccionado del `AvatarPicker`.
+- [x] ✅ **F3 — Número de página impreso en cada hoja (US-91, #3).** `BookPages` imprime el número en
+      cada hoja, además del indicador existente.
+- **Extra:** stub de `lucide-react-native` para Vitest (permite que `Icon` cargue en tests sin mockearlo
+  por fichero, necesario al usar `Icon` en `SelectableChip`).
+- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 270**) + cobertura OK · ⏳ pruebas en dev por el
+  usuario (dev build) y confirmación antes del `finish`.

@@ -1540,3 +1540,67 @@ la barra inferior se vea completa, **para** navegar sin que la tape la barra del
 - **(Activo)** Dada una pestaña activa, Entonces el resaltado cubre icono y etiqueta.
 - **(Android)** Dado Android con barra de navegación, Entonces la barra de pestañas se ve completa por
   encima de ella.
+
+## US-89 — Chips por categoría: color + icono {#us-89}
+
+> **Ajuste (lote 4 de ideas, #1).**
+
+**Como** persona usuaria, **quiero** que los chips de temas, estilos, enseñanza y "usar nombre" tengan
+un color por categoría y un icono, **para** distinguirlos de un vistazo; y que los iconos de tema sean
+los mismos al elegir los gustos del perfil.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Cuentos / Crear perfil / Dashboard.
+
+**Alcance**
+
+1. `SelectableChip` admite `icon?: IconName` y `color?: 'primary'|'secondary'|'tertiary'|'quaternary'`;
+   seleccionado = relleno del color de su categoría (icono + label en el `on*`).
+2. Color por categoría: temas=cielo, estilos=menta, enseñanza=ámbar, usar-nombre=coral. Iconos por
+   opción (lucide) centralizados en `chipIcons.ts` (temas/estilos/enseñanza).
+3. Se aplica en Cuentos (temas/estilos/enseñanza/usar-nombre), Crear perfil (intereses = iconos de
+   tema) y Dashboard (temas/estilos).
+
+**Criterios de aceptación**
+
+- **(Color)** Dado un chip seleccionado, Entonces se pinta con el color de su categoría, igual en todas
+  las pantallas.
+- **(Icono)** Dado un chip, Entonces muestra su icono delante de la etiqueta; los intereses del perfil
+  usan los mismos iconos de tema.
+
+## US-90 — Animación suave del avatar del niño {#us-90}
+
+> **Ajuste (lote 4 de ideas, #2).**
+
+**Como** niño, **quiero** que mi avatar (emoji de animal) se mueva suavemente (giros leves + rebote),
+**para** que la app se sienta viva; también al crear el perfil y elegir avatar.
+
+**Prioridad:** Could · **Fase:** Mejoras · **Pantalla:** Inicio / Cuentos / Crear perfil.
+
+**Alcance**
+
+1. `AnimatedAvatar`: envuelve el emoji en un `Animated.View` (reanimated) con `rotate` (±~6°) +
+   `translateY` (rebote ~4px) en bucle. Se usa en Inicio (hero), cabecera de Cuentos y el avatar
+   **seleccionado** del `AvatarPicker`.
+
+**Criterios de aceptación**
+
+- **(Movimiento)** Dado el avatar del niño, Entonces se mueve suavemente en bucle sin afectar al layout.
+
+## US-91 — Número de página impreso en cada hoja {#us-91}
+
+> **Ajuste (lote 4 de ideas, #3).**
+
+**Como** niño (con el adulto), **quiero** ver el número de página en cada hoja del cuento, **para**
+saber por dónde voy como en un libro real.
+
+**Prioridad:** Could · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
+
+**Alcance**
+
+1. `BookPages` imprime `indice + 1` al pie de cada hoja, además del indicador "Página n de total" de
+   los controles.
+
+**Criterios de aceptación**
+
+- **(Número)** Dada una hoja del cuento, Entonces muestra su número de página impreso; al pasar página,
+  el número cambia.

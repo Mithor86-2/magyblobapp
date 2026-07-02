@@ -118,6 +118,9 @@ Should = HITO 2 · Could = si hay margen.
 | US-86 | Cabeceras con animación de rebote                      | Could     | Mejoras | Toda la app (cabeceras)             | [F](epic-f-plataforma.md#us-86)  |
 | US-87 | Colores de botón consistentes + sombra por tono        | Should    | Mejoras | Toda la app (botones)               | [F](epic-f-plataforma.md#us-87)  |
 | US-88 | ~~Pestañas: activo + visibilidad Android~~ (revertida) | Should    | Mejoras | Pestañas                            | [F](epic-f-plataforma.md#us-88)  |
+| US-89 | Chips por categoría: color + icono                     | Should    | Mejoras | Cuentos / Crear perfil / Dashboard  | [F](epic-f-plataforma.md#us-89)  |
+| US-90 | Animación suave del avatar del niño                    | Could     | Mejoras | Inicio / Cuentos / Crear perfil     | [F](epic-f-plataforma.md#us-90)  |
+| US-91 | Número de página impreso en cada hoja                  | Could     | Mejoras | Lector                              | [F](epic-f-plataforma.md#us-91)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

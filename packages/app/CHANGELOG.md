@@ -20,6 +20,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   cabecera oscila suavemente arriba↔abajo en bucle infinito (reanimated `withRepeat`).
 - **4º color de acción "ámbar" (US-87, ajuste #6).** Nueva variante `quaternary` de `BubblyButton` y
   tokens `quaternary`/`onQuaternary`/`quaternaryBorder` (claro y oscuro) para distinguir "Mis logros".
+- **Chips por categoría: color + icono (US-89, lote 4 #1).** `SelectableChip` admite `icon` y `color`
+  por categoría; en Cuentos los chips de temas (cielo), estilos (menta), enseñanza (ámbar) y usar-nombre
+  (coral) tienen color e icono propios; los iconos de tema se reutilizan en los intereses al crear el
+  perfil y en el Dashboard. Helper `chipIcons.ts` + nuevos iconos lucide en `Icon`.
+- **Avatar del niño con movimiento suave (US-90, lote 4 #2).** Nuevo `AnimatedAvatar`: el emoji de
+  avatar gira levemente y rebota en bucle (reanimated). Se usa en Inicio, en la cabecera de Cuentos y
+  en el avatar seleccionado del `AvatarPicker`.
+- **Número de página impreso en cada hoja (US-91, lote 4 #3).** Cada hoja del libro muestra su número
+  de página, además del indicador "Página n de total".
 
 ### Changed
 
