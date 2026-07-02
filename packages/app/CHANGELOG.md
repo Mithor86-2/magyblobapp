@@ -7,6 +7,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.7.0] - 2026-07-02
+
 ### Changed
 
 - **Pasos visibles al generar actividades (US-81, ajuste).** `ActivityCard` acepta

@@ -7,6 +7,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.7.0] - 2026-07-02
+
 ### Changed
 
 - **Actividades: trato con nombre también en IA real (US-77, ajuste).** El seed
