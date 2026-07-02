@@ -9,6 +9,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Lectura tipo libro (US-73, A2).** El lector muestra el cuento **paginado** (una página a la vez)
+  con swipe horizontal, botones ‹ / ›, indicador "Página {n} de {total}" y **animación de giro**
+  (`Animated` de RN, sin librerías nuevas). Nuevo paginador puro `paginarCuento` (robusto ante cuerpo
+  de una línea, multipárrafo o vacío) y componente `BookPages`; i18n ES/EN (`reader.page`, `‹`/`›`).
+- **Trofeos ganados en Inicio (US-73, A4).** Bajo la barra de progreso de logros, fila de **🏆
+  pequeños** (uno por logro conseguido, acotada con "+N"); mensaje de ánimo si aún no hay ninguno
+  (`home.noAchievementsYet`, ES/EN).
+- **Cerrar el buscador del Historial (US-73, A3).** Botón **"X"** arriba a la derecha del modal de
+  búsqueda (icono `close`, etiqueta accesible "Cerrar").
 - **Pantalla "Mis logros" (US-68).** Vitrina de medallas del perfil (cuentos, actividades, racha y
   temas) con progreso y estado conseguido/bloqueado, accesible desde Inicio; consume
   `GET /profiles/:id/achievements`. Gateway `achievements`, tipos y esquema Zod, e i18n ES/EN.
@@ -27,6 +36,8 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- **Generar cuento navega al lector (US-73, A1).** Al generar se abre el `StoryReader` y el generador
+  deja de mostrar el cuento en línea (queda como formulario). Una sola pantalla de lectura.
 - **Marcar cuento como leído explícito (A2).** Ya no se marca leído solo por abrir el lector: se marca
   con el botón "Marcar como leído" (en la vista de lectura y en el resultado del generador, en color
   `accent` para distinguirlo del botón de escuchar) o al terminar de escuchar la narración

@@ -277,11 +277,13 @@ interface SearchFiltersModalProps {
 }
 
 /**
- * Modal de búsqueda y filtros del Historial (A3): campo de texto + todos los filtros
- * + botones Buscar (cierra) y Limpiar (resetea). Edita los filtros en vivo (el
- * listado ya es reactivo); "Buscar" solo cierra el modal con lo elegido aplicado.
+ * Modal de búsqueda y filtros del Historial (A3): cabecera con título y botón "X"
+ * de cierre, campo de texto, todos los filtros y botones Buscar (cierra) y Limpiar
+ * (resetea). Edita los filtros en vivo (el listado ya es reactivo); "Buscar" y la
+ * "X" solo cierran el modal con lo elegido aplicado. Se exporta para poder probar el
+ * cierre de forma aislada (US-30).
  */
-function SearchFiltersModal(props: SearchFiltersModalProps) {
+export function SearchFiltersModal(props: SearchFiltersModalProps) {
   const { t } = useTranslation();
   const styles = useThemedStyles(makeStyles);
 
@@ -289,7 +291,18 @@ function SearchFiltersModal(props: SearchFiltersModalProps) {
     <Modal visible={props.visible} animationType="slide" transparent onRequestClose={props.onClose}>
       <View style={styles.modalBackdrop}>
         <View style={styles.modalCard}>
-          <Text style={styles.modalTitle}>{t('history.filtersTitle')}</Text>
+          {/* A3: cabecera con título y botón "X" para cerrar el modal arriba a la derecha. */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{t('history.filtersTitle')}</Text>
+            <Pressable
+              onPress={props.onClose}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              style={styles.modalClose}
+            >
+              <Icon name="close" size="md" />
+            </Pressable>
+          </View>
           <ScrollView contentContainerStyle={styles.modalBody}>
             <TextField
               label={t('history.searchLabel')}
@@ -499,9 +512,22 @@ const makeStyles = (colors: ColorTokens) =>
       gap: spacing.sm,
       maxHeight: '85%',
     },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+    },
     modalTitle: {
       ...typography.headlineMd,
       color: colors.onSurface,
+      flex: 1,
+    },
+    modalClose: {
+      minWidth: 44,
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     modalBody: {
       gap: spacing.sm,

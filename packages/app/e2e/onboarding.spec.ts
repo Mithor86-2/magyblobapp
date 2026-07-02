@@ -49,7 +49,10 @@ test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ pa
   await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible();
   await page.getByRole('button', { name: 'Generar cuento' }).click();
 
-  // El cuento (mock determinista) aparece con el nombre del niño
-  await expect(page.getByText(/Había una vez/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(/Mateo/).first()).toBeVisible();
+  // A1/A2 (US-73): al generar se abre el LECTOR con el cuento PAGINADO. La primera
+  // página empieza con "Había una vez <nombre>, …" (mock determinista) y hay indicador
+  // de página. Se asienta la frase completa (única del lector visible; el nombre suelto
+  // también aparece oculto en las pestañas montadas detrás y daría un falso "hidden").
+  await expect(page.getByText(/Había una vez Mateo/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Página 1 de/)).toBeVisible();
 });

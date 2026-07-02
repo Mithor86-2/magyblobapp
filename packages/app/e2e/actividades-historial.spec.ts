@@ -73,9 +73,23 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible();
   await page.getByRole('button', { name: 'Generar cuento' }).click();
 
-  // El cuento (mock determinista) aparece con el nombre del niño
-  await expect(page.getByText(/Había una vez/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(new RegExp(NOMBRE_NINO)).first()).toBeVisible();
+  // A1/A2 (US-73): al generar se navega al LECTOR (Stack raíz) con el cuento PAGINADO.
+  // La primera página empieza con "Había una vez <nombre>, …" (mock determinista) y hay
+  // indicador de página. Se asienta la frase completa (única del lector visible; el nombre
+  // suelto también aparece oculto en las pestañas montadas detrás y daría un falso "hidden").
+  await expect(page.getByText(new RegExp(`Había una vez ${NOMBRE_NINO}`))).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByText(/Página 1 de/)).toBeVisible();
+
+  // El lector es una pantalla del stack raíz montada SOBRE las pestañas y este navegador
+  // no está enganchado al historial del navegador (no hay `linking`), así que `goBack()` no
+  // sirve. Recargar rearranca la app: la sesión y el perfil persisten (US-49/US-50) y la
+  // ruta inicial resuelve a las pestañas (`Main`); el cuento ya quedó guardado en backend.
+  await page.reload();
+  await expect(page.getByText('Historial', { exact: true }).first()).toBeVisible({
+    timeout: 30_000,
+  });
 }
 
 test('actividades: generar recomendadas y marcar una como realizada', async ({

@@ -122,6 +122,8 @@ export const es = {
     seeActivities: 'Ver actividades',
     myAchievements: 'Mis logros',
     achievementsSummary: '{{conseguidos}}/{{total}}',
+    // Ánimo cuando aún no hay ningún logro conseguido (A4/US-73).
+    noAchievementsYet: '¡Lee cuentos y haz actividades para ganar tus primeros trofeos!',
     adultsZone: 'Zona de personas adultas',
   },
 
@@ -230,6 +232,10 @@ export const es = {
   reader: {
     markRead: 'Marcar como leído',
     alreadyRead: 'Leído',
+    // Lectura paginada como libro (A2/US-73).
+    page: 'Página {{n}} de {{total}}',
+    prevPage: 'Página anterior',
+    nextPage: 'Página siguiente',
   },
 
   history: {
