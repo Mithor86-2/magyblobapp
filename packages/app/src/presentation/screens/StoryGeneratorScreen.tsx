@@ -125,6 +125,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
         <AnimatedAvatar
           emoji={profile ? avatarEmoji(profile.avatar) : '🦊'}
           style={styles.avatar}
+          interactive
         />
         <Text style={styles.title}>
           {t('storyGenerator.title', {

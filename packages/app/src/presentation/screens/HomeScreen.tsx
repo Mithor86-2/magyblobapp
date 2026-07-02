@@ -69,6 +69,7 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         <AnimatedAvatar
           emoji={profile ? avatarEmoji(profile.avatar) : '✨'}
           style={styles.avatar}
+          interactive
         />
         <Text style={styles.title}>
           {t('home.greeting', { nombre: profile ? `, ${profile.nombre}` : '' })}
