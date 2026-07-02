@@ -19,6 +19,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+- **Vitest 2 → 3 (chore/vitest-3).** Actualiza `vitest` y `@vitest/coverage-v8` a `^3.2.6`, cerrando
+  la vulnerabilidad **crítica** de Vitest (`<3.2.6`, lectura/ejecución de ficheros con el UI server
+  activo) y parte de los transitivos. Solo afecta a tooling de test (`devDependencies`); no llega a la
+  imagen de producción (`pnpm deploy --prod`). Gate y umbrales de coverage siguen en verde sin cambios
+  de configuración. Residuos dev-only (vite/esbuild vía vitest y tsx) se difieren a Dependabot.
+
 ## [1.7.0] - 2026-07-02
 
 ### Changed
