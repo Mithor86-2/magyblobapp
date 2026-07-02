@@ -43,9 +43,9 @@ jobs:
   integration-e2e-backend:
     name: Integración + E2E backend (Testcontainers)
     runs-on: ubuntu-latest
-    # En develop NO bloquea (deja pasar build y merge aunque falle, útil ante flakiness);
-    # en main sigue siendo obligatoria vía ruleset (protege producción).
-    continue-on-error: ${{ github.ref_name == 'develop' || github.base_ref == 'develop' }}
+    # En develop NO se ejecuta (ni build ni merge dependen de E2E; ahorra minutos y
+    # evita flakiness). En main sí corre y es obligatoria vía ruleset (protege producción).
+    if: ${{ github.ref_name != 'develop' && github.base_ref != 'develop' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -62,8 +62,8 @@ jobs:
   e2e-app:
     name: E2E app (Playwright / Expo web)
     runs-on: ubuntu-latest
-    # En develop NO bloquea (deja pasar build y merge aunque falle); en main sí.
-    continue-on-error: ${{ github.ref_name == 'develop' || github.base_ref == 'develop' }}
+    # En develop NO se ejecuta (no bloquea build ni merge); en main sí corre.
+    if: ${{ github.ref_name != 'develop' && github.base_ref != 'develop' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
