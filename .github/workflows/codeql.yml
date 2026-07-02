@@ -32,8 +32,8 @@ jobs:
       - uses: actions/checkout@v4
       # JS/TS es lenguaje interpretado: CodeQL no necesita paso de build.
       - name: Inicializar CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
       - name: Analizar
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
