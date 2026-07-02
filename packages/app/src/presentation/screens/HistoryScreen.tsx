@@ -130,7 +130,9 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     setBusqueda('');
   };
 
-  const hechas = history.activities.filter((a) => a.valoracion != null);
+  // "Hechas" = completadas (por `completadaEn`), aunque no tengan valoración (US-72);
+  // coherente con cómo el backend cuenta las actividades completadas para los logros.
+  const hechas = history.activities.filter((a) => a.completadaEn != null);
   // Listas filtradas en cliente (US-62 + US-64 + US-69) sobre lo ya cargado.
   const cuentosVisibles = filtrarCuentos(
     history.stories,
@@ -221,15 +223,19 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       )}
 
       <Text style={styles.section}>{t('history.sectionActivities')}</Text>
-      {hechas.length === 0 ? (
-        <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
-      ) : actividadesVisibles.length === 0 ? (
-        <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
-      ) : (
-        actividadesVisibles.map((activity) => (
-          <ActivityCard key={activity.id} activity={activity} />
-        ))
-      )}
+      {/* `testID` para poder acotar la sección en los E2E: el tab navigator mantiene
+          montada también la pestaña Actividades, cuyas tarjetas coinciden en texto. */}
+      <View testID="history-activities" style={styles.activitiesSection}>
+        {hechas.length === 0 ? (
+          <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
+        ) : actividadesVisibles.length === 0 ? (
+          <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
+        ) : (
+          actividadesVisibles.map((activity) => (
+            <ActivityCard key={activity.id} activity={activity} />
+          ))
+        )}
+      </View>
 
       <SearchFiltersModal
         visible={modalVisible}
@@ -395,6 +401,9 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.headlineMd,
       color: colors.onSurface,
       marginTop: spacing.sm,
+    },
+    activitiesSection: {
+      gap: spacing.sm,
     },
     vacio: {
       ...typography.bodyMd,

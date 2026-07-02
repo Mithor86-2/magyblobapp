@@ -105,6 +105,31 @@ test('actividades: generar recomendadas y marcar una como realizada', async ({
   await expect(page.getByText('¡Hecha!').first()).toBeVisible();
 });
 
+test('historial: la actividad marcada como realizada aparece en la sección Actividades', async ({
+  page,
+}, testInfo) => {
+  await completarOnboarding(page, correoUnico(testInfo));
+
+  // Ir a "Actividades", generar y marcar la primera como realizada (US-10).
+  await page.getByText('Actividades', { exact: true }).first().click();
+  await expect(page.getByText('Actividades para hoy')).toBeVisible();
+  await page.getByRole('button', { name: 'Generar actividades' }).click();
+  await expect(page.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Realizado' }).first().click();
+  await page.getByRole('button', { name: '3 estrellas' }).first().click();
+  await expect(page.getByText('¡Hecha!').first()).toBeVisible();
+
+  // Ir al Historial: la actividad realizada debe aparecer bajo su sección con "¡Hecha!"
+  // (reproduce el flujo exacto del bug reportado: marcar realizada → verla en el Historial).
+  // El tab navigator mantiene montada también la pestaña Actividades (mismas tarjetas y
+  // textos), así que acotamos la aserción a la sección del Historial por su testID.
+  await page.getByText('Historial', { exact: true }).first().click();
+  await expect(page.getByText('Tu historial')).toBeVisible();
+  const seccion = page.getByTestId('history-activities');
+  await expect(seccion.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
+  await expect(seccion.getByText('¡Hecha!')).toBeVisible();
+});
+
 test('historial: el cuento generado aparece en "Cuentos mágicos"', async ({ page }, testInfo) => {
   await completarOnboarding(page, correoUnico(testInfo));
 

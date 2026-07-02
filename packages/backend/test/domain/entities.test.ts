@@ -173,6 +173,13 @@ describe('Activity', () => {
     expect(a.completadaEn).toBe(fecha);
   });
 
+  it('completar sin valoración marca la fecha y deja la valoración vacía (US-72)', () => {
+    const a = build();
+    a.completar(undefined, fecha);
+    expect(a.completadaEn).toBe(fecha);
+    expect(a.valoracion).toBeUndefined();
+  });
+
   it.each([0, 4, -1, 2.5])('completar rechaza valoración %s', (valoracion) => {
     expect(() => build().completar(valoracion, fecha)).toThrow(DomainError);
   });

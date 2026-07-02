@@ -21,6 +21,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- **"Realizado" sin valoración obligatoria (US-72).** `Activity.completar` acepta la valoración como
+  **opcional** (solo valida 1-3 si viene) y `POST /activities/:id/complete` la admite ausente; el
+  estado "hecha" se rige por `completadaEn` (coherente con cómo se cuentan las actividades completadas
+  para los logros). Sin migración: `valoracion` y `completadaEn` ya eran nullable.
+
 ### Deprecated
 
 ### Removed

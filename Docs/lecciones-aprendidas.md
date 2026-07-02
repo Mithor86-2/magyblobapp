@@ -828,3 +828,24 @@ false` para que funcione igual en nativo y en react-native-web.
 
 - Un hook que hace `setState` desde un `setTimeout` (p. ej. `useSlowHint`) no refleja el cambio si se
   avanzan los timers fuera de `act(...)`. Envolver `act(() => vi.advanceTimersByTime(ms))`.
+
+## Actividades realizadas en el Historial (2026-07-01, rama `feature/72-actividades-historial`, US-72)
+
+### "Hecha" debe definirse por `completadaEn`, no por `valoracion`
+
+- **Síntoma:** una actividad marcada como realizada podía no aparecer en el Historial.
+- **Causa:** la app decidía "hecha" por `valoracion != null`, pero completar era un flujo de **dos pasos**
+  ("Realizado" solo revelaba las estrellas; la actividad se guardaba al **tocar una estrella**). Si el
+  toque no registraba o no se puntuaba, no se completaba. Además el backend ya contaba las completadas por
+  **`completadaEn`** (`domain/logros.ts`), así que la app era incoherente con el propio backend.
+- **Solución:** valoración **opcional** (dominio, DTO, ruta Zod); "Realizado" completa al instante
+  (`onComplete()` sin valoración) y las estrellas quedan editables para puntuar después; el estado "hecha"
+  y el filtro del Historial pasan a `completadaEn != null`. Sin migración (`valoracion`/`completadaEn` ya
+  eran nullable).
+
+### Reproducir con E2E antes de "arreglar": el tab navigator mantiene pestañas montadas
+
+- El primer E2E que reproducía el flujo falló por **strict mode** de Playwright: `getByText('Actividad de
+arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Historial siguen montadas y
+  **visibles** en react-navigation web). No era el bug: la actividad **sí** estaba en el Historial. Lección:
+  acotar la aserción a la sección con un `testID` (`history-activities`) en vez de `.first()`/`filter({visible})`.

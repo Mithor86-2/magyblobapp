@@ -21,7 +21,8 @@ const bodySchema = z
   .strict();
 
 const completeParamsSchema = z.object({ id: z.string().min(1) });
-const completeSchema = z.object({ valoracion: z.number().int().min(1).max(3) }).strict();
+// US-72: la valoración es opcional ("Realizado" puede marcarse sin puntuar).
+const completeSchema = z.object({ valoracion: z.number().int().min(1).max(3).optional() }).strict();
 
 const favoriteParamsSchema = z.object({ id: z.string().min(1) });
 const favoriteSchema = z.object({ favorito: z.boolean() }).strict();

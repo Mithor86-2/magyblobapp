@@ -54,19 +54,38 @@ describe('ActivityCard', () => {
     expect(screen.queryByText('Cómo hacerlo')).not.toBeInTheDocument();
   });
 
-  it('con onComplete: al marcar "Realizado" pide la valoración y la notifica', () => {
+  it('US-72: al pulsar "Realizado" completa al instante, sin exigir valoración', () => {
     const onComplete = vi.fn();
     render(<ActivityCard activity={base} onComplete={onComplete} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Realizado' }));
-    expect(screen.getByText('¿Qué tal estuvo?')).toBeVisible();
+    // Se notifica sin valoración (la actividad queda hecha ya).
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete.mock.calls[0][0]).toBeUndefined();
+  });
 
+  it('US-72: hecha pero sin puntuar (con onComplete) invita a valorar y notifica la estrella', () => {
+    const onComplete = vi.fn();
+    render(
+      <ActivityCard
+        activity={{ ...base, completadaEn: '2026-06-10T12:00:00.000Z' }}
+        onComplete={onComplete}
+      />,
+    );
+
+    // Ya no ofrece "Realizado" (está hecha) y las estrellas quedan editables.
+    expect(screen.queryByRole('button', { name: 'Realizado' })).not.toBeInTheDocument();
+    expect(screen.getByText('¿Qué tal estuvo?')).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: '3 estrellas' }));
     expect(onComplete).toHaveBeenCalledWith(3);
   });
 
-  it('si ya está valorada, muestra "¡Hecha!" y no ofrece marcarla de nuevo', () => {
-    render(<ActivityCard activity={{ ...base, valoracion: 2 }} onComplete={vi.fn()} />);
+  it('si ya está hecha y valorada, muestra "¡Hecha!" y no ofrece marcarla de nuevo', () => {
+    render(
+      <ActivityCard
+        activity={{ ...base, completadaEn: '2026-06-10T12:00:00.000Z', valoracion: 2 }}
+      />,
+    );
 
     expect(screen.getByText('¡Hecha!')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Realizado' })).not.toBeInTheDocument();

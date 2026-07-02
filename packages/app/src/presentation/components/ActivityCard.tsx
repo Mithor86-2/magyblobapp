@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { Activity, Categoria } from '../../domain/types';
@@ -43,8 +42,12 @@ export function pasosDeInstrucciones(texto: string): string[] {
 
 interface ActivityCardProps {
   activity: Activity;
-  /** Si se pasa y la actividad no está completada, muestra estrellas para valorarla. */
-  onComplete?: (valoracion: number) => void;
+  /**
+   * Si se pasa, la tarjeta permite completar la actividad: "Realizado" la marca al
+   * instante (US-72) llamando `onComplete()` sin valoración, y una vez hecha las
+   * estrellas quedan editables para puntuar (o cambiar la puntuación) con `onComplete(n)`.
+   */
+  onComplete?: (valoracion?: number) => void;
 }
 
 /** Tarjeta de actividad: emoji + categoría + título + descripción + progreso. */
@@ -52,14 +55,14 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
-  // Flujo del botón "Realizado" (US-10 ampliada): pedir la valoración al pulsarlo.
-  const [valorando, setValorando] = useState(false);
   const color = categoriaColor(colors)[activity.categoria];
   const meta = [
     activity.duracionMin ? t('activityCard.minutes', { min: activity.duracionMin }) : null,
     activity.nivel ? t('activityCard.level', { nivel: activity.nivel }) : null,
   ].filter(Boolean);
-  const completada = activity.valoracion != null;
+  // "Hecha" se define por `completadaEn` (coherente con los logros del backend), no por
+  // la valoración: una actividad puede estar hecha y sin puntuar (US-72).
+  const completada = activity.completadaEn != null;
   // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
   const fecha = formatearFecha(activity.creadoEn, idioma);
@@ -95,22 +98,20 @@ export function ActivityCard({ activity, onComplete }: ActivityCardProps) {
 
       {completada ? (
         <View style={styles.progreso}>
-          <Text style={styles.meta}>{t('activityCard.done')}</Text>
-          <StarRating value={activity.valoracion ?? 0} />
+          {/* Hecha pero aún sin puntuar y editable ⇒ invita a valorar; ya puntuada ⇒ "¡Hecha!". */}
+          <Text style={styles.meta}>
+            {activity.valoracion == null && onComplete
+              ? t('activityCard.howWasIt')
+              : t('activityCard.done')}
+          </Text>
+          <StarRating value={activity.valoracion ?? 0} onChange={onComplete} />
         </View>
       ) : onComplete ? (
-        valorando ? (
-          <View style={styles.progreso}>
-            <Text style={styles.meta}>{t('activityCard.howWasIt')}</Text>
-            <StarRating value={0} onChange={onComplete} />
-          </View>
-        ) : (
-          <BubblyButton
-            label={t('activityCard.markDone')}
-            onPress={() => setValorando(true)}
-            variant="accent"
-          />
-        )
+        <BubblyButton
+          label={t('activityCard.markDone')}
+          onPress={() => onComplete()}
+          variant="accent"
+        />
       ) : null}
 
       <AuthorBadge proveedor={activity.proveedor} />

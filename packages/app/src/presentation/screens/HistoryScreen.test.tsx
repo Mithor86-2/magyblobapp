@@ -81,7 +81,10 @@ const activity = (id: string, categoria: Activity['categoria']): Activity => ({
   categoria,
   titulo: `Actividad ${id}`,
   descripcion: '...',
-  valoracion: 4,
+  // El Historial muestra las actividades "hechas" por `completadaEn` (US-72), no por
+  // la valoración; la puntuación es opcional.
+  completadaEn: '2026-06-12T10:00:00.000Z',
+  valoracion: 2,
   proveedor: 'mock',
 });
 

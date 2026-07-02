@@ -39,12 +39,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Refactor interno del cliente HTTP (`fetchWithRetry`): bucle de reintentos acotado + intento final,
   **sin cambio de comportamiento** (mismos intentos/backoff). Elimina una rama muerta y restaura la
   cobertura CORE de `http.ts` al 100%; E2E de alta localizado por `testID` (robusto). (US-72)
+- **"Realizado" marca la actividad al instante (US-72).** El botón la completa sin obligar a puntuar
+  (valoración opcional, editable después con las estrellas); el estado "hecha" se rige por
+  `completadaEn`. Simplifica el flujo de dos pasos.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- **Las actividades marcadas como realizadas ya se ven en el Historial (US-72).** El Historial
+  considera "hecha" una actividad por su `completadaEn` (no por la `valoracion`), coherente con el
+  backend, y ya no depende del segundo paso (puntuar) para registrarla. Cubierto por E2E (marcar
+  realizada → aparece en el Historial); añadido `testID="history-activities"` para acotar la aserción.
 
 ### Security
 

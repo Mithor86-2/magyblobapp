@@ -358,10 +358,11 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS },
           anonymousActivityListSchema,
         ),
-      complete: (activityId: string, valoracion: number) =>
+      complete: (activityId: string, valoracion?: number) =>
         request(
           baseUrl,
           `/activities/${activityId}/complete`,
+          // `valoracion` opcional (US-72): si es undefined, el body queda `{}` al serializar.
           { method: 'POST', body: { valoracion }, auth: true },
           activitySchema,
           session,

@@ -57,8 +57,8 @@ export interface ActivityGateway {
   recommend(request: RecommendActivitiesRequest): Promise<Activity[]>;
   /** Recomienda actividades en modo anónimo efímero, sin sesión ni persistencia (US-50). */
   recommendAnonymous(request: RecommendActivitiesAnonymousRequest): Promise<AnonymousActivity[]>;
-  /** Registra una actividad completada con valoración 1-3 (US-10). */
-  complete(activityId: string, valoracion: number): Promise<Activity>;
+  /** Registra una actividad como completada; la valoración 1-3 es opcional (US-10/US-72). */
+  complete(activityId: string, valoracion?: number): Promise<Activity>;
   /** Marca/desmarca una actividad como favorita (US-64); idempotente, devuelve la actividad actualizada. */
   setFavorite(activityId: string, favorito: boolean): Promise<Activity>;
 }

@@ -63,8 +63,8 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
     }
   }
 
-  async function onComplete(activityId: string, valoracion: number) {
-    trackAction('activity.complete', { valoracion });
+  async function onComplete(activityId: string, valoracion?: number) {
+    trackAction('activity.complete', { valoracion: valoracion ?? 'sin_valoracion' });
     try {
       const updated = await api.activities.complete(activityId, valoracion);
       setActivities((prev) => prev.map((a) => (a.id === activityId ? updated : a)));

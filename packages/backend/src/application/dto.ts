@@ -229,7 +229,8 @@ export interface MarkStoryReadRequest {
 
 export interface CompleteActivityRequest {
   activityId: string;
-  valoracion: number;
+  /** Valoración 1-3 opcional (US-72): "Realizado" puede marcarse sin puntuar. */
+  valoracion?: number;
 }
 
 // --- Favoritos (US-63) ---
