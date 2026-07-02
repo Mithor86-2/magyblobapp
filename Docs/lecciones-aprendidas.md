@@ -876,3 +876,19 @@ arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Histo
   distintos (aparecieron colisiones Generar cuento/Crear cuenta y Ver actividades/Buscar). Con 4
   colores no-destructivos, dos acciones comparten color solo si **nunca** coinciden en la misma
   pantalla (p. ej. Crear cuenta y Mis logros = ámbar; Ya tengo cuenta y Búsqueda = cielo).
+
+## Seguridad de dependencias
+
+### `pnpm audit`: no fuerces overrides que rompan el build por avisos dev-only
+
+- **Síntoma:** tras migrar a Vitest 3 quedaban 6 avisos (`vite`, `esbuild`, `uuid`). La tentación es
+  cerrarlos con `pnpm.overrides` forzando las versiones parcheadas.
+- **Causa:** `vitest@3.2.6` **ancla `vite@5.4.x`**, y el parche de los avisos de vite solo existe en
+  `vite@6.4.3+`. Forzar vite 6 bajo vitest 3 (o esbuild a un major distinto del que espera vite/tsx)
+  puede romper el runner de tests. Lo mismo con `uuid`: está bajo `expo → @expo/config-plugins →
+xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
+- **Solución:** distinguir **exposición real** de **severidad nominal**. Todos esos avisos son
+  dev/build-time (no entran en `pnpm deploy --prod` ni en el bundle de EAS) y la mayoría son
+  _dev-server / solo Windows_. Se cierra el que sí importa (el major de vitest) y **se difieren** los
+  transitivos a Dependabot, que los propondrá cuando vitest/tsx/expo suban sus deps. Romper una suite
+  verde por un fallo que no llega a producción es mal balance.

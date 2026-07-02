@@ -898,3 +898,18 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
   color solo si nunca coinciden en pantalla. **Los cambios de la barra de pestañas (US-88 #7/#8) se
   revirtieron** a petición del usuario: se dejó el tab como estaba antes del lote (blob alrededor del
   icono + `tabBarStyle` original); el resalte "todo el botón" y el inset inferior quedan descartados.
+
+## CI/CD y seguridad de dependencias (2026-07-02)
+
+- **Repo público + gobernanza gratis.** Se pasó el repo a público (tras verificar historial sin
+  secretos con gitleaks) para desbloquear en el plan free: rulesets de protección de rama, Dependabot
+  alerts/updates y CodeQL. `main` exige PR + CI verde (los 3 checks); `develop` permite push directo
+  (solo bloquea force-push/borrado). Licencia **PolyForm Noncommercial 1.0.0** (prohíbe uso comercial;
+  no es OSI). E2E/integración **no corren en develop** (solo en main) para ahorrar minutos y evitar
+  flakiness. Build Docker del backend se valida en cada PR; build de la app en EAS es manual
+  (`workflow_dispatch`, requiere secreto `EXPO_TOKEN`).
+- **Vitest 2 → 3 (chore/vitest-3).** Se migró para cerrar la vuln crítica de Vitest (`<3.2.6`), toda
+  ella dev-only. Decisión: **no forzar overrides de vite 6/esbuild** para tapar los residuos —vitest 3
+  ancla vite 5 y forzar vite 6 arriesga romper la suite, por fallos que no llegan a producción. Los 6
+  residuos (dev/build-time, mayoría solo-Windows) se difieren a Dependabot/Expo. Ver
+  [lecciones-aprendidas.md](lecciones-aprendidas.md) y [planes/chore-vitest-3.md](planes/chore-vitest-3.md).
