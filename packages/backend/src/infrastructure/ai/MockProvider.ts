@@ -42,14 +42,17 @@ export class MockProvider implements AIProvider {
     // US-69: si se eligió una enseñanza, la mock la refleja de forma determinista en
     // una frase de moraleja al final (cadena vacía si no hay enseñanza).
     const moraleja = moralejaMock(input.ensenanza, idioma);
+    // A1/US-74: el cuerpo mock sale dividido en ≥4 páginas (párrafos separados por
+    // una línea en blanco `\n\n`): introducción / viaje / amigos / descubrimiento y
+    // regreso con moraleja. El paginado del app respeta esos cortes.
     if (idioma === 'es') {
       return {
         titulo,
         cuerpo:
-          `Había una vez ${nombre}, que soñaba con ${tema}. ` +
-          `Un día partió en un viaje lleno de color y risas. ` +
-          `Por el camino hizo nuevos amigos que le ayudaron a ser valiente. ` +
-          `Juntos descubrieron que lo más bonito de ${tema} es compartirlo. ` +
+          `Había una vez ${nombre}, que soñaba con ${tema}.\n\n` +
+          `Un día partió en un viaje lleno de color y risas.\n\n` +
+          `Por el camino hizo nuevos amigos que le ayudaron a ser valiente.\n\n` +
+          `Juntos descubrieron que lo más bonito de ${tema} es compartirlo.\n\n` +
           `Y ${nombre} volvió a casa feliz, listo para soñar otra aventura.${moraleja}`,
         proveedor: 'mock',
         prompt,
@@ -58,10 +61,10 @@ export class MockProvider implements AIProvider {
     return {
       titulo,
       cuerpo:
-        `Once upon a time there was ${nombre}, who dreamed about ${tema}. ` +
-        `One day they set off on a journey full of color and laughter. ` +
-        `Along the way they made new friends who helped them be brave. ` +
-        `Together they discovered that the best part of ${tema} is sharing it. ` +
+        `Once upon a time there was ${nombre}, who dreamed about ${tema}.\n\n` +
+        `One day they set off on a journey full of color and laughter.\n\n` +
+        `Along the way they made new friends who helped them be brave.\n\n` +
+        `Together they discovered that the best part of ${tema} is sharing it.\n\n` +
         `And ${nombre} came back home happy, ready to dream up another adventure.${moraleja}`,
       proveedor: 'mock',
       prompt,
