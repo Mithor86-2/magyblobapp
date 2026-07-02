@@ -1,0 +1,59 @@
+# Build de la app en EAS (Expo Application Services) — MANUAL.
+#
+# Se dispara a mano (workflow_dispatch) eligiendo perfil (preview/production, de
+# eas.json) y plataforma. NO corre en push/PR: cada build consume créditos de EAS y
+# la app se compila en los servidores de Expo. Usa `--no-wait`: el job encola el build
+# y termina; el progreso se sigue en https://expo.dev.
+#
+# REQUISITO (una sola vez): crear un Access Token en https://expo.dev (Account →
+# Settings → Access tokens) y guardarlo como secreto de repo EXPO_TOKEN en
+# Settings → Secrets and variables → Actions. Sin él, `eas build` falla la auth.
+#
+# iOS requiere credenciales de Apple Developer; por defecto se ofrece Android (la app
+# se distribuye como APK/AAB, ver eas.json).
+name: EAS Build (app)
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Perfil de eas.json
+        type: choice
+        options: [preview, production]
+        default: preview
+      platform:
+        description: Plataforma a construir
+        type: choice
+        options: [android, ios, all]
+        default: android
+
+concurrency:
+  group: eas-build-${{ github.ref }}-${{ inputs.profile }}-${{ inputs.platform }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: EAS Build (${{ inputs.profile }} / ${{ inputs.platform }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: packages/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      # El workspace se instala desde la raíz (monorepo pnpm).
+      - name: Instalar dependencias
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+      - name: Configurar EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Encolar build en EAS
+        run: eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --non-interactive --no-wait
