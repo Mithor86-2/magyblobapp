@@ -92,6 +92,12 @@ export default defineConfig({
       'react-native-gesture-handler': fileURLToPath(
         new URL('./test/react-native-gesture-handler-stub.ts', import.meta.url),
       ),
+      // US-83: page-curl real con `react-native-page-flipper` (nativo: no carga bajo
+      // Vitest). El stub refleja el índice de página y expone el ref (goToPage/…), de modo
+      // que los controles ‹/› de `BookPages` siguen siendo verificables.
+      'react-native-page-flipper': fileURLToPath(
+        new URL('./test/react-native-page-flipper-stub.tsx', import.meta.url),
+      ),
     },
   },
   define: {
