@@ -69,7 +69,7 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   await page.getByRole('button', { name: '¡Listo!' }).click();
 
   // Pestaña "Cuentos" → generar un cuento (queda en el historial del perfil)
-  await page.getByText('Cuentos', { exact: true }).first().click();
+  await page.getByText('Cuentos', { exact: true }).last().click();
   await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible();
   await page.getByRole('button', { name: 'Generar cuento' }).click();
 
@@ -98,7 +98,7 @@ test('actividades: generar recomendadas y marcar una como realizada', async ({
   await completarOnboarding(page, correoUnico(testInfo));
 
   // Ir a la pestaña "Actividades"
-  await page.getByText('Actividades', { exact: true }).first().click();
+  await page.getByText('Actividades', { exact: true }).last().click();
   await expect(page.getByText('Actividades para hoy')).toBeVisible();
 
   // Generar actividades recomendadas (US-09)
@@ -125,7 +125,7 @@ test('historial: la actividad marcada como realizada aparece en la sección Acti
   await completarOnboarding(page, correoUnico(testInfo));
 
   // Ir a "Actividades", generar y marcar la primera como realizada (US-10).
-  await page.getByText('Actividades', { exact: true }).first().click();
+  await page.getByText('Actividades', { exact: true }).last().click();
   await expect(page.getByText('Actividades para hoy')).toBeVisible();
   await page.getByRole('button', { name: 'Generar actividades' }).click();
   await expect(page.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
@@ -137,7 +137,7 @@ test('historial: la actividad marcada como realizada aparece en la sección Acti
   // "¡Hecha!" (reproduce el bug: marcar realizada → verla en el Historial). El Historial
   // (US-74) arranca en la pestaña Cuentos, así que pulsamos el toggle "Actividades" (por
   // testID, para no chocar con la pestaña inferior homónima) y acotamos por su testID de sección.
-  await page.getByText('Historial', { exact: true }).first().click();
+  await page.getByText('Historial', { exact: true }).last().click();
   await expect(page.getByText('Tu historial')).toBeVisible();
   await page.getByTestId('history-tab-activities').click();
   const seccion = page.getByTestId('history-activities');
@@ -149,7 +149,7 @@ test('historial: el cuento generado aparece en la pestaña Cuentos', async ({ pa
   await completarOnboarding(page, correoUnico(testInfo));
 
   // Ir a la pestaña "Historial" (arranca en el toggle "Cuentos", US-74)
-  await page.getByText('Historial', { exact: true }).first().click();
+  await page.getByText('Historial', { exact: true }).last().click();
   await expect(page.getByText('Tu historial')).toBeVisible();
 
   // El cuento recién generado aparece en la lista de Cuentos (US-08). La tarjeta es un botón

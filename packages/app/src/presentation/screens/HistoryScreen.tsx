@@ -196,7 +196,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   };
 
   return (
-    <Screen headerAction={<AdultsButton onPress={openParental} />}>
+    <Screen title={t('tabs.historial')} headerAction={<AdultsButton onPress={openParental} />}>
       <Text style={styles.title}>{t('history.title')}</Text>
       <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
 

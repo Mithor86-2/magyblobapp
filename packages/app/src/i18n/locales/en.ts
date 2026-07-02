@@ -296,6 +296,8 @@ export const en: typeof es = {
     minutes: '{{min}} min',
     level: 'Level {{nivel}}',
     howTo: 'How to do it',
+    showSteps: 'Show steps',
+    hideSteps: 'Hide steps',
     done: 'Done!',
     howWasIt: 'How was it?',
     markDone: 'Done',

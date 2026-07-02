@@ -300,6 +300,8 @@ export const es = {
     minutes: '{{min}} min',
     level: 'Nivel {{nivel}}',
     howTo: 'Cómo hacerlo',
+    showSteps: 'Ver pasos',
+    hideSteps: 'Ocultar pasos',
     done: '¡Hecha!',
     howWasIt: '¿Qué tal estuvo?',
     markDone: 'Realizado',

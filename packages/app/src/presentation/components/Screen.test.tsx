@@ -48,4 +48,25 @@ describe('Screen', () => {
 
     expect(screen.queryByRole('img')).toBeNull();
   });
+
+  it('muestra el nombre de sección en la cabecera cuando se pasa title (US-80)', () => {
+    render(
+      <Screen title="Cuentos">
+        <Text>Contenido de la pantalla</Text>
+      </Screen>,
+    );
+
+    // react-native-web traduce accessibilityRole="header" a role="heading".
+    expect(screen.getByRole('heading', { name: 'Cuentos' })).toBeInTheDocument();
+  });
+
+  it('sin title no muestra ninguna cabecera de sección (US-80)', () => {
+    render(
+      <Screen>
+        <Text>Contenido de la pantalla</Text>
+      </Screen>,
+    );
+
+    expect(screen.queryByRole('heading')).toBeNull();
+  });
 });

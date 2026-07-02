@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Nombre de sección en la cabecera (US-80).** `Screen` acepta `title`, mostrado fijo arriba a la
+  izquierda de la barra de cabecera (junto al botón de la zona de adultos); las 4 pestañas
+  (Inicio · Actividades · Cuentos · Historial) lo pasan reutilizando las etiquetas `tabs.*` (ES/EN).
+- **Pasos de actividad plegables (US-81).** En `ActivityCard` las instrucciones empiezan **ocultas**
+  con un botón **"Ver pasos"**; al desplegarlas se muestran los pasos y el botón pasa a **"Ocultar
+  pasos"**. i18n ES/EN (`activityCard.showSteps`, `activityCard.hideSteps`).
 - **Historial con pestañas Cuentos/Actividades (US-74, A3).** Franja "Lo último" con el último cuento y
   la última actividad, y un **toggle Cuentos / Actividades** (por defecto Cuentos) que muestra la lista
   completa del tipo elegido; la búsqueda/filtros aplican a la pestaña activa. i18n ES/EN
