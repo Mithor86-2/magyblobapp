@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -20,30 +20,54 @@ const FASE_MS = 180;
 const UMBRAL = 60;
 
 /**
- * Lector **paginado como un libro** (A2/US-73, US-74, US-79): muestra una sola página
- * del cuento a la vez y permite pasar página **arrastrando** (page-curl) o con los
- * controles ‹ / › (deshabilitados en los extremos), con el indicador "Página n de
- * total". El texto se paginó antes con `paginarCuento` (lógica pura); este componente
- * solo presenta y navega.
+ * Lector **paginado como un libro** (US-73/US-74/US-79/US-83): muestra una página a la vez
+ * y permite pasar página **arrastrando** (efecto de pliegue/page-curl) o con los controles
+ * ‹ / › (deshabilitados en los extremos), con el indicador "Página n de total".
  *
- * **Giro de hoja con reanimated + gesture-handler (US-79).** Un único valor compartido
- * `drag` (en el hilo de UI) controla el giro: durante el arrastre sigue al dedo
- * (`rotateY` + `perspective` + traslación) y, al soltar o pulsar ‹/›, se anima en dos
- * medias fases —la hoja actual gira hacia el canto, se cambia el índice y la nueva
- * entra desde el lado opuesto— de modo que **tanto el gesto como los botones** muestran
- * el mismo pase de página. El índice es estado de React (los botones/gesto comparten
- * `irA`), así que los tests pueden ejercitar la navegación sin el hilo nativo.
+ * **Estructura de libro (US-83 #5):** una **portada** opcional (1ª página: título + imagen),
+ * las **páginas de texto** (`paginas`, ya troceadas por `paginarCuento`) y una **página final
+ * "FIN"** opcional (`finLabel`).
  *
- * **Hoja de tamaño consistente (US-79).** Alto mínimo proporcional a la pantalla para
- * que todas las páginas se vean igual, sobre papel blanco literal (`#ffffff`)
- * independiente del tema; los controles usan tokens de tema.
+ * **Giro de hoja con reanimated + gesture-handler.** Un valor compartido `drag` controla el
+ * giro (`rotateY` + `perspective` + traslación + escala) siguiendo el dedo; al soltar o pulsar
+ * ‹/› se anima en dos medias fases (la hoja actual gira hacia el canto, se cambia el índice y
+ * la nueva entra desde el lado opuesto). El índice es estado de React, así que los botones/gesto
+ * comparten `irA` y los tests ejercitan la navegación sin el hilo nativo.
+ *
+ * _Nota (US-83): se evaluó `react-native-page-flipper` para un curl "real", pero su versión
+ * publicada (1.0.1) crashea con Reanimated 4 / New Architecture ("undefined is not a function"
+ * en `BookPagePortrait`), así que se mantiene el pliegue con reanimated. Ver `Docs/memory.md`._
  */
-export function BookPages({ paginas }: { paginas: string[] }) {
+type ItemLibro = { tipo: 'portada' } | { tipo: 'texto'; texto: string } | { tipo: 'fin' };
+
+export function BookPages({
+  paginas,
+  portada,
+  finLabel,
+  finImagen,
+}: {
+  paginas: string[];
+  /** Nodo de portada (título + imagen); si se pasa, es la 1ª página del libro (US-83 #5). */
+  portada?: ReactNode;
+  /** Etiqueta de la última página ("¡Fin de la historia!"); si se pasa, se añade al final. */
+  finLabel?: string;
+  /** Imagen a mostrar también en la página final (portada del libro); opcional. */
+  finImagen?: ReactNode;
+}) {
   const { t } = useTranslation();
   const styles = useThemedStyles(makeStyles);
   const { width, height } = useWindowDimensions();
 
-  const total = Math.max(paginas.length, 1);
+  // Ítems del libro: portada (opcional) → páginas de texto → FIN (opcional).
+  const items: ItemLibro[] = [
+    ...(portada ? [{ tipo: 'portada' } as const] : []),
+    ...paginas.map((texto) => ({ tipo: 'texto', texto }) as const),
+    ...(finLabel ? [{ tipo: 'fin' } as const] : []),
+  ];
+  // Sin contenido: una página en blanco (indicador "1/1").
+  const itemsSeguro: ItemLibro[] = items.length > 0 ? items : [{ tipo: 'texto', texto: '' }];
+  const total = itemsSeguro.length;
+
   const [indice, setIndice] = useState(0);
   // Giro/arrastre de la hoja (hilo de UI): 0 = asentada; ±width = de canto.
   const drag = useSharedValue(0);
@@ -60,11 +84,9 @@ export function BookPages({ paginas }: { paginas: string[] }) {
     (siguiente: number) => {
       if (siguiente < 0 || siguiente > total - 1 || siguiente === indice) return;
       const dir = siguiente > indice ? 1 : -1; // avanzar (+1) / retroceder (-1)
-      // Fase 1: la hoja actual gira hasta el canto (avanzar → hacia la izquierda).
       drag.value = withTiming(-dir * width, { duration: FASE_MS }, (fin) => {
         if (!fin) return;
         runOnJS(cambiarIndice)(siguiente);
-        // Fase 2: la nueva hoja entra desde el lado opuesto hasta asentarse.
         drag.value = dir * width;
         drag.value = withTiming(0, { duration: FASE_MS });
       });
@@ -103,32 +125,35 @@ export function BookPages({ paginas }: { paginas: string[] }) {
     };
   });
 
-  // Sombra del pliegue: oscurece el canto hacia el que gira la hoja (izquierda al
-  // avanzar, derecha al retroceder) y se intensifica con el arrastre, simulando el
-  // relieve de una página que se levanta (aproximación de page-curl sin Skia).
-  const sombraStyle = useAnimatedStyle(() => {
-    const t = interpolate(Math.abs(drag.value), [0, width], [0, 0.55], Extrapolation.CLAMP);
-    // Al avanzar (drag<0) la sombra cae a la izquierda; al retroceder, a la derecha.
-    const haciaIzquierda = drag.value < 0;
-    return {
-      opacity: t,
-      left: haciaIzquierda ? 0 : undefined,
-      right: haciaIzquierda ? undefined : 0,
-    };
-  });
-
   // Alto mínimo proporcional acotado: páginas de tamaño consistente sin recortar texto.
   const pageMinHeight = Math.max(240, Math.min(420, Math.round(height * 0.42)));
+  const item = itemsSeguro[indice] ?? itemsSeguro[0]!;
 
   return (
     <View style={styles.container}>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.page, { minHeight: pageMinHeight }, hojaStyle]}>
-          <Text style={styles.body} accessibilityRole="text">
-            {paginas[indice] ?? ''}
+          {item.tipo === 'portada' ? (
+            <View style={styles.portada}>{portada}</View>
+          ) : item.tipo === 'fin' ? (
+            <View style={styles.fin}>
+              {finImagen}
+              {/* En una sola línea con las estrellas: encoge la fuente si no cabe. */}
+              <Text style={styles.finText} numberOfLines={1} adjustsFontSizeToFit>
+                {finLabel}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.texto}>
+              <Text style={styles.body} accessibilityRole="text">
+                {item.texto}
+              </Text>
+            </View>
+          )}
+          {/* Número de página impreso en la hoja (US-91), como un libro real. */}
+          <Text style={styles.numeroPagina} testID="page-number">
+            {indice + 1}
           </Text>
-          {/* Sombra del pliegue (aproximación de curl): banda oscura en el canto que gira. */}
-          <Animated.View pointerEvents="none" style={[styles.sombraPliegue, sombraStyle]} />
         </Animated.View>
       </GestureDetector>
 
@@ -166,32 +191,50 @@ const makeStyles = (colors: ColorTokens) =>
     container: {
       gap: spacing.sm,
     },
-    // Hoja tipo papel: blanco literal (independiente del tema) con sombra/borde suave.
+    // Hoja tipo papel: blanco literal (independiente del tema) con un borde suave. Sin
+    // sombras (ni de pliegue ni de elevación): solo el giro de la hoja al pasar página.
     page: {
       backgroundColor: '#ffffff',
       borderRadius: radius.md,
       padding: spacing.md,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: 'rgba(0, 0, 0, 0.08)',
-      shadowColor: '#000000',
-      shadowOpacity: 0.12,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 3 },
-      elevation: 3,
+    },
+    portada: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+    },
+    fin: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.md,
+    },
+    finText: {
+      ...typography.headlineMd,
+      color: '#1a1a1a',
+      textAlign: 'center',
+      // Ocupa el ancho de la hoja para que `adjustsFontSizeToFitWidth` acote y encoja a 1 línea.
+      alignSelf: 'stretch',
+    },
+    // Página de texto: contenido centrado verticalmente dentro de la hoja.
+    texto: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    // Número de página impreso al pie de la hoja (US-91).
+    numeroPagina: {
+      ...typography.labelBold,
+      color: '#8a8a8a',
+      textAlign: 'center',
+      marginTop: spacing.sm,
     },
     body: {
       ...typography.bodyLg,
       // Texto oscuro fijo para contrastar sobre la hoja blanca en cualquier tema.
       color: '#1a1a1a',
-    },
-    // Banda de sombra del pliegue: ~40% del ancho pegada a un canto, esquinas del papel.
-    sombraPliegue: {
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      width: '40%',
-      backgroundColor: '#000000',
-      borderRadius: radius.md,
     },
     controls: {
       flexDirection: 'row',

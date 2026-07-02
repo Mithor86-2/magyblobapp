@@ -53,7 +53,11 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
       destructive: true,
       onConfirm: () => {
         logout();
-        navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+        // Tras cerrar sesión se vuelve al Dashboard (inicio sin sesión), que ofrece
+        // "Prueba un cuento / Prueba unas actividades" — coherente con
+        // `resolveInitialRoute` (sin `guardian` → `Dashboard`). Antes iba a `Welcome`,
+        // que no tiene esas opciones (US-85, ajuste #3).
+        navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
       },
     });
   }
@@ -109,7 +113,7 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
 
         <View style={styles.actions}>
           <BubblyButton label={t('parental.changeProfile')} onPress={onCambiarPerfil} />
-          <BubblyButton label={t('parental.logout')} onPress={onCerrarSesion} variant="secondary" />
+          <BubblyButton label={t('parental.logout')} onPress={onCerrarSesion} variant="danger" />
           {__DEV__ ? (
             <BubblyButton
               label={t('parental.sentryTest')}

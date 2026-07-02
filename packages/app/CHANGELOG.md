@@ -9,7 +9,49 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Lector como libro: portada + historia + "FIN" (US-83, ajustes #1 + #5).** `BookPages` acepta una
+  **portada** (1ª página: imagen + título del cuento) y una página final **"FIN"**, además de la
+  historia paginada. El pase de página mantiene el **giro de hoja con Reanimated** (`rotateY` +
+  escala, arrastre y ‹/›), **sin sombras** (se quitaron la banda de sombra del pliegue y la sombra de
+  elevación de la hoja; solo queda el giro). _(Se intentó el curl "real" con `react-native-page-flipper`,
+  pero su versión 1.0.1 crashea con Reanimated 4 / New Architecture; se descartó y se quitaron esas
+  dependencias — ver `Docs/memory.md`.)_
+- **Cabeceras con rebote en loop (US-86, ajuste #4).** Nuevo `BouncingHeaderImage`: la imagen de
+  cabecera oscila suavemente arriba↔abajo en bucle infinito (reanimated `withRepeat`).
+- **4º color de acción "ámbar" (US-87, ajuste #6).** Nueva variante `quaternary` de `BubblyButton` y
+  tokens `quaternary`/`onQuaternary`/`quaternaryBorder` (claro y oscuro) para distinguir "Mis logros".
+- **Chips por categoría: color + icono (US-89, lote 4 #1).** `SelectableChip` admite `icon` y `color`
+  por categoría; en Cuentos los chips de temas (cielo), estilos (menta), enseñanza (ámbar) y usar-nombre
+  (coral) tienen color e icono propios; los iconos de tema se reutilizan en los intereses al crear el
+  perfil y en el Dashboard. Helper `chipIcons.ts` + nuevos iconos lucide en `Icon`.
+- **Avatar del niño con animación idle continua + pop y estrellas al tocar (US-90, lote 4 #2).** Nuevo
+  `AnimatedAvatar`: balanceo orgánico **continuo y sin pausas** (bucle ~4 s) que combina rebote
+  vertical (2 por bucle) y vaivén izquierda↔derecha (1 por bucle) por interpolación de seno
+  (`ease-in-out` natural, loop perfecto sin cortes). El giro se atenúa con una ventana (seno²) de modo
+  que hay un **tramo de rebote más suave y sin giro** en los extremos del bucle (continuo a través del
+  corte). Al **tocar** el avatar (Inicio y cabecera de
+  Cuentos): salto rápido de **escala** (feedback táctil) + **ráfaga de estrellas** desde el centro
+  hacia afuera. También se usa (sin toque) en el avatar seleccionado del `AvatarPicker`.
+- **Número de página impreso en cada hoja (US-91, lote 4 #3).** Cada hoja del libro muestra su número
+  de página, además del indicador "Página n de total".
+
 ### Changed
+
+- **Colores de botón consistentes + sombra por tono propio (US-87, ajuste #6).** Regla: en una misma
+  pantalla no hay dos acciones del mismo color, y cada acción mantiene su color entre pantallas. Mapa:
+  Cuento (generar/crear)=coral, Actividades (ver/generar)=menta, **Crear cuenta=ámbar** (`quaternary`,
+  antes coral como "Generar cuento"), Ya tengo cuenta=cielo (`accent`), Mis logros=ámbar, **Búsqueda
+  (Inicio)=cielo** (antes menta como "Ver actividades"), Filtros (Historial)=cielo, Limpiar=ámbar,
+  Reintentar=menta, Cerrar sesión=rojo (`danger`). El borde inferior ("sombra") de cada botón pasa a
+  ser un **tono oscuro de su propio color** (antes era siempre el borde coral).
+- **Buscador del Historial reubicado (US-84, ajuste #2).** El campo de búsqueda baja a **después de
+  "Lo último"** y **encima del toggle [Cuentos | Actividades]**.
+- _(US-88 revertida, ajustes #7 + #8.)_ Tras las pruebas, la barra de pestañas se **deja como estaba
+  antes del lote**: el resaltado del activo es el "blob" alrededor del icono y el `tabBarStyle` original
+  (sin `tabBarButton` propio ni inset inferior). Los cambios de tabulador se descartan a petición del
+  usuario.
+- **Cerrar sesión vuelve al Dashboard (US-85, ajuste #3).** Tras el logout se navega al `Dashboard`
+  (inicio sin sesión con "Prueba un cuento / Prueba unas actividades"), no a `Welcome`.
 
 ### Deprecated
 

@@ -268,6 +268,21 @@ describe('HistoryScreen — destacados y toggle (A3/US-74)', () => {
     ).toBeVisible();
   });
 
+  it('#2: el buscador aparece tras "Lo último" y encima del toggle Cuentos/Actividades', async () => {
+    getHistoryMock.mockResolvedValue(HISTORY);
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Lo último')).toBeVisible());
+
+    const loUltimo = screen.getByText('Lo último');
+    const buscador = screen.getByTestId('history-search');
+    const toggle = screen.getByTestId('history-tab-stories');
+    const FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
+    // El buscador va DESPUÉS de la sección "Lo último"...
+    expect(loUltimo.compareDocumentPosition(buscador) & FOLLOWING).toBeTruthy();
+    // ...y ENCIMA (antes en el DOM) del toggle [Cuentos | Actividades].
+    expect(buscador.compareDocumentPosition(toggle) & FOLLOWING).toBeTruthy();
+  });
+
   it('el toggle conmuta entre la lista de cuentos y la de actividades', async () => {
     getHistoryMock.mockResolvedValue(HISTORY);
     render(<HistoryScreen {...props} />);

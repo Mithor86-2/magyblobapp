@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import {
-  Image,
   type ImageSourcePropType,
   KeyboardAvoidingView,
   Platform,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Appear } from './Appear';
+import { BouncingHeaderImage } from './BouncingHeaderImage';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 
@@ -58,10 +58,16 @@ export function Screen({
   headerImageName,
   headerAction,
   title,
+  tightTop = false,
 }: {
   children: ReactNode;
   footer?: ReactNode;
   headerImageName?: HeaderImageName;
+  /**
+   * Reduce el margen superior del contenido (útil cuando la pantalla ya tiene cabecera
+   * de stack y no queremos un hueco grande, p. ej. el lector de cuento).
+   */
+  tightTop?: boolean;
   /**
    * Acción fija arriba a la derecha, por encima del contenido y del scroll (A6): la
    * usan las pestañas para el botón de la zona de adultos. Fija = no se desplaza con
@@ -107,15 +113,14 @@ export function Screen({
         >
           {headerImageName ? (
             <Appear>
-              <Image
+              {/* US-86 (ajuste #4): la cabecera rebota suavemente en loop (translateY). */}
+              <BouncingHeaderImage
                 source={headerImages[headerImageName]}
                 style={[styles.header, { height: headerHeight }]}
-                resizeMode="contain"
-                accessibilityRole="image"
               />
             </Appear>
           ) : null}
-          <View style={styles.body}>{children}</View>
+          <View style={[styles.body, tightTop && styles.bodyTight]}>{children}</View>
         </ScrollView>
         {footer ? (
           <View style={styles.footer}>
@@ -152,6 +157,10 @@ const makeStyles = (colors: ColorTokens) =>
       flexGrow: 1,
       padding: spacing.containerPadding,
       gap: spacing.md,
+    },
+    // Margen superior reducido (tightTop): pega el contenido a la cabecera del stack.
+    bodyTight: {
+      paddingTop: spacing.xs,
     },
     footer: {
       paddingHorizontal: spacing.containerPadding,

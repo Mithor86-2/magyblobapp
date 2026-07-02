@@ -61,24 +61,44 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
     void api.stories.markRead(story.id).catch(() => {});
   }, [leido, story.id]);
 
+  // US-83 (#5): la 1ª página del libro es la portada (imagen + título); luego la
+  // historia paginada y, al final, una página "FIN".
+  const portada = (
+    <>
+      <StoryCover
+        generada={story.portada}
+        tema={story.tema}
+        style={styles.cover}
+        accessibilityLabel={story.titulo}
+      />
+      <Text style={styles.coverTitle}>{story.titulo}</Text>
+    </>
+  );
+
   return (
-    <Screen>
+    <Screen tightTop>
       <View style={styles.card}>
-        <StoryCover
-          generada={story.portada}
-          tema={story.tema}
-          style={styles.cover}
-          accessibilityLabel={story.titulo}
-        />
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>{story.titulo}</Text>
+        <View style={styles.favoriteRow}>
           <FavoriteButton
             favorito={story.favorito}
             onToggle={(favorito) => api.stories.setFavorite(story.id, favorito)}
           />
         </View>
-        {/* A2/US-73: el cuerpo se lee paginado como un libro (‹/›), no en un bloque único. */}
-        <BookPages paginas={paginarCuento(story.cuerpo)} />
+        {/* US-83 (#1/#5): el cuento se lee como un libro — portada con título, la historia
+            paginada y una página final con la portada y "¡Fin de la historia!". */}
+        <BookPages
+          paginas={paginarCuento(story.cuerpo)}
+          portada={portada}
+          finLabel={t('reader.end')}
+          finImagen={
+            <StoryCover
+              generada={story.portada}
+              tema={story.tema}
+              style={styles.coverFin}
+              accessibilityLabel={story.titulo}
+            />
+          }
+        />
         <NarrationControls story={story} onFinished={marcarLeido} />
         {leido ? (
           <View style={styles.leidoRow}>
@@ -118,21 +138,27 @@ const makeStyles = (colors: ColorTokens) =>
       gap: spacing.sm,
       ...makeSoftShadow(colors),
     },
+    favoriteRow: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
+    // La portada vive DENTRO de la hoja del libro (fondo blanco): imagen + título.
     cover: {
       width: '100%',
-      height: 180,
+      height: 200,
       borderRadius: radius.md,
     },
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: spacing.sm,
-    },
-    title: {
+    coverTitle: {
       ...typography.headlineMd,
-      color: colors.onSurface,
-      flex: 1,
+      // Texto oscuro fijo para contrastar sobre la hoja blanca en cualquier tema.
+      color: '#1a1a1a',
+      textAlign: 'center',
+    },
+    // Portada (más pequeña) que también se muestra en la página final "¡Fin de la historia!".
+    coverFin: {
+      width: '70%',
+      height: 150,
+      borderRadius: radius.md,
     },
     leidoRow: {
       flexDirection: 'row',

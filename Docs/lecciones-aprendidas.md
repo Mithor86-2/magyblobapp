@@ -849,3 +849,30 @@ false` para que funcione igual en nativo y en react-native-web.
 arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Historial siguen montadas y
   **visibles** en react-navigation web). No era el bug: la actividad **sí** estaba en el Historial. Lección:
   acotar la aserción a la sección con un `testID` (`history-activities`) en vez de `.first()`/`filter({visible})`.
+
+### Lote de ajustes 3 (US-83..US-88)
+
+- **`react-native-page-flipper` NO es compatible con Reanimated 4 / New Architecture.** Se adoptó
+  para un curl "real" (su `renderPage` admite nodos, así que serializando `data: string[]` a JSON
+  servía para texto), pasó el gate y el `expo export` web, pero en **dev build (Android/iOS) crashea en
+  runtime**: `Render Error: undefined is not a function` en `BookPagePortrait` al abrir el cuento (la
+  v1.0.1, sin mantenimiento, usa APIs de reanimated antiguas). **Lección:** el gate + export web NO
+  garantizan que una librería nativa cargue en el runtime nuevo — hay que probar en **dev build**
+  antes de comprometerse. Se revirtió al **pliegue con reanimated** (US-79) + estructura de libro
+  (portada/FIN); se quitaron `react-native-page-flipper`/`react-native-linear-gradient`/
+  `expo-linear-gradient` y su stub/alias de Vitest.
+- **react-native-web pinta `Image` con `resizeMode="contain"` como dos nodos con rol `img`** (un
+  contenedor `div[role=img]` + un `<img>`), ambos con el nombre accesible. En tests, usar
+  `getAllByRole('img', { name })` en vez de `getByRole` (que falla por "multiple elements").
+- **Barra de pestañas (US-88 #7/#8): implementada y luego REVERTIDA por preferencia del usuario.** Se
+  probaron dos enfoques para el resalte "todo el botón" —`tabBarActiveBackgroundColor` +
+  `tabBarItemStyle` (no rellenaba de forma fiable en Android) y un `tabBarButton` propio (sí cubría
+  todo el ítem)— y el inset inferior con `useSafeAreaInsets`/`makeTabBarStyle` para el edge-to-edge de
+  Android. Tras las pruebas, el usuario pidió **dejar el tab como estaba antes** (blob alrededor del
+  icono + `tabBarStyle` original), así que se revirtió. Lección para futuros cambios de tab: validar el
+  aspecto en dispositivo **antes** de invertir esfuerzo, porque el estilo previo era el preferido.
+- **Colores de botón: regla "sin dos acciones del mismo color en una misma pantalla".** No basta con
+  "cada acción, un color fijo"; hay que garantizar que las acciones **co-visibles** tengan colores
+  distintos (aparecieron colisiones Generar cuento/Crear cuenta y Ver actividades/Buscar). Con 4
+  colores no-destructivos, dos acciones comparten color solo si **nunca** coinciden en la misma
+  pantalla (p. ej. Crear cuenta y Mis logros = ámbar; Ya tengo cuenta y Búsqueda = cielo).

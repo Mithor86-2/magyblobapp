@@ -8,6 +8,7 @@ import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
 import { ProgressBar } from '../components/ProgressBar';
 import { avatarEmoji } from '../components/AvatarPicker';
+import { AnimatedAvatar } from '../components/AnimatedAvatar';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { useThemedStyles } from '../theme/ThemeProvider';
@@ -65,7 +66,11 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
       headerAction={<AdultsButton onPress={openParental} />}
     >
       <View style={styles.hero}>
-        <Text style={styles.avatar}>{profile ? avatarEmoji(profile.avatar) : '✨'}</Text>
+        <AnimatedAvatar
+          emoji={profile ? avatarEmoji(profile.avatar) : '✨'}
+          style={styles.avatar}
+          interactive
+        />
         <Text style={styles.title}>
           {t('home.greeting', { nombre: profile ? `, ${profile.nombre}` : '' })}
         </Text>
@@ -118,9 +123,9 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         <BubblyButton
           label={t('home.myAchievements')}
           onPress={openAchievements}
-          variant="secondary"
+          variant="quaternary"
         />
-        <BubblyButton label={t('home.search')} onPress={openSearch} variant="secondary" />
+        <BubblyButton label={t('home.search')} onPress={openSearch} variant="accent" />
       </View>
     </Screen>
   );

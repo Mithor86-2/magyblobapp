@@ -251,6 +251,8 @@ export const es = {
     // Continuar la historia (US-78).
     continueStory: 'Continuar la historia',
     continueError: 'No se pudo continuar la historia.',
+    // Última página del libro (US-83, ajuste #5).
+    end: '⭐ ¡Fin de la historia! ⭐',
   },
 
   history: {

@@ -11,6 +11,7 @@ import { IDIOMAS, TEMAS } from '../../domain/types';
 import type { CodigoIdioma, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { idiomaLabel, temaLabel } from '../labels';
+import { temaIcon } from '../chipIcons';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
@@ -131,6 +132,8 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
             label={temaLabel(tema)}
             selected={intereses.includes(tema)}
             onPress={() => toggleInteres(tema)}
+            icon={temaIcon(tema)}
+            color="tertiary"
           />
         ))}
       </View>

@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AnimatedAvatar } from './AnimatedAvatar';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, tapTarget } from '../theme/tokens';
 
@@ -42,7 +43,12 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
             onPress={() => onChange(avatar.id)}
             style={[styles.cell, selected ? styles.selected : styles.unselected]}
           >
-            <Text style={styles.emoji}>{avatar.emoji}</Text>
+            {/* El avatar elegido se anima (US-90); los demás, estáticos. */}
+            {selected ? (
+              <AnimatedAvatar emoji={avatar.emoji} style={styles.emoji} />
+            ) : (
+              <Text style={styles.emoji}>{avatar.emoji}</Text>
+            )}
           </Pressable>
         );
       })}
