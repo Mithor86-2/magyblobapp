@@ -2,6 +2,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { BubblyButton } from './BubblyButton';
+import { lightColors } from '../theme/tokens';
+
+/** Convierte un hex "#rrggbb" a la forma "rgb(r, g, b)" que expone react-native-web. */
+function rgb(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+}
 
 /**
  * Tests user-centric del botón principal (US-30). Lo ejercitamos como una
@@ -73,5 +80,35 @@ describe('BubblyButton', () => {
     fireEvent.click(boton);
     expect(onPress).not.toHaveBeenCalled();
     expect(impactAsync).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * US-87 (ajuste #6): cada variante pinta su propio color de fondo y su "sombra" (borde
+ * inferior) es un **tono oscuro del propio color** (no el borde coral fijo de antes).
+ * La variante `quaternary` (ámbar) es el 4º color de acción ("Mis logros").
+ */
+describe('BubblyButton — color por variante (US-87)', () => {
+  const CASOS = [
+    { variante: 'primary', bg: lightColors.primary, borde: lightColors.primaryBorder },
+    { variante: 'secondary', bg: lightColors.secondary, borde: lightColors.secondaryBorder },
+    { variante: 'accent', bg: lightColors.tertiary, borde: lightColors.tertiaryBorder },
+    { variante: 'quaternary', bg: lightColors.quaternary, borde: lightColors.quaternaryBorder },
+    { variante: 'danger', bg: lightColors.error, borde: lightColors.errorBorder },
+  ] as const;
+
+  it.each(CASOS)(
+    '$variante: fondo propio y borde inferior en tono oscuro propio',
+    ({ variante, bg, borde }) => {
+      render(<BubblyButton label={variante} onPress={vi.fn()} variant={variante} />);
+      const boton = screen.getByRole('button', { name: variante });
+      expect(boton).toHaveStyle({ backgroundColor: rgb(bg) });
+      expect(boton).toHaveStyle({ borderBottomColor: rgb(borde) });
+    },
+  );
+
+  it('la variante quaternary (ámbar) renderiza como botón accesible', () => {
+    render(<BubblyButton label="Mis logros" onPress={vi.fn()} variant="quaternary" />);
+    expect(screen.getByRole('button', { name: 'Mis logros' })).toBeInTheDocument();
   });
 });

@@ -29,7 +29,7 @@ export function WelcomeScreen({ navigation }: RootScreenProps<'Welcome'>) {
         <BubblyButton
           label={t('common.haveAccount')}
           onPress={() => navigation.navigate('Login')}
-          variant="secondary"
+          variant="accent"
         />
       </View>
     </Screen>

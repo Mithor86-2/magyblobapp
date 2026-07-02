@@ -122,7 +122,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
           <BubblyButton
             label={t('common.haveAccount')}
             onPress={() => navigation.navigate('Login')}
-            variant="secondary"
+            variant="accent"
           />
         </View>
       }

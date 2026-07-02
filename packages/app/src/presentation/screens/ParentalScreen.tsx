@@ -113,7 +113,7 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
 
         <View style={styles.actions}>
           <BubblyButton label={t('parental.changeProfile')} onPress={onCambiarPerfil} />
-          <BubblyButton label={t('parental.logout')} onPress={onCerrarSesion} variant="secondary" />
+          <BubblyButton label={t('parental.logout')} onPress={onCerrarSesion} variant="danger" />
           {__DEV__ ? (
             <BubblyButton
               label={t('parental.sentryTest')}
