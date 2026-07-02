@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ContinueStory } from '../../src/application/use-cases/ContinueStory.js';
+import { ContinueStory, siguienteTitulo } from '../../src/application/use-cases/ContinueStory.js';
 import { ChildProfile } from '../../src/domain/entities/ChildProfile.js';
 import { Story } from '../../src/domain/entities/Story.js';
 import { NotFoundError } from '../../src/domain/errors.js';
@@ -83,6 +83,30 @@ describe('ContinueStory (US-78)', () => {
     expect(out.portada).toBe('data:image/png;base64,ORIG');
   });
 
+  it('el título es el del origen con el número de capítulo (→ 2)', async () => {
+    const out = await useCase.execute({ storyId: 's-origen' });
+    // Origen: "Mateo y los animales" → continuación "Mateo y los animales 2".
+    expect(out.titulo).toBe('Mateo y los animales 2');
+  });
+
+  it('encadena el número al continuar una continuación (2 → 3)', async () => {
+    await stories.save(
+      new Story({
+        id: 's-cap2',
+        profileId: 'p-1',
+        tema: 'animales',
+        estilo: 'aventura',
+        titulo: 'Mateo y los animales 2',
+        cuerpo: 'Segundo capítulo. Sigue la aventura. Fin.',
+        idioma: 'es',
+        proveedor: 'mock',
+        creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+      }),
+    );
+    const out = await useCase.execute({ storyId: 's-cap2' });
+    expect(out.titulo).toBe('Mateo y los animales 3');
+  });
+
   it('persiste la continuación en el repositorio (queda en el historial del perfil)', async () => {
     await useCase.execute({ storyId: 's-origen' });
     const delPerfil = await stories.findByProfile('p-1');
@@ -131,5 +155,22 @@ describe('ContinueStory (US-78)', () => {
       }),
     );
     await expect(useCase.execute({ storyId: 's-huerfano' })).rejects.toThrow(NotFoundError);
+  });
+});
+
+describe('siguienteTitulo (US-78)', () => {
+  it('añade " 2" a un título sin número', () => {
+    expect(siguienteTitulo('Joaquín en el bosque')).toBe('Joaquín en el bosque 2');
+  });
+
+  it('incrementa el número final existente', () => {
+    expect(siguienteTitulo('Joaquín en el bosque 2')).toBe('Joaquín en el bosque 3');
+    expect(siguienteTitulo('Joaquín en el bosque 9')).toBe('Joaquín en el bosque 10');
+  });
+
+  it('recorta espacios y trata un título que es solo un número como base', () => {
+    expect(siguienteTitulo('  Cuento  ')).toBe('Cuento 2');
+    // "7" no tiene base textual → se trata como título y se le añade " 2".
+    expect(siguienteTitulo('7')).toBe('7 2');
   });
 });

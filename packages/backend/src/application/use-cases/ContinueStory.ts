@@ -53,7 +53,9 @@ export class ContinueStory {
       tema: origen.tema,
       estilo: origen.estilo,
       ensenanza: origen.ensenanza,
-      titulo: generado.titulo,
+      // US-78 (ajuste): el título es el del origen con el número de capítulo incrementado
+      // ("Joaquín en el bosque" → "… 2" → "… 3"), no el que invente la IA.
+      titulo: siguienteTitulo(origen.titulo),
       cuerpo: generado.cuerpo,
       idioma: perfil.idioma.value,
       proveedor: generado.proveedor,
@@ -71,6 +73,23 @@ export class ContinueStory {
 
     return toStoryOutput(story);
   }
+}
+
+/**
+ * Título de la continuación (US-78 ajuste): conserva el título del cuento origen y le
+ * añade/incrementa el número de capítulo. "Joaquín en el bosque" → "Joaquín en el bosque 2";
+ * "Joaquín en el bosque 2" → "Joaquín en el bosque 3". Así los capítulos se encadenan con
+ * un título coherente en vez de uno inventado por la IA.
+ */
+export function siguienteTitulo(titulo: string): string {
+  const limpio = titulo.trim();
+  // Regex lineal (sin backtracking): un espacio + dígitos al final.
+  const m = /\s(\d+)$/.exec(limpio);
+  if (m) {
+    const base = limpio.slice(0, m.index).trim();
+    if (base !== '') return `${base} ${parseInt(m[1]!, 10) + 1}`;
+  }
+  return `${limpio} 2`;
 }
 
 /** Recorta el cuerpo del cuento origen a un contexto manejable para el prompt (US-78). */
