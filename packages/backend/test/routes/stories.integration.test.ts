@@ -171,4 +171,98 @@ describe('POST /stories (integración)', () => {
     });
     expect(res.statusCode).toBe(400);
   });
+
+  it('US-76: acepta usarNombre=false y genera igualmente (201)', async () => {
+    const profileId = await crearPerfil();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'], usarNombre: false },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(res.json().cuerpo.length).toBeGreaterThan(0);
+  });
+});
+
+describe('POST /stories/:id/continue (US-78, integración)', () => {
+  let app: FastifyInstance;
+  let handles: ReturnType<typeof makeInMemoryDeps>;
+
+  beforeEach(async () => {
+    handles = makeInMemoryDeps();
+    app = await buildTestServer(handles.deps);
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  async function crearPerfilYCuento(): Promise<{ profileId: string; storyId: string }> {
+    const guardian = await app.inject({
+      method: 'POST',
+      url: '/guardians',
+      payload: {
+        nombre: 'Ana',
+        apellidos: 'García',
+        email: 'ana@example.com',
+        parentesco: 'madre',
+        password: CLAVE_DE_PRUEBA,
+        consentimientoAceptado: true,
+        consentimientoVersion: 'v1',
+      },
+    });
+    const guardianId = guardian.json().id as string;
+    const profile = await app.inject({
+      method: 'POST',
+      url: '/profiles',
+      headers: authHeaders(app),
+      payload: {
+        guardianId,
+        nombre: 'Mateo',
+        edad: 4,
+        idioma: 'es',
+        avatar: 'a1',
+        intereses: ['animales'],
+      },
+    });
+    const profileId = profile.json().id as string;
+    const story = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'] },
+    });
+    return { profileId, storyId: story.json().id as string };
+  }
+
+  it('genera y persiste una continuación del cuento (201) y registra el evento', async () => {
+    const { profileId, storyId } = await crearPerfilYCuento();
+    const res = await app.inject({
+      method: 'POST',
+      url: `/stories/${storyId}/continue`,
+      headers: authHeaders(app),
+    });
+    expect(res.statusCode).toBe(201);
+    const body = res.json();
+    expect(body.id).not.toBe(storyId);
+    expect(body.profileId).toBe(profileId);
+    expect(body.tema).toBe('animales');
+    // Enlace persistido (solo BD; no expuesto en el DTO).
+    const guardado = await handles.stories.findById(body.id as string);
+    expect(guardado?.continuacionDe).toBe(storyId);
+    // Se registró un segundo evento de generación.
+    const eventos = handles.events.items.filter((e) => e.tipo === 'cuento_generado');
+    expect(eventos).toHaveLength(2);
+  });
+
+  it('devuelve 404 si el cuento origen no existe', async () => {
+    await crearPerfilYCuento();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories/inexistente/continue',
+      headers: authHeaders(app),
+    });
+    expect(res.statusCode).toBe(404);
+  });
 });

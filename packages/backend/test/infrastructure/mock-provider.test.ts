@@ -191,3 +191,77 @@ describe('MockProvider', () => {
     expect(tercera.instrucciones).toContain('celebrate the result together');
   });
 });
+
+/** Cuenta las frases (terminadas en . ! ?) de un texto. */
+function contarFrases(texto: string): number {
+  return (texto.match(/[.!?]+/g) ?? []).length;
+}
+
+describe('MockProvider — páginas de al menos 3 frases (US-75)', () => {
+  const provider = new MockProvider();
+
+  it('cada página del cuerpo tiene al menos 3 frases (ES y EN)', async () => {
+    for (const idioma of ['es', 'en'] as const) {
+      const story = await provider.generateStory({
+        perfil: perfil(idioma),
+        temas: ['animales'],
+        estilos: ['aventura'],
+      });
+      const paginas = story.cuerpo.split(/\n{2,}/).filter(Boolean);
+      expect(paginas.length).toBeGreaterThanOrEqual(4);
+      for (const pagina of paginas) {
+        expect(contarFrases(pagina)).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+});
+
+describe('MockProvider — usar nombre del niño (US-76)', () => {
+  const provider = new MockProvider();
+
+  it('con usarNombre=false no incluye el nombre del niño en título ni cuerpo', async () => {
+    const story = await provider.generateStory({
+      perfil: perfil('es'),
+      temas: ['animales'],
+      estilos: ['aventura'],
+      usarNombre: false,
+    });
+    expect(story.titulo).not.toContain('Lola');
+    expect(story.cuerpo).not.toContain('Lola');
+    expect(story.cuerpo).toContain('nuestro pequeño amigo');
+  });
+});
+
+describe('MockProvider — continuar la historia (US-78)', () => {
+  const provider = new MockProvider();
+
+  it('con contexto genera un cuerpo de continuación y un título distinto', async () => {
+    const story = await provider.generateStory({
+      perfil: perfil('es'),
+      temas: ['animales'],
+      estilos: ['aventura'],
+      contexto: 'En el capítulo anterior, Lola conoció a un dragón amable.',
+    });
+    expect(story.titulo).toContain('la aventura continúa');
+    expect(story.cuerpo).toContain('no había terminado');
+    // Sigue cumpliendo ≥4 páginas de ≥3 frases.
+    const paginas = story.cuerpo.split(/\n{2,}/).filter(Boolean);
+    expect(paginas.length).toBeGreaterThanOrEqual(4);
+    for (const pagina of paginas) {
+      expect(contarFrases(pagina)).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('genera la continuación en inglés cuando el perfil es en', async () => {
+    const story = await provider.generateStory({
+      perfil: perfil('en'),
+      temas: ['animales'],
+      estilos: ['aventura'],
+      contexto: 'In the previous chapter, our friend met a kind dragon.',
+    });
+    expect(story.titulo).toContain('the adventure continues');
+    expect(story.cuerpo).toContain('was not quite over yet');
+    const paginas = story.cuerpo.split(/\n{2,}/).filter(Boolean);
+    expect(paginas.length).toBeGreaterThanOrEqual(4);
+  });
+});

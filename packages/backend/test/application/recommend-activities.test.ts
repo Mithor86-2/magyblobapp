@@ -69,6 +69,11 @@ describe('RecommendActivities', () => {
     expect(ai.recommendCalls[0]?.parentesco).toBe('madre');
   });
 
+  it('US-77: pasa el nombre del guardián al proveedor de IA (para "mamá Ana")', async () => {
+    await useCase.execute({ profileId: 'p-1', cantidad: 1 });
+    expect(ai.recommendCalls[0]?.nombreCuidador).toBe('Ana');
+  });
+
   it('genera y persiste la cantidad pedida de actividades', async () => {
     const out = await useCase.execute({ profileId: 'p-1', cantidad: 2 });
     expect(out).toHaveLength(2);

@@ -167,13 +167,20 @@ export class FakeAIProvider implements AIProvider {
   imagenCalls: GenerateImageInput[] = [];
   /** Registra las entradas recibidas por `recommendActivities` (p. ej. para asertar el parentesco, US-67). */
   recommendCalls: RecommendActivitiesInput[] = [];
+  /** Registra las entradas recibidas por `generateStory` (para asertar usarNombre/contexto, US-76/78). */
+  storyCalls: GenerateStoryInput[] = [];
 
   constructor(private readonly imagen: FakeImagen = null) {}
 
   async generateStory(input: GenerateStoryInput) {
+    this.storyCalls.push(input);
+    // US-76: refleja el protagonista genérico si el adulto no usa el nombre del niño.
+    const proto = input.usarNombre === false ? 'nuestro pequeño amigo' : input.perfil.nombre;
+    // US-78: marca la continuación si viene contexto del cuento previo.
+    const cont = (input.contexto ?? '').trim().length > 0 ? ' (continuación)' : '';
     return {
-      titulo: `Cuento de ${input.perfil.nombre} sobre ${input.temas.join(', ')}`,
-      cuerpo: `Había una vez una historia ${input.estilos.join(', ')} en ${input.perfil.idioma.value}.`,
+      titulo: `Cuento de ${proto} sobre ${input.temas.join(', ')}${cont}`,
+      cuerpo: `Había una vez una historia ${input.estilos.join(', ')} en ${input.perfil.idioma.value}.${cont}`,
       proveedor: 'mock' as const,
       // US-61: prompt representativo para que el caso de uso lo persista.
       prompt: `prompt-cuento:${input.temas.join(',')}|${input.estilos.join(',')}`,

@@ -37,7 +37,15 @@ export class GenerateStory {
       throw new NotFoundError(`No existe el perfil con id "${input.profileId}".`);
     }
 
-    const generado = await this.deps.ai.generateStory({ perfil, temas, estilos, ensenanza });
+    // US-76: `usarNombre` es opcional (por defecto se usa el nombre del niño); si es
+    // `false`, el proveedor genera con un protagonista genérico (menos PII).
+    const generado = await this.deps.ai.generateStory({
+      perfil,
+      temas,
+      estilos,
+      ensenanza,
+      usarNombre: input.usarNombre,
+    });
 
     // US-59: portada ilustrada **best-effort**. El prompt se forma con tema/estilo/
     // título, **redactando el nombre del niño** del título (que el LLM suele incluir)

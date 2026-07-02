@@ -9,6 +9,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Continuar la historia (US-78).** Nuevo caso de uso `ContinueStory` y ruta
+  `POST /stories/:id/continue` que genera un **capítulo nuevo** de un cuento existente: pasa el cuerpo
+  del cuento origen como contexto al `AIProvider`, hereda tema/estilo/enseñanza y persiste un `Story`
+  nuevo **enlazado** al original (`Story.continuacionDe`, columna `continuacionDe` TEXT nullable,
+  migración; solo BD, no en el DTO). Reutiliza la portada del origen. `MockProvider` produce una
+  continuación determinista (ES/EN). Publica `cuento_generado`.
+- **Opción de usar el nombre del niño en el cuento (US-76).** `POST /stories` acepta `usarNombre?`
+  (Zod, por defecto `true`); si es `false`, el prompt usa un protagonista genérico ("nuestro pequeño
+  amigo" / "our little friend") y pide no inventar un nombre propio (menos PII enviada al proveedor).
+  `MockProvider` refleja el protagonista genérico.
 - **Logros / recompensas del niño (US-68).** Catálogo de logros en el dominio
   (`domain/logros.ts`: cuentos leídos, actividades completadas, racha de días y explorar temas),
   entidad `Achievement` + repo, caso de uso `GetAchievements` (read-model calculado que reconcilia e
@@ -21,6 +31,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- **Páginas del cuento con al menos 3 frases (US-75).** El system prompt de `generateStory` (ES/EN y
+  seed `prompt.story.system` v4) pide que cada página sea un párrafo autoconclusivo de **≥3 frases**
+  (antes "un párrafo breve"); el cuerpo del `MockProvider` se amplía a ≥3 frases por página, sin
+  romper el mínimo de ≥4 páginas (US-74).
+- **Trato al adulto por parentesco + nombre en actividades (US-77).** `terminoCuidador` combina el
+  trato con el nombre del adulto de la sesión ("mamá Ana", "abuela/o Ana"); `RecommendActivities` pasa
+  `guardian.nombre` al `AIProvider` y el prompt/mock lo usan. Sin nombre (anónimo) → trato genérico.
 - **"Realizado" sin valoración obligatoria (US-72).** `Activity.completar` acepta la valoración como
   **opcional** (solo valida 1-3 si viene) y `POST /activities/:id/complete` la admite ausente; el
   estado "hecha" se rige por `completadaEn` (coherente con cómo se cuentan las actividades completadas

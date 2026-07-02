@@ -79,6 +79,11 @@ export interface GenerateStoryRequest {
    * valida que pertenezca al vocabulario cerrado `ENSENANZAS`.
    */
   ensenanza?: string;
+  /**
+   * Si el cuento usa el nombre del niño (US-76). Opcional; por defecto `true`. Si es
+   * `false`, el protagonista es genérico (no se envía el nombre al proveedor de IA).
+   */
+  usarNombre?: boolean;
 }
 
 export interface StoryOutput {

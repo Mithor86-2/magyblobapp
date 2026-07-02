@@ -67,6 +67,7 @@ model Story {
   proveedor String       @default("mock")
   portada   String?
   prompt    String?
+  continuacionDe String?
   favorito  Boolean      @default(false)
   creadoEn  DateTime     @default(now())
   narration StoryNarration?

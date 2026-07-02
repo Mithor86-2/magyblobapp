@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildStoryPrompt, buildActivitiesPrompt } from '../../src/infrastructure/ai/prompts.js';
+import {
+  buildStoryPrompt,
+  buildActivitiesPrompt,
+  terminoCuidador,
+} from '../../src/infrastructure/ai/prompts.js';
 import { ChildProfile } from '../../src/domain/entities/ChildProfile.js';
 import { Edad } from '../../src/domain/value-objects/Edad.js';
 import { Idioma } from '../../src/domain/value-objects/Idioma.js';
@@ -340,5 +344,110 @@ describe('prompts — parámetros configurables del cuento (formato/longitud/rim
     });
     expect(prompt).toContain('Escribe un cuento');
     expect(prompt).toContain('4 a 6 frases');
+  });
+});
+
+describe('prompts — páginas de al menos 3 frases (US-75)', () => {
+  it('el system prompt exige al menos 3 frases por página (ES)', () => {
+    const { system } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(system).toContain('AL MENOS 3');
+    expect(system).toContain('página');
+  });
+
+  it('el system prompt exige al menos 3 frases por página (EN)', () => {
+    const perfilEn = new ChildProfile({
+      id: 'p-en75',
+      guardianId: 'g-1',
+      nombre: 'Leo',
+      edad: Edad.create(5),
+      idioma: Idioma.create('en'),
+      avatar: 'a1',
+      intereses: ['animales'],
+      creadoEn: new Date('2026-06-10T12:00:00.000Z'),
+    });
+    const { system } = buildStoryPrompt({
+      perfil: perfilEn,
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(system).toContain('AT LEAST');
+    expect(system).toContain('3 sentences');
+  });
+});
+
+describe('prompts — opción de usar el nombre del niño (US-76)', () => {
+  it('por defecto usa el nombre real del niño', () => {
+    const { prompt } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(prompt).toContain('Lola');
+  });
+
+  it('con usarNombre=false usa un protagonista genérico y pide no inventar nombre', () => {
+    const { prompt } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+      usarNombre: false,
+    });
+    expect(prompt).not.toContain('Lola');
+    expect(prompt).toContain('nuestro pequeño amigo');
+    expect(prompt).toContain('No uses ningún nombre propio');
+  });
+});
+
+describe('terminoCuidador — parentesco + nombre (US-77)', () => {
+  it('combina el trato con el nombre del adulto (ES, madre + Ana → "mamá Ana")', () => {
+    expect(terminoCuidador('madre', 'es', 'Ana')).toBe('mamá Ana');
+  });
+
+  it('combina el trato con el nombre del adulto (ES, abuelo_a + Ana → "abuela/o Ana")', () => {
+    expect(terminoCuidador('abuelo_a', 'es', 'Ana')).toBe('abuela/o Ana');
+  });
+
+  it('sin nombre mantiene el trato por parentesco (US-67)', () => {
+    expect(terminoCuidador('madre', 'es')).toBe('mamá');
+  });
+
+  it('sin parentesco ni nombre usa el trato genérico', () => {
+    expect(terminoCuidador(undefined, 'es')).toBe('la persona adulta');
+  });
+
+  it('el prompt de actividades combina parentesco y nombre', () => {
+    const { prompt } = buildActivitiesPrompt({
+      perfil: perfil(4),
+      cantidad: 3,
+      parentesco: 'abuelo_a',
+      nombreCuidador: 'Ana',
+    });
+    expect(prompt).toContain('abuela/o Ana');
+  });
+});
+
+describe('prompts — continuar la historia (US-78)', () => {
+  it('con contexto pide continuar el cuento anterior (ES)', () => {
+    const { prompt } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+      contexto: 'En el capítulo anterior, Lola encontró un dragón amable.',
+    });
+    expect(prompt).toContain('CONTINUACIÓN');
+    expect(prompt).toContain('Lola encontró un dragón amable');
+  });
+
+  it('sin contexto no añade instrucción de continuación', () => {
+    const { prompt } = buildStoryPrompt({
+      perfil: perfil(5),
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(prompt).not.toContain('CONTINUACIÓN');
   });
 });

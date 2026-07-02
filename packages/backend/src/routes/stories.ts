@@ -6,6 +6,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { ContinueStory } from '../application/use-cases/ContinueStory.js';
 import { GenerateStory } from '../application/use-cases/GenerateStory.js';
 import { MarkStoryRead } from '../application/use-cases/MarkStoryRead.js';
 import { NarrateStory } from '../application/use-cases/NarrateStory.js';
@@ -23,8 +24,12 @@ const bodySchema = z
     estilos: z.array(z.enum(ESTILOS)).min(1),
     // US-69: enseñanza opcional (vocabulario cerrado). Ausente = sin moraleja dirigida.
     ensenanza: z.enum(ENSENANZAS).optional(),
+    // US-76: usar (o no) el nombre del niño en el cuento. Ausente = por defecto sí.
+    usarNombre: z.boolean().optional(),
   })
   .strict();
+
+const continueParamsSchema = z.object({ id: z.string().min(1) });
 
 const favoriteParamsSchema = z.object({ id: z.string().min(1) });
 const favoriteSchema = z.object({ favorito: z.boolean() }).strict();
@@ -32,6 +37,7 @@ const favoriteSchema = z.object({ favorito: z.boolean() }).strict();
 /** Genera (y persiste) un cuento para un perfil; registra el evento de uso. */
 export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
   const generateStory = new GenerateStory(deps);
+  const continueStory = new ContinueStory(deps);
   const markStoryRead = new MarkStoryRead(deps);
   const narrateStory = new NarrateStory(deps);
   const setStoryFavorite = new SetStoryFavorite(deps);
@@ -43,6 +49,29 @@ export function storyRoutes(app: FastifyInstance, deps: AppDeps): void {
       { schema: { body: bodySchema }, onRequest: app.authenticate },
       async (request, reply) => {
         const story = await generateStory.execute(request.body);
+
+        await deps.bus.publish({
+          tipo: 'cuento_generado',
+          profileId: story.profileId,
+          storyId: story.id,
+          tema: story.tema,
+          estilo: story.estilo,
+        });
+
+        return reply.code(201).send(story);
+      },
+    );
+
+  // Continúa un cuento existente (US-78): genera un capítulo nuevo enlazado al origen,
+  // lo persiste y registra el evento de uso (mismo `cuento_generado`). Devuelve el
+  // cuento nuevo (la app lo abre en el lector).
+  app
+    .withTypeProvider<ZodTypeProvider>()
+    .post(
+      '/stories/:id/continue',
+      { schema: { params: continueParamsSchema }, onRequest: app.authenticate },
+      async (request, reply) => {
+        const story = await continueStory.execute({ storyId: request.params.id });
 
         await deps.bus.publish({
           tipo: 'cuento_generado',
