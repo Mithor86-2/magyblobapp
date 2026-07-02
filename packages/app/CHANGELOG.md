@@ -11,10 +11,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - **Lector como libro: portada + historia + "FIN" (US-83, ajustes #1 + #5).** `BookPages` acepta una
   **portada** (1ª página: imagen + título del cuento) y una página final **"FIN"**, además de la
-  historia paginada. El pase de página mantiene el **pliegue con Reanimated** (giro + sombra de canto,
-  arrastre y ‹/›). _(Se intentó el curl "real" con `react-native-page-flipper`, pero su versión 1.0.1
-  crashea con Reanimated 4 / New Architecture; se descartó y se quitaron esas dependencias — ver
-  `Docs/memory.md`.)_
+  historia paginada. El pase de página mantiene el **giro de hoja con Reanimated** (`rotateY` +
+  escala, arrastre y ‹/›), **sin sombras** (se quitaron la banda de sombra del pliegue y la sombra de
+  elevación de la hoja; solo queda el giro). _(Se intentó el curl "real" con `react-native-page-flipper`,
+  pero su versión 1.0.1 crashea con Reanimated 4 / New Architecture; se descartó y se quitaron esas
+  dependencias — ver `Docs/memory.md`.)_
 - **Cabeceras con rebote en loop (US-86, ajuste #4).** Nuevo `BouncingHeaderImage`: la imagen de
   cabecera oscila suavemente arriba↔abajo en bucle infinito (reanimated `withRepeat`).
 - **4º color de acción "ámbar" (US-87, ajuste #6).** Nueva variante `quaternary` de `BubblyButton` y

@@ -122,18 +122,6 @@ export function BookPages({
     };
   });
 
-  // Sombra del pliegue: oscurece el canto hacia el que gira la hoja y se intensifica con
-  // el arrastre, simulando el relieve de una página que se levanta.
-  const sombraStyle = useAnimatedStyle(() => {
-    const opacidad = interpolate(Math.abs(drag.value), [0, width], [0, 0.55], Extrapolation.CLAMP);
-    const haciaIzquierda = drag.value < 0;
-    return {
-      opacity: opacidad,
-      left: haciaIzquierda ? 0 : undefined,
-      right: haciaIzquierda ? undefined : 0,
-    };
-  });
-
   // Alto mínimo proporcional acotado: páginas de tamaño consistente sin recortar texto.
   const pageMinHeight = Math.max(240, Math.min(420, Math.round(height * 0.42)));
   const item = itemsSeguro[indice] ?? itemsSeguro[0]!;
@@ -153,8 +141,6 @@ export function BookPages({
               {item.texto}
             </Text>
           )}
-          {/* Sombra del pliegue (aproximación de curl): banda oscura en el canto que gira. */}
-          <Animated.View pointerEvents="none" style={[styles.sombraPliegue, sombraStyle]} />
         </Animated.View>
       </GestureDetector>
 
@@ -192,18 +178,14 @@ const makeStyles = (colors: ColorTokens) =>
     container: {
       gap: spacing.sm,
     },
-    // Hoja tipo papel: blanco literal (independiente del tema) con sombra/borde suave.
+    // Hoja tipo papel: blanco literal (independiente del tema) con un borde suave. Sin
+    // sombras (ni de pliegue ni de elevación): solo el giro de la hoja al pasar página.
     page: {
       backgroundColor: '#ffffff',
       borderRadius: radius.md,
       padding: spacing.md,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: 'rgba(0, 0, 0, 0.08)',
-      shadowColor: '#000000',
-      shadowOpacity: 0.12,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 3 },
-      elevation: 3,
     },
     portada: {
       flex: 1,
@@ -225,15 +207,6 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.bodyLg,
       // Texto oscuro fijo para contrastar sobre la hoja blanca en cualquier tema.
       color: '#1a1a1a',
-    },
-    // Banda de sombra del pliegue: ~40% del ancho pegada a un canto.
-    sombraPliegue: {
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      width: '40%',
-      backgroundColor: '#000000',
-      borderRadius: radius.md,
     },
     controls: {
       flexDirection: 'row',
