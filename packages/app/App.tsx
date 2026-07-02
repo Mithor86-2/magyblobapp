@@ -11,7 +11,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
 import { DashboardScreen } from './src/presentation/screens/DashboardScreen';
@@ -34,6 +34,7 @@ import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
 import './src/i18n';
 import { resolveInitialRoute } from './src/presentation/initialRoute';
+import { makeTabBarStyle } from './src/presentation/tabBarStyle';
 import { trackNavigation } from './src/infrastructure/telemetry';
 import type {
   MainTabParamList,
@@ -116,27 +117,38 @@ function LecturaScreen(props: RootScreenProps<'StoryReader'>) {
   );
 }
 
-/** Icono de pestaña: icono lucide dentro de un "blob" pastel cuando está activo. */
+/**
+ * Icono de pestaña: icono lucide coloreado según el estado. El resaltado del activo ya
+ * NO es un "blob" alrededor del icono: el fondo activo lo pinta el navegador sobre TODO
+ * el botón (icono + etiqueta), vía `tabBarActiveBackgroundColor` + `tabBarItemStyle`
+ * redondeado (US-88 #7).
+ */
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
   const { colors } = useTheme();
-  const styles = makeStyles(colors);
-  return (
-    <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
-      <Icon name={name} size={24} color={focused ? colors.primary : colors.onSurfaceVariant} />
-    </View>
-  );
+  return <Icon name={name} size={24} color={focused ? colors.primary : colors.onSurfaceVariant} />;
 }
 
 function MainTabs() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  // #8: reservar el inset inferior del sistema (edge-to-edge de Android en SDK 54+) para
+  // que las pestañas activas no queden bajo la barra de navegación del sistema.
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.onSurfaceVariant,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.outline },
+        // #7: el fondo del ítem activo cubre todo el botón; con el itemStyle redondeado y
+        // márgenes queda como una "píldora" que envuelve icono + etiqueta.
+        tabBarActiveBackgroundColor: colors.secondaryContainer,
+        tabBarItemStyle: {
+          marginHorizontal: 8,
+          marginVertical: 6,
+          borderRadius: radius.lg,
+        },
+        tabBarStyle: makeTabBarStyle(insets, colors),
         tabBarLabelStyle: { fontFamily: fonts.bold, fontSize: 13 },
       }}
     >
@@ -330,15 +342,5 @@ const makeStyles = (colors: ColorTokens) =>
       backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
-    },
-    tabIcon: {
-      width: 56,
-      height: 32,
-      borderRadius: radius.pill,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    tabIconActive: {
-      backgroundColor: colors.secondaryContainer,
     },
   });
