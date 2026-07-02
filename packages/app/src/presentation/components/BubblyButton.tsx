@@ -14,7 +14,7 @@ interface BubblyButtonProps {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  variant?: 'primary' | 'secondary' | 'danger' | 'accent';
+  variant?: 'primary' | 'secondary' | 'danger' | 'accent' | 'quaternary';
 }
 
 /** Color de fondo por variante del botón, tomado de la paleta activa (US-66). */
@@ -23,9 +23,34 @@ const variantBg = (colors: ColorTokens) =>
     primary: colors.primary,
     secondary: colors.secondary,
     danger: colors.error,
-    // Acento (cielo): acción afirmativa propia (p. ej. "Realizado" de una actividad, US-54),
-    // distinta del color de la categoría y de la secundaria menta.
+    // Acento (cielo): acción afirmativa propia (p. ej. "Realizado" de una actividad, US-54,
+    // o "Ya tengo cuenta", US-87), distinta de la secundaria menta.
     accent: colors.tertiary,
+    // Cuaternario (ámbar): 4º color de acción ("Mis logros", US-87).
+    quaternary: colors.quaternary,
+  }) as const;
+
+/**
+ * Color del borde inferior ("sombra squishy") por variante: **un tono oscuro del propio
+ * color del botón**, no el borde coral fijo de antes (US-87, ajuste #6).
+ */
+const variantBorder = (colors: ColorTokens) =>
+  ({
+    primary: colors.primaryBorder,
+    secondary: colors.secondaryBorder,
+    danger: colors.errorBorder,
+    accent: colors.tertiaryBorder,
+    quaternary: colors.quaternaryBorder,
+  }) as const;
+
+/** Color del texto/icono (primer plano) por variante, contrastando con su fondo (US-87). */
+const variantFg = (colors: ColorTokens) =>
+  ({
+    primary: colors.onPrimary,
+    secondary: colors.onSecondary,
+    danger: colors.onError,
+    accent: colors.onTertiary,
+    quaternary: colors.onQuaternary,
   }) as const;
 
 /**
@@ -45,6 +70,8 @@ export function BubblyButton({
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const bg = variantBg(colors)[variant];
+  const borderColor = variantBorder(colors)[variant];
+  const fg = variantFg(colors)[variant];
   const isDisabled = disabled || loading;
 
   // Confirmación táctil (Material 3 / HIG): háptico suave al pulsar el botón principal.
@@ -64,22 +91,23 @@ export function BubblyButton({
       disabled={isDisabled}
       // Ripple Material 3 en Android (centrado en el botón-píldora); el "hundido"
       // (translateY) sigue dando feedback en iOS/web vía el estado `pressed`.
-      android_ripple={{ color: colors.onPrimary + '33', borderless: false }}
+      android_ripple={{ color: fg + '33', borderless: false }}
       style={({ pressed }) => [
         styles.base,
-        { backgroundColor: bg, borderBottomColor: colors.primaryBorder },
+        // La "sombra" (borde inferior) es un tono oscuro del propio color del botón (US-87).
+        { backgroundColor: bg, borderBottomColor: borderColor },
         pressed && styles.pressed,
         isDisabled && styles.disabled,
       ]}
     >
       <View style={styles.inner}>
         {loading ? (
-          <ActivityIndicator color={colors.onPrimary} />
+          <ActivityIndicator color={fg} />
         ) : icon ? (
-          <Icon name={icon} color={colors.onPrimary} size="md" />
+          <Icon name={icon} color={fg} size="md" />
         ) : null}
         {label ? (
-          <Text style={styles.label} numberOfLines={1}>
+          <Text style={[styles.label, { color: fg }]} numberOfLines={1}>
             {label}
           </Text>
         ) : null}

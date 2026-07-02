@@ -11,6 +11,7 @@ import { TEMAS, ESTILOS } from '../../domain/types';
 import type { AnonymousActivity, AnonymousStory, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { estiloLabel, temaLabel } from '../labels';
+import { estiloIcon, temaIcon } from '../chipIcons';
 import { api } from '../../composition';
 import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
@@ -118,11 +119,12 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
           <BubblyButton
             label={t('common.createAccount')}
             onPress={() => navigation.navigate('Consent')}
+            variant="quaternary"
           />
           <BubblyButton
             label={t('common.haveAccount')}
             onPress={() => navigation.navigate('Login')}
-            variant="secondary"
+            variant="accent"
           />
         </View>
       }
@@ -142,6 +144,8 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
             label={temaLabel(tema)}
             selected={temas.includes(tema)}
             onPress={() => toggleTema(tema)}
+            icon={temaIcon(tema)}
+            color="tertiary"
           />
         ))}
       </View>
@@ -153,6 +157,8 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
             label={estiloLabel(s)}
             selected={estilos.includes(s)}
             onPress={() => toggleEstilo(s)}
+            icon={estiloIcon(s)}
+            color="secondary"
           />
         ))}
       </View>

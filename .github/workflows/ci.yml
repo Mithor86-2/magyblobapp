@@ -43,6 +43,9 @@ jobs:
   integration-e2e-backend:
     name: Integración + E2E backend (Testcontainers)
     runs-on: ubuntu-latest
+    # En develop NO se ejecuta (ni build ni merge dependen de E2E; ahorra minutos y
+    # evita flakiness). En main sí corre y es obligatoria vía ruleset (protege producción).
+    if: ${{ github.ref_name != 'develop' && github.base_ref != 'develop' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -59,6 +62,8 @@ jobs:
   e2e-app:
     name: E2E app (Playwright / Expo web)
     runs-on: ubuntu-latest
+    # En develop NO se ejecuta (no bloquea build ni merge); en main sí corre.
+    if: ${{ github.ref_name != 'develop' && github.base_ref != 'develop' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -76,3 +81,24 @@ jobs:
           path: packages/app/playwright-report/
           retention-days: 7
           if-no-files-found: ignore
+
+  # Construye la imagen Docker del backend en CADA PR (sin publicarla) para que un
+  # fallo del Dockerfile / .dockerignore / `pnpm deploy` se detecte aquí y no en el
+  # despliegue de Render. Contexto = raíz del repo, igual que docker-compose/render.
+  docker-build:
+    name: Build imagen Docker backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build (sin push) del backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/backend/Dockerfile
+          push: false
+          load: true
+          tags: magyblob-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

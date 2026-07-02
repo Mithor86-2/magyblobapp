@@ -861,3 +861,55 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
 - **Enseñanza como campo opcional persistido (US-69).** Frente a US-47 (multi-tema sin migración), aquí
   **sí** se persiste `Story.ensenanza` (migración) porque el requisito era **filtrar por ella en el
   Historial**. Es un enum del vocabulario cerrado (no texto libre) → sin PII nueva.
+
+- **Pase de página del lector: reanimated + gesture-handler; Skia descartado (US-79).** El lector
+  (`BookPages`) pasa página con `react-native-gesture-handler` + `react-native-reanimated`
+  (+ `react-native-worklets`), animando en el hilo de UI con `useSharedValue`/`useAnimatedStyle` y
+  `withTiming` en dos medias fases (salida→cambio→entrada); los botones ‹/› y el gesto comparten el
+  mismo `irA`, y el índice es estado de React para poder testear sin el hilo nativo (stubs de
+  reanimated/gesture-handler bajo Vitest). Se **evaluó `@shopify/react-native-skia`** (shader de
+  page-curl del repo de referencia) y se **descartó** por su peso nativo y las implicaciones en el
+  export web / harness de tests; en su lugar se aproxima el pliegue con sombra + giro/escala. `App`
+  se envuelve en `GestureHandlerRootView` y `babel.config.js` usa `babel-preset-expo` (aporta el
+  plugin de worklets). Requiere **dev build** (Expo Go no sirve con estos módulos nativos).
+- **Continuar la historia: título numerado, no inventado (US-78).** `ContinueStory` deriva el título
+  del cuento origen incrementando el número de capítulo (`siguienteTitulo`: "…"→"… 2"→"… 3"), en vez de
+  usar el que genere la IA, para que los capítulos encadenen un título coherente.
+- **Lector como libro: `react-native-page-flipper` adoptado y luego DESCARTADO por incompatibilidad;
+  se mantiene el pliegue con Reanimated (US-83, lote de ajustes 3).** Se intentó el curl "real" con
+  `react-native-page-flipper` (a petición del usuario), pero su versión publicada (**1.0.1**, sin
+  mantenimiento) **crashea en runtime con Reanimated 4 / New Architecture** (RN 0.85): "undefined is
+  not a function" en `BookPagePortrait` al abrir el cuento (usa APIs de reanimated antiguas). Se
+  **revirtió**: se quitaron `react-native-page-flipper` + `react-native-linear-gradient` +
+  `expo-linear-gradient` y `BookPages` vuelve al **pliegue con reanimated + gesture-handler** de US-79
+  (giro `rotateY`/escala + sombra de canto, arrastre y ‹/›). **Lo que sí se conserva de US-83 #5** es
+  la **estructura de libro**: `BookPages` admite `portada` (1ª página: imagen + título) y `finLabel`
+  (última página "FIN"), además de las páginas de texto (`paginarCuento`). Skia/Riveo sigue descartado
+  (US-79). Conclusión: en este stack (Reanimated 4 / new arch) no hay librería de curl fiable; el
+  pliegue propio con reanimated es la opción sostenible. Requiere **dev build** (reanimated/gesture).
+- **4º color de acción + sombra del botón por tono propio (US-87, lote de ajustes 3).** La paleta gana
+  un color `quaternary` (ámbar) para tener **4 colores de acción distinguibles** (coral/cielo/menta/
+  ámbar) y que cada acción mantenga su color entre pantallas. El borde inferior "squishy" de
+  `BubblyButton` deja de ser el coral fijo (`primaryBorder`) y pasa a un **tono oscuro del propio
+  color** de cada variante (tokens `secondaryBorder`/`tertiaryBorder`/`quaternaryBorder`/`errorBorder`).
+  **Corrección tras pruebas:** la regla real es "**sin dos acciones del mismo color en una misma
+  pantalla**" (no solo color fijo por acción) — se reasignó Crear cuenta→ámbar (chocaba con Generar
+  cuento coral) y Búsqueda(Inicio)→cielo (chocaba con Ver actividades menta); dos acciones comparten
+  color solo si nunca coinciden en pantalla. **Los cambios de la barra de pestañas (US-88 #7/#8) se
+  revirtieron** a petición del usuario: se dejó el tab como estaba antes del lote (blob alrededor del
+  icono + `tabBarStyle` original); el resalte "todo el botón" y el inset inferior quedan descartados.
+
+## CI/CD y seguridad de dependencias (2026-07-02)
+
+- **Repo público + gobernanza gratis.** Se pasó el repo a público (tras verificar historial sin
+  secretos con gitleaks) para desbloquear en el plan free: rulesets de protección de rama, Dependabot
+  alerts/updates y CodeQL. `main` exige PR + CI verde (los 3 checks); `develop` permite push directo
+  (solo bloquea force-push/borrado). Licencia **PolyForm Noncommercial 1.0.0** (prohíbe uso comercial;
+  no es OSI). E2E/integración **no corren en develop** (solo en main) para ahorrar minutos y evitar
+  flakiness. Build Docker del backend se valida en cada PR; build de la app en EAS es manual
+  (`workflow_dispatch`, requiere secreto `EXPO_TOKEN`).
+- **Vitest 2 → 3 (chore/vitest-3).** Se migró para cerrar la vuln crítica de Vitest (`<3.2.6`), toda
+  ella dev-only. Decisión: **no forzar overrides de vite 6/esbuild** para tapar los residuos —vitest 3
+  ancla vite 5 y forzar vite 6 arriesga romper la suite, por fallos que no llegan a producción. Los 6
+  residuos (dev/build-time, mayoría solo-Windows) se difieren a Dependabot/Expo. Ver
+  [lecciones-aprendidas.md](lecciones-aprendidas.md) y [planes/chore-vitest-3.md](planes/chore-vitest-3.md).

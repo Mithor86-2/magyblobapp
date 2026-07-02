@@ -1414,3 +1414,193 @@ pantalla estoy sin depender solo de la pestaña activa.
 
 - **(Con título)** Dada una pantalla con `title`, Entonces se muestra como cabecera (rol heading).
 - **(Sin título)** Dada una pantalla sin `title`, Entonces no se muestra cabecera de sección.
+
+## US-83 — Lector como libro (portada + historia + FIN) {#us-83}
+
+> **Ajuste (lote 3 de ideas, #1 + #5).** Se **intentó** un curl "real" con `react-native-page-flipper`
+> pero se **descartó** (crashea con Reanimated 4 / New Architecture, v1.0.1 sin mantenimiento); el
+> lector mantiene el **pliegue con Reanimated** (US-79) y se le añade la **estructura de libro**
+> (decisión en [memory.md](../memory.md)).
+
+**Como** niño (con el adulto), **quiero** leer el cuento como un libro —portada con el título, la
+historia página a página con efecto de pliegue y una página final "FIN"—, **para** que la lectura sea
+inmersiva.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
+
+**Alcance**
+
+1. **Pliegue con Reanimated + gesture-handler** en `BookPages` (giro `rotateY`/escala + sombra de
+   canto siguiendo el arrastre), con controles ‹ / ›, indicador "Página n de total" y accesibilidad.
+2. **Estructura de libro:** `BookPages` admite `portada` (1ª página = imagen + título del cuento) y
+   `finLabel`; páginas intermedias = la historia paginada (`paginarCuento`), última = **"FIN"**
+   (`reader.end`, ES/EN).
+3. **Tests:** reanimated/gesture-handler se aliasan a stubs (los ‹/› siguen verificables);
+   `expo export` web validado. **Requiere dev build** (libs nativas, como desde US-66/US-79).
+
+**Criterios de aceptación**
+
+- **(Portada)** Dado un cuento abierto, Entonces la primera página muestra el título y la imagen de
+  portada.
+- **(Pase)** Cuando arrastro o pulso › / ‹, Entonces la página pasa con pliegue y el indicador se
+  actualiza; en los extremos los botones se deshabilitan.
+- **(Fin)** Dada la última página, Entonces muestra "FIN".
+
+## US-85 — Cerrar sesión vuelve al Dashboard {#us-85}
+
+> **Ajuste (lote 3 de ideas, #3).**
+
+**Como** persona adulta, **quiero** que al cerrar sesión aparezca el inicio sin sesión con "Prueba un
+cuento / Prueba unas actividades", **para** poder seguir usando la app o volver a entrar.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Zona de adultos / Dashboard.
+
+**Alcance**
+
+1. `ParentalScreen`: el logout hace `reset` al `Dashboard` (coherente con `resolveInitialRoute`: sin
+   `guardian` → `Dashboard`), no a `Welcome`.
+
+**Criterios de aceptación**
+
+- **(Logout)** Dado que cierro sesión, Entonces aterrizo en el Dashboard con las opciones de prueba
+  de cuento y actividades.
+
+## US-86 — Cabeceras con animación de rebote {#us-86}
+
+> **Ajuste (lote 3 de ideas, #4).**
+
+**Como** niño, **quiero** que las imágenes de cabecera se muevan suavemente arriba y abajo, **para**
+que la app se sienta viva y acogedora.
+
+**Prioridad:** Could · **Fase:** Mejoras · **Pantalla:** Toda la app (cabeceras).
+
+**Alcance**
+
+1. `BouncingHeaderImage`: envuelve la imagen de cabecera en un `translateY` en bucle infinito
+   (reanimated `withRepeat` + `withTiming`, amplitud ~8px), conservando `resizeMode="contain"` y el
+   rol de accesibilidad. Se usa desde `Screen` sin cambiar el layout.
+
+**Criterios de aceptación**
+
+- **(Rebote)** Dada una pantalla con cabecera, Entonces la imagen oscila suavemente en bucle sin
+  afectar al scroll ni al contenido.
+
+## US-87 — Colores de botón consistentes + sombra por tono {#us-87}
+
+> **Ajuste (lote 3 de ideas, #6).**
+
+**Como** persona usuaria, **quiero** que los botones de acción tengan colores distintos entre sí pero
+fijos entre pantallas, y que su "sombra" sea del mismo color del botón (más oscura), **para** que la
+interfaz sea coherente y agradable.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (botones).
+
+**Alcance**
+
+1. 4º color de paleta (`quaternary`, ámbar) + variante de `BubblyButton`; el borde inferior
+   ("sombra") de cada botón pasa a un **tono oscuro de su propio color** (tokens `*Border` por
+   variante), no el borde coral fijo.
+2. **Regla:** en una misma pantalla **no hay dos acciones del mismo color**, y cada acción mantiene su
+   color entre pantallas. Mapa fijo: Cuento (generar/crear)=coral, Actividades (ver/generar)=menta,
+   Crear cuenta=ámbar, Ya tengo cuenta=cielo, Mis logros=ámbar, Búsqueda (Inicio)=cielo, Filtros
+   (Historial)=cielo, Limpiar=ámbar, Reintentar=menta, Cerrar sesión=rojo. (Dos acciones comparten
+   color solo si **nunca** coinciden en la misma pantalla.)
+
+**Criterios de aceptación**
+
+- **(Sin colisión)** Dada cualquier pantalla, Entonces no hay dos botones de acción distintos con el
+  mismo color.
+- **(Fijos)** Dado un botón de acción, Entonces su color es el mismo en todas las pantallas.
+- **(Sombra)** Dado un botón, Entonces su borde inferior es un tono oscuro de su propio color.
+
+## US-88 — Pestañas: activo llena el botón + visibilidad Android {#us-88}
+
+> **↩️ REVERTIDA (tras pruebas del usuario, lote 3 de ideas #7 + #8).** Se implementó pero se decidió
+> **dejar los botones del tab como estaban antes del lote** (blob alrededor del icono + `tabBarStyle`
+> original). Se conserva la historia como registro; su alcance ya no está en el código.
+
+> **Ajuste (lote 3 de ideas, #7 + #8).**
+
+**Como** persona usuaria de Android, **quiero** que la pestaña activa se resalte en todo el botón y que
+la barra inferior se vea completa, **para** navegar sin que la tape la barra del sistema.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Pestañas (Main).
+
+**Alcance**
+
+1. **#7:** un `tabBarButton` **propio** envuelve el contenido del ítem (icono + etiqueta) en una vista
+   que se rellena (píldora redondeada `secondaryContainer`) cuando la pestaña está activa, cubriendo
+   **todo el botón**, no solo el icono. (`tabBarActiveBackgroundColor` no rellenaba de forma fiable el
+   ítem completo en Android.)
+2. **#8:** `tabBarStyle` reserva el inset inferior del sistema (`useSafeAreaInsets`), calculado en el
+   helper puro `makeTabBarStyle`, para no quedar bajo la barra de navegación (edge-to-edge SDK 54+).
+
+**Criterios de aceptación**
+
+- **(Activo)** Dada una pestaña activa, Entonces el resaltado cubre icono y etiqueta.
+- **(Android)** Dado Android con barra de navegación, Entonces la barra de pestañas se ve completa por
+  encima de ella.
+
+## US-89 — Chips por categoría: color + icono {#us-89}
+
+> **Ajuste (lote 4 de ideas, #1).**
+
+**Como** persona usuaria, **quiero** que los chips de temas, estilos, enseñanza y "usar nombre" tengan
+un color por categoría y un icono, **para** distinguirlos de un vistazo; y que los iconos de tema sean
+los mismos al elegir los gustos del perfil.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Cuentos / Crear perfil / Dashboard.
+
+**Alcance**
+
+1. `SelectableChip` admite `icon?: IconName` y `color?: 'primary'|'secondary'|'tertiary'|'quaternary'`;
+   seleccionado = relleno del color de su categoría (icono + label en el `on*`).
+2. Color por categoría: temas=cielo, estilos=menta, enseñanza=ámbar, usar-nombre=coral. Iconos por
+   opción (lucide) centralizados en `chipIcons.ts` (temas/estilos/enseñanza).
+3. Se aplica en Cuentos (temas/estilos/enseñanza/usar-nombre), Crear perfil (intereses = iconos de
+   tema) y Dashboard (temas/estilos).
+
+**Criterios de aceptación**
+
+- **(Color)** Dado un chip seleccionado, Entonces se pinta con el color de su categoría, igual en todas
+  las pantallas.
+- **(Icono)** Dado un chip, Entonces muestra su icono delante de la etiqueta; los intereses del perfil
+  usan los mismos iconos de tema.
+
+## US-90 — Animación suave del avatar del niño {#us-90}
+
+> **Ajuste (lote 4 de ideas, #2).**
+
+**Como** niño, **quiero** que mi avatar (emoji de animal) se mueva suavemente (giros leves + rebote),
+**para** que la app se sienta viva; también al crear el perfil y elegir avatar.
+
+**Prioridad:** Could · **Fase:** Mejoras · **Pantalla:** Inicio / Cuentos / Crear perfil.
+
+**Alcance**
+
+1. `AnimatedAvatar`: envuelve el emoji en un `Animated.View` (reanimated) con `rotate` (±~6°) +
+   `translateY` (rebote ~4px) en bucle. Se usa en Inicio (hero), cabecera de Cuentos y el avatar
+   **seleccionado** del `AvatarPicker`.
+
+**Criterios de aceptación**
+
+- **(Movimiento)** Dado el avatar del niño, Entonces se mueve suavemente en bucle sin afectar al layout.
+
+## US-91 — Número de página impreso en cada hoja {#us-91}
+
+> **Ajuste (lote 4 de ideas, #3).**
+
+**Como** niño (con el adulto), **quiero** ver el número de página en cada hoja del cuento, **para**
+saber por dónde voy como en un libro real.
+
+**Prioridad:** Could · **Fase:** Mejoras · **Pantalla:** Lector de cuento.
+
+**Alcance**
+
+1. `BookPages` imprime `indice + 1` al pie de cada hoja, además del indicador "Página n de total" de
+   los controles.
+
+**Criterios de aceptación**
+
+- **(Número)** Dada una hoja del cuento, Entonces muestra su número de página impreso; al pasar página,
+  el número cambia.

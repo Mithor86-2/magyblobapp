@@ -31,6 +31,22 @@ export const withTiming = <T>(
   if (typeof callback === 'function') callback(true);
   return valor;
 };
+// `withRepeat` (US-86, rebote de cabecera): devuelve el valor de forma inerte (sin
+// bucle real); la oscilación se verifica a mano/E2E. `Easing` expone las funciones que
+// usamos como identidades para que las llamadas no rompan bajo el runner.
+export const withRepeat = <T>(valor: T): T => valor;
+// `withSequence` (US-90, animación por fases): devuelve el primer valor de forma inerte.
+export const withSequence = <T>(...valores: T[]): T => valores[0] as T;
+// `withDelay` (US-90, pausas entre fases): devuelve la animación sin esperar.
+export const withDelay = <T>(_ms: number, valor: T): T => valor;
+export const Easing = {
+  quad: (t: number): number => t,
+  ease: (t: number): number => t,
+  linear: (t: number): number => t,
+  inOut: (fn: (t: number) => number) => fn,
+  in: (fn: (t: number) => number) => fn,
+  out: (fn: (t: number) => number) => fn,
+} as const;
 export const runOnJS =
   <A extends unknown[]>(fn: (...args: A) => unknown) =>
   (...args: A) =>

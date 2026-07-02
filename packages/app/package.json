@@ -1,6 +1,6 @@
 {
   "name": "@magyblob/app",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "description": "App móvil (Expo + Zustand). Slice vertical del HITO 1 (Fase 4).",
   "main": "index.ts",
@@ -22,15 +22,16 @@
     "@react-navigation/native": "^7.3.0",
     "@react-navigation/native-stack": "^7.17.2",
     "@sentry/react-native": "^8.15.1",
-    "expo": "~56.0.11",
+    "expo": "~56.0.13",
+    "expo-asset": "~56.0.18",
     "expo-audio": "~56.0.12",
-    "expo-constants": "~56.0.18",
+    "expo-constants": "~56.0.19",
     "expo-file-system": "~56.0.8",
-    "expo-font": "~56.0.6",
+    "expo-font": "~56.0.7",
     "expo-haptics": "~56.0.3",
     "expo-navigation-bar": "~56.0.3",
     "expo-speech": "~56.0.3",
-    "expo-splash-screen": "~56.0.10",
+    "expo-splash-screen": "~56.0.11",
     "expo-status-bar": "~56.0.4",
     "expo-system-ui": "~56.0.5",
     "i18next": "^26.3.2",
@@ -52,11 +53,19 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "~19.2.2",
-    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/coverage-v8": "^3.2.6",
+    "babel-preset-expo": "~56.0.15",
     "jsdom": "^29.1.1",
     "react-dom": "19.2.3",
     "react-native-web": "^0.21.2",
     "typescript": "~6.0.3",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.6"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "@sentry/react-native"
+      ]
+    }
   }
 }

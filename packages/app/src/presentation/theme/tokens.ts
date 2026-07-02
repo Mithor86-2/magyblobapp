@@ -28,15 +28,27 @@ export type ColorTokens = {
   secondary: string;
   onSecondary: string;
   secondaryContainer: string;
+  /** Borde inferior "squishy" (tono oscuro del secundario) — sombra del botón (US-87). */
+  secondaryBorder: string;
   tertiary: string;
   onTertiary: string;
   tertiaryContainer: string;
+  /** Borde inferior "squishy" (tono oscuro del terciario) — sombra del botón (US-87). */
+  tertiaryBorder: string;
+  // Cuaternario (ámbar/dorado): 4º color de acción para distinguir "Mis logros" del resto
+  // de botones, con color fijo entre pantallas (US-87, ajuste #6).
+  quaternary: string;
+  onQuaternary: string;
+  quaternaryBorder: string;
   onSurface: string;
   onSurfaceVariant: string;
   outline: string;
   error: string;
+  onError: string;
   errorContainer: string;
   onErrorContainer: string;
+  /** Borde inferior "squishy" (tono oscuro del error) — sombra del botón destructivo (US-87). */
+  errorBorder: string;
 };
 
 /** Paleta clara (la histórica): superficies crema cálidas, coral/menta/cielo. */
@@ -54,18 +66,26 @@ export const lightColors: ColorTokens = {
   secondary: '#426561',
   onSecondary: '#ffffff',
   secondaryContainer: '#c2e7e2',
+  secondaryBorder: '#2d4744', // tono oscuro del menta (borde del botón)
   // Cielo: fondos calmados y navegación.
   tertiary: '#0d6683',
   onTertiary: '#ffffff',
   tertiaryContainer: '#72b8d8',
+  tertiaryBorder: '#084b60', // tono oscuro del cielo (borde del botón)
+  // Ámbar/dorado: 4º color de acción ("Mis logros").
+  quaternary: '#8a5300',
+  onQuaternary: '#ffffff',
+  quaternaryBorder: '#5e3900', // tono oscuro del ámbar (borde del botón)
   // Cocoa: texto cálido (no negro puro) para suavidad.
   onSurface: '#221a16',
   onSurfaceVariant: '#554242',
   outline: '#dbc0bf',
   // Error.
   error: '#ba1a1a',
+  onError: '#ffffff',
   errorContainer: '#ffdad6',
   onErrorContainer: '#93000a',
+  errorBorder: '#8c1414', // tono oscuro del rojo (borde del botón destructivo)
 };
 
 /**
@@ -91,18 +111,26 @@ export const darkColors: ColorTokens = {
   secondary: '#d3bcfc',
   onSecondary: '#38265b',
   secondaryContainer: '#523f76',
+  secondaryBorder: '#a487d6', // tono oscuro del púrpura claro (borde del botón)
   // Aqua suave: pistas, rastros de navegación y feedback "gentil".
   tertiary: '#76d5e1',
   onTertiary: '#00363c',
   tertiaryContainer: '#52b2be',
+  tertiaryBorder: '#4aa8b5', // tono oscuro del aqua claro (borde del botón)
+  // Ámbar/dorado claro: 4º color de acción ("Mis logros") legible sobre índigo.
+  quaternary: '#f5c26b',
+  onQuaternary: '#3d2a00',
+  quaternaryBorder: '#c99845', // tono oscuro del ámbar claro (borde del botón)
   // Texto lila claro sobre las superficies índigo (evita el blanco puro).
   onSurface: '#e2e0fc',
   onSurfaceVariant: '#dec0bb',
   outline: '#a58b86',
   // Error legible sobre oscuro.
   error: '#ffb4ab',
+  onError: '#640c04',
   errorContainer: '#93000a',
   onErrorContainer: '#ffdad6',
+  errorBorder: '#d1746b', // tono oscuro del rojo claro (borde del botón destructivo)
 };
 
 /** Paletas indexadas por esquema (las selecciona el `ThemeProvider`, US-66). */

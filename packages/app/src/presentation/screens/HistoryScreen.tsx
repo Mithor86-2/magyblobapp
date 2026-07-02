@@ -200,36 +200,6 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       <Text style={styles.title}>{t('history.title')}</Text>
       <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
 
-      {/* Ajuste #4: búsqueda EN VIVO en línea (como el buscador de Inicio), que filtra la
-          pestaña activa a medida que se escribe; combina con los filtros del modal. */}
-      <TextField
-        label={t('history.searchLabel')}
-        value={busqueda}
-        onChangeText={setBusqueda}
-        placeholder={t('history.searchPlaceholder')}
-        autoCapitalize="none"
-        testID="history-search"
-      />
-
-      {/* El modal se queda solo con los filtros (chips); el botón muestra su nº activo. */}
-      <View style={styles.toolbar}>
-        <View style={styles.searchButton}>
-          <BubblyButton
-            label={
-              filtrosActivos > 0
-                ? t('history.filtersWithCount', { count: filtrosActivos })
-                : t('history.filters')
-            }
-            icon="search"
-            variant="secondary"
-            onPress={() => setModalVisible(true)}
-          />
-        </View>
-        {filtrosActivos > 0 || busqueda.trim() !== '' ? (
-          <BubblyButton label={t('common.clear')} variant="secondary" onPress={limpiarFiltros} />
-        ) : null}
-      </View>
-
       {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
       {error ? (
         <View style={styles.errorBox}>
@@ -256,6 +226,37 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
           ) : null}
         </View>
       ) : null}
+
+      {/* US-84 (ajuste #2): el buscador baja aquí — tras "Lo último" y ENCIMA del toggle
+          [Cuentos | Actividades]. Búsqueda EN VIVO en línea que filtra la pestaña activa a
+          medida que se escribe; combina con los filtros del modal. */}
+      <TextField
+        label={t('history.searchLabel')}
+        value={busqueda}
+        onChangeText={setBusqueda}
+        placeholder={t('history.searchPlaceholder')}
+        autoCapitalize="none"
+        testID="history-search"
+      />
+
+      {/* El modal se queda solo con los filtros (chips); el botón muestra su nº activo. */}
+      <View style={styles.toolbar}>
+        <View style={styles.searchButton}>
+          <BubblyButton
+            label={
+              filtrosActivos > 0
+                ? t('history.filtersWithCount', { count: filtrosActivos })
+                : t('history.filters')
+            }
+            icon="search"
+            variant="accent"
+            onPress={() => setModalVisible(true)}
+          />
+        </View>
+        {filtrosActivos > 0 || busqueda.trim() !== '' ? (
+          <BubblyButton label={t('common.clear')} variant="quaternary" onPress={limpiarFiltros} />
+        ) : null}
+      </View>
 
       {/* A3/US-74: toggle segmentado [Cuentos | Actividades]; el modal filtra la activa. */}
       <View style={styles.segmented} accessibilityRole="tablist">
@@ -414,7 +415,7 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
             <View style={styles.modalActionMain}>
               <BubblyButton label={t('history.applyFilters')} onPress={props.onClose} />
             </View>
-            <BubblyButton label={t('common.clear')} variant="secondary" onPress={props.onClear} />
+            <BubblyButton label={t('common.clear')} variant="quaternary" onPress={props.onClear} />
           </View>
         </View>
       </View>

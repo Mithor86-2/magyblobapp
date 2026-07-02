@@ -821,3 +821,62 @@ Cinco correcciones detectadas en las pruebas en dev del lote anterior. Plan en
 - [x] ✅ **Efecto de pliegue del lector sin Skia (US-79).** `BookPages` añade sombra de pliegue + giro/
       escala más marcados siguiendo el arrastre (aproximación de page-curl; se descartó Skia).
 - **DoD:** ✅ `pnpm check` verde (**backend 407 + app 255**) · ⏳ pruebas en dev por el usuario (dev build).
+
+### Release v1.7.0 — publicada en `main` (2026-07-02)
+
+Primera release tras los lotes de este ciclo. Se integró `develop` → `main` (PR #4, CI verde: gate +
+integración/E2E backend + E2E app), se asignó la versión con **versionado diferido** (raíz/backend/app
+`1.6.0 → 1.7.0`, CHANGELOG fechado) y se publicó el **tag `v1.7.0`** y la **GitHub Release** (latest).
+
+Incluye: **US-75** (≥3 frases/página), **US-76** (usar nombre opcional), **US-77** (trato parentesco +
+nombre, reforzado para IA real), **US-78** (continuar historia + título numerado), **US-79** (lector
+con pase de página por gesto + pliegue, sin Skia), **US-80** (nombre de sección en cabecera), **US-81**
+(pasos plegables, visibles al generar), **US-82** (búsqueda global) y el buscador del Historial en vivo.
+Pendiente aparte: compilar y adjuntar la APK de v1.7.0 (build nativa).
+
+### Lote de ajustes 3 de `ideas.txt` (US-83…US-88, rama `feature/87-ajustes-ideas-3`, sin release)
+
+Ocho ajustes de UI/UX (captura del Dashboard en Android). Plan en
+[planes/coordinacion-ajustes-ideas-3.md](planes/coordinacion-ajustes-ideas-3.md) (+ un plan por
+feature). Ejecutado en **una rama**, commits por feature (Ola 1 = ficheros disjuntos; F5 transversal
+al final). Solo app; integración prevista **sin release** (entradas en `## [Unreleased]` del app).
+Decisiones: **#1** se intentó `react-native-page-flipper` pero se **descartó** (crashea con Reanimated
+4/new arch) y se mantiene el pliegue con reanimated; **#6** añadir 4º color; **#7/#8** revertidos.
+
+- [x] ✅ **F1 — Lector como libro: portada + historia + FIN (US-83, #1/#5).** `BookPages` admite
+      `portada` (imagen + título) y `finLabel` ("FIN") además de la historia paginada; el pase de página
+      mantiene el **pliegue con Reanimated** (giro + sombra, arrastre y ‹/›). _Se intentó
+      `react-native-page-flipper` para un curl "real" pero **crashea con Reanimated 4 / New Architecture**
+      (v1.0.1, sin mantenimiento); se descartó y se quitaron esas deps._ Requiere dev build.
+- [x] ✅ **F2 — Buscador del Historial reubicado (US-84, #2).** Baja a tras "Lo último" y encima del
+      toggle [Cuentos | Actividades]; búsqueda en vivo + filtros del modal intactos.
+- [x] ✅ **F3 — Cerrar sesión vuelve al Dashboard (US-85, #3).** `ParentalScreen` resetea a `Dashboard`
+      (con "Prueba un cuento / actividades"), no a `Welcome`.
+- [x] ✅ **F4 — Cabeceras con rebote en loop (US-86, #4).** `BouncingHeaderImage` (translateY en bucle,
+      reanimated `withRepeat`), usado desde `Screen`.
+- [x] ✅ **F5 — Color de botón consistente + sombra por tono + 4º color (US-87, #6).** Variante
+      `quaternary` (ámbar) + bordes por variante (tono oscuro del propio color); mapa fijo entre
+      pantallas (crear=coral · ya tengo=cielo · búsqueda=menta · logros=ámbar · logout=rojo).
+- [~] ↩️ **F6 — Pestañas (US-88, #7/#8): REVERTIDA.** Se implementó (fondo activo cubriendo el ítem +
+  inset inferior), pero tras las pruebas del usuario se **revirtió al estado previo** (blob alrededor
+  del icono y `tabBarStyle` original) a petición suya. Se elimina el helper `makeTabBarStyle`.
+- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 268**) + cobertura estratégica OK · ⏳ pruebas en
+  dev por el usuario (dev build) y confirmación antes del `finish`.
+
+### Lote de ajustes 4 de `ideas.txt` (US-89…US-91, misma rama `feature/87-ajustes-ideas-3`, sin release)
+
+Tres mejoras visuales tras probar el lote 3 en dev. Plan en
+[planes/coordinacion-ajustes-ideas-4.md](planes/coordinacion-ajustes-ideas-4.md). Se ejecuta en la
+**misma rama** (el lote 3 sigue sin integrar), commits por feature; integración **sin release**.
+
+- [x] ✅ **F1 — Chips por categoría: color + icono (US-89, #1).** `SelectableChip` con `icon` y `color`
+      por categoría (temas=cielo, estilos=menta, enseñanza=ámbar, usar-nombre=coral); iconos lucide por
+      opción (`chipIcons.ts` + `Icon`), reutilizados en Cuentos, Crear perfil (intereses) y Dashboard.
+- [x] ✅ **F2 — Animación suave del avatar (US-90, #2).** `AnimatedAvatar` (giro leve + rebote en bucle,
+      reanimated) en Inicio, cabecera de Cuentos y avatar seleccionado del `AvatarPicker`.
+- [x] ✅ **F3 — Número de página impreso en cada hoja (US-91, #3).** `BookPages` imprime el número en
+      cada hoja, además del indicador existente.
+- **Extra:** stub de `lucide-react-native` para Vitest (permite que `Icon` cargue en tests sin mockearlo
+  por fichero, necesario al usar `Icon` en `SelectableChip`).
+- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 270**) + cobertura OK · ⏳ pruebas en dev por el
+  usuario (dev build) y confirmación antes del `finish`.
