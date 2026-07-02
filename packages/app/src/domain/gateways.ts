@@ -45,6 +45,8 @@ export interface StoryGateway {
   generate(request: GenerateStoryRequest): Promise<Story>;
   /** Genera un cuento en modo anónimo efímero, sin sesión ni persistencia (US-50). */
   generateAnonymous(request: GenerateStoryAnonymousRequest): Promise<AnonymousStory>;
+  /** Continúa un cuento existente: genera un capítulo nuevo enlazado y lo devuelve (US-78). */
+  continueStory(storyId: string): Promise<Story>;
   /** Marca un cuento como leído (US-07). */
   markRead(storyId: string): Promise<Story>;
   /** Marca/desmarca un cuento como favorito (US-64); idempotente, devuelve el cuento actualizado. */

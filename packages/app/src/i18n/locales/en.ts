@@ -228,6 +228,8 @@ export const en: typeof es = {
     styles: 'Styles',
     teaching: 'What do you want to teach?',
     teachingHint: 'Optional: pick a value for the moral.',
+    nameField: 'Use the name?',
+    useName: "Use {{nombre}}'s name",
     creating: 'Creating a magical story…',
     retryHint: 'Tap “Generate story” to try again.',
     generateAnother: 'Generate another',
@@ -243,6 +245,9 @@ export const en: typeof es = {
     page: 'Page {{n}} of {{total}}',
     prevPage: 'Previous page',
     nextPage: 'Next page',
+    // Continue the story (US-78).
+    continueStory: 'Continue the story',
+    continueError: 'Could not continue the story.',
   },
 
   history: {

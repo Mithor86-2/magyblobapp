@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Continuar la historia desde el lector (US-78).** Botón "Continuar la historia" en `StoryReaderScreen`
+  que llama al gateway `stories.continueStory` (`POST /stories/:id/continue`) y **abre el capítulo
+  nuevo** en el lector (`navigation.push`), con estado de carga y aviso de error. i18n ES/EN
+  (`reader.continueStory`, `reader.continueError`).
+- **Opción de usar el nombre del niño (US-76).** Toggle "Usar el nombre de {niño}" en el generador
+  (activo por defecto); el gateway `stories.generate` envía `usarNombre`. i18n ES/EN
+  (`storyGenerator.nameField`, `storyGenerator.useName`).
 - **Lector con page-curl por gesto (US-79).** `BookPages` se reescribe con
   `react-native-gesture-handler` + `react-native-reanimated` (+ `react-native-worklets`): pasar
   página **arrastrando** con giro 3D (`rotateY` + `perspective`) en el hilo de UI, conservando los

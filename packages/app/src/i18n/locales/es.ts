@@ -231,6 +231,8 @@ export const es = {
     styles: 'Estilos',
     teaching: '¿Qué quieres enseñar?',
     teachingHint: 'Opcional: elige un valor para la moraleja.',
+    nameField: '¿Usar el nombre?',
+    useName: 'Usar el nombre de {{nombre}}',
     creating: 'Creando un cuento mágico…',
     retryHint: 'Toca «Generar cuento» para reintentar.',
     generateAnother: 'Generar otro',
@@ -246,6 +248,9 @@ export const es = {
     page: 'Página {{n}} de {{total}}',
     prevPage: 'Página anterior',
     nextPage: 'Página siguiente',
+    // Continuar la historia (US-78).
+    continueStory: 'Continuar la historia',
+    continueError: 'No se pudo continuar la historia.',
   },
 
   history: {

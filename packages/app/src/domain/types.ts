@@ -103,6 +103,8 @@ export interface GenerateStoryRequest {
   estilos: Estilo[];
   /** Enseñanza/valor a transmitir (US-69); opcional, ausente ⇒ sin moraleja dirigida. */
   ensenanza?: Ensenanza;
+  /** Usar (o no) el nombre del niño en el cuento (US-76); ausente ⇒ por defecto sí. */
+  usarNombre?: boolean;
 }
 
 export interface Story {

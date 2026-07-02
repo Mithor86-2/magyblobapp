@@ -237,6 +237,33 @@ describe('createApiGateways (adaptador HTTP)', () => {
     });
   });
 
+  it('stories.generate envía usarNombre cuando se indica (US-76)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(STORY));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.stories.generate({
+      profileId: 'p1',
+      temas: ['magia'],
+      estilos: ['aventura'],
+      usarNombre: false,
+    });
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(JSON.parse(options.body)).toMatchObject({ usarNombre: false });
+  });
+
+  it('stories.continueStory hace POST /stories/:id/continue (US-78)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...STORY, id: 's2' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await api.stories.continueStory('s1');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE}/stories/s1/continue`);
+    expect(options.method).toBe('POST');
+    expect(out.id).toBe('s2');
+  });
+
   it('stories.markRead hace POST /stories/:id/read', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse({ ...STORY, estado: 'leido' }));
     vi.stubGlobal('fetch', fetchMock);
