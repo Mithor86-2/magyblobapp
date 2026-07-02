@@ -76,3 +76,24 @@ jobs:
           path: packages/app/playwright-report/
           retention-days: 7
           if-no-files-found: ignore
+
+  # Construye la imagen Docker del backend en CADA PR (sin publicarla) para que un
+  # fallo del Dockerfile / .dockerignore / `pnpm deploy` se detecte aquí y no en el
+  # despliegue de Render. Contexto = raíz del repo, igual que docker-compose/render.
+  docker-build:
+    name: Build imagen Docker backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build (sin push) del backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/backend/Dockerfile
+          push: false
+          load: true
+          tags: magyblob-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
