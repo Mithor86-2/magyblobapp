@@ -200,8 +200,36 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       <Text style={styles.title}>{t('history.title')}</Text>
       <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
 
-      {/* Ajuste #4: búsqueda EN VIVO en línea (como el buscador de Inicio), que filtra la
-          pestaña activa a medida que se escribe; combina con los filtros del modal. */}
+      {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
+      {error ? (
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{error}</Text>
+          <BubblyButton label={t('common.retry')} onPress={() => void load()} variant="secondary" />
+        </View>
+      ) : null}
+
+      {/* A3/US-74: franja "Lo último" con el último cuento y la última actividad. */}
+      {cuentoDestacado || actividadDestacada ? (
+        <View style={styles.destacados}>
+          <Text style={styles.section}>{t('history.latest')}</Text>
+          {cuentoDestacado ? (
+            <View>
+              <Text style={styles.destacadoLabel}>{t('history.lastStory')}</Text>
+              {renderStoryCard(cuentoDestacado)}
+            </View>
+          ) : null}
+          {actividadDestacada ? (
+            <View>
+              <Text style={styles.destacadoLabel}>{t('history.lastActivity')}</Text>
+              <ActivityCard activity={actividadDestacada} />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
+      {/* US-84 (ajuste #2): el buscador baja aquí — tras "Lo último" y ENCIMA del toggle
+          [Cuentos | Actividades]. Búsqueda EN VIVO en línea que filtra la pestaña activa a
+          medida que se escribe; combina con los filtros del modal. */}
       <TextField
         label={t('history.searchLabel')}
         value={busqueda}
@@ -229,33 +257,6 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
           <BubblyButton label={t('common.clear')} variant="secondary" onPress={limpiarFiltros} />
         ) : null}
       </View>
-
-      {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
-      {error ? (
-        <View style={styles.errorBox}>
-          <Text style={styles.error}>{error}</Text>
-          <BubblyButton label={t('common.retry')} onPress={() => void load()} variant="secondary" />
-        </View>
-      ) : null}
-
-      {/* A3/US-74: franja "Lo último" con el último cuento y la última actividad. */}
-      {cuentoDestacado || actividadDestacada ? (
-        <View style={styles.destacados}>
-          <Text style={styles.section}>{t('history.latest')}</Text>
-          {cuentoDestacado ? (
-            <View>
-              <Text style={styles.destacadoLabel}>{t('history.lastStory')}</Text>
-              {renderStoryCard(cuentoDestacado)}
-            </View>
-          ) : null}
-          {actividadDestacada ? (
-            <View>
-              <Text style={styles.destacadoLabel}>{t('history.lastActivity')}</Text>
-              <ActivityCard activity={actividadDestacada} />
-            </View>
-          ) : null}
-        </View>
-      ) : null}
 
       {/* A3/US-74: toggle segmentado [Cuentos | Actividades]; el modal filtra la activa. */}
       <View style={styles.segmented} accessibilityRole="tablist">
