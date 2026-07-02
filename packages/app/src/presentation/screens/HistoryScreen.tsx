@@ -32,6 +32,8 @@ import {
   filtrarActividades,
   filtrarCuentos,
   TODOS,
+  ultimaActividad,
+  ultimoCuento,
   type FiltroCategoria,
   type FiltroEnsenanza,
   type FiltroEstilo,
@@ -43,12 +45,15 @@ import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '.
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /**
- * Pantalla de **historial** del perfil activo: lista los cuentos y actividades
- * guardados. La búsqueda de texto y todos los filtros (tema, estilo, enseñanza,
- * categoría, favoritos) viven en un **modal** que se abre con el botón "Buscar"
- * (A3), para no saturar la pantalla; el botón muestra un contador de filtros activos
- * y hay un botón "Limpiar" que los resetea. El título del cuento se ve completo.
- * US-62/US-64/US-69. Recarga al recuperar el foco.
+ * Pantalla de **historial** del perfil activo (rediseño A3/US-74). Arriba, una franja
+ * **"Lo último"** con destacados: el último cuento y la última actividad completada
+ * (por fecha, `creadoEn`/`completadaEn`), siempre visibles si existen. Debajo, un
+ * **toggle segmentado [Cuentos | Actividades]** (por defecto Cuentos) que muestra la
+ * **lista completa** del tipo elegido. La búsqueda de texto y todos los filtros (tema,
+ * estilo, enseñanza, categoría, favoritos) viven en un **modal** que se abre con el
+ * botón "Buscar" y aplica a la **pestaña activa**; el botón muestra un contador de
+ * filtros activos y hay un botón "Limpiar" que los resetea. El título del cuento se ve
+ * completo. US-62/US-64/US-69/US-74. Recarga al recuperar el foco.
  */
 export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const { t, i18n } = useTranslation();
@@ -80,6 +85,8 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const [busqueda, setBusqueda] = useState('');
   // A3: la búsqueda y los filtros se editan en un modal (la pantalla queda limpia).
   const [modalVisible, setModalVisible] = useState(false);
+  // A3/US-74: pestaña activa del toggle (Cuentos por defecto); el modal filtra sobre ella.
+  const [pestana, setPestana] = useState<'stories' | 'activities'>('stories');
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -144,6 +151,50 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   );
   const actividadesVisibles = filtrarActividades(hechas, categoriaFiltro, soloFavoritos, busqueda);
 
+  // A3/US-74: destacados "Lo último" — el cuento y la actividad más recientes (por fecha),
+  // al margen de los filtros; siempre visibles si existen.
+  const cuentoDestacado = ultimoCuento(history.stories);
+  const actividadDestacada = ultimaActividad(history.activities);
+
+  // Tarjeta de cuento reutilizada por el destacado y por la lista de la pestaña Cuentos:
+  // título completo, estado, favorito y acción que abre el lector.
+  const renderStoryCard = (story: Story) => {
+    const fecha = formatearFecha(story.creadoEn, idioma);
+    return (
+      <Appear key={story.id} style={styles.storyCard}>
+        <View style={styles.storyHeader}>
+          {/* A3: título completo (sin numberOfLines). */}
+          <Text style={styles.storyTitle}>{story.titulo}</Text>
+          <View
+            style={[
+              styles.estado,
+              story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
+            ]}
+          >
+            <Text style={styles.estadoText}>
+              {story.estado === 'leido' ? t('history.read') : t('history.new')}
+            </Text>
+          </View>
+          <FavoriteButton
+            favorito={story.favorito}
+            onToggle={(favorito) => toggleFavoritoCuento(story.id, favorito)}
+          />
+        </View>
+        <Pressable
+          onPress={() => openReader(story)}
+          accessibilityRole="button"
+          accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
+          style={styles.accionRow}
+        >
+          <Text style={styles.accion}>{t('history.readStory')}</Text>
+          <Icon name="arrow-right" size="sm" color={colors.primary} />
+        </Pressable>
+        <AuthorBadge proveedor={story.proveedor} />
+        {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
+      </Appear>
+    );
+  };
+
   return (
     <Screen headerAction={<AdultsButton onPress={openParental} />}>
       <Text style={styles.title}>{t('history.title')}</Text>
@@ -176,66 +227,80 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
         </View>
       ) : null}
 
-      <Text style={styles.section}>{t('history.sectionStories')}</Text>
-      {history.stories.length === 0 ? (
-        <Text style={styles.vacio}>{t('history.emptyStories')}</Text>
-      ) : cuentosVisibles.length === 0 ? (
-        <Text style={styles.vacio}>{t('history.noMatchStories')}</Text>
-      ) : (
-        cuentosVisibles.map((story) => {
-          const fecha = formatearFecha(story.creadoEn, idioma);
-          return (
-            <Appear key={story.id} style={styles.storyCard}>
-              <View style={styles.storyHeader}>
-                {/* A3: título completo (sin numberOfLines). */}
-                <Text style={styles.storyTitle}>{story.titulo}</Text>
-                <View
-                  style={[
-                    styles.estado,
-                    story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
-                  ]}
-                >
-                  <Text style={styles.estadoText}>
-                    {story.estado === 'leido' ? t('history.read') : t('history.new')}
-                  </Text>
-                </View>
-                <FavoriteButton
-                  favorito={story.favorito}
-                  onToggle={(favorito) => toggleFavoritoCuento(story.id, favorito)}
-                />
-              </View>
-              <Pressable
-                onPress={() => openReader(story)}
-                accessibilityRole="button"
-                accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
-                style={styles.accionRow}
-              >
-                <Text style={styles.accion}>{t('history.readStory')}</Text>
-                <Icon name="arrow-right" size="sm" color={colors.primary} />
-              </Pressable>
-              <AuthorBadge proveedor={story.proveedor} />
-              {fecha ? (
-                <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text>
-              ) : null}
-            </Appear>
-          );
-        })
-      )}
+      {/* A3/US-74: franja "Lo último" con el último cuento y la última actividad. */}
+      {cuentoDestacado || actividadDestacada ? (
+        <View style={styles.destacados}>
+          <Text style={styles.section}>{t('history.latest')}</Text>
+          {cuentoDestacado ? (
+            <View>
+              <Text style={styles.destacadoLabel}>{t('history.lastStory')}</Text>
+              {renderStoryCard(cuentoDestacado)}
+            </View>
+          ) : null}
+          {actividadDestacada ? (
+            <View>
+              <Text style={styles.destacadoLabel}>{t('history.lastActivity')}</Text>
+              <ActivityCard activity={actividadDestacada} />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
-      <Text style={styles.section}>{t('history.sectionActivities')}</Text>
-      {/* `testID` para poder acotar la sección en los E2E: el tab navigator mantiene
-          montada también la pestaña Actividades, cuyas tarjetas coinciden en texto. */}
-      <View testID="history-activities" style={styles.activitiesSection}>
-        {hechas.length === 0 ? (
-          <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
-        ) : actividadesVisibles.length === 0 ? (
-          <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
-        ) : (
-          actividadesVisibles.map((activity) => (
-            <ActivityCard key={activity.id} activity={activity} />
-          ))
-        )}
+      {/* A3/US-74: toggle segmentado [Cuentos | Actividades]; el modal filtra la activa. */}
+      <View style={styles.segmented} accessibilityRole="tablist">
+        <Pressable
+          onPress={() => setPestana('stories')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: pestana === 'stories' }}
+          testID="history-tab-stories"
+          style={[styles.segment, pestana === 'stories' ? styles.segmentActive : null]}
+        >
+          <Text
+            style={[styles.segmentText, pestana === 'stories' ? styles.segmentTextActive : null]}
+          >
+            {t('history.tabStories')}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setPestana('activities')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: pestana === 'activities' }}
+          testID="history-tab-activities"
+          style={[styles.segment, pestana === 'activities' ? styles.segmentActive : null]}
+        >
+          <Text
+            style={[styles.segmentText, pestana === 'activities' ? styles.segmentTextActive : null]}
+          >
+            {t('history.tabActivities')}
+          </Text>
+        </Pressable>
       </View>
+
+      {pestana === 'stories' ? (
+        <View testID="history-stories" style={styles.activitiesSection}>
+          {history.stories.length === 0 ? (
+            <Text style={styles.vacio}>{t('history.emptyStories')}</Text>
+          ) : cuentosVisibles.length === 0 ? (
+            <Text style={styles.vacio}>{t('history.noMatchStories')}</Text>
+          ) : (
+            cuentosVisibles.map((story) => renderStoryCard(story))
+          )}
+        </View>
+      ) : (
+        // `testID` para acotar la sección en los E2E: el tab navigator mantiene
+        // montada también la pestaña Actividades, cuyas tarjetas coinciden en texto.
+        <View testID="history-activities" style={styles.activitiesSection}>
+          {hechas.length === 0 ? (
+            <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
+          ) : actividadesVisibles.length === 0 ? (
+            <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
+          ) : (
+            actividadesVisibles.map((activity) => (
+              <ActivityCard key={activity.id} activity={activity} />
+            ))
+          )}
+        </View>
+      )}
 
       <SearchFiltersModal
         visible={modalVisible}
@@ -417,6 +482,39 @@ const makeStyles = (colors: ColorTokens) =>
     },
     activitiesSection: {
       gap: spacing.sm,
+    },
+    destacados: {
+      gap: spacing.sm,
+    },
+    destacadoLabel: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+      marginBottom: spacing.xs,
+    },
+    segmented: {
+      flexDirection: 'row',
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.pill,
+      padding: 4,
+      gap: spacing.xs,
+      marginTop: spacing.sm,
+    },
+    segment: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: spacing.sm,
+      borderRadius: radius.pill,
+    },
+    segmentActive: {
+      backgroundColor: colors.primary,
+    },
+    segmentText: {
+      ...typography.labelBold,
+      color: colors.onSurfaceVariant,
+    },
+    segmentTextActive: {
+      color: colors.onPrimary,
     },
     vacio: {
       ...typography.bodyMd,

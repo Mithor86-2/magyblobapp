@@ -261,6 +261,12 @@ export const en: typeof es = {
     searchLabel: 'Search',
     searchPlaceholder: 'Search by title, theme, category…',
     onlyFavorites: 'Only favorites',
+    // Highlights + tabs (A3/US-74).
+    latest: 'Latest',
+    lastStory: 'Last story',
+    lastActivity: 'Last activity',
+    tabStories: 'Stories',
+    tabActivities: 'Activities',
   },
 
   favorite: {
