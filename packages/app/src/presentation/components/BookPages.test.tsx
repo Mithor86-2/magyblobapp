@@ -4,9 +4,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { BookPages } from './BookPages';
 
 /**
- * A2/US-73: lector paginado como libro. Muestra una página a la vez, los controles
- * ‹/› pasan de página (deshabilitados en los extremos) y el indicador refleja
- * "Página n de total". Corre sobre react-native-web bajo jsdom (US-30).
+ * A2/US-73, US-74: lector paginado como libro. Muestra una página a la vez, los
+ * controles ‹/› pasan de página (deshabilitados en los extremos) y el indicador
+ * refleja "Página n de total". La hoja se pinta en fondo blanco tipo papel (US-74).
+ * Corre sobre react-native-web bajo jsdom (US-30).
  */
 const PAGINAS = ['Primera página', 'Segunda página', 'Tercera página'];
 
@@ -25,6 +26,13 @@ describe('BookPages (A2/US-73)', () => {
     render(<BookPages paginas={PAGINAS} />);
     expect(screen.getByText('Primera página')).toBeInTheDocument();
     expect(screen.getByText('Página 1 de 3')).toBeInTheDocument();
+  });
+
+  it('la hoja se pinta en fondo blanco tipo papel (US-74)', () => {
+    render(<BookPages paginas={PAGINAS} />);
+    // La hoja es el contenedor animado padre del texto de la página.
+    const hoja = screen.getByText('Primera página').parentElement as HTMLElement;
+    expect(hoja).toHaveStyle({ backgroundColor: 'rgb(255, 255, 255)' });
   });
 
   it('› avanza a la siguiente página y ‹ vuelve', () => {

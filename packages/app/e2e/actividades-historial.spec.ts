@@ -133,29 +133,30 @@ test('historial: la actividad marcada como realizada aparece en la sección Acti
   await page.getByRole('button', { name: '3 estrellas' }).first().click();
   await expect(page.getByText('¡Hecha!').first()).toBeVisible();
 
-  // Ir al Historial: la actividad realizada debe aparecer bajo su sección con "¡Hecha!"
-  // (reproduce el flujo exacto del bug reportado: marcar realizada → verla en el Historial).
-  // El tab navigator mantiene montada también la pestaña Actividades (mismas tarjetas y
-  // textos), así que acotamos la aserción a la sección del Historial por su testID.
+  // Ir al Historial: la actividad realizada debe aparecer en la pestaña Actividades con
+  // "¡Hecha!" (reproduce el bug: marcar realizada → verla en el Historial). El Historial
+  // (US-74) arranca en la pestaña Cuentos, así que pulsamos el toggle "Actividades" (por
+  // testID, para no chocar con la pestaña inferior homónima) y acotamos por su testID de sección.
   await page.getByText('Historial', { exact: true }).first().click();
   await expect(page.getByText('Tu historial')).toBeVisible();
+  await page.getByTestId('history-tab-activities').click();
   const seccion = page.getByTestId('history-activities');
   await expect(seccion.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
   await expect(seccion.getByText('¡Hecha!')).toBeVisible();
 });
 
-test('historial: el cuento generado aparece en "Cuentos mágicos"', async ({ page }, testInfo) => {
+test('historial: el cuento generado aparece en la pestaña Cuentos', async ({ page }, testInfo) => {
   await completarOnboarding(page, correoUnico(testInfo));
 
-  // Ir a la pestaña "Historial"
+  // Ir a la pestaña "Historial" (arranca en el toggle "Cuentos", US-74)
   await page.getByText('Historial', { exact: true }).first().click();
   await expect(page.getByText('Tu historial')).toBeVisible();
 
-  // El cuento recién generado aparece bajo la sección "Cuentos mágicos" (US-08).
-  await expect(page.getByText('Cuentos mágicos')).toBeVisible();
-  // La tarjeta de cuento es un botón con etiqueta accesible "Leer el cuento {título}".
-  // El título varía (US-54), así que basta el prefijo estable de la etiqueta.
-  await expect(page.getByRole('button', { name: /^Leer el cuento / }).first()).toBeVisible({
+  // El cuento recién generado aparece en la lista de Cuentos (US-08). La tarjeta es un botón
+  // con etiqueta accesible "Leer el cuento {título}"; el título varía (US-54), basta el prefijo.
+  // Acotamos a la sección por su testID (los destacados "Lo último" repiten la tarjeta).
+  const seccion = page.getByTestId('history-stories');
+  await expect(seccion.getByRole('button', { name: /^Leer el cuento / }).first()).toBeVisible({
     timeout: 30_000,
   });
 });

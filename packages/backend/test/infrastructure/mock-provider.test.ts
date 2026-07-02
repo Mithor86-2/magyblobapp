@@ -33,6 +33,18 @@ describe('MockProvider', () => {
     expect(story.cuerpo).toContain('Había una vez');
   });
 
+  it('A1/US-74: el cuerpo generado sale dividido en al menos 4 páginas (párrafos)', async () => {
+    for (const idioma of ['es', 'en'] as const) {
+      const story = await provider.generateStory({
+        perfil: perfil(idioma),
+        temas: ['animales'],
+        estilos: ['aventura'],
+      });
+      const paginas = story.cuerpo.split(/\n{2,}/).filter(Boolean);
+      expect(paginas.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
   it('genera el cuento en inglés cuando el perfil es en', async () => {
     const story = await provider.generateStory({
       perfil: perfil('en'),

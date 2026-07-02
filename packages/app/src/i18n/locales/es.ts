@@ -264,6 +264,12 @@ export const es = {
     searchLabel: 'Buscar',
     searchPlaceholder: 'Busca por título, tema, categoría…',
     onlyFavorites: 'Solo favoritos',
+    // Destacados + pestañas (A3/US-74).
+    latest: 'Lo último',
+    lastStory: 'Último cuento',
+    lastActivity: 'Última actividad',
+    tabStories: 'Cuentos',
+    tabActivities: 'Actividades',
   },
 
   favorite: {

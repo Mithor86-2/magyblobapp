@@ -30,6 +30,26 @@ function coincide(texto: string, consulta: string): boolean {
 }
 
 /**
+ * Devuelve el cuento **más reciente** por `creadoEn` (ISO, desc) para la franja de
+ * destacados "Lo último" del Historial (A3/US-74), o `undefined` si no hay cuentos.
+ * Los que no traen `creadoEn` van al final (se ordenan como cadena vacía).
+ */
+export function ultimoCuento(stories: Story[]): Story | undefined {
+  return [...stories].sort((a, b) => (b.creadoEn ?? '').localeCompare(a.creadoEn ?? ''))[0];
+}
+
+/**
+ * Devuelve la actividad **completada más reciente** por `completadaEn` (ISO, desc)
+ * para la franja de destacados "Lo último" del Historial (A3/US-74), o `undefined` si
+ * no hay actividades hechas. Solo considera las que tienen `completadaEn`.
+ */
+export function ultimaActividad(activities: Activity[]): Activity | undefined {
+  return [...activities]
+    .filter((a) => a.completadaEn != null)
+    .sort((a, b) => (b.completadaEn ?? '').localeCompare(a.completadaEn ?? ''))[0];
+}
+
+/**
  * Filtra los cuentos por tema, estilo, favorito, búsqueda de texto y enseñanza
  * (US-69). `TODOS` en tema/estilo/enseñanza no restringe; `soloFavoritos` deja solo
  * los marcados; la `busqueda` (normalizada) compara contra título, cuerpo, tema y
