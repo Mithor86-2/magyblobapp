@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.8.0] - 2026-07-02
+
+### Added
+
 - **Lector como libro: portada + historia + "FIN" (US-83, ajustes #1 + #5).** `BookPages` acepta una
   **portada** (1ª página: imagen + título del cuento) y una página final **"FIN"**, además de la
   historia paginada. El pase de página mantiene el **giro de hoja con Reanimated** (`rotateY` +
