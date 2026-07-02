@@ -92,6 +92,12 @@ export default defineConfig({
       'react-native-gesture-handler': fileURLToPath(
         new URL('./test/react-native-gesture-handler-stub.ts', import.meta.url),
       ),
+      // US-89: `lucide-react-native` (ESM) no carga bajo Vitest; se aliasa a un stub de
+      // iconos inertes para que `components/Icon.tsx` (usado por SelectableChip y otros)
+      // renderice sin mockearlo en cada test.
+      'lucide-react-native': fileURLToPath(
+        new URL('./test/lucide-react-native-stub.ts', import.meta.url),
+      ),
     },
   },
   define: {

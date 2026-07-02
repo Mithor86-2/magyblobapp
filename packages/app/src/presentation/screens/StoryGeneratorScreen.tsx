@@ -12,6 +12,7 @@ import { ApiError } from '../../domain/errors';
 import { ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
 import { ensenanzaIcon, estiloIcon, temaIcon } from '../chipIcons';
 import { avatarEmoji } from '../components/AvatarPicker';
+import { AnimatedAvatar } from '../components/AnimatedAvatar';
 import { api } from '../../composition';
 import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
@@ -121,7 +122,10 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
       }
     >
       <View style={styles.header}>
-        <Text style={styles.avatar}>{profile ? avatarEmoji(profile.avatar) : '🦊'}</Text>
+        <AnimatedAvatar
+          emoji={profile ? avatarEmoji(profile.avatar) : '🦊'}
+          style={styles.avatar}
+        />
         <Text style={styles.title}>
           {t('storyGenerator.title', {
             nombre: profile?.nombre ?? t('storyGenerator.youFallback'),
