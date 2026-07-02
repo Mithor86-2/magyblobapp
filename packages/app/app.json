@@ -10,9 +10,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.magyblobapp"
     },
-    "androidNavigationBar": {
-      "backgroundColor": "#fff8f6"
-    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#fff8f6",
@@ -43,7 +40,8 @@
           "imageWidth": 200,
           "resizeMode": "contain"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "extra": {
       "eas": {

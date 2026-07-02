@@ -21,6 +21,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   `babel-preset-expo`, pero solo estaba disponible por transitividad; en un build nativo limpio (EAS /
   `gradlew assembleRelease`) con pnpm estricto, Metro fallaba al bundlear con `Cannot find module
 'babel-preset-expo'`. Se añade como dependencia directa para que la APK/AAB compile.
+- **Expo Doctor 21/21 limpio (pre-build).** Se elimina `androidNavigationBar` de `app.json` (fuera del
+  esquema de SDK 56; el color de la barra ya lo gestiona `expo-navigation-bar` en runtime, US-66); se
+  añade el peer que faltaba `expo-asset` (requerido por `expo-audio`); se alinean a la versión de la
+  SDK `expo`, `expo-constants`, `expo-font`, `expo-splash-screen`; y se marca `@sentry/react-native`
+  (8.x intencional, US-40) en `expo.install.exclude` para no falsar el chequeo de versiones.
 
 ### Security
 
