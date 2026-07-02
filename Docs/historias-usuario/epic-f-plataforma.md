@@ -1498,13 +1498,17 @@ interfaz sea coherente y agradable.
 1. 4º color de paleta (`quaternary`, ámbar) + variante de `BubblyButton`; el borde inferior
    ("sombra") de cada botón pasa a un **tono oscuro de su propio color** (tokens `*Border` por
    variante), no el borde coral fijo.
-2. Mapa fijo entre pantallas: Crear cuenta=coral, Ya tengo cuenta=cielo, Búsqueda=menta, Mis
-   logros=ámbar, Cerrar sesión=rojo.
+2. **Regla:** en una misma pantalla **no hay dos acciones del mismo color**, y cada acción mantiene su
+   color entre pantallas. Mapa fijo: Cuento (generar/crear)=coral, Actividades (ver/generar)=menta,
+   Crear cuenta=ámbar, Ya tengo cuenta=cielo, Mis logros=ámbar, Búsqueda (Inicio)=cielo, Filtros
+   (Historial)=cielo, Limpiar=ámbar, Reintentar=menta, Cerrar sesión=rojo. (Dos acciones comparten
+   color solo si **nunca** coinciden en la misma pantalla.)
 
 **Criterios de aceptación**
 
-- **(Distintos y fijos)** Dado un botón de acción, Entonces su color es el mismo en todas las
-  pantallas y distinto del de las otras acciones.
+- **(Sin colisión)** Dada cualquier pantalla, Entonces no hay dos botones de acción distintos con el
+  mismo color.
+- **(Fijos)** Dado un botón de acción, Entonces su color es el mismo en todas las pantallas.
 - **(Sombra)** Dado un botón, Entonces su borde inferior es un tono oscuro de su propio color.
 
 ## US-88 — Pestañas: activo llena el botón + visibilidad Android {#us-88}
@@ -1518,8 +1522,10 @@ la barra inferior se vea completa, **para** navegar sin que la tape la barra del
 
 **Alcance**
 
-1. **#7:** el fondo del ítem activo cubre todo el botón (icono + etiqueta) como píldora
-   (`tabBarActiveBackgroundColor` + `tabBarItemStyle` redondeado), no solo el icono.
+1. **#7:** un `tabBarButton` **propio** envuelve el contenido del ítem (icono + etiqueta) en una vista
+   que se rellena (píldora redondeada `secondaryContainer`) cuando la pestaña está activa, cubriendo
+   **todo el botón**, no solo el icono. (`tabBarActiveBackgroundColor` no rellenaba de forma fiable el
+   ítem completo en Android.)
 2. **#8:** `tabBarStyle` reserva el inset inferior del sistema (`useSafeAreaInsets`), calculado en el
    helper puro `makeTabBarStyle`, para no quedar bajo la barra de navegación (edge-to-edge SDK 54+).
 

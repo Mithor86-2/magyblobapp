@@ -892,3 +892,9 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
   ámbar) y que cada acción mantenga su color entre pantallas. El borde inferior "squishy" de
   `BubblyButton` deja de ser el coral fijo (`primaryBorder`) y pasa a un **tono oscuro del propio
   color** de cada variante (tokens `secondaryBorder`/`tertiaryBorder`/`quaternaryBorder`/`errorBorder`).
+  **Corrección tras pruebas:** la regla real es "**sin dos acciones del mismo color en una misma
+  pantalla**" (no solo color fijo por acción) — se reasignó Crear cuenta→ámbar (chocaba con Generar
+  cuento coral) y Búsqueda(Inicio)→cielo (chocaba con Ver actividades menta); dos acciones comparten
+  color solo si nunca coinciden en pantalla. Y el resalte de **pestaña activa** pasó a un `tabBarButton`
+  **propio** (envuelve icono+etiqueta en una píldora) porque `tabBarActiveBackgroundColor` no rellenaba
+  el ítem completo en Android.

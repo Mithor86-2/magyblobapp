@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -10,7 +10,10 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+  createBottomTabNavigator,
+  type BottomTabBarButtonProps,
+} from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
@@ -117,15 +120,46 @@ function LecturaScreen(props: RootScreenProps<'StoryReader'>) {
   );
 }
 
-/**
- * Icono de pestaña: icono lucide coloreado según el estado. El resaltado del activo ya
- * NO es un "blob" alrededor del icono: el fondo activo lo pinta el navegador sobre TODO
- * el botón (icono + etiqueta), vía `tabBarActiveBackgroundColor` + `tabBarItemStyle`
- * redondeado (US-88 #7).
- */
+/** Icono de pestaña: icono lucide coloreado según el estado (activo/inactivo). */
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
   const { colors } = useTheme();
   return <Icon name={name} size={24} color={focused ? colors.primary : colors.onSurfaceVariant} />;
+}
+
+/**
+ * Botón de pestaña **personalizado** (US-88 #7). El resaltado del activo cubre **todo el
+ * botón** (icono + etiqueta) como una píldora redondeada, no solo el icono: envolvemos el
+ * contenido que pinta el navegador (`children`) en una vista que se rellena con
+ * `secondaryContainer` cuando la pestaña está seleccionada. Se hace con un botón propio en
+ * vez de `tabBarActiveBackgroundColor` porque este último no rellenaba de forma fiable el
+ * área completa del ítem en Android.
+ */
+function TabBarButton({
+  children,
+  onPress,
+  onLongPress,
+  accessibilityState,
+  accessibilityLabel,
+  testID,
+}: BottomTabBarButtonProps) {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
+  const focused = accessibilityState?.selected ?? false;
+  return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole="button"
+      accessibilityState={accessibilityState}
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      style={styles.tabButtonOuter}
+    >
+      <View style={[styles.tabButtonInner, focused && styles.tabButtonInnerActive]}>
+        {children}
+      </View>
+    </Pressable>
+  );
 }
 
 function MainTabs() {
@@ -140,14 +174,8 @@ function MainTabs() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.onSurfaceVariant,
-        // #7: el fondo del ítem activo cubre todo el botón; con el itemStyle redondeado y
-        // márgenes queda como una "píldora" que envuelve icono + etiqueta.
-        tabBarActiveBackgroundColor: colors.secondaryContainer,
-        tabBarItemStyle: {
-          marginHorizontal: 8,
-          marginVertical: 6,
-          borderRadius: radius.lg,
-        },
+        // #7: botón propio que rellena todo el ítem activo (icono + etiqueta) como píldora.
+        tabBarButton: (props) => <TabBarButton {...props} />,
         tabBarStyle: makeTabBarStyle(insets, colors),
         tabBarLabelStyle: { fontFamily: fonts.bold, fontSize: 13 },
       }}
@@ -342,5 +370,22 @@ const makeStyles = (colors: ColorTokens) =>
       backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    // Botón de pestaña: el exterior ocupa su celda (flex:1) con un poco de aire; el interior
+    // es la "píldora" que se rellena cuando la pestaña está activa (US-88 #7).
+    tabButtonOuter: {
+      flex: 1,
+      paddingHorizontal: 6,
+      paddingVertical: 6,
+    },
+    tabButtonInner: {
+      flex: 1,
+      borderRadius: radius.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 4,
+    },
+    tabButtonInnerActive: {
+      backgroundColor: colors.secondaryContainer,
     },
   });

@@ -249,12 +249,12 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
                 : t('history.filters')
             }
             icon="search"
-            variant="secondary"
+            variant="accent"
             onPress={() => setModalVisible(true)}
           />
         </View>
         {filtrosActivos > 0 || busqueda.trim() !== '' ? (
-          <BubblyButton label={t('common.clear')} variant="secondary" onPress={limpiarFiltros} />
+          <BubblyButton label={t('common.clear')} variant="quaternary" onPress={limpiarFiltros} />
         ) : null}
       </View>
 
@@ -415,7 +415,7 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
             <View style={styles.modalActionMain}>
               <BubblyButton label={t('history.applyFilters')} onPress={props.onClose} />
             </View>
-            <BubblyButton label={t('common.clear')} variant="secondary" onPress={props.onClear} />
+            <BubblyButton label={t('common.clear')} variant="quaternary" onPress={props.onClear} />
           </View>
         </View>
       </View>

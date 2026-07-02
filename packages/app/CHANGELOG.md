@@ -22,16 +22,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
-- **Colores de botón consistentes + sombra por tono propio (US-87, ajuste #6).** Cada acción mantiene
-  su color en todas las pantallas: Crear cuenta=coral, Ya tengo cuenta=cielo (`accent`),
-  Búsqueda=menta (`secondary`), Mis logros=ámbar (`quaternary`), Cerrar sesión=rojo (`danger`). El
-  borde inferior ("sombra") de cada botón pasa a ser un **tono oscuro de su propio color** (antes era
-  siempre el borde coral).
+- **Colores de botón consistentes + sombra por tono propio (US-87, ajuste #6).** Regla: en una misma
+  pantalla no hay dos acciones del mismo color, y cada acción mantiene su color entre pantallas. Mapa:
+  Cuento (generar/crear)=coral, Actividades (ver/generar)=menta, **Crear cuenta=ámbar** (`quaternary`,
+  antes coral como "Generar cuento"), Ya tengo cuenta=cielo (`accent`), Mis logros=ámbar, **Búsqueda
+  (Inicio)=cielo** (antes menta como "Ver actividades"), Filtros (Historial)=cielo, Limpiar=ámbar,
+  Reintentar=menta, Cerrar sesión=rojo (`danger`). El borde inferior ("sombra") de cada botón pasa a
+  ser un **tono oscuro de su propio color** (antes era siempre el borde coral).
 - **Buscador del Historial reubicado (US-84, ajuste #2).** El campo de búsqueda baja a **después de
   "Lo último"** y **encima del toggle [Cuentos | Actividades]**.
 - **Barra de pestañas (US-88, ajustes #7 + #8).** El estado activo colorea **todo el botón** (icono +
-  etiqueta) como una píldora, no solo el icono; y la barra reserva el **inset inferior** del sistema
-  (edge-to-edge de Android) para no quedar tapada por la barra de navegación.
+  etiqueta) como una píldora mediante un `tabBarButton` **propio** (envuelve el contenido del ítem en
+  una vista que se rellena al estar activa), no solo el icono; y la barra reserva el **inset inferior**
+  del sistema (edge-to-edge de Android) para no quedar tapada por la barra de navegación.
 - **Cerrar sesión vuelve al Dashboard (US-85, ajuste #3).** Tras el logout se navega al `Dashboard`
   (inicio sin sesión con "Prueba un cuento / Prueba unas actividades"), no a `Welcome`.
 

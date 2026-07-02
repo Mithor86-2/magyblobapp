@@ -867,6 +867,15 @@ arte nº 1')` resolvía a **2 elementos** (la pestaña Actividades y la de Histo
 - **Edge-to-edge de Android (Expo SDK 54+): la tab bar queda bajo la barra de navegación del sistema.**
   Se reserva el inset inferior en `tabBarStyle` (`useSafeAreaInsets`, helper puro `makeTabBarStyle`)
   sumándolo al alto y al `paddingBottom` para que las pestañas activas se vean completas.
-- **Resaltado de pestaña activa en "todo el botón":** con `tabBarActiveBackgroundColor` +
-  `tabBarItemStyle` redondeado (margen) el fondo activo envuelve icono **y** etiqueta como una píldora,
-  en vez de un blob solo alrededor del icono.
+- **Resaltado de pestaña activa en "todo el botón": usar `tabBarButton` propio, NO
+  `tabBarActiveBackgroundColor`.** El primer intento (`tabBarActiveBackgroundColor` + `tabBarItemStyle`
+  redondeado) **no rellenaba de forma fiable** el ítem completo en Android (seguía viéndose el resalte
+  solo alrededor del icono). Solución: un `tabBarButton` personalizado que envuelve el contenido del
+  ítem (`children` = icono + etiqueta) en una `View` que se rellena (`secondaryContainer`, píldora
+  redondeada) cuando `accessibilityState.selected` — cubre todo el botón sin depender del render
+  interno del navegador.
+- **Colores de botón: regla "sin dos acciones del mismo color en una misma pantalla".** No basta con
+  "cada acción, un color fijo"; hay que garantizar que las acciones **co-visibles** tengan colores
+  distintos (aparecieron colisiones Generar cuento/Crear cuenta y Ver actividades/Buscar). Con 4
+  colores no-destructivos, dos acciones comparten color solo si **nunca** coinciden en la misma
+  pantalla (p. ej. Crear cuenta y Mis logros = ámbar; Ya tengo cuenta y Búsqueda = cielo).

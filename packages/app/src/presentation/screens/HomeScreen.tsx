@@ -120,7 +120,7 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
           onPress={openAchievements}
           variant="quaternary"
         />
-        <BubblyButton label={t('home.search')} onPress={openSearch} variant="secondary" />
+        <BubblyButton label={t('home.search')} onPress={openSearch} variant="accent" />
       </View>
     </Screen>
   );

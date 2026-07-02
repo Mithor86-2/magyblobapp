@@ -9,15 +9,27 @@ Los 4 botones de acción (Crear cuenta · Ya tengo cuenta · Búsqueda · Mis lo
 **distintos** y **fijos entre pantallas**; el borde inferior ("sombra") de cada botón es un **tono
 oscuro de su propio color** (hoy es siempre el borde coral).
 
-## Mapa de color (fijo en todas las pantallas)
+## Mapa de color (fijo entre pantallas; sin dos acciones del mismo color en una misma pantalla)
 
-| Acción                                         | Variante             | Color         |
-| ---------------------------------------------- | -------------------- | ------------- |
-| Crear cuenta / generar cuento                  | `primary`            | coral         |
-| Ya tengo cuenta / acción afirmativa secundaria | `tertiary`           | cielo/aqua    |
-| Búsqueda / filtros / generar actividades       | `secondary`          | menta/púrpura |
-| Mis logros                                     | `quaternary` (nuevo) | ámbar/dorado  |
-| Cerrar sesión (destructivo)                    | `danger`             | rojo          |
+Regla (feedback de pruebas): en una misma pantalla no puede haber dos acciones distintas del mismo
+color; cada acción mantiene su color en todas las pantallas; dos acciones comparten color solo si
+**nunca** coinciden en la misma pantalla.
+
+| Acción                              | Variante            | Color        |
+| ----------------------------------- | ------------------- | ------------ |
+| Cuento (generar / crear cuento)     | `primary`           | coral        |
+| Actividades (ver / generar)         | `secondary`         | menta        |
+| Crear cuenta                        | `quaternary`        | ámbar/dorado |
+| Ya tengo cuenta                     | `accent` (tertiary) | cielo/aqua   |
+| Mis logros                          | `quaternary`        | ámbar/dorado |
+| Búsqueda (Inicio) / Filtros (Hist.) | `accent` (tertiary) | cielo/aqua   |
+| Limpiar                             | `quaternary`        | ámbar/dorado |
+| Reintentar                          | `secondary`         | menta        |
+| Cerrar sesión (destructivo)         | `danger`            | rojo         |
+
+Verificación de no-colisión por pantalla: **Dashboard** {coral, menta, ámbar, cielo} · **Inicio**
+{coral, menta, ámbar, cielo} · **Bienvenida** {ámbar, cielo} · **Historial** {cielo (Filtros), ámbar
+(Limpiar), menta (Reintentar)} · **Zona adultos** {coral (Cambiar perfil), rojo (Cerrar sesión)}.
 
 ## Tareas
 
