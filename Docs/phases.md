@@ -803,3 +803,21 @@ adelante).
       `usarNombre`) y botón "Continuar la historia" en el lector (gateway `continueStory`, abre el
       capítulo nuevo).
 - **DoD:** ✅ `pnpm check` verde (**backend 401 + app 253**) · ⏳ pruebas en dev por el usuario (dev build).
+
+### Lote de ajustes 2 de `ideas.txt` (correcciones de US-77/78/81/64/79, rama `feature/86-ajustes-ideas-2`, sin release)
+
+Cinco correcciones detectadas en las pruebas en dev del lote anterior. Plan en
+[planes/coordinacion-ajustes-ideas-2.md](planes/coordinacion-ajustes-ideas-2.md). Integrado en
+`develop` **sin release** (entradas en `## [Unreleased]` de backend y app).
+
+- [x] ✅ **Actividades con parentesco + nombre en IA real (US-77).** Seed `prompt.activity.system` v6:
+      usar el trato + nombre tal cual ("mamá Ana", "abuela Ana"); el código ya lo componía.
+- [x] ✅ **Título de continuación numerado (US-78).** `ContinueStory` usa `siguienteTitulo(origen.titulo)`
+      ("Joaquín en el bosque" → "… 2" → "… 3") en vez del título inventado por la IA.
+- [x] ✅ **Pasos visibles al generar actividades (US-81).** `ActivityCard` acepta `pasosVisiblesInicial`;
+      `ActivitiesScreen` lo pasa `true`; Historial/Búsqueda siguen plegados.
+- [x] ✅ **Buscador del Historial en vivo (US-64).** La búsqueda pasa a un campo en línea siempre visible
+      (como Inicio) que filtra en vivo; el modal queda solo con filtros ("Filtros (N)"); se combinan.
+- [x] ✅ **Efecto de pliegue del lector sin Skia (US-79).** `BookPages` añade sombra de pliegue + giro/
+      escala más marcados siguiendo el arrastre (aproximación de page-curl; se descartó Skia).
+- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 256**) · ⏳ pruebas en dev por el usuario (dev build).

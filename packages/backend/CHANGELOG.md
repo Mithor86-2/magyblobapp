@@ -7,6 +7,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Actividades: trato con nombre también en IA real (US-77, ajuste).** El seed
+  `prompt.activity.system` (v6) instruye usar el trato del adulto EXACTAMENTE como se indica, con su
+  nombre ("mamá Ana", "abuela Ana"), y el ejemplo lo incluye; antes la IA real descartaba el nombre.
+- **Continuar la historia: título numerado (US-78, ajuste).** `ContinueStory` deriva el título del
+  cuento origen incrementando el número de capítulo ("Joaquín en el bosque" → "… 2" → "… 3") con la
+  función `siguienteTitulo`, en vez de usar el título que invente la IA.
+
 ### Added
 
 - **Continuar la historia (US-78).** Nuevo caso de uso `ContinueStory` y ruta

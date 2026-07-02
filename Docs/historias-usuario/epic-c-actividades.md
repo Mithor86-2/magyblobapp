@@ -57,6 +57,8 @@ instrucciones detalladas para poder realizarlas paso a paso con mi hijo/a de 2 a
 
 ## US-77 — Trato al adulto por parentesco + nombre {#us-77}
 
+> **Ajuste (lote 2 de ideas):** el seed `prompt.activity.system` (v6) refuerza que la IA use el trato del adulto CON su nombre ("mamá Ana", "abuela Ana") tal cual se le indica; antes la IA real solo ponía el trato.
+
 **Como** adulto responsable, **quiero** que las instrucciones de las actividades se dirijan a mí por mi
 parentesco y mi nombre (p. ej. "abuela Ana"), **para** que la guía sea cercana y personal.
 
@@ -76,6 +78,8 @@ parentesco y mi nombre (p. ej. "abuela Ana"), **para** que la guía sea cercana 
   adulta").
 
 ## US-81 — Pasos de actividad plegables {#us-81}
+
+> **Ajuste (lote 2 de ideas):** `ActivityCard` acepta `pasosVisiblesInicial`; el generador (`ActivitiesScreen`) lo pasa `true` para que los pasos salgan VISIBLES al generar; en Historial/Búsqueda siguen plegados.
 
 **Como** adulto responsable, **quiero** que los pasos de la actividad estén ocultos tras un botón,
 **para** ver primero el resumen y desplegar el paso a paso solo cuando lo necesito.

@@ -7,6 +7,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Pasos visibles al generar actividades (US-81, ajuste).** `ActivityCard` acepta
+  `pasosVisiblesInicial`; el generador (`ActivitiesScreen`) lo pasa `true` para que las actividades
+  recién generadas muestren el paso a paso de inmediato; en Historial/Búsqueda siguen plegados.
+- **Buscador del Historial en vivo (US-64, ajuste #4).** La búsqueda pasa de vivir en el modal a un
+  **campo en línea siempre visible** que filtra la pestaña activa a medida que se escribe (como el de
+  Inicio); el modal queda solo con los **filtros** (botón "Filtros (N)"). Búsqueda + filtros se combinan.
+- **Efecto de pliegue del lector más marcado (US-79, ajuste #5).** `BookPages` añade una sombra de
+  pliegue en el canto que gira y un giro/escala más pronunciados siguiendo el arrastre, para aproximar
+  un page-curl **sin** añadir `@shopify/react-native-skia`.
+
 ### Added
 
 - **Continuar la historia desde el lector (US-78).** Botón "Continuar la historia" en `StoryReaderScreen`

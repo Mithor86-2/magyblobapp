@@ -1376,6 +1376,8 @@ actividades por separado, viendo lo más reciente de cada uno al entrar.
 
 ## US-79 — Lector con page-curl por gesto {#us-79}
 
+> **Ajuste (lote 2 de ideas):** se refuerza el efecto de pliegue (sombra en el canto + giro/escala) siguiendo el arrastre, como aproximación de page-curl SIN Skia (se descartó `/react-native-skia`).
+
 **Como** niño (con el adulto), **quiero** pasar página del cuento arrastrando con un giro tipo libro,
 **para** que la lectura sea más natural y fluida; y que las páginas se vean del mismo tamaño.
 
