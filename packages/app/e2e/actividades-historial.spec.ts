@@ -82,9 +82,12 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   });
   await expect(page.getByText(/Página 1 de/)).toBeVisible();
 
-  // Volver del lector a las pestañas para seguir el recorrido (actividades/historial).
-  await page.goBack();
-  await expect(page.getByRole('button', { name: 'Generar cuento' })).toBeVisible({
+  // El lector es una pantalla del stack raíz montada SOBRE las pestañas y este navegador
+  // no está enganchado al historial del navegador (no hay `linking`), así que `goBack()` no
+  // sirve. Recargar rearranca la app: la sesión y el perfil persisten (US-49/US-50) y la
+  // ruta inicial resuelve a las pestañas (`Main`); el cuento ya quedó guardado en backend.
+  await page.reload();
+  await expect(page.getByText('Historial', { exact: true }).first()).toBeVisible({
     timeout: 30_000,
   });
 }
