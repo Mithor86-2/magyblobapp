@@ -1,0 +1,39 @@
+# Análisis estático de seguridad con CodeQL (gratis en repos públicos).
+#
+# Escanea el código JS/TS del monorepo en cada push/PR a main y develop, y una vez
+# por semana. Los hallazgos aparecen en la pestaña Security → Code scanning. NO es un
+# check requerido por las rulesets (protege-main/develop): se deja informativo para no
+# bloquear el merge mientras se ajusta la señal.
+name: CodeQL
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Semanal: lunes 04:00 UTC.
+    - cron: '0 4 * * 1'
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      # JS/TS es lenguaje interpretado: CodeQL no necesita paso de build.
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - name: Analizar
+        uses: github/codeql-action/analyze@v3
