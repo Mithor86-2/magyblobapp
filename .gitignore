@@ -38,3 +38,6 @@ packages/app/test-results/
 
 # Worktrees integrados de Claude Code (trabajo en paralelo; no se versionan)
 .claude/worktrees/
+
+# APKs de build local/EAS (se distribuyen por GitHub Releases)
+*.apk
