@@ -820,4 +820,4 @@ Cinco correcciones detectadas en las pruebas en dev del lote anterior. Plan en
       (como Inicio) que filtra en vivo; el modal queda solo con filtros ("Filtros (N)"); se combinan.
 - [x] ✅ **Efecto de pliegue del lector sin Skia (US-79).** `BookPages` añade sombra de pliegue + giro/
       escala más marcados siguiendo el arrastre (aproximación de page-curl; se descartó Skia).
-- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 256**) · ⏳ pruebas en dev por el usuario (dev build).
+- **DoD:** ✅ `pnpm check` verde (**backend 407 + app 255**) · ⏳ pruebas en dev por el usuario (dev build).
