@@ -9,11 +9,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-/** Amplitud del rebote vertical (px) y del balanceo/giro a cada lado (grados). */
+/** Amplitud del rebote vertical (px): normal (con giro) y **más suave** (tramo sin giro). */
 const REBOTE_PX = 5;
+const REBOTE_SUAVE_PX = 3;
+/** Amplitud del balanceo/giro a cada lado (grados). */
 const GIRO_DEG = 7;
 /** Duración del bucle idle (ms): 3–4 s, continuo y sin cortes. */
-const LOOP_MS = 3500;
+const LOOP_MS = 4000;
 /** Salto de escala al tocar (feedback táctil). */
 const POP_ESCALA = 1.2;
 
@@ -62,13 +64,19 @@ export function AnimatedAvatar({
   }, [progreso]);
 
   const animatedStyle = useAnimatedStyle(() => {
-    const a = progreso.value * TAU;
+    const p = progreso.value;
+    const a = p * TAU;
+    // Ventana del giro: seno² → **cero en los extremos del bucle** (tramo de rebote-solo,
+    // continuo a través del corte) y máximo hacia el centro. Mantiene el loop sin cortes.
+    const ventanaGiro = Math.sin(p * Math.PI) ** 2;
+    // Rebote más suave cuando no hay giro; amplitud plena cuando el vaivén está activo.
+    const amplitud = REBOTE_SUAVE_PX + (REBOTE_PX - REBOTE_SUAVE_PX) * ventanaGiro;
     return {
       transform: [
         // 2 rebotes por bucle; el seno da el ease-in-out y cierra el loop sin salto.
-        { translateY: -REBOTE_PX * Math.sin(a * 2) },
-        // 1 vaivén izquierda↔derecha por bucle.
-        { rotate: `${GIRO_DEG * Math.sin(a)}deg` },
+        { translateY: -amplitud * Math.sin(a * 2) },
+        // 1 vaivén izquierda↔derecha por bucle, atenuado por la ventana (rebote-solo en los extremos).
+        { rotate: `${GIRO_DEG * Math.sin(a) * ventanaGiro}deg` },
         { scale: escala.value },
       ],
     };

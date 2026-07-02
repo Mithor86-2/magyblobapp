@@ -25,9 +25,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   (coral) tienen color e icono propios; los iconos de tema se reutilizan en los intereses al crear el
   perfil y en el Dashboard. Helper `chipIcons.ts` + nuevos iconos lucide en `Icon`.
 - **Avatar del niño con animación idle continua + pop y estrellas al tocar (US-90, lote 4 #2).** Nuevo
-  `AnimatedAvatar`: balanceo orgánico **continuo y sin pausas** (bucle ~3,5 s) que combina rebote
+  `AnimatedAvatar`: balanceo orgánico **continuo y sin pausas** (bucle ~4 s) que combina rebote
   vertical (2 por bucle) y vaivén izquierda↔derecha (1 por bucle) por interpolación de seno
-  (`ease-in-out` natural, loop perfecto sin cortes). Al **tocar** el avatar (Inicio y cabecera de
+  (`ease-in-out` natural, loop perfecto sin cortes). El giro se atenúa con una ventana (seno²) de modo
+  que hay un **tramo de rebote más suave y sin giro** en los extremos del bucle (continuo a través del
+  corte). Al **tocar** el avatar (Inicio y cabecera de
   Cuentos): salto rápido de **escala** (feedback táctil) + **ráfaga de estrellas** desde el centro
   hacia afuera. También se usa (sin toque) en el avatar seleccionado del `AvatarPicker`.
 - **Número de página impreso en cada hoja (US-91, lote 4 #3).** Cada hoja del libro muestra su número
