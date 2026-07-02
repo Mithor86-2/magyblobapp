@@ -88,22 +88,32 @@ export function BookPages({ paginas }: { paginas: string[] }) {
       }
     });
 
-  // La hoja gira sobre rotateY con perspectiva y se desplaza un poco, siguiendo `drag`.
+  // La hoja gira sobre rotateY con perspectiva, se desplaza y se encoge un poco al
+  // levantarse (efecto de pliegue), siguiendo `drag`.
   const hojaStyle = useAnimatedStyle(() => {
-    const rot = interpolate(drag.value, [-width, 0, width], [-55, 0, 55], Extrapolation.CLAMP);
-    const opacidad = interpolate(
-      Math.abs(drag.value),
-      [0, width * 0.5],
-      [1, 0.35],
-      Extrapolation.CLAMP,
-    );
+    const rot = interpolate(drag.value, [-width, 0, width], [-60, 0, 60], Extrapolation.CLAMP);
+    const escala = interpolate(Math.abs(drag.value), [0, width], [1, 0.9], Extrapolation.CLAMP);
     return {
-      opacity: opacidad,
       transform: [
-        { perspective: 1200 },
-        { translateX: drag.value * 0.35 },
+        { perspective: 1000 },
+        { translateX: drag.value * 0.28 },
         { rotateY: `${rot}deg` },
+        { scale: escala },
       ],
+    };
+  });
+
+  // Sombra del pliegue: oscurece el canto hacia el que gira la hoja (izquierda al
+  // avanzar, derecha al retroceder) y se intensifica con el arrastre, simulando el
+  // relieve de una página que se levanta (aproximación de page-curl sin Skia).
+  const sombraStyle = useAnimatedStyle(() => {
+    const t = interpolate(Math.abs(drag.value), [0, width], [0, 0.55], Extrapolation.CLAMP);
+    // Al avanzar (drag<0) la sombra cae a la izquierda; al retroceder, a la derecha.
+    const haciaIzquierda = drag.value < 0;
+    return {
+      opacity: t,
+      left: haciaIzquierda ? 0 : undefined,
+      right: haciaIzquierda ? undefined : 0,
     };
   });
 
@@ -117,6 +127,8 @@ export function BookPages({ paginas }: { paginas: string[] }) {
           <Text style={styles.body} accessibilityRole="text">
             {paginas[indice] ?? ''}
           </Text>
+          {/* Sombra del pliegue (aproximación de curl): banda oscura en el canto que gira. */}
+          <Animated.View pointerEvents="none" style={[styles.sombraPliegue, sombraStyle]} />
         </Animated.View>
       </GestureDetector>
 
@@ -171,6 +183,15 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.bodyLg,
       // Texto oscuro fijo para contrastar sobre la hoja blanca en cualquier tema.
       color: '#1a1a1a',
+    },
+    // Banda de sombra del pliegue: ~40% del ancho pegada a un canto, esquinas del papel.
+    sombraPliegue: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      width: '40%',
+      backgroundColor: '#000000',
+      borderRadius: radius.md,
     },
     controls: {
       flexDirection: 'row',

@@ -62,6 +62,20 @@ describe('ActivityCard', () => {
     expect(screen.queryByRole('button', { name: 'Ver pasos' })).not.toBeInTheDocument();
   });
 
+  it('US-81 (ajuste): con pasosVisiblesInicial los pasos salen visibles y ofrece "Ocultar pasos"', () => {
+    render(
+      <ActivityCard
+        activity={{ ...base, instrucciones: '1. Coge el papel. 2. Pinta.' }}
+        pasosVisiblesInicial
+      />,
+    );
+
+    // Los pasos se ven sin pulsar nada, y el botón está en modo "Ocultar pasos".
+    expect(screen.getByText('Coge el papel.')).toBeVisible();
+    expect(screen.getByText('Pinta.')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Ocultar pasos' })).toBeVisible();
+  });
+
   it('US-72: al pulsar "Realizado" completa al instante, sin exigir valoración', () => {
     const onComplete = vi.fn();
     render(<ActivityCard activity={base} onComplete={onComplete} />);

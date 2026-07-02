@@ -118,14 +118,14 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     return api.stories.setFavorite(storyId, favorito);
   };
 
-  // Nº de filtros activos: alimenta el badge del botón "Buscar" (A3).
+  // Nº de filtros (chips) activos: alimenta el contador del botón "Filtros". La búsqueda
+  // ya no cuenta aquí (ajuste #4): vive en el campo en línea, siempre visible.
   const filtrosActivos = [
     temaFiltro !== TODOS,
     estiloFiltro !== TODOS,
     ensenanzaFiltro !== TODOS,
     categoriaFiltro !== TODOS,
     soloFavoritos,
-    busqueda.trim() !== '',
   ].filter(Boolean).length;
 
   const limpiarFiltros = () => {
@@ -200,21 +200,32 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
       <Text style={styles.title}>{t('history.title')}</Text>
       <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
 
-      {/* A3: acceso a búsqueda y filtros en un modal; badge con nº de filtros activos. */}
+      {/* Ajuste #4: búsqueda EN VIVO en línea (como el buscador de Inicio), que filtra la
+          pestaña activa a medida que se escribe; combina con los filtros del modal. */}
+      <TextField
+        label={t('history.searchLabel')}
+        value={busqueda}
+        onChangeText={setBusqueda}
+        placeholder={t('history.searchPlaceholder')}
+        autoCapitalize="none"
+        testID="history-search"
+      />
+
+      {/* El modal se queda solo con los filtros (chips); el botón muestra su nº activo. */}
       <View style={styles.toolbar}>
         <View style={styles.searchButton}>
           <BubblyButton
             label={
               filtrosActivos > 0
-                ? t('history.searchWithCount', { count: filtrosActivos })
-                : t('common.search')
+                ? t('history.filtersWithCount', { count: filtrosActivos })
+                : t('history.filters')
             }
             icon="search"
             variant="secondary"
             onPress={() => setModalVisible(true)}
           />
         </View>
-        {filtrosActivos > 0 ? (
+        {filtrosActivos > 0 || busqueda.trim() !== '' ? (
           <BubblyButton label={t('common.clear')} variant="secondary" onPress={limpiarFiltros} />
         ) : null}
       </View>
@@ -306,8 +317,6 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onClear={limpiarFiltros}
-        busqueda={busqueda}
-        setBusqueda={setBusqueda}
         temaFiltro={temaFiltro}
         setTemaFiltro={setTemaFiltro}
         estiloFiltro={estiloFiltro}
@@ -327,8 +336,6 @@ interface SearchFiltersModalProps {
   visible: boolean;
   onClose: () => void;
   onClear: () => void;
-  busqueda: string;
-  setBusqueda: (v: string) => void;
   temaFiltro: FiltroTema;
   setTemaFiltro: (v: FiltroTema) => void;
   estiloFiltro: FiltroEstilo;
@@ -342,11 +349,11 @@ interface SearchFiltersModalProps {
 }
 
 /**
- * Modal de búsqueda y filtros del Historial (A3): cabecera con título y botón "X"
- * de cierre, campo de texto, todos los filtros y botones Buscar (cierra) y Limpiar
- * (resetea). Edita los filtros en vivo (el listado ya es reactivo); "Buscar" y la
- * "X" solo cierran el modal con lo elegido aplicado. Se exporta para poder probar el
- * cierre de forma aislada (US-30).
+ * Modal de **filtros** del Historial (A3; ajuste #4: la búsqueda se sacó a un campo en
+ * línea siempre visible). Cabecera con título y botón "X", los filtros (tema, estilo,
+ * enseñanza, categoría, favoritos) y botones Aplicar (cierra) y Limpiar (resetea).
+ * Edita los filtros en vivo (el listado ya es reactivo); "Aplicar" y la "X" solo cierran
+ * el modal con lo elegido aplicado. Se exporta para poder probarlo de forma aislada (US-30).
  */
 export function SearchFiltersModal(props: SearchFiltersModalProps) {
   const { t } = useTranslation();
@@ -369,15 +376,6 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
             </Pressable>
           </View>
           <ScrollView contentContainerStyle={styles.modalBody}>
-            <TextField
-              label={t('history.searchLabel')}
-              value={props.busqueda}
-              onChangeText={props.setBusqueda}
-              placeholder={t('history.searchPlaceholder')}
-              autoCapitalize="none"
-              testID="history-search"
-            />
-
             <FilterGroup
               label={t('history.filterTheme')}
               options={TEMAS.map((tema) => ({ value: tema, label: temaLabel(tema) }))}
@@ -414,7 +412,7 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
 
           <View style={styles.modalActions}>
             <View style={styles.modalActionMain}>
-              <BubblyButton label={t('common.search')} icon="search" onPress={props.onClose} />
+              <BubblyButton label={t('history.applyFilters')} onPress={props.onClose} />
             </View>
             <BubblyButton label={t('common.clear')} variant="secondary" onPress={props.onClear} />
           </View>

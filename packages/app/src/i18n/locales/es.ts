@@ -271,8 +271,11 @@ export const es = {
     filterTeaching: 'Enseñanza',
     filterCategory: 'Categoría',
     filterAll: 'Todos',
-    filtersTitle: 'Búsqueda y filtros',
+    filtersTitle: 'Filtros',
     searchWithCount: 'Buscar ({{count}})',
+    filters: 'Filtros',
+    filtersWithCount: 'Filtros ({{count}})',
+    applyFilters: 'Aplicar',
     noMatchStories: 'Ningún cuento coincide con el filtro.',
     noMatchActivities: 'Ninguna actividad coincide con el filtro.',
     // Favoritos y búsqueda (US-64).

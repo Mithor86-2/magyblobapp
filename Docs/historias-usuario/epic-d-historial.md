@@ -86,6 +86,8 @@ explota desde el Historial; toca cuentos (épica B) y actividades (épica C) por
 
 ## US-64 — Favoritos (UI) y búsqueda de texto en el Historial · Should (Mejoras)
 
+> **Ajuste (lote 2 de ideas #4):** la búsqueda del Historial pasa a un campo EN LÍNEA siempre visible que filtra en vivo (como el de Inicio); el modal queda solo con los filtros y se combinan.
+
 Como **padre/tutor** quiero **marcar como favoritos** los cuentos y actividades que más nos gustan y
 **buscar por texto** en el Historial, para reencontrar rápido lo que busco.
 

@@ -443,6 +443,8 @@ protagonista genérico, **para** minimizar los datos personales enviados al prov
 
 ## US-78 — Continuar la historia {#us-78}
 
+> **Ajuste (lote 2 de ideas):** el título de la continuación es el del origen con el número de capítulo ("Joaquín en el bosque" → "… 2" → "… 3") vía `siguienteTitulo`, no el que invente la IA.
+
 **Como** adulto responsable, **quiero** poder continuar un cuento ya generado con un capítulo nuevo,
 **para** alargar las historias favoritas del niño.
 
