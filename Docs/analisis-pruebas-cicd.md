@@ -3,7 +3,10 @@
 > Escrito a raíz del incidente v1.9.0/v1.9.1: el backend **compilaba** pero **no arrancaba** en
 > Render (`ERR_MODULE_NOT_FOUND` en el cliente Prisma 7). Complementa
 > [estrategia-pruebas.md](estrategia-pruebas.md) (la pirámide y cómo correr cada nivel) y
-> [analisis-cicd.md](analisis-cicd.md) (infra de CI/CD). Fecha: 2026-07-03.
+> [flujo-cicd.md](flujo-cicd.md) (el flujo de CI/CD, sus fases, tests y reglas). Fecha: 2026-07-03.
+>
+> **Nota:** este documento se conserva como **histórico de un incidente puntual** (el crash
+> v1.9.0/v1.9.1). La referencia general y viva del pipeline es [flujo-cicd.md](flujo-cicd.md).
 
 ## 1. Por qué NO se detectó en las pruebas
 
