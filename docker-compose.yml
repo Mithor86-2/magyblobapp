@@ -60,6 +60,16 @@ services:
       ELEVENLABS_VOICE_ID_ES: ${ELEVENLABS_VOICE_ID_ES:-}
       ELEVENLABS_VOICE_ID_EN: ${ELEVENLABS_VOICE_ID_EN:-}
       ELEVENLABS_TIMEOUT_MS: ${ELEVENLABS_TIMEOUT_MS:-30000}
+      # Verificación de email por OTP (US-93). Secretos SMTP; VACÍO = verificación
+      # desactivada (la cuenta se crea verificada y auto-loguea; arranque reproducible).
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      OTP_TTL_MS: ${OTP_TTL_MS:-600000}
+      OTP_MAX_INTENTOS: ${OTP_MAX_INTENTOS:-5}
+      OTP_RESEND_COOLDOWN_MS: ${OTP_RESEND_COOLDOWN_MS:-60000}
     ports:
       - '3000:3000'
     healthcheck:
