@@ -19,6 +19,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.9.3] - 2026-07-03
+
+Sin cambios en el runtime del app; versión unificada del monorepo. Cambios en tooling de pruebas
+(E2E web reducido a chromium; E2E nativo Maestro solo manual). El APK v1.9.1 sigue vigente.
+
 ## [1.9.2] - 2026-07-03
 
 Sin cambios en el app; versión unificada del monorepo (hotfix de backend: arranque en Render con

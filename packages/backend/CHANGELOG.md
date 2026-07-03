@@ -9,12 +9,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- **`/health` expone `version`.** La respuesta incluye ahora `version` (del `package.json`), para que
-  el **smoke post-deploy** verifique que Render sirve la versión esperada (no una instancia vieja tras
-  un deploy fallido). Cierra el hueco que dejó pasar el crash de v1.9.0/v1.9.1 a producción, junto con
-  el nuevo **smoke de arranque del backend en CI** (levanta la imagen como Render y comprueba `/health`)
-  y el **workflow `Smoke post-deploy (Render)`**. Ver Docs/analisis-pruebas-cicd.md.
-
 ### Changed
 
 ### Deprecated
@@ -24,6 +18,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+## [1.9.3] - 2026-07-03
+
+### Added
+
+- **`/health` expone `version`.** La respuesta incluye ahora `version` (del `package.json`), para que
+  el **smoke post-deploy** verifique que Render sirve la versión esperada (no una instancia vieja tras
+  un deploy fallido). Cierra el hueco que dejó pasar el crash de v1.9.0/v1.9.1 a producción, junto con
+  el nuevo **smoke de arranque del backend en CI** (levanta la imagen como Render y comprueba `/health`)
+  y el **workflow `Smoke post-deploy (Render)`**. Ver Docs/analisis-pruebas-cicd.md.
 
 ## [1.9.2] - 2026-07-03
 
