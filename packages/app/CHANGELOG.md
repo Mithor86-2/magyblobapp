@@ -17,6 +17,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- **Crash por desajuste de versiones con el SDK 56.** Dependabot había subido `babel-preset-expo` y
+  `expo-haptics` a la major 57 (Expo SDK 57) mientras el proyecto está en SDK 56; `babel-preset-expo`
+  57 transpila un bundle incompatible con RN 0.85 (worklets de reanimated) → crash al arrancar. Se
+  fijan ambos a las versiones del SDK 56 (`npx expo install`); `expo-doctor` vuelve a 21/21. El salto
+  a Expo 57 se hará deliberadamente (SDK entero) en su propia rama.
+
 ### Security
 
 ## [1.8.0] - 2026-07-02
