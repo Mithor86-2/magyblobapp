@@ -506,6 +506,7 @@ Ambos recorren el happy path del MVP: bienvenida → puerta parental → alta de
 - Workflows: [`.github/workflows/`](../.github/workflows/) — `ci.yml`, `codeql.yml`,
   `e2e-native.yml`, `eas-build.yml`, `post-deploy.yml`.
 - Pirámide de pruebas y cómo correr cada nivel: [estrategia-pruebas.md](estrategia-pruebas.md).
+- Mejoras de CI/CD pendientes (backlog): [mejoras-cicd-pendientes.md](mejoras-cicd-pendientes.md).
 - Histórico del incidente v1.9.0 (crash Prisma 7): [analisis-pruebas-cicd.md](analisis-pruebas-cicd.md).
 - Despliegue (Neon + Render + Groq): [despliegue.md](despliegue.md) · IaC: [`render.yaml`](../render.yaml).
 - Decisión E2E nativo (Maestro vs Detox): [ADR 0005](ADR/0005-e2e-nativo-maestro.md).

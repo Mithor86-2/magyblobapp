@@ -22,6 +22,13 @@ nada**: define la arquitectura, el orden de fases y el gate (Definition of Done)
   fuente conceptual; su materialización relacional vive en el esquema Prisma
   [packages/backend/prisma/schema.prisma](packages/backend/prisma/schema.prisma). Si cambias el
   esquema, actualiza también este doc.
+- [Docs/flujo-cicd.md](Docs/flujo-cicd.md) — documento general del flujo de CI/CD: fases (local → CI →
+  despliegue), la lista completa de tests por paso, las condiciones de aceptación y las reglas de rama
+  de GitHub (rulesets). **Actualízalo en el mismo cambio** que toque un workflow, un script de test o
+  una condición de aceptación.
+- [Docs/mejoras-cicd-pendientes.md](Docs/mejoras-cicd-pendientes.md) — backlog de mejoras de CI/CD
+  pendientes (con checkboxes y criterios de aceptación). Mueve cada tarea a "ya implementado" al
+  cerrarla.
 
 **Regla de planes (enforced):** todo plan de implementación se escribe como documento en
 [Docs/planes/](Docs/planes/) (un fichero por fase, p. ej. [Docs/planes/fase-5.md](Docs/planes/fase-5.md)),
