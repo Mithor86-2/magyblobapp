@@ -53,3 +53,16 @@ export class InvalidCredentialsError extends DomainError {
     this.name = 'InvalidCredentialsError';
   }
 }
+
+/**
+ * La puerta parental del alta no se ha superado (US-92): reto ausente, mal
+ * formado, caducado o con respuesta incorrecta. HTTP 400. Es una política de la
+ * capa HTTP (anti-bot / consentimiento parental), modelada como `DomainError`
+ * para que el manejo de errores centralizado la traduzca con el cuerpo uniforme.
+ */
+export class ParentalChallengeError extends DomainError {
+  constructor(message = 'No se ha superado la verificación parental. Vuelve a intentarlo.') {
+    super(message);
+    this.name = 'ParentalChallengeError';
+  }
+}

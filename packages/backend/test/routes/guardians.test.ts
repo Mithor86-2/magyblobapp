@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import {
+  altaGuardian,
+  authHeaders,
+  buildTestServer,
+  makeInMemoryDeps,
+  retoParental,
+  TEST_CONFIG,
+} from '../support/server.js';
 import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
 
 describe('rutas de guardians', () => {
@@ -8,15 +15,7 @@ describe('rutas de guardians', () => {
   let handles: ReturnType<typeof makeInMemoryDeps>;
 
   const PASSWORD = CLAVE_DE_PRUEBA;
-  const altaValida = {
-    nombre: 'Ana',
-    apellidos: 'García',
-    email: 'ana@example.com',
-    parentesco: 'madre',
-    password: PASSWORD,
-    consentimientoAceptado: true,
-    consentimientoVersion: 'v1',
-  };
+  const EMAIL = 'ana@example.com';
 
   beforeEach(async () => {
     handles = makeInMemoryDeps();
@@ -28,7 +27,7 @@ describe('rutas de guardians', () => {
   });
 
   it('da de alta al adulto (201) y registra el consentimiento en el audit log', async () => {
-    const res = await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
+    const res = await altaGuardian(app);
     expect(res.statusCode).toBe(201);
     expect(res.json().consentimientoDado).toBe(true);
 
@@ -37,76 +36,99 @@ describe('rutas de guardians', () => {
   });
 
   it('rechaza el alta sin consentimiento (400)', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: { ...altaValida, email: 'otra@example.com', consentimientoAceptado: false },
-    });
+    const res = await altaGuardian(app, { consentimientoAceptado: false });
     expect(res.statusCode).toBe(400);
   });
 
   it('devuelve 409 si el email ya está registrado', async () => {
-    await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
-    const dup = await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
+    await altaGuardian(app);
+    const dup = await altaGuardian(app);
     expect(dup.statusCode).toBe(409);
     expect(dup.json().error.tipo).toBe('ConflictError');
   });
 
   it('rechaza un parentesco fuera del vocabulario (400, validación de esquema)', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: { ...altaValida, email: 'x@example.com', parentesco: 'vecino' },
-    });
+    const res = await altaGuardian(app, { parentesco: 'vecino' });
     expect(res.statusCode).toBe(400);
   });
 
   it('rechaza el alta con una contraseña demasiado corta (400, validación de esquema)', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: { ...altaValida, email: 'corta@example.com', password: 'corta' },
-    });
+    const res = await altaGuardian(app, { password: 'corta' });
     expect(res.statusCode).toBe(400);
   });
 
   it('rechaza el alta con una contraseña sin número (US-53: letra + número)', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: { ...altaValida, email: 'solo-letras@example.com', password: 'sololetras' },
-    });
+    const res = await altaGuardian(app, { password: 'sololetras' });
     expect(res.statusCode).toBe(400);
   });
 
   it('rechaza el alta con una contraseña sin letra (US-53: letra + número)', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: { ...altaValida, email: 'solo-numeros@example.com', password: '12345678' },
-    });
+    const res = await altaGuardian(app, { password: '12345678' });
     expect(res.statusCode).toBe(400);
   });
 
   it('rechaza el alta con un email de formato inválido (400, validación de esquema US-53)', async () => {
+    const res = await altaGuardian(app, { email: 'no-es-email' });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('emite un reto de puerta parental (US-92)', async () => {
+    const res = await app.inject({ method: 'GET', url: '/guardians/challenge' });
+    expect(res.statusCode).toBe(200);
+    const { pregunta, challengeToken } = res.json();
+    expect(pregunta).toMatch(/\d{1,2} \+ \d{1,2}/);
+    expect(typeof challengeToken).toBe('string');
+    expect(challengeToken).toContain('.');
+  });
+
+  it('rechaza el alta sin la puerta parental (400, validación de esquema US-92)', async () => {
     const res = await app.inject({
       method: 'POST',
       url: '/guardians',
-      payload: { ...altaValida, email: 'no-es-email' },
+      payload: {
+        nombre: 'Ana',
+        apellidos: 'García',
+        email: 'sinreto@example.com',
+        parentesco: 'madre',
+        password: PASSWORD,
+        consentimientoAceptado: true,
+        consentimientoVersion: 'v1',
+      },
     });
     expect(res.statusCode).toBe(400);
   });
 
+  it('rechaza el alta con la respuesta del reto incorrecta (400, US-92)', async () => {
+    const { challengeToken, challengeRespuesta } = await retoParental(app);
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians',
+      payload: {
+        nombre: 'Ana',
+        apellidos: 'García',
+        email: 'malreto@example.com',
+        parentesco: 'madre',
+        password: PASSWORD,
+        consentimientoAceptado: true,
+        consentimientoVersion: 'v1',
+        challengeToken,
+        challengeRespuesta: challengeRespuesta + 1,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.tipo).toBe('ParentalChallengeError');
+  });
+
   it('inicia sesión con email + contraseña correctos (200) y registra el login en el audit log', async () => {
-    await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
+    await altaGuardian(app);
 
     const res = await app.inject({
       method: 'POST',
       url: '/guardians/login',
-      payload: { email: altaValida.email, password: PASSWORD },
+      payload: { email: EMAIL, password: PASSWORD },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json().email).toBe(altaValida.email);
+    expect(res.json().email).toBe(EMAIL);
 
     const login = handles.audit.items.find((a) => a.accion === 'login');
     expect(login?.entidad).toBe('Guardian');
@@ -114,12 +136,12 @@ describe('rutas de guardians', () => {
   });
 
   it('devuelve 401 genérico al iniciar sesión con la contraseña incorrecta', async () => {
-    await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
+    await altaGuardian(app);
 
     const res = await app.inject({
       method: 'POST',
       url: '/guardians/login',
-      payload: { email: altaValida.email, password: 'incorrecta' },
+      payload: { email: EMAIL, password: 'incorrecta' },
     });
     expect(res.statusCode).toBe(401);
     expect(res.json().error.tipo).toBe('InvalidCredentialsError');
@@ -144,12 +166,41 @@ describe('rutas de guardians', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('aplica rate limiting al login: 429 al superar el umbral (US-92)', async () => {
+    // Servidor con un límite de login minúsculo para ejercitar el 429.
+    const config = {
+      ...TEST_CONFIG,
+      security: {
+        ...TEST_CONFIG.security,
+        rateLimit: {
+          ...TEST_CONFIG.security.rateLimit,
+          login: { max: 3, ventanaMs: 60_000 },
+        },
+      },
+    };
+    const appLimitado = await buildTestServer(handles.deps, config);
+    try {
+      const intento = () =>
+        appLimitado.inject({
+          method: 'POST',
+          url: '/guardians/login',
+          payload: { email: 'nadie@example.com', password: 'incorrecta' },
+        });
+      // Los primeros `max` intentos se procesan (401); el siguiente se corta con 429.
+      for (let i = 0; i < 3; i++) {
+        const r = await intento();
+        expect(r.statusCode).toBe(401);
+      }
+      const bloqueado = await intento();
+      expect(bloqueado.statusCode).toBe(429);
+      expect(bloqueado.json().error.tipo).toBe('TooManyRequestsError');
+    } finally {
+      await appLimitado.close();
+    }
+  });
+
   it('lista los perfiles de un adulto', async () => {
-    const guardian = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: { ...altaValida, email: 'lista@example.com' },
-    });
+    const guardian = await altaGuardian(app, { email: 'lista@example.com' });
     const guardianId = guardian.json().id as string;
     await app.inject({
       method: 'POST',

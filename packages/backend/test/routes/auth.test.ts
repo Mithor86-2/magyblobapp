@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { buildTestServer, makeInMemoryDeps } from '../support/server.js';
+import { altaGuardian, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
 import type { TokenPayload } from '../../src/auth.js';
 
@@ -27,7 +27,7 @@ describe('autenticación JWT (US-45)', () => {
   beforeEach(async () => {
     handles = makeInMemoryDeps();
     app = await buildTestServer(handles.deps);
-    await app.inject({ method: 'POST', url: '/guardians', payload: altaValida });
+    await altaGuardian(app, altaValida);
   });
 
   afterEach(async () => {

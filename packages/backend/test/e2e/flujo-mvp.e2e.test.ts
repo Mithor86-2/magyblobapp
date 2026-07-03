@@ -57,6 +57,21 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
     return { status: res.status, ok: res.ok, json: () => res.json() };
   }
 
+  /**
+   * Resuelve la puerta parental (US-92) por HTTP real: pide el reto y calcula la
+   * respuesta a partir de la pregunta para incluirlos en el alta.
+   */
+  async function retoParental(): Promise<{ challengeToken: string; challengeRespuesta: number }> {
+    const res = await http('GET', '/guardians/challenge');
+    const { pregunta, challengeToken } = (await res.json()) as {
+      pregunta: string;
+      challengeToken: string;
+    };
+    const m = /(\d{1,2}) \+ (\d{1,2})/.exec(pregunta);
+    if (m === null) throw new Error(`Pregunta de reto inesperada: ${pregunta}`);
+    return { challengeToken, challengeRespuesta: Number(m[1]) + Number(m[2]) };
+  }
+
   it('responde el health check', async () => {
     const res = await http('GET', '/health');
     expect(res.status).toBe(200);
@@ -64,7 +79,7 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
   });
 
   it('recorre alta → login → perfil → cuento → historial → actividades', async () => {
-    // 1) Alta del adulto + consentimiento
+    // 1) Alta del adulto + consentimiento (con puerta parental, US-92)
     const alta = await http('POST', '/guardians', {
       nombre: 'Ana',
       apellidos: 'García',
@@ -73,6 +88,7 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
       password: CLAVE_DE_PRUEBA,
       consentimientoAceptado: true,
       consentimientoVersion: 'v1',
+      ...(await retoParental()),
     });
     expect(alta.status).toBe(201);
     const guardian = (await alta.json()) as { id: string; consentimientoDado: boolean };
@@ -166,6 +182,7 @@ describe('E2E flujo MVP (servidor real + Postgres real por HTTP)', () => {
       password: CLAVE_DE_PRUEBA,
       consentimientoAceptado: true,
       consentimientoVersion: 'v1',
+      ...(await retoParental()),
     });
     const guardian = (await alta.json()) as { id: string };
     const login = await http('POST', '/guardians/login', {

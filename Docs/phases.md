@@ -880,3 +880,22 @@ Tres mejoras visuales tras probar el lote 3 en dev. Plan en
   por fichero, necesario al usar `Icon` en `SelectableChip`).
 - **DoD:** ✅ `pnpm check` verde (**backend 407 + app 270**) + cobertura OK · ⏳ pruebas en dev por el
   usuario (dev build) y confirmación antes del `finish`.
+
+### Endurecimiento de seguridad del API público (2026-07-03, rama `feature/92-seguridad-api`, US-92, sin release)
+
+Tras auditar en vivo el API en producción (Render): registro directo sin fricción, **sin** rate
+limiting (12 logins fallidos → ningún 429), sin verificación de email. Plan en
+[planes/seguridad-api-registro.md](planes/seguridad-api-registro.md). Cierre **sin push ni release**.
+
+- [x] ✅ **Fase 1 — Rate limiting** (`@fastify/rate-limit`, `global:false`) en `/guardians`,
+      `/guardians/login`, `/guardians/refresh` y `/guardians/challenge` → 429; `trustProxy` (env, por
+      defecto en prod) para contar por IP real tras Cloudflare. Límites configurables por env.
+- [x] ✅ **Fase 2 — Puerta parental server-side** (D1=opción b, sin terceros): `GET /guardians/challenge`
+      emite un reto aritmético firmado (HMAC del secreto JWT + caducidad, stateless) que el alta exige.
+      El app lo resuelve de forma transparente en el gateway (el `ParentalGate` cliente no cambia).
+- [x] ✅ **Fase 3 — Cabeceras y CORS**: `@fastify/helmet` + `@fastify/cors` con allowlist (`CORS_ORIGINS`).
+- [ ] ⏳ **Fase 0 (manual, usuario):** verificar `JWT_SECRET` en Render y borrar la cuenta de prueba.
+- [ ] ⏳ **T3.3 en vivo:** verificar 429/cabeceras **tras desplegar**.
+- **Fase 4** (revocación de sesión, H6) **diferida** a su propia feature.
+- **DoD:** ✅ `pnpm check` verde (**backend 417 + app 274**) + cobertura OK · pruebas ofrecidas al
+  usuario (unitarias/integración en verde + pasos manuales); cierre confirmado por el usuario.

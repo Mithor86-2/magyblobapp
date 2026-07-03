@@ -53,13 +53,24 @@ Es una **identificación ligera** (sin contraseña; ver [cumplimiento-menores.md
 C-13). El secreto de firma va en la variable de entorno `JWT_SECRET` (nunca en BD). El refresh es
 _stateless_: no hay revocación en servidor; el "logout" lo hace el cliente descartando los tokens.
 
-| Rutas                                                                                                | Auth                                  |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `GET /health`, `POST /guardians`, `POST /guardians/login`, `POST /guardians/refresh`                 | **Públicas**                          |
-| Resto (`/profiles`, `/stories…`, `/activities…`, `/guardians/:id/profiles`, `/profiles/:id/history`) | **Requieren** `Authorization: Bearer` |
+| Rutas                                                                                                            | Auth                                  |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `GET /health`, `GET /guardians/challenge`, `POST /guardians`, `POST /guardians/login`, `POST /guardians/refresh` | **Públicas**                          |
+| Resto (`/profiles`, `/stories…`, `/activities…`, `/guardians/:id/profiles`, `/profiles/:id/history`)             | **Requieren** `Authorization: Bearer` |
 
 Una ruta protegida sin token o con un token inválido/expirado responde **`401`** con el cuerpo de
 error uniforme (`{ "error": { "tipo": "UnauthorizedError", ... } }`).
+
+### Endurecimiento del API (US-92)
+
+- **Rate limiting** en los endpoints de autenticación (`POST /guardians`, `POST /guardians/login`,
+  `POST /guardians/refresh` y `GET /guardians/challenge`): al superar el umbral por IP responden
+  **`429`** con el cuerpo de error uniforme (`tipo: "TooManyRequestsError"`). Límites configurables
+  por env (`RATE_LIMIT_*`); tras el proxy de Render la IP real se deriva con `TRUST_PROXY`.
+- **Puerta parental** en el alta: `POST /guardians` exige un reto resuelto (ver
+  `GET /guardians/challenge`).
+- **Cabeceras de seguridad** (`@fastify/helmet`) en todas las respuestas y **CORS** con allowlist
+  (`CORS_ORIGINS`; sin lista se deniega cualquier origen cross-site en producción).
 
 ---
 
@@ -77,24 +88,47 @@ curl http://localhost:3000/health
 
 ---
 
+## `GET /guardians/challenge`
+
+Emite un **reto de puerta parental** (US-92) que hay que resolver para dar de alta una cuenta.
+**Pública** y **sin estado** (no toca BD): el `challengeToken` va firmado (HMAC) y caduca.
+
+```bash
+curl http://localhost:3000/guardians/challenge
+```
+
+**Respuesta `200`**
+
+```json
+{ "pregunta": "¿Cuánto es 7 + 5?", "challengeToken": "1783095530000.Xb3…" }
+```
+
+El cliente calcula la respuesta a la `pregunta` y la envía como `challengeRespuesta` junto con
+`challengeToken` en `POST /guardians`. El token caduca (def. 5 min, `PARENTAL_CHALLENGE_TTL_MS`).
+
+---
+
 ## `POST /guardians`
 
 Da de alta al **adulto responsable** y registra su consentimiento. Escribe un
 `AuditLog` de tipo `consentimiento`. **Pública** y con **auto-login**: además del
 guardián, devuelve la sesión JWT (`accessToken` + `refreshToken`) para no exigir un
-login extra en el onboarding.
+login extra en el onboarding. Exige superar la **puerta parental** (US-92).
 
 **Body**
 
-| Campo                    | Tipo    | Req. | Notas                                |
-| ------------------------ | ------- | ---- | ------------------------------------ |
-| `nombre`                 | string  | sí   | no vacío                             |
-| `apellidos`              | string  | sí   | no vacío                             |
-| `email`                  | string  | sí   | único; base de la cuenta             |
-| `parentesco`             | string  | sí   | vocabulario `parentesco`             |
-| `telefono`               | string  | no   |                                      |
-| `consentimientoAceptado` | boolean | sí   | debe ser `true` o se rechaza (`400`) |
-| `consentimientoVersion`  | string  | sí   | versión de los términos aceptados    |
+| Campo                    | Tipo    | Req. | Notas                                            |
+| ------------------------ | ------- | ---- | ------------------------------------------------ |
+| `nombre`                 | string  | sí   | no vacío                                         |
+| `apellidos`              | string  | sí   | no vacío                                         |
+| `email`                  | string  | sí   | único; base de la cuenta                         |
+| `parentesco`             | string  | sí   | vocabulario `parentesco`                         |
+| `telefono`               | string  | no   |                                                  |
+| `password`               | string  | sí   | ≥8 con al menos una letra y un número (US-48/53) |
+| `consentimientoAceptado` | boolean | sí   | debe ser `true` o se rechaza (`400`)             |
+| `consentimientoVersion`  | string  | sí   | versión de los términos aceptados                |
+| `challengeToken`         | string  | sí   | token de `GET /guardians/challenge` (US-92)      |
+| `challengeRespuesta`     | number  | sí   | respuesta al reto; incorrecta/caducada → `400`   |
 
 **Ejemplo**
 
@@ -106,8 +140,11 @@ curl -X POST http://localhost:3000/guardians \
     "apellidos": "García",
     "email": "ana@example.com",
     "parentesco": "madre",
+    "password": "abcd1234",
     "consentimientoAceptado": true,
-    "consentimientoVersion": "v1"
+    "consentimientoVersion": "v1",
+    "challengeToken": "1783095530000.Xb3…",
+    "challengeRespuesta": 12
   }'
 ```
 
@@ -126,7 +163,8 @@ curl -X POST http://localhost:3000/guardians \
 }
 ```
 
-**Errores:** `400` sin consentimiento o datos inválidos · `409` email ya registrado.
+**Errores:** `400` sin consentimiento, datos inválidos o **reto parental no superado** · `409` email
+ya registrado · `429` demasiadas peticiones.
 
 > El email se **normaliza** (recorte + minúsculas) antes de guardarse, de modo que la unicidad y el
 > login posterior casan aunque se teclee con mayúsculas o espacios.

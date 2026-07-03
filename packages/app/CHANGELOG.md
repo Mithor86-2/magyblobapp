@@ -11,6 +11,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- El alta (`api.guardians.register`) resuelve de forma transparente la puerta parental server-side
+  del backend (US-92): obtiene el reto de `GET /guardians/challenge` y envía la respuesta junto al
+  alta. El `ParentalGate` cliente (verificación humana) se mantiene; no cambia la UI del formulario.
+
 ### Deprecated
 
 ### Removed
