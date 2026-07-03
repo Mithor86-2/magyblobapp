@@ -122,7 +122,43 @@ jobs:
       # No basta `assembleDebug`/dev build: con Expo Go alcanza (la narración degrada
       # a la voz nativa, expo-speech, incluida en Expo Go). appId = host.exp.exponent.
 
-      - name: Placeholder (pendiente de runner con emulador en CI)
+      # KVM: acelera el emulador en el runner ubuntu (si no, arranca por software y agota el tiempo).
+      - name: Habilitar KVM
         run: |
-          echo "E2E nativo Android validado en LOCAL (ver receta en los comentarios)."
-          echo "Falta cablear el emulador en el runner de CI."
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Emulador + flujo, siguiendo la receta validada en local. El `script` corre con el
+      # emulador ya arrancado (adb disponible): 1) backend mock determinista en el host,
+      # 2) Expo Go cargando la app apuntando al host por 10.0.2.2, 3) `maestro test`.
+      # NOTA: primer cableado en CI; puede requerir ajustar api-level/tiempos en el runner real.
+      - name: E2E nativo (emulador Android + Maestro)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          disable-animations: true
+          script: |
+            set -e
+            # 1) Backend mock determinista (Postgres efímero, AI mock) en :3100.
+            pnpm --filter @magyblob/backend exec tsx scripts/e2e-serve.ts &
+            npx --yes wait-on -t 180000 http://127.0.0.1:3100/health
+            # 2) Metro + Expo Go apuntando al host desde el emulador (10.0.2.2). Instala Expo
+            #    Go y carga la app; se deja en segundo plano durante el test.
+            EXPO_PUBLIC_API_URL=http://10.0.2.2:3100 EXPO_PUBLIC_SENTRY_DSN= \
+              pnpm --filter @magyblob/app exec expo start --android &
+            # 3) Dar tiempo a que Expo Go instale y cargue la app; luego correr el flow.
+            sleep 120
+            maestro test packages/app/.maestro/onboarding.android.yaml
+
+      - name: Subir artefactos de Maestro (capturas/jerarquía)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-android-report
+          path: ~/.maestro/tests/
+          retention-days: 7
+          if-no-files-found: ignore
