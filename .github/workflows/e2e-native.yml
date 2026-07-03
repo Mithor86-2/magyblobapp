@@ -17,13 +17,12 @@
 name: E2E nativo (Maestro)
 
 on:
-  # Disparo manual desde la pestaña Actions.
+  # SOLO manual (decisión del usuario): se lanza desde la pestaña Actions cuando se
+  # quiera validar el binario nativo. Sin cron nocturno ni disparo por push/PR — el
+  # cableado del emulador aún se está afinando y no debe correr de forma automática.
   workflow_dispatch:
-  # Nocturno: 03:00 UTC cada día. Ajusta o elimina según el coste que asumas.
-  schedule:
-    - cron: '0 3 * * *'
 
-# Deliberadamente SIN `push:` ni `pull_request:` — no debe correr en el gate de PR.
+# Deliberadamente SIN `push:`, `pull_request:` ni `schedule:` — no corre automático.
 
 concurrency:
   group: e2e-native-${{ github.ref }}
