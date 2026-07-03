@@ -9,9 +9,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- **Pie con la versión de la app.** Nuevo `VersionFooter` que muestra `v. <versión> (<build>)` al
-  final de Welcome, Inicio y la zona de adultos; en desarrollo añade el sufijo `DEV` (en producción
-  no se muestra el ambiente). Versión y build salen del binario nativo (`expo-application`).
+- **Pie con la versión de la app.** Nuevo `VersionFooter` que muestra `v. <versión> (<build>) ·
+<backend>` al final de Welcome, Inicio y la zona de adultos; en desarrollo añade el distintivo `DEV`
+  (en producción no se muestra el ambiente). Versión y build salen del binario nativo
+  (`expo-application`); el backend (`Render` o `local`) se deriva de `EXPO_PUBLIC_API_URL`.
 
 ### Changed
 
