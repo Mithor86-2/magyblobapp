@@ -19,6 +19,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.9.2] - 2026-07-03
+
+Sin cambios en el app; versión unificada del monorepo (hotfix de backend: arranque en Render con
+Prisma 7). El APK v1.9.1 sigue vigente (no cambia el código del app).
+
 ## [1.9.1] - 2026-07-03
 
 ### Fixed
