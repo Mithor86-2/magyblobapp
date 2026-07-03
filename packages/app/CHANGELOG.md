@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.9.0] - 2026-07-02
+
+### Added
+
 - **Pie con la versión de la app.** Nuevo `VersionFooter` al final de Welcome, Inicio y la zona de
   adultos. Versión y build del binario nativo (`expo-application`) y backend desde
   `EXPO_PUBLIC_API_URL` (`getBaseUrl()`). Formato por entorno: en **desarrollo** toda la info

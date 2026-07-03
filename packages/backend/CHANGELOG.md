@@ -11,6 +11,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.9.0] - 2026-07-02
+
+### Added
+
+### Changed
+
 - **Migración a Prisma 7 (chore/prisma-7).** Actualiza `@prisma/client` y `prisma` a 7.x
   (emparejados; Dependabot había subido solo el cliente y rompió el CI). Se adopta el nuevo generador
   Rust-free `prisma-client` (ESM, `moduleFormat = "esm"`, salida `.ts` que compila `tsc` → se elimina
