@@ -1,8 +1,9 @@
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  cancelAnimation,
   Extrapolation,
   interpolate,
   runOnJS,
@@ -71,6 +72,11 @@ export function BookPages({
   const [indice, setIndice] = useState(0);
   // Giro/arrastre de la hoja (hilo de UI): 0 = asentada; ±width = de canto.
   const drag = useSharedValue(0);
+
+  // Al desmontar (p. ej. navegar atrás a mitad del giro de página), cancela cualquier
+  // animación en vuelo: si no, su callback (`runOnJS` + reasignar `drag`) tocaría un nodo
+  // ya destruido y en reanimated 4 / New Architecture puede provocar un crash NATIVO.
+  useEffect(() => () => cancelAnimation(drag), [drag]);
 
   const enPrimera = indice <= 0;
   const enUltima = indice >= total - 1;

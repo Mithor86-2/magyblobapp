@@ -17,6 +17,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- **Crash nativo del lector al navegar atrás a mitad del giro de página (US-83).** `BookPages` no
+  cancelaba las animaciones de reanimated en vuelo al desmontarse; al volver del lector con un giro a
+  medias, el callback tocaba un nodo ya destruido y en reanimated 4 / New Architecture provocaba un
+  crash nativo en dispositivo real. Se cancela la animación (`cancelAnimation`) en el _cleanup_ del
+  componente. Confirmado en dispositivo (Samsung SM-A505G, Android 11).
 - **Crash por desajuste de versiones con el SDK 56.** Dependabot había subido `babel-preset-expo` y
   `expo-haptics` a la major 57 (Expo SDK 57) mientras el proyecto está en SDK 56; `babel-preset-expo`
   57 transpila un bundle incompatible con RN 0.85 (worklets de reanimated) → crash al arrancar. Se
