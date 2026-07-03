@@ -1604,3 +1604,39 @@ saber por dónde voy como en un libro real.
 
 - **(Número)** Dada una hoja del cuento, Entonces muestra su número de página impreso; al pasar página,
   el número cambia.
+
+## US-92 — Endurecimiento de seguridad del API público {#us-92}
+
+> **Seguridad (auditoría del API en producción).** Extiende US-53 (robustez del alta/login) cerrando
+> los huecos de la superficie pública confirmados en vivo. Plan:
+> [../planes/seguridad-api-registro.md](../planes/seguridad-api-registro.md).
+
+**Como** adulto responsable **quiero** que el registro y el inicio de sesión del API estén
+**protegidos frente a abuso automatizado** (fuerza bruta, alta masiva por bots) y que el alta exija
+una **puerta parental**, **para** que los datos del menor y mi cuenta no queden expuestos y el
+consentimiento lo dé una persona adulta, no un script.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Alta (Consent) / Login (backend + app).
+
+**Alcance**
+
+1. **Rate limiting** (`@fastify/rate-limit`) en `POST /guardians`, `POST /guardians/login` y
+   `POST /guardians/refresh`, con la IP real del cliente tras el proxy de Render (`trustProxy`).
+2. **Puerta parental server-side sin terceros:** reto de adulto (`GET /guardians/challenge`) firmado
+   con HMAC y expiración; el alta exige `challengeToken` + `challengeRespuesta` correctos. La app los
+   integra en la pantalla de alta.
+3. **Cabeceras de seguridad** (`@fastify/helmet`) y **CORS** con allowlist de orígenes.
+
+**Criterios de aceptación**
+
+- **(Rate limit)** Dado un número de intentos de login/registro/refresh por encima del umbral en la
+  ventana, Entonces el API responde **429** (antes respondía 401/201 sin límite).
+- **(Puerta parental)** Dado un alta **sin** un reto válido, Entonces el API la **rechaza con 400**;
+  Dado un alta con `challengeToken` firmado, no expirado y `challengeRespuesta` correcta, Entonces se
+  crea la cuenta (**201**). El reto no persiste estado en la BD (firma verificable).
+- **(Cabeceras)** Dada cualquier respuesta del API, Entonces incluye las cabeceras de seguridad
+  estándar (p. ej. `X-Content-Type-Options`, `X-Frame-Options`) y una política CORS que solo admite
+  los orígenes de la allowlist.
+- **(Sin terceros)** Dado el flujo de puerta parental, Entonces **ningún dato sale de la máquina**
+  (cumple C-2 de [../cumplimiento-menores.md](../cumplimiento-menores.md)); la verificación por email
+  queda documentada como mejora futura.

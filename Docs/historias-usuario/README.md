@@ -121,6 +121,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-89 | Chips por categoría: color + icono                     | Should    | Mejoras | Cuentos / Crear perfil / Dashboard  | [F](epic-f-plataforma.md#us-89)  |
 | US-90 | Animación suave del avatar del niño                    | Could     | Mejoras | Inicio / Cuentos / Crear perfil     | [F](epic-f-plataforma.md#us-90)  |
 | US-91 | Número de página impreso en cada hoja                  | Could     | Mejoras | Lector                              | [F](epic-f-plataforma.md#us-91)  |
+| US-92 | Endurecimiento de seguridad del API público            | Should    | Mejoras | Alta / Login (backend + app)        | [F](epic-f-plataforma.md#us-92)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 
