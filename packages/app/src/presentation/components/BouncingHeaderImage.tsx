@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Image, type ImageSourcePropType, type StyleProp, type ImageStyle } from 'react-native';
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
   useSharedValue,
@@ -41,6 +42,9 @@ export function BouncingHeaderImage({
       -1,
       true,
     );
+    // Cancela el bucle al desmontar (navegar fuera): si no, la animación en vuelo
+    // tocaría un nodo destruido y en reanimated 4 / New Arch crashea en nativo.
+    return () => cancelAnimation(offset);
   }, [offset]);
 
   const animatedStyle = useAnimatedStyle(() => ({
