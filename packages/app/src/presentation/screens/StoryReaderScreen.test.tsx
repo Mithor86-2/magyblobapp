@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
 import type { Story } from '../../domain/types';
 
@@ -9,14 +9,14 @@ import type { Story } from '../../domain/types';
  * el botón "Marcar como leído" o cuando la narración termina (`onFinished`). Se
  * sustituyen IO (`api`), narración (audio nativo) e `Icon` (SVG) que jsdom no carga.
  */
-const { markReadMock, setFavoriteMock, continueStoryMock, narrationOnFinished } = vi.hoisted(
-  () => ({
+const { markReadMock, setFavoriteMock, continueStoryMock, narrationOnFinished, confirmMock } =
+  vi.hoisted(() => ({
     markReadMock: vi.fn(),
     setFavoriteMock: vi.fn(),
     continueStoryMock: vi.fn(),
     narrationOnFinished: { current: undefined as undefined | (() => void) },
-  }),
-);
+    confirmMock: vi.fn(),
+  }));
 vi.mock('../../composition', () => ({
   api: {
     stories: {
@@ -36,6 +36,10 @@ vi.mock('../components/NarrationControls', () => ({
 }));
 vi.mock('../components/AuthorBadge', () => ({ AuthorBadge: () => null }));
 vi.mock('../components/Icon', () => ({ Icon: () => null }));
+// La modal de "marcar como leído" al llegar al final (US-27) se prueba capturando confirm.
+vi.mock('../components/DialogProvider', () => ({
+  useDialog: () => ({ alert: vi.fn(), confirm: confirmMock }),
+}));
 vi.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: ReactNode }) => children,
 }));
@@ -69,6 +73,7 @@ describe('StoryReaderScreen — marcar leído explícito (A2)', () => {
     markReadMock.mockReset();
     markReadMock.mockResolvedValue(undefined);
     narrationOnFinished.current = undefined;
+    confirmMock.mockReset();
   });
 
   it('NO marca leído solo por abrir la vista', () => {
@@ -107,6 +112,31 @@ describe('StoryReaderScreen — marcar leído explícito (A2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
     fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
     expect(screen.getByText(/Fin de la historia/)).toBeInTheDocument();
+  });
+
+  it('US-27: al llegar a la última página ofrece la modal y, al confirmar, marca leído', () => {
+    renderReader();
+    expect(confirmMock).not.toHaveBeenCalled();
+
+    // Avanzar hasta la última página (historia + fin) dispara la modal una sola vez.
+    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    expect(confirmMock).toHaveBeenCalledTimes(1);
+
+    // Confirmar la modal marca el cuento como leído.
+    const { onConfirm } = confirmMock.mock.calls[0][0] as { onConfirm: () => void };
+    act(() => {
+      onConfirm();
+    });
+    expect(markReadMock).toHaveBeenCalledWith('s1');
+    expect(screen.getByText('Leído')).toBeInTheDocument();
+  });
+
+  it('US-27: no ofrece la modal si el cuento ya estaba leído', () => {
+    renderReader({ ...STORY, estado: 'leido' });
+    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    expect(confirmMock).not.toHaveBeenCalled();
   });
 
   it('US-78: "Continuar la historia" genera el capítulo nuevo y abre su lector', async () => {

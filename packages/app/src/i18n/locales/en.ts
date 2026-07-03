@@ -203,12 +203,12 @@ export const en: typeof es = {
   },
 
   createProfile: {
-    name: "What's your name?",
-    namePlaceholder: 'Your name',
-    age: 'How old are you?',
+    name: "What's your little one's name?",
+    namePlaceholder: "Little one's name",
+    age: 'How old is your little one?',
     language: 'Language',
-    avatar: 'Choose your avatar',
-    interests: 'What do you like?',
+    avatar: "Choose your little one's avatar",
+    interests: 'What does your little one like?',
     submit: 'Done!',
     errorGeneric: 'Could not create the profile.',
   },
@@ -268,6 +268,11 @@ export const en: typeof es = {
     continueError: 'Could not continue the story.',
     // Book's last page (US-83, adjustment #5).
     end: '⭐ The end of the story! ⭐',
+    // Modal on reaching the last page (US-27).
+    markReadPromptTitle: 'Mark as read?',
+    markReadPromptBody: "You've reached the end of the story. Do you want to mark it as read?",
+    markReadPromptConfirm: 'Yes, mark it',
+    markReadPromptCancel: 'Not now',
   },
 
   history: {

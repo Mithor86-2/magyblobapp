@@ -9,6 +9,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Lectura de cuento (US-27): al **llegar a la última página** aparece una **modal** que pregunta si
+  marcar el cuento como leído y, al confirmar, lo marca (idempotente). Se muestra una sola vez por
+  lectura y no aparece si ya estaba leído; complementa el botón "Marcar como leído" y el fin de la
+  narración. `BookPages` expone `onReachedEnd`.
 - Pantalla **Verificar email** (US-93): tras crear la cuenta con verificación requerida, la app pide un
   código OTP de 6 dígitos enviado al email del adulto, con opción de **reenviar** (cooldown) y estados de
   error (código incorrecto/caducado/intentos agotados). Al validar el código correcto, inicia sesión y

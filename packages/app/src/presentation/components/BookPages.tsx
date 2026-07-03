@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -46,6 +46,7 @@ export function BookPages({
   portada,
   finLabel,
   finImagen,
+  onReachedEnd,
 }: {
   paginas: string[];
   /** Nodo de portada (título + imagen); si se pasa, es la 1ª página del libro (US-83 #5). */
@@ -54,6 +55,11 @@ export function BookPages({
   finLabel?: string;
   /** Imagen a mostrar también en la página final (portada del libro); opcional. */
   finImagen?: ReactNode;
+  /**
+   * Se llama **una sola vez**, la primera vez que el lector llega a la última página
+   * (US-27, marcar como leído al terminar). Estable: envuélvelo en `useCallback`.
+   */
+  onReachedEnd?: () => void;
 }) {
   const { t } = useTranslation();
   const styles = useThemedStyles(makeStyles);
@@ -80,6 +86,16 @@ export function BookPages({
 
   const enPrimera = indice <= 0;
   const enUltima = indice >= total - 1;
+
+  // Avisa (una vez) al llegar a la última página: el lector ofrece marcar como leído
+  // (US-27). El ref evita repetir el aviso si se navega hacia atrás y otra vez al final.
+  const finAvisado = useRef(false);
+  useEffect(() => {
+    if (!finAvisado.current && indice >= total - 1) {
+      finAvisado.current = true;
+      onReachedEnd?.();
+    }
+  }, [indice, total, onReachedEnd]);
 
   // Cambia el índice (estado React). Lo llama el callback del giro vía runOnJS.
   const cambiarIndice = useCallback((siguiente: number) => setIndice(siguiente), []);

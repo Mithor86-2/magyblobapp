@@ -206,12 +206,12 @@ export const es = {
   },
 
   createProfile: {
-    name: '¿Cómo te llamas?',
-    namePlaceholder: 'Tu nombre',
-    age: '¿Cuántos años tienes?',
+    name: '¿Cómo se llama tu peque?',
+    namePlaceholder: 'Nombre del peque',
+    age: '¿Cuántos años tiene tu peque?',
     language: 'Idioma',
-    avatar: 'Elige tu avatar',
-    interests: '¿Qué te gusta?',
+    avatar: 'Elige tu avatar de tu peque',
+    interests: '¿Qué le gusta a tu peque?',
     submit: '¡Listo!',
     errorGeneric: 'No se pudo crear el perfil.',
   },
@@ -271,6 +271,11 @@ export const es = {
     continueError: 'No se pudo continuar la historia.',
     // Última página del libro (US-83, ajuste #5).
     end: '⭐ ¡Fin de la historia! ⭐',
+    // Modal al llegar a la última página (US-27).
+    markReadPromptTitle: '¿Marcar como leído?',
+    markReadPromptBody: 'Has llegado al final del cuento. ¿Quieres marcarlo como leído?',
+    markReadPromptConfirm: 'Sí, marcar',
+    markReadPromptCancel: 'Ahora no',
   },
 
   history: {

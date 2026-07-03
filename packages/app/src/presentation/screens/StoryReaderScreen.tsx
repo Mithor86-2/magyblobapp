@@ -5,6 +5,7 @@ import { Screen } from '../components/Screen';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { BookPages } from '../components/BookPages';
 import { BubblyButton } from '../components/BubblyButton';
+import { useDialog } from '../components/DialogProvider';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { Icon } from '../components/Icon';
 import { NarrationControls } from '../components/NarrationControls';
@@ -30,6 +31,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
   const { story } = route.params;
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
+  const dialog = useDialog();
   const styles = useThemedStyles(makeStyles);
   // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
@@ -60,6 +62,19 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
     setLeido(true);
     void api.stories.markRead(story.id).catch(() => {});
   }, [leido, story.id]);
+
+  // Al llegar a la última página (US-27): si aún no está leído, pregunta con una modal
+  // si marcarlo como leído y, al confirmar, lo marca. Si ya lo está, no molesta.
+  const alLlegarFinal = useCallback(() => {
+    if (leido) return;
+    dialog.confirm({
+      title: t('reader.markReadPromptTitle'),
+      message: t('reader.markReadPromptBody'),
+      confirmLabel: t('reader.markReadPromptConfirm'),
+      cancelLabel: t('reader.markReadPromptCancel'),
+      onConfirm: marcarLeido,
+    });
+  }, [leido, dialog, t, marcarLeido]);
 
   // US-83 (#5): la 1ª página del libro es la portada (imagen + título); luego la
   // historia paginada y, al final, una página "FIN".
@@ -98,6 +113,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
               accessibilityLabel={story.titulo}
             />
           }
+          onReachedEnd={alLlegarFinal}
         />
         <NarrationControls story={story} onFinished={marcarLeido} />
         {leido ? (
