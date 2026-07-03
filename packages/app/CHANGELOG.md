@@ -19,6 +19,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.9.1] - 2026-07-03
+
+### Fixed
+
+- **Más crashes nativos al navegar con animaciones en vuelo (reanimated 4 / New Arch).** Igual que en
+  `BookPages` (US-83), `BouncingHeaderImage` (cabecera de Historial/Cuentos, bucle infinito) y
+  `AnimatedAvatar` (Inicio/Dashboard, bucle infinito) **no cancelaban** sus animaciones al desmontarse;
+  al cambiar de pantalla mientras el header/avatar se animaba (p. ej. esperando en Historial a que
+  responda el _cold start_ de Render), el bucle tocaba un nodo destruido → crash nativo. Ambos cancelan
+  ahora con `cancelAnimation` en el _cleanup_ (con test de regresión). _(La petición pendiente no era la
+  causa: en React 18 el `setState` tras desmontar es no-op; el crash lo provocaba la animación.)_
+
+### Security
+
 ## [1.9.0] - 2026-07-02
 
 ### Added

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle } from 'react-native';
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
   useSharedValue,
@@ -61,7 +62,13 @@ export function AnimatedAvatar({
 
   useEffect(() => {
     progreso.value = withRepeat(withTiming(1, { duration: LOOP_MS, easing: Easing.linear }), -1);
-  }, [progreso]);
+    // Cancela las animaciones en vuelo al desmontar (navegar fuera): sin esto, en
+    // reanimated 4 / New Arch el bucle tocaría un nodo destruido y crashea en nativo.
+    return () => {
+      cancelAnimation(progreso);
+      cancelAnimation(escala);
+    };
+  }, [progreso, escala]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const p = progreso.value;
