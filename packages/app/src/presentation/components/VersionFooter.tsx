@@ -15,11 +15,22 @@ import { type ColorTokens, spacing, typography } from '../theme/tokens';
  *
  * Se coloca al final de Welcome, Inicio y la zona de adultos.
  */
+/** ¿La URL apunta al servidor de producción (Render)? Compara por **host** (no por
+ * subcadena: `.includes('onrender.com')` sería *bypasseable* por `onrender.com.evil`). */
+function apuntaARender(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === 'onrender.com' || hostname.endsWith('.onrender.com');
+  } catch {
+    return false;
+  }
+}
+
 export function VersionFooter() {
   const styles = useThemedStyles(makeStyles);
   const version = Application.nativeApplicationVersion ?? '?';
   const build = Application.nativeBuildVersion ?? '?';
-  const onRender = getBaseUrl().includes('onrender.com');
+  const onRender = apuntaARender(getBaseUrl());
 
   let texto = `v. ${version} (${build})`;
   if (__DEV__) {
