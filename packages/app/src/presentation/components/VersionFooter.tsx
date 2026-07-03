@@ -5,25 +5,34 @@ import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, spacing, typography } from '../theme/tokens';
 
 /**
- * Pie con la versión de la app: `v. <versión> (<build>) · <backend>` y, **solo en
- * desarrollo**, el distintivo `DEV` (en producción no se muestra el ambiente). La versión
- * y el build se leen del binario nativo (`expo-application`, EAS los inyecta) y el backend
- * de `EXPO_PUBLIC_API_URL` vía `getBaseUrl()`: `Render` si apunta al servidor de producción,
- * `local` en cualquier otro caso. Se coloca al final de Welcome, Inicio y la zona de adultos.
+ * Pie con la versión de la app. La versión y el build salen del binario nativo
+ * (`expo-application`, EAS los inyecta) y el backend de `EXPO_PUBLIC_API_URL` vía
+ * `getBaseUrl()`. El formato depende del entorno:
+ *
+ * - **Desarrollo** (`__DEV__`): toda la info → `v. 1.8.0 (1) DEV · RENDER` (o `· LOCAL`).
+ * - **Release apuntando a Render** (producción normal): solo `v. 1.8.0 (1)`.
+ * - **Release que NO apunta a Render**: se marca `local` como aviso → `v. 1.8.0 (1) local`.
+ *
+ * Se coloca al final de Welcome, Inicio y la zona de adultos.
  */
 export function VersionFooter() {
   const styles = useThemedStyles(makeStyles);
   const version = Application.nativeApplicationVersion ?? '?';
   const build = Application.nativeBuildVersion ?? '?';
-  const backend = getBaseUrl().includes('onrender.com') ? 'Render' : 'local';
+  const onRender = getBaseUrl().includes('onrender.com');
 
-  const partes = [`v. ${version} (${build})`];
-  if (__DEV__) partes.push('DEV');
-  partes.push(backend);
+  let texto = `v. ${version} (${build})`;
+  if (__DEV__) {
+    // Desarrollo: ambiente + backend (en mayúsculas).
+    texto += ` DEV · ${onRender ? 'RENDER' : 'LOCAL'}`;
+  } else if (!onRender) {
+    // Release que no va a Render: se avisa con "local" (producción en Render no añade nada).
+    texto += ' local';
+  }
 
   return (
     <Text style={styles.texto} accessibilityRole="text">
-      {partes.join(' · ')}
+      {texto}
     </Text>
   );
 }
