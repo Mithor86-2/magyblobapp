@@ -13,12 +13,11 @@ agentes en [CLAUDE.md](CLAUDE.md).
 
 ## Descargar la app (Android)
 
-**APK lista para instalar (v1.7.0):** [Releases → v1.7.0](https://github.com/Mithor86-2/magyblobapp/releases/latest)
-→ descarga **`magyblob-v1.7.0.apk`**
-([enlace directo](https://github.com/Mithor86-2/magyblobapp/releases/download/v1.7.0/magyblob-v1.7.0.apk)).
+**APK lista para instalar (v1.9.0):** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/9cc8ed03-a8e9-420e-9ee9-454ab8c79aaf)
+→ en esa página, **Install** (QR o descarga directa del `.apk`).
 
 En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos»; o por cable
-`adb install magyblob-v1.7.0.apk`. La app apunta al **backend de producción**; la primera
+`adb install <fichero>.apk`. La app apunta al **backend de producción**; la primera
 petición tras un rato de inactividad tarda ~50 s (_cold start_ del plan gratuito de Render).
 
 > El build se genera con **EAS Build** (perfil `preview`, ver [Desplegar la app en producción](#desplegar-la-app-en-producción-expo)).
