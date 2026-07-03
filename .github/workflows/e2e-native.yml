@@ -92,6 +92,8 @@ jobs:
   e2e-android:
     name: E2E nativo Android (Maestro + Android Emulator)
     runs-on: ubuntu-latest
+    # Falla rápido si el emulador/Expo no arrancan (evita corridas de horas al afinar).
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
