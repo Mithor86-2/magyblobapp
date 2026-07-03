@@ -8,14 +8,16 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * El export (`expo export --platform web`) lo hace el script `test:e2e` antes de
  * lanzar Playwright, fijando `EXPO_PUBLIC_API_URL=http://127.0.0.1:4173` para que
- * la app llame a su propio origen. Requiere Docker (Testcontainers) y los binarios
- * de Chromium y WebKit (`pnpm e2e:install`).
+ * la app llame a su propio origen. Requiere Docker (Testcontainers) y el binario de
+ * Chromium (`pnpm e2e:install`).
  *
- * Multinavegador (US-36): se recorre el mismo flujo en `chromium` (baseline),
- * `mobile-chrome` (Pixel 5, viewport móvil _portrait_, mismo motor Chromium) y
- * `mobile-safari` (iPhone 13, motor **WebKit** = el de iOS). Reporting rico:
- * HTML + JSON + line, y ante fallo se conservan captura/vídeo/traza. `retries: 1`
- * solo en CI (con `workers: 1` y `retries: 0`, `on-first-retry` no captura nada).
+ * **Alcance (revisado, ver Docs/analisis-pruebas-cicd.md):** este E2E web es la red
+ * automática **barata de la LÓGICA compartida** (pantallas, navegación, store, contrato
+ * con el backend) — no del binario nativo que se despliega. Por eso corre en **un solo
+ * navegador (`chromium`)**: los flujos asertan lógica/accesibilidad, no layout responsive
+ * ni motores distintos. La cobertura del **APK real** (reanimated, audio, etc.) la da el
+ * **E2E nativo con Maestro** (`.github/workflows/e2e-native.yml`), no aquí. Reporting rico
+ * (HTML + JSON + line) y captura/vídeo/traza ante fallo; `retries: 1` solo en CI.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -35,11 +37,7 @@ export default defineConfig({
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
   },
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
-    { name: 'mobile-safari', use: { ...devices['iPhone 13'] } },
-  ],
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
       command: 'pnpm --filter @magyblob/backend exec tsx scripts/e2e-serve.ts',

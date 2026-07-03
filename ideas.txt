@@ -1,0 +1,12 @@
+Realiza un plan para implementar estos ajustes en paralelo:
+
+
+
+
+
+Una vez aprobado el plan por mi,  crear el documento del plan de fases y tareas (agregando nuevos test si son necesarios), y no terminar hasta que se ha ya implmentado por completo y haya pasado todos los test. Una vez termnado mostrar los pasos para realizar las pruebas en develop local.
+
+Necesito un documento tecnico explicando el flujo de CI/CD y en cada que test se estan realizando y la condic ion de aceptación.
+
+
+Necesito un documento tecnico explicando el flujo de CI/CD y en cada paso que test (la lista completa de test) se estan realizando y la condiciones de aceptación. Esta documendo se debe actualizar cada vez que se agre o modifique alguna funcionalidad o test descritos en este docuemnto, debe quedar en la carpeta Docs.

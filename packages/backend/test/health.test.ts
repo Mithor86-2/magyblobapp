@@ -29,10 +29,14 @@ describe('GET /health', () => {
     await app.close();
   });
 
-  it('responde 200 con estado ok', async () => {
+  it('responde 200 con estado ok y la versión del paquete', async () => {
     const res = await app.inject({ method: 'GET', url: '/health' });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ status: 'ok', service: 'magyblob-backend' });
+    const body = res.json() as { status: string; service: string; version: string };
+    expect(body.status).toBe('ok');
+    expect(body.service).toBe('magyblob-backend');
+    // `version` la usa el smoke post-deploy para confirmar la versión desplegada.
+    expect(body.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 });
