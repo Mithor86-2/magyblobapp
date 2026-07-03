@@ -17,6 +17,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+### Security
+
+## [1.9.1] - 2026-07-03
+
+### Fixed
+
 - **Más crashes nativos al navegar con animaciones en vuelo (reanimated 4 / New Arch).** Igual que en
   `BookPages` (US-83), `BouncingHeaderImage` (cabecera de Historial/Cuentos, bucle infinito) y
   `AnimatedAvatar` (Inicio/Dashboard, bucle infinito) **no cancelaban** sus animaciones al desmontarse;

@@ -19,6 +19,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.9.1] - 2026-07-03
+
+Sin cambios en el backend; versión unificada del monorepo (patch con fixes de crash en el app).
+
 ## [1.9.0] - 2026-07-02
 
 ### Added
