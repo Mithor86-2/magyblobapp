@@ -19,6 +19,47 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.9.0] - 2026-07-02
+
+### Added
+
+- **Pie con la versión de la app.** Nuevo `VersionFooter` al final de Welcome, Inicio y la zona de
+  adultos. Versión y build del binario nativo (`expo-application`) y backend desde
+  `EXPO_PUBLIC_API_URL` (`getBaseUrl()`). Formato por entorno: en **desarrollo** toda la info
+  (`v. 1.8.0 (1) DEV · RENDER`/`· LOCAL`); en **release apuntando a Render** solo `v. 1.8.0 (1)`; en
+  **release que no va a Render** se marca `local` (`v. 1.8.0 (1) local`).
+
+### Changed
+
+- **Lector: todas las páginas del mismo tamaño (US-83).** `BookPages` pasa de alto mínimo a un **alto
+  fijo** por página, así el libro no cambia de tamaño al pasar página; las páginas cortas centran su
+  contenido dejando espacio (como un libro real).
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- **Los crashes del APK no llegaban a Sentry (US-40).** El DSN (`EXPO_PUBLIC_SENTRY_DSN`) solo estaba
+  en el `.env` local (dev), pero **`eas.json` no lo inyectaba** en los perfiles `preview`/`production`,
+  así que el APK de EAS arrancaba sin DSN → Sentry no se inicializaba → nada se reportaba. Se añade el
+  DSN (público por diseño, ya iba embebido en el bundle) al `env` de `preview` y `production`; el APK
+  reporta ahora con `environment: production`. _(Symbolicación de stacks: pendiente añadir el plugin
+  `@sentry/react-native/expo` + `SENTRY_AUTH_TOKEN` para subir source maps.)_
+- **Crash nativo del lector al navegar atrás a mitad del giro de página (US-83).** `BookPages` no
+  cancelaba las animaciones de reanimated en vuelo al desmontarse; al volver del lector con un giro a
+  medias, el callback tocaba un nodo ya destruido y en reanimated 4 / New Architecture provocaba un
+  crash nativo en dispositivo real. Se cancela la animación (`cancelAnimation`) en el _cleanup_ del
+  componente. Confirmado en dispositivo (Samsung SM-A505G, Android 11).
+- **Crash por desajuste de versiones con el SDK 56.** Dependabot había subido `babel-preset-expo` y
+  `expo-haptics` a la major 57 (Expo SDK 57) mientras el proyecto está en SDK 56; `babel-preset-expo`
+  57 transpila un bundle incompatible con RN 0.85 (worklets de reanimated) → crash al arrancar. Se
+  fijan ambos a las versiones del SDK 56 (`npx expo install`); `expo-doctor` vuelve a 21/21. El salto
+  a Expo 57 se hará deliberadamente (SDK entero) en su propia rama.
+
+### Security
+
 ## [1.8.0] - 2026-07-02
 
 ### Added

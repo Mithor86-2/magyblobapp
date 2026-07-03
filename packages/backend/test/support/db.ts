@@ -5,8 +5,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-import { PrismaClient } from '../../src/generated/prisma/index.js';
+import { PrismaClient } from '../../src/generated/prisma/client.js';
 
 const require = createRequire(import.meta.url);
 const backendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -51,7 +52,8 @@ export async function startTestDb(): Promise<TestDb> {
     stdio: 'inherit',
   });
 
-  const prisma = new PrismaClient({ datasourceUrl: url });
+  // Prisma 7: la conexión va por driver adapter (ya no existe `datasourceUrl`).
+  const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
 
   return {
     prisma,

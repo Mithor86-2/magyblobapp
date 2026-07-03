@@ -21,6 +21,8 @@ export const useAnimatedStyle = (fn: () => object): object => {
 };
 
 export const withSpring = <T>(valor: T): T => valor;
+// `cancelAnimation` (limpieza al desmontar): no-op inerte bajo el runner.
+export const cancelAnimation = (_sv?: unknown): void => {};
 // Invoca el callback de fin de forma síncrona (como si la animación acabara al instante),
 // para que el cambio de página (que ocurre en ese callback) siga siendo verificable en tests.
 export const withTiming = <T>(

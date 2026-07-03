@@ -1,8 +1,9 @@
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  cancelAnimation,
   Extrapolation,
   interpolate,
   runOnJS,
@@ -72,6 +73,11 @@ export function BookPages({
   // Giro/arrastre de la hoja (hilo de UI): 0 = asentada; ±width = de canto.
   const drag = useSharedValue(0);
 
+  // Al desmontar (p. ej. navegar atrás a mitad del giro de página), cancela cualquier
+  // animación en vuelo: si no, su callback (`runOnJS` + reasignar `drag`) tocaría un nodo
+  // ya destruido y en reanimated 4 / New Architecture puede provocar un crash NATIVO.
+  useEffect(() => () => cancelAnimation(drag), [drag]);
+
   const enPrimera = indice <= 0;
   const enUltima = indice >= total - 1;
 
@@ -125,14 +131,17 @@ export function BookPages({
     };
   });
 
-  // Alto mínimo proporcional acotado: páginas de tamaño consistente sin recortar texto.
-  const pageMinHeight = Math.max(240, Math.min(420, Math.round(height * 0.42)));
+  // Alto FIJO de la hoja: TODAS las páginas del cuento miden igual (no crecen con el
+  // texto), así el libro no cambia de tamaño al pasar página. Se acota para caber una
+  // página de texto (paginarCuento ~120 palabras) en móvil; las páginas cortas centran
+  // su contenido dejando espacio, como en un libro real.
+  const pageHeight = Math.max(320, Math.min(460, Math.round(height * 0.52)));
   const item = itemsSeguro[indice] ?? itemsSeguro[0]!;
 
   return (
     <View style={styles.container}>
       <GestureDetector gesture={pan}>
-        <Animated.View style={[styles.page, { minHeight: pageMinHeight }, hojaStyle]}>
+        <Animated.View style={[styles.page, { height: pageHeight }, hojaStyle]}>
           {item.tipo === 'portada' ? (
             <View style={styles.portada}>{portada}</View>
           ) : item.tipo === 'fin' ? (

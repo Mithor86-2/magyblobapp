@@ -1,4 +1,4 @@
-import { Prisma } from '../../generated/prisma/index.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import type { AuditLog } from '../../domain/entities/AuditLog.js';
 import type { AuditLogRepository } from '../../domain/repositories/AuditLogRepository.js';
 import type { PrismaClient } from '../db/prismaClient.js';

@@ -9,7 +9,7 @@ import { Story } from '../../src/domain/entities/Story.js';
 import { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import { Edad } from '../../src/domain/value-objects/Edad.js';
 import { Idioma } from '../../src/domain/value-objects/Idioma.js';
-import type { PrismaClient } from '../../src/generated/prisma/index.js';
+import type { PrismaClient } from '../../src/generated/prisma/client.js';
 import { PrismaChildProfileRepository } from '../../src/infrastructure/repositories/PrismaChildProfileRepository.js';
 import { PrismaGuardianRepository } from '../../src/infrastructure/repositories/PrismaGuardianRepository.js';
 import { HASH_DE_PRUEBA } from './doubles.js';

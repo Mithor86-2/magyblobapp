@@ -1,4 +1,4 @@
-import type { Achievement as PrismaAchievement } from '../../generated/prisma/index.js';
+import type { Achievement as PrismaAchievement } from '../../generated/prisma/client.js';
 import { Achievement } from '../../domain/entities/Achievement.js';
 import type { AchievementRepository } from '../../domain/repositories/AchievementRepository.js';
 import type { PrismaClient } from '../db/prismaClient.js';

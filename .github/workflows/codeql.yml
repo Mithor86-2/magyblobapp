@@ -35,5 +35,17 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
+          # Escanea solo el código que se DESPLIEGA. El tooling dev/test (e2e, scripts,
+          # tests) y el cliente Prisma generado no son superficie de ataque de producción
+          # y generan falsos positivos (p. ej. path-injection en el server estático del
+          # E2E, o clear-text-logging en un script de humo manual).
+          config: |
+            paths-ignore:
+              - '**/*.test.ts'
+              - '**/*.test.tsx'
+              - packages/app/e2e
+              - packages/backend/test
+              - packages/backend/scripts
+              - '**/generated/**'
       - name: Analizar
         uses: github/codeql-action/analyze@v3

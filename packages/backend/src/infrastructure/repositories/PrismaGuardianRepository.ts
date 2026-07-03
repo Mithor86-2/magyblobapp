@@ -1,4 +1,4 @@
-import type { Guardian as PrismaGuardian } from '../../generated/prisma/index.js';
+import type { Guardian as PrismaGuardian } from '../../generated/prisma/client.js';
 import { Guardian } from '../../domain/entities/Guardian.js';
 import type { GuardianRepository } from '../../domain/repositories/GuardianRepository.js';
 import type { Parentesco } from '../../domain/vocabulary.js';
