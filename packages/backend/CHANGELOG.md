@@ -11,6 +11,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- **Migración a Prisma 7 (chore/prisma-7).** Actualiza `@prisma/client` y `prisma` a 7.x
+  (emparejados; Dependabot había subido solo el cliente y rompió el CI). Se adopta el nuevo generador
+  Rust-free `prisma-client` (ESM, `moduleFormat = "esm"`, salida `.ts` que compila `tsc` → se elimina
+  el `cp` del build). La conexión ya no vive en `datasource.url` del schema: se usa el **driver
+  adapter** `@prisma/adapter-pg` (sobre `pg`) en `createPrismaClient`, y la URL de Migrate se declara
+  en el nuevo `prisma.config.ts` (desde `DATABASE_URL`). El `Dockerfile` copia `prisma.config.ts` en
+  build y runtime. Imports del cliente movidos de `generated/prisma/index.js` a `.../client.js`.
+  Validado: gate + coverage + integración (30) + e2e (3) + build de imagen, todo en verde.
+
 ### Deprecated
 
 ### Removed

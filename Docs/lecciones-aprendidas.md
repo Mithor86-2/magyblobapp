@@ -892,3 +892,24 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
   _dev-server / solo Windows_. Se cierra el que sí importa (el major de vitest) y **se difieren** los
   transitivos a Dependabot, que los propondrá cuando vitest/tsx/expo suban sus deps. Romper una suite
   verde por un fallo que no llega a producción es mal balance.
+
+### Dependabot rompió el CI subiendo solo `@prisma/client` (mismatch cliente/CLI) + migración Prisma 7
+
+- **Síntoma:** tras mergear un PR de Dependabot, `pnpm install` falla en `postinstall`
+  (`prisma generate`) con `ENOENT … runtime/library.d.ts`; Gate y build Docker en rojo.
+- **Causa:** Dependabot bumpeó `@prisma/client` a 7.x pero **no** `prisma` (el CLI, es otro paquete);
+  Prisma exige **cliente y CLI en la misma versión**. El generate del CLI 6 no encuentra ficheros que
+  el cliente 7 reorganizó.
+- **Solución + checklist de migración a Prisma 7** (breaking changes, guía vía Context7):
+  1. Emparejar `@prisma/client` **y** `prisma` a la misma 7.x.
+  2. Generador `prisma-client-js` → **`prisma-client`** (Rust-free, ESM): `output` obligatorio,
+     `moduleFormat = "esm"`. Emite **`.ts`** → lo compila `tsc`; quitar cualquier `cp` de `src/generated`.
+  3. **Quitar `datasource.url` del schema** (v7 lo prohíbe). La URL de Migrate va en `prisma.config.ts`
+     (`datasource.url`); usar `process.env.DATABASE_URL` directo, **no** el helper `env()` (estricto:
+     rompe `generate` cuando no hay BD, p. ej. en CI/Docker build).
+  4. Runtime: conectar con **driver adapter** (`@prisma/adapter-pg` + `pg`) en `new PrismaClient({ adapter })`;
+     `datasourceUrl` ya no existe (afecta también a helpers de test).
+  5. Imports del cliente: de `generated/prisma/index.js` a `.../client.js`.
+  6. Dockerfile: copiar `prisma.config.ts` en build (postinstall) y runtime (`migrate deploy`).
+- **Prevención:** agrupar `prisma` + `@prisma/client` en Dependabot e **ignorar majors** (revisarlos a
+  mano). Los majors sueltos automáticos son la trampa.

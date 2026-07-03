@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json && cp -r src/generated dist/generated",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint src test",
@@ -25,17 +25,20 @@
   },
   "dependencies": {
     "@fastify/jwt": "^10.1.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
     "fastify": "^5.2.0",
     "fastify-type-provider-zod": "^7.0.0",
+    "pg": "^8.22.0",
     "pino": "^10.3.1",
-    "prisma": "^6.1.0",
+    "prisma": "^7.8.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.0.3",
     "@types/node": "^22.10.2",
+    "@types/pg": "^8.20.0",
     "@vitest/coverage-v8": "^3.2.6",
     "pino-pretty": "^13.0.0",
     "tsx": "^4.19.2",

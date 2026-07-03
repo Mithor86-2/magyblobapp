@@ -1,4 +1,4 @@
-import type { StoryNarration as PrismaStoryNarration } from '../../generated/prisma/index.js';
+import type { StoryNarration as PrismaStoryNarration } from '../../generated/prisma/client.js';
 import { StoryNarration } from '../../domain/entities/StoryNarration.js';
 import type { StoryNarrationRepository } from '../../domain/repositories/StoryNarrationRepository.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';

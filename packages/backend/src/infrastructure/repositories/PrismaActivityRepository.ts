@@ -1,4 +1,4 @@
-import type { Activity as PrismaActivity } from '../../generated/prisma/index.js';
+import type { Activity as PrismaActivity } from '../../generated/prisma/client.js';
 import { Activity } from '../../domain/entities/Activity.js';
 import type { ActivityRepository } from '../../domain/repositories/ActivityRepository.js';
 import type { Categoria, ProveedorIa } from '../../domain/vocabulary.js';

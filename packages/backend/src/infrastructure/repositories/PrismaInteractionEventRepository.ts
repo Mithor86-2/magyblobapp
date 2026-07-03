@@ -1,4 +1,4 @@
-import { Prisma } from '../../generated/prisma/index.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import type { InteractionEvent } from '../../domain/entities/InteractionEvent.js';
 import type { InteractionEventRepository } from '../../domain/repositories/InteractionEventRepository.js';
 import type { PrismaClient } from '../db/prismaClient.js';
