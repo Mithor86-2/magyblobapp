@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Pantalla **Verificar email** (US-93): tras crear la cuenta con verificación requerida, la app pide un
+  código OTP de 6 dígitos enviado al email del adulto, con opción de **reenviar** (cooldown) y estados de
+  error (código incorrecto/caducado/intentos agotados). Al validar el código correcto, inicia sesión y
+  navega a Seleccionar perfil. Si el backend no requiere verificación (sin SMTP), el onboarding es el de
+  siempre (auto-login).
+
 ### Changed
 
 - El alta (`api.guardians.register`) resuelve de forma transparente la puerta parental server-side

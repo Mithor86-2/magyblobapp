@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Verificación de titularidad del email por OTP (US-93): con SMTP configurado, el alta
+  (`POST /guardians`) crea la cuenta como no verificada, envía un código de 6 dígitos (hash bcrypt,
+  caducidad 10 min, máx. 5 intentos) y **no** emite sesión; `POST /guardians/verify-email` valida el
+  código y emite los tokens, y `POST /guardians/resend-verification` reenvía con cooldown. Sin SMTP el
+  paso se omite (auto-verificado + auto-login, arranque reproducible intacto). Servicio de email SMTP
+  (`nodemailer`) cableado solo si hay credenciales; el correo solo transporta email del adulto + código
+  (sin PII del menor). Refuerza C-1/C-10 (C-17).
 - Puerta parental server-side en el alta (US-92): `GET /guardians/challenge` emite un reto
   aritmético firmado (HMAC con el secreto JWT, con caducidad) y `POST /guardians` exige
   `challengeToken` + `challengeRespuesta` correctos antes de crear la cuenta. Sin terceros ni estado
