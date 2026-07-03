@@ -131,14 +131,17 @@ export function BookPages({
     };
   });
 
-  // Alto mínimo proporcional acotado: páginas de tamaño consistente sin recortar texto.
-  const pageMinHeight = Math.max(240, Math.min(420, Math.round(height * 0.42)));
+  // Alto FIJO de la hoja: TODAS las páginas del cuento miden igual (no crecen con el
+  // texto), así el libro no cambia de tamaño al pasar página. Se acota para caber una
+  // página de texto (paginarCuento ~120 palabras) en móvil; las páginas cortas centran
+  // su contenido dejando espacio, como en un libro real.
+  const pageHeight = Math.max(320, Math.min(460, Math.round(height * 0.52)));
   const item = itemsSeguro[indice] ?? itemsSeguro[0]!;
 
   return (
     <View style={styles.container}>
       <GestureDetector gesture={pan}>
-        <Animated.View style={[styles.page, { minHeight: pageMinHeight }, hojaStyle]}>
+        <Animated.View style={[styles.page, { height: pageHeight }, hojaStyle]}>
           {item.tipo === 'portada' ? (
             <View style={styles.portada}>{portada}</View>
           ) : item.tipo === 'fin' ? (

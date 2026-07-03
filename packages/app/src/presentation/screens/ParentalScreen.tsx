@@ -5,6 +5,7 @@ import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ParentalGate } from '../components/ParentalGate';
+import { VersionFooter } from '../components/VersionFooter';
 import { useDialog } from '../components/DialogProvider';
 import { useAppStore } from '../store/useAppStore';
 import { isSentryEnabled } from '../../infrastructure/sentry';
@@ -122,6 +123,8 @@ export function ParentalScreen({ navigation }: RootScreenProps<'Parental'>) {
             />
           ) : null}
         </View>
+
+        <VersionFooter />
       </Screen>
     </ParentalGate>
   );

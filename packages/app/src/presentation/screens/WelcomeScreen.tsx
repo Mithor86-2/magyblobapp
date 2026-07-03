@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
+import { VersionFooter } from '../components/VersionFooter';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
@@ -33,6 +34,8 @@ export function WelcomeScreen({ navigation }: RootScreenProps<'Welcome'>) {
           variant="accent"
         />
       </View>
+
+      <VersionFooter />
     </Screen>
   );
 }

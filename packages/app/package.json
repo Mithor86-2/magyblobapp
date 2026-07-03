@@ -23,6 +23,7 @@
     "@react-navigation/native-stack": "^7.17.2",
     "@sentry/react-native": "^8.15.1",
     "expo": "~56.0.13",
+    "expo-application": "~56.0.3",
     "expo-asset": "~56.0.18",
     "expo-audio": "~56.0.12",
     "expo-constants": "~56.0.19",

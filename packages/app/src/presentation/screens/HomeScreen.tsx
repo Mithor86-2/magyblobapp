@@ -9,6 +9,7 @@ import { BubblyButton } from '../components/BubblyButton';
 import { ProgressBar } from '../components/ProgressBar';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { AnimatedAvatar } from '../components/AnimatedAvatar';
+import { VersionFooter } from '../components/VersionFooter';
 import { api } from '../../composition';
 import { useAppStore } from '../store/useAppStore';
 import { useThemedStyles } from '../theme/ThemeProvider';
@@ -127,6 +128,8 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         />
         <BubblyButton label={t('home.search')} onPress={openSearch} variant="accent" />
       </View>
+
+      <VersionFooter />
     </Screen>
   );
 }
