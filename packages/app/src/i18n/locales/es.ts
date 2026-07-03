@@ -57,6 +57,7 @@ export const es = {
     login: 'Iniciar sesión',
     selectProfile: 'Elegir perfil',
     createProfile: 'Crear perfil',
+    verifyEmail: 'Verificar email',
     parental: 'Zona de adultos',
     achievements: 'Mis logros',
     storyReader: 'Cuento',
@@ -85,6 +86,7 @@ export const es = {
     haveAccount: 'Ya tengo cuenta',
     retry: 'Reintentar',
     ups: 'Ups',
+    ok: 'Listo',
     email: 'Email',
     emailPlaceholder: 'tu@email.com',
     password: 'Contraseña',
@@ -185,6 +187,22 @@ export const es = {
       'Doy mi consentimiento para tratar los datos del menor con la única finalidad de generar cuentos y actividades. Los datos no se comparten con terceros y el contenido se genera en local. (Versión {{version}})',
     submit: 'Aceptar y continuar',
     errorGeneric: 'No se pudo completar el registro.',
+  },
+
+  // Verificación de email por OTP (US-93).
+  verify: {
+    title: 'Verifica tu email',
+    body: 'Te hemos enviado un código de 6 dígitos a {{email}}. Escríbelo aquí para activar tu cuenta.',
+    codeLabel: 'Código de verificación',
+    codePlaceholder: '000000',
+    submit: 'Verificar',
+    resend: 'Reenviar código',
+    resendCooldown: 'Puedes reenviar en {{segundos}} s',
+    resentOk: 'Te hemos enviado un código nuevo.',
+    errorCode: 'El código no es correcto o ha caducado. Revísalo o pide uno nuevo.',
+    errorTooMany: 'Demasiados intentos. Pide un código nuevo.',
+    errorResend: 'No se pudo reenviar el código. Inténtalo de nuevo.',
+    errorGeneric: 'No se pudo verificar el email.',
   },
 
   createProfile: {

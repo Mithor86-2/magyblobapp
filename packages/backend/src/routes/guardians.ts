@@ -4,7 +4,11 @@ import { z } from 'zod';
 import { RegisterGuardian } from '../application/use-cases/RegisterGuardian.js';
 import { ListProfiles } from '../application/use-cases/ListProfiles.js';
 import { LoginGuardian } from '../application/use-cases/LoginGuardian.js';
+import { VerifyEmail } from '../application/use-cases/VerifyEmail.js';
+import { ResendEmailVerification } from '../application/use-cases/ResendEmailVerification.js';
+import { SendEmailVerification } from '../application/services/SendEmailVerification.js';
 import { PARENTESCOS } from '../domain/vocabulary.js';
+import { DomainError } from '../domain/errors.js';
 import type { AppDeps } from '../dependencies.js';
 import type { Config, LimiteTasa } from '../config.js';
 import { signSession, verifyRefreshToken } from '../auth.js';
@@ -62,9 +66,29 @@ const loginSchema = z
 
 const refreshSchema = z.object({ refreshToken: z.string().min(1) }).strict();
 
+const verifyEmailSchema = z
+  .object({ guardianId: z.string().min(1), codigo: z.string().regex(/^\d{6}$/) })
+  .strict();
+
+const resendSchema = z.object({ guardianId: z.string().min(1) }).strict();
+
 /** Alta del adulto responsable (+ registro de consentimiento) y listado de sus perfiles. */
 export function guardianRoutes(app: FastifyInstance, deps: AppDeps, config: Config): void {
-  const registerGuardian = new RegisterGuardian(deps);
+  // Verificación de email (US-93): solo se activa si hay servicio de email (SMTP
+  // configurado). Sin él, `sendVerification` es undefined y el alta auto-verifica.
+  const sendVerification = deps.emailService
+    ? new SendEmailVerification({
+        emailService: deps.emailService,
+        codeGenerator: deps.codeGenerator,
+        hasher: deps.hasher,
+        verifications: deps.emailVerifications,
+        newId: deps.newId,
+        now: deps.now,
+        ttlMs: config.email.otp.ttlMs,
+      })
+    : undefined;
+
+  const registerGuardian = new RegisterGuardian({ ...deps, verification: sendVerification });
   const listProfiles = new ListProfiles(deps);
   const loginGuardian = new LoginGuardian(deps);
 
@@ -95,8 +119,13 @@ export function guardianRoutes(app: FastifyInstance, deps: AppDeps, config: Conf
         consentimientoVersion: alta.consentimientoVersion,
       });
 
-      // Auto-login tras el alta: emite la sesión para no obligar a un login extra
-      // (las rutas de datos exigen token desde US-45).
+      // Verificación de email (US-93, puerta dura): si la cuenta no está verificada,
+      // NO se emite sesión; la app pide el código OTP y verifica antes de entrar.
+      if (!guardian.emailVerificado) {
+        return reply.code(201).send({ ...guardian, requiereVerificacion: true });
+      }
+
+      // Sin verificación (sin SMTP): auto-login tras el alta como hasta US-93.
       const tokens = await signSession(reply, config, guardian);
       return reply.code(201).send({ ...guardian, ...tokens });
     },
@@ -111,6 +140,12 @@ export function guardianRoutes(app: FastifyInstance, deps: AppDeps, config: Conf
     },
     async (request, reply) => {
       const guardian = await loginGuardian.execute(request.body);
+
+      // Cuenta creada pero aún sin verificar (US-93): no se emite sesión; la app
+      // lleva a la pantalla de verificación (donde puede reenviar el código).
+      if (!guardian.emailVerificado) {
+        return reply.code(200).send({ ...guardian, requiereVerificacion: true });
+      }
 
       await deps.bus.publish({
         tipo: 'guardian_login',
@@ -134,6 +169,54 @@ export function guardianRoutes(app: FastifyInstance, deps: AppDeps, config: Conf
       const { guardianId, email } = verifyRefreshToken(app, request.body.refreshToken);
       const tokens = await signSession(reply, config, { id: guardianId, email });
       return reply.code(200).send(tokens);
+    },
+  );
+
+  // Verifica el código OTP y, si es correcto, emite la sesión (US-93). Pública: aún
+  // no hay sesión (el alta con verificación no devuelve tokens).
+  app.withTypeProvider<ZodTypeProvider>().post(
+    '/guardians/verify-email',
+    {
+      schema: { body: verifyEmailSchema },
+      config: { rateLimit: limite(config.security.rateLimit.verify) },
+    },
+    async (request, reply) => {
+      const verifyEmail = new VerifyEmail({
+        guardians: deps.guardians,
+        verifications: deps.emailVerifications,
+        hasher: deps.hasher,
+        now: deps.now,
+        maxIntentos: config.email.otp.maxIntentos,
+      });
+      const guardian = await verifyEmail.execute(request.body);
+
+      await deps.bus.publish({ tipo: 'email_verificado', guardianId: guardian.id });
+
+      const tokens = await signSession(reply, config, guardian);
+      return reply.code(200).send({ ...guardian, ...tokens });
+    },
+  );
+
+  // Reenvía el código de verificación con cooldown (US-93). Pública y rate-limited.
+  app.withTypeProvider<ZodTypeProvider>().post(
+    '/guardians/resend-verification',
+    {
+      schema: { body: resendSchema },
+      config: { rateLimit: limite(config.security.rateLimit.resend) },
+    },
+    async (request, reply) => {
+      if (!sendVerification) {
+        throw new DomainError('La verificación por email no está activa.');
+      }
+      const resend = new ResendEmailVerification({
+        guardians: deps.guardians,
+        verifications: deps.emailVerifications,
+        sender: sendVerification,
+        now: deps.now,
+        cooldownMs: config.email.otp.resendCooldownMs,
+      });
+      await resend.execute(request.body);
+      return reply.code(202).send({ ok: true });
     },
   );
 

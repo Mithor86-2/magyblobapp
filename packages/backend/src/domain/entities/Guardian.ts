@@ -22,6 +22,12 @@ export interface GuardianProps {
    */
   passwordHash: string;
   consentimiento: Consentimiento;
+  /**
+   * Titularidad del email verificada por OTP (US-93). Por defecto `false`: con SMTP
+   * configurado, pasa a `true` al validar el código; sin SMTP el alta lo pone `true`
+   * (verificación omitida). Opcional en los props por retrocompatibilidad.
+   */
+  emailVerificado?: boolean;
   creadoEn: Date;
 }
 
@@ -38,6 +44,7 @@ export class Guardian {
   readonly telefono?: string;
   readonly passwordHash: string;
   readonly consentimiento: Consentimiento;
+  readonly emailVerificado: boolean;
   readonly creadoEn: Date;
 
   constructor(props: GuardianProps) {
@@ -59,12 +66,18 @@ export class Guardian {
     this.telefono = props.telefono;
     this.passwordHash = props.passwordHash;
     this.consentimiento = props.consentimiento;
+    this.emailVerificado = props.emailVerificado ?? false;
     this.creadoEn = props.creadoEn;
   }
 
   /** ¿El adulto ha otorgado el consentimiento? Requisito para crear perfiles. */
   haConsentido(): boolean {
     return this.consentimiento.dado;
+  }
+
+  /** Copia del guardián con el email marcado como verificado (US-93). */
+  conEmailVerificado(): Guardian {
+    return new Guardian({ ...this, consentimiento: this.consentimiento, emailVerificado: true });
   }
 
   /**

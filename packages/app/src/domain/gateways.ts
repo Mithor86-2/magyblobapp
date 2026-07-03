@@ -12,6 +12,7 @@ import type {
   Activity,
   AnonymousActivity,
   AnonymousStory,
+  AuthOutcome,
   ChildProfile,
   CreateChildProfileInput,
   GenerateStoryAnonymousRequest,
@@ -27,12 +28,22 @@ import type {
 } from './types';
 
 export interface GuardianGateway {
-  /** Da de alta al adulto y abre sesión (auto-login): devuelve guardián + tokens. */
-  register(input: RegisterGuardianInput): Promise<GuardianSession>;
-  /** Identifica al adulto por su email (login ligero, US-19) y abre sesión (US-45). */
-  login(input: LoginGuardianInput): Promise<GuardianSession>;
+  /**
+   * Da de alta al adulto. Abre sesión (auto-login) salvo que el backend exija
+   * verificar el email antes (US-93), en cuyo caso devuelve el estado pendiente.
+   */
+  register(input: RegisterGuardianInput): Promise<AuthOutcome>;
+  /**
+   * Identifica al adulto por email + contraseña (US-48) y abre sesión (US-45), salvo
+   * que la cuenta esté sin verificar (US-93), en cuyo caso devuelve el estado pendiente.
+   */
+  login(input: LoginGuardianInput): Promise<AuthOutcome>;
   /** Renueva el access token a partir del refresh token (US-45). */
   refresh(refreshToken: string): Promise<SessionTokens>;
+  /** Valida el código OTP y, si es correcto, abre sesión (US-93). */
+  verifyEmail(guardianId: string, codigo: string): Promise<GuardianSession>;
+  /** Reenvía el código OTP de verificación (US-93). */
+  resendVerification(guardianId: string): Promise<void>;
 }
 
 export interface ProfileGateway {

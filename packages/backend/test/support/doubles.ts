@@ -6,6 +6,7 @@ import type {
 } from '../../src/domain/ai/AIProvider.js';
 import type { ChildProfile } from '../../src/domain/entities/ChildProfile.js';
 import type { Guardian } from '../../src/domain/entities/Guardian.js';
+import type { EmailVerification } from '../../src/domain/entities/EmailVerification.js';
 import type { Story } from '../../src/domain/entities/Story.js';
 import type { StoryNarration } from '../../src/domain/entities/StoryNarration.js';
 import type { Activity } from '../../src/domain/entities/Activity.js';
@@ -14,6 +15,7 @@ import type { InteractionEvent } from '../../src/domain/entities/InteractionEven
 import type { AuditLog } from '../../src/domain/entities/AuditLog.js';
 import type { ChildProfileRepository } from '../../src/domain/repositories/ChildProfileRepository.js';
 import type { GuardianRepository } from '../../src/domain/repositories/GuardianRepository.js';
+import type { EmailVerificationRepository } from '../../src/domain/repositories/EmailVerificationRepository.js';
 import type { StoryRepository } from '../../src/domain/repositories/StoryRepository.js';
 import type { StoryNarrationRepository } from '../../src/domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from '../../src/domain/repositories/ActivityRepository.js';
@@ -23,6 +25,11 @@ import type { AuditLogRepository } from '../../src/domain/repositories/AuditLogR
 import type { SettingsRepository } from '../../src/domain/repositories/SettingsRepository.js';
 import type { TTSProvider, SynthesizeInput } from '../../src/domain/tts/TTSProvider.js';
 import type { PasswordHasher } from '../../src/domain/auth/PasswordHasher.js';
+import type {
+  DatosCorreoVerificacion,
+  EmailService,
+} from '../../src/domain/services/EmailService.js';
+import type { CodeGenerator } from '../../src/domain/services/CodeGenerator.js';
 import type { Clock, IdGenerator } from '../../src/application/ports.js';
 
 /** Repositorio de adultos en memoria para tests. */
@@ -42,6 +49,44 @@ export class InMemoryGuardianRepository implements GuardianRepository {
       if (g.email === email) return g;
     }
     return null;
+  }
+
+  async marcarEmailVerificado(id: string): Promise<void> {
+    const g = this.items.get(id);
+    if (g) this.items.set(id, g.conEmailVerificado());
+  }
+}
+
+/** Repositorio de verificaciones de email en memoria para tests (US-93). */
+export class InMemoryEmailVerificationRepository implements EmailVerificationRepository {
+  readonly items = new Map<string, EmailVerification>();
+
+  async guardar(verificacion: EmailVerification): Promise<void> {
+    this.items.set(verificacion.guardianId, verificacion);
+  }
+
+  async buscarPorGuardian(guardianId: string): Promise<EmailVerification | null> {
+    return this.items.get(guardianId) ?? null;
+  }
+}
+
+/**
+ * `EmailService` falso que no envía nada: registra los correos "enviados" para
+ * asertar en los tests (US-93). No toca la red.
+ */
+export class FakeEmailService implements EmailService {
+  readonly enviados: DatosCorreoVerificacion[] = [];
+
+  async enviarCodigoVerificacion(datos: DatosCorreoVerificacion): Promise<void> {
+    this.enviados.push(datos);
+  }
+}
+
+/** `CodeGenerator` determinista para tests: siempre devuelve el mismo código (US-93). */
+export class FakeCodeGenerator implements CodeGenerator {
+  constructor(private readonly codigo = '123456') {}
+  generar(): string {
+    return this.codigo;
   }
 }
 

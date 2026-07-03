@@ -55,6 +55,7 @@ export const en: typeof es = {
     login: 'Log in',
     selectProfile: 'Choose profile',
     createProfile: 'Create profile',
+    verifyEmail: 'Verify email',
     parental: 'Adults zone',
     achievements: 'My achievements',
     storyReader: 'Story',
@@ -82,6 +83,7 @@ export const en: typeof es = {
     haveAccount: 'I already have an account',
     retry: 'Try again',
     ups: 'Oops',
+    ok: 'Done',
     email: 'Email',
     emailPlaceholder: 'you@email.com',
     password: 'Password',
@@ -182,6 +184,22 @@ export const en: typeof es = {
       'I give my consent to process the child’s data for the sole purpose of generating stories and activities. The data is not shared with third parties and the content is generated locally. (Version {{version}})',
     submit: 'Accept and continue',
     errorGeneric: 'Could not complete the registration.',
+  },
+
+  // Email verification via OTP (US-93).
+  verify: {
+    title: 'Verify your email',
+    body: "We've sent a 6-digit code to {{email}}. Enter it here to activate your account.",
+    codeLabel: 'Verification code',
+    codePlaceholder: '000000',
+    submit: 'Verify',
+    resend: 'Resend code',
+    resendCooldown: 'You can resend in {{segundos}}s',
+    resentOk: "We've sent you a new code.",
+    errorCode: 'The code is incorrect or has expired. Check it or request a new one.',
+    errorTooMany: 'Too many attempts. Request a new code.',
+    errorResend: 'Could not resend the code. Please try again.',
+    errorGeneric: 'Could not verify the email.',
   },
 
   createProfile: {

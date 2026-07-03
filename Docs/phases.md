@@ -899,3 +899,27 @@ limiting (12 logins fallidos → ningún 429), sin verificación de email. Plan 
 - **Fase 4** (revocación de sesión, H6) **diferida** a su propia feature.
 - **DoD:** ✅ `pnpm check` verde (**backend 417 + app 274**) + cobertura OK · pruebas ofrecidas al
   usuario (unitarias/integración en verde + pasos manuales); cierre confirmado por el usuario.
+
+### Verificación de email por OTP (2026-07-03, rama `feature/93-verificacion-email-otp`, US-93, sin release)
+
+Materializa la mejora futura anotada en C-16/US-92 (verificación de titularidad del email / doble
+opt-in). Plan en [planes/feature-93-verificacion-email-otp.md](planes/feature-93-verificacion-email-otp.md).
+Decisiones con el usuario: **bloqueo duro** (sesión solo tras validar el código) y **sin SMTP →
+auto-verificar** (arranque reproducible intacto).
+
+- [x] ✅ **Backend.** `nodemailer` + `SmtpEmailService` (cableado solo si hay SMTP), `EmailService`/
+      `CodeGenerator` (puertos), entidad + repo `EmailVerification` (código bcrypt, caducidad 10 min,
+      máx. 5 intentos), migración `add_email_verification` (+ `Guardian.emailVerificado`, backfill a
+      `true`). Casos de uso `VerifyEmail`/`ResendEmailVerification` + servicio `SendEmailVerification`;
+      `RegisterGuardian` ramifica con/sin SMTP. Rutas `POST /guardians/verify-email` y
+      `/guardians/resend-verification` (públicas, rate-limited); alta y login devuelven
+      `requiereVerificacion` sin tokens si la cuenta no está verificada. Evento `email_verificado` →
+      `AuditLog accion=verificar_email`. Config SMTP/OTP validada con Zod.
+- [x] ✅ **App.** Pantalla **Verificar email** (código 6 dígitos + reenviar con cooldown + errores),
+      `AuthOutcome` (unión sesión | pendiente) en gateway/http/schemas, ramificación en `ConsentScreen`
+      y `LoginScreen`, ruta `VerifyEmail` en el stack, i18n ES/EN.
+- [x] ✅ **Docs.** US-93 + trazabilidad, C-17 en cumplimiento, modelo-datos (entidad + `emailVerificado`),
+      CHANGELOG (Unreleased) backend + app.
+- **DoD:** ✅ `pnpm check` verde (**backend 442 + app 282**) + cobertura CORE OK. Integración Prisma del
+  repo y E2E onboarding (modo sin SMTP) en sus suites Docker. Pendiente: **pruebas manuales del usuario**
+  (con y sin SMTP) y `finish` tras confirmación.

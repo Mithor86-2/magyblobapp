@@ -8,7 +8,8 @@ import {
   retoParental,
   TEST_CONFIG,
 } from '../support/server.js';
-import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
+import { CLAVE_DE_PRUEBA, FakeEmailService } from '../support/doubles.js';
+import type { Config } from '../../src/config.js';
 
 describe('rutas de guardians', () => {
   let app: FastifyInstance;
@@ -218,5 +219,159 @@ describe('rutas de guardians', () => {
     const perfiles = res.json();
     expect(perfiles).toHaveLength(1);
     expect(perfiles[0].nombre).toBe('Leo');
+  });
+});
+
+describe('verificación de email por OTP (US-93)', () => {
+  let app: FastifyInstance;
+  let handles: ReturnType<typeof makeInMemoryDeps>;
+  let email: FakeEmailService;
+
+  const CODIGO = '123456'; // FakeCodeGenerator por defecto
+  const PASSWORD = CLAVE_DE_PRUEBA;
+  const EMAIL = 'ana@example.com';
+
+  async function build(configOverride?: Config): Promise<void> {
+    email = new FakeEmailService();
+    handles = makeInMemoryDeps({ emailService: email });
+    app = await buildTestServer(handles.deps, configOverride);
+  }
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it('el alta NO emite sesión y envía el OTP (201 requiereVerificacion, sin tokens)', async () => {
+    await build();
+    const res = await altaGuardian(app);
+    expect(res.statusCode).toBe(201);
+    const body = res.json();
+    expect(body.requiereVerificacion).toBe(true);
+    expect(body.emailVerificado).toBe(false);
+    expect(body.accessToken).toBeUndefined();
+    expect(email.enviados).toHaveLength(1);
+    expect(email.enviados[0]).toMatchObject({ email: EMAIL, codigo: CODIGO });
+  });
+
+  it('verify-email con el código correcto emite la sesión (200 + tokens) y audita', async () => {
+    await build();
+    const alta = await altaGuardian(app);
+    const guardianId = alta.json().id as string;
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/verify-email',
+      payload: { guardianId, codigo: CODIGO },
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.emailVerificado).toBe(true);
+    expect(typeof body.accessToken).toBe('string');
+    expect(typeof body.refreshToken).toBe('string');
+
+    const verificado = handles.audit.items.find((a) => a.accion === 'verificar_email');
+    expect(verificado?.guardianId).toBe(guardianId);
+  });
+
+  it('verify-email con el código incorrecto responde 400', async () => {
+    await build();
+    const alta = await altaGuardian(app);
+    const guardianId = alta.json().id as string;
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/verify-email',
+      payload: { guardianId, codigo: '000000' },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.tipo).toBe('VerificationCodeError');
+  });
+
+  it('verify-email con un código de formato inválido responde 400 (esquema)', async () => {
+    await build();
+    const alta = await altaGuardian(app);
+    const guardianId = alta.json().id as string;
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/verify-email',
+      payload: { guardianId, codigo: 'abc' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('verify-email con el código caducado responde 400', async () => {
+    // TTL 0 ⇒ el código nace ya caducado (expiraEn == creadoEn, reloj fijo).
+    const configTtlCero: Config = {
+      ...TEST_CONFIG,
+      email: { ...TEST_CONFIG.email, otp: { ...TEST_CONFIG.email.otp, ttlMs: 0 } },
+    };
+    await build(configTtlCero);
+    const alta = await altaGuardian(app);
+    const guardianId = alta.json().id as string;
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/verify-email',
+      payload: { guardianId, codigo: CODIGO },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.tipo).toBe('VerificationCodeError');
+  });
+
+  it('verify-email agota los intentos y responde 429', async () => {
+    await build();
+    const alta = await altaGuardian(app);
+    const guardianId = alta.json().id as string;
+
+    // maxIntentos = 5: cinco fallos (400) y el sexto se corta con 429.
+    for (let i = 0; i < 5; i++) {
+      const r = await app.inject({
+        method: 'POST',
+        url: '/guardians/verify-email',
+        payload: { guardianId, codigo: '000000' },
+      });
+      expect(r.statusCode).toBe(400);
+    }
+    const bloqueado = await app.inject({
+      method: 'POST',
+      url: '/guardians/verify-email',
+      payload: { guardianId, codigo: CODIGO },
+    });
+    expect(bloqueado.statusCode).toBe(429);
+  });
+
+  it('resend-verification reenvía un código nuevo (202)', async () => {
+    // Cooldown 0 para poder reenviar en el mismo instante (reloj fijo).
+    const configSinCooldown: Config = {
+      ...TEST_CONFIG,
+      email: { ...TEST_CONFIG.email, otp: { ...TEST_CONFIG.email.otp, resendCooldownMs: 0 } },
+    };
+    await build(configSinCooldown);
+    const alta = await altaGuardian(app);
+    const guardianId = alta.json().id as string;
+    expect(email.enviados).toHaveLength(1);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/resend-verification',
+      payload: { guardianId },
+    });
+    expect(res.statusCode).toBe(202);
+    expect(email.enviados).toHaveLength(2);
+  });
+
+  it('login de una cuenta sin verificar NO emite sesión (200 requiereVerificacion)', async () => {
+    await build();
+    await altaGuardian(app);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/guardians/login',
+      payload: { email: EMAIL, password: PASSWORD },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().requiereVerificacion).toBe(true);
+    expect(res.json().accessToken).toBeUndefined();
   });
 });

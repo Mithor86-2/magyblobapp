@@ -23,16 +23,19 @@ import {
   activitySchema,
   anonymousActivityListSchema,
   anonymousStorySchema,
+  authOutcomeSchema,
   childProfileListSchema,
   childProfileSchema,
   guardianSessionSchema,
   historySchema,
   parentalChallengeSchema,
+  resendResultSchema,
   sessionTokensSchema,
   storySchema,
 } from './schemas';
 import type { Api } from '../domain/gateways';
 import type {
+  AuthOutcome,
   CreateChildProfileInput,
   GenerateStoryAnonymousRequest,
   GenerateStoryRequest,
@@ -284,6 +287,18 @@ function resolverReto(pregunta: string): number {
 }
 
 /**
+ * Normaliza la respuesta de alta/login al `AuthOutcome` del dominio (US-93): si trae
+ * `requiereVerificacion`, extrae `guardianId`/`email` para ir a la verificación; si
+ * no, es una sesión completa (con tokens).
+ */
+function aAuthOutcome(parsed: z.infer<typeof authOutcomeSchema>): AuthOutcome {
+  if ('requiereVerificacion' in parsed) {
+    return { requiereVerificacion: true, guardianId: parsed.id, email: parsed.email };
+  }
+  return parsed;
+}
+
+/**
  * Composition de los gateways HTTP. `baseUrl` y `session` inyectables (tests);
  * por defecto, el env y sin sesión (el composition root cablea el store).
  */
@@ -300,7 +315,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
           { method: 'GET' },
           parentalChallengeSchema,
         );
-        return request(
+        const outcome = await request(
           baseUrl,
           '/guardians',
           {
@@ -311,17 +326,36 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
               challengeRespuesta: resolverReto(reto.pregunta),
             },
           },
-          guardianSessionSchema,
+          authOutcomeSchema,
         );
+        return aAuthOutcome(outcome);
       },
-      login: (input: LoginGuardianInput) =>
-        request(
+      login: async (input: LoginGuardianInput) => {
+        const outcome = await request(
           baseUrl,
           '/guardians/login',
           { method: 'POST', body: input },
+          authOutcomeSchema,
+        );
+        return aAuthOutcome(outcome);
+      },
+      refresh: (refreshToken: string) => postRefresh(baseUrl, refreshToken),
+      // Verificación de email por OTP (US-93): valida el código y abre sesión.
+      verifyEmail: (guardianId: string, codigo: string) =>
+        request(
+          baseUrl,
+          '/guardians/verify-email',
+          { method: 'POST', body: { guardianId, codigo } },
           guardianSessionSchema,
         ),
-      refresh: (refreshToken: string) => postRefresh(baseUrl, refreshToken),
+      resendVerification: async (guardianId: string) => {
+        await request(
+          baseUrl,
+          '/guardians/resend-verification',
+          { method: 'POST', body: { guardianId } },
+          resendResultSchema,
+        );
+      },
     },
     profiles: {
       create: (input: CreateChildProfileInput) =>

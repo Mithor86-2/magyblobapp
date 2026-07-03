@@ -103,6 +103,18 @@ function auditSubscriber(sinks: DomainEventSinks): DomainEventHandler {
           }),
         );
         return;
+      case 'email_verificado':
+        await sinks.audit.save(
+          new AuditLog({
+            id: sinks.newId(),
+            guardianId: event.guardianId,
+            accion: 'verificar_email',
+            entidad: 'Guardian',
+            entidadId: event.guardianId,
+            creadoEn: sinks.now(),
+          }),
+        );
+        return;
       default:
         // Eventos de uso: los registra `telemetrySubscriber`.
         return;

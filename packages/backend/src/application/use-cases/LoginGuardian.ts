@@ -43,6 +43,7 @@ export class LoginGuardian {
       email: guardian.email,
       parentesco: guardian.parentesco,
       consentimientoDado: guardian.haConsentido(),
+      emailVerificado: guardian.emailVerificado,
     };
   }
 }

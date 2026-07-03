@@ -24,6 +24,8 @@ export const guardianSchema = z.object({
   email: z.string(),
   parentesco: z.enum(PARENTESCOS),
   consentimientoDado: z.boolean(),
+  // US-93: titularidad del email verificada; opcional (backend antiguo la omite).
+  emailVerificado: z.boolean().optional(),
 });
 
 /** Par de tokens de sesión (US-45). */
@@ -34,6 +36,20 @@ export const sessionTokensSchema = z.object({
 
 /** Respuesta de alta/login: guardián + sesión JWT (US-45). */
 export const guardianSessionSchema = guardianSchema.extend(sessionTokensSchema.shape);
+
+/** Respuesta de alta/login pendiente de verificar el email (US-93): sin tokens. */
+export const pendingVerificationSchema = guardianSchema.extend({
+  requiereVerificacion: z.literal(true),
+});
+
+/**
+ * Resultado de alta/login (US-93): o la sesión (con tokens) o el estado pendiente de
+ * verificación. La sesión se prueba primero (tiene `accessToken`); si no, pendiente.
+ */
+export const authOutcomeSchema = z.union([guardianSessionSchema, pendingVerificationSchema]);
+
+/** Respuesta del reenvío de código (US-93). */
+export const resendResultSchema = z.object({ ok: z.boolean() });
 
 /** Reto de la puerta parental del alta (US-92): pregunta legible + token firmado. */
 export const parentalChallengeSchema = z.object({

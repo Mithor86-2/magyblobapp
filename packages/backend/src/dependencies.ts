@@ -10,6 +10,9 @@ import type { AchievementRepository } from './domain/repositories/AchievementRep
 import type { InteractionEventRepository } from './domain/repositories/InteractionEventRepository.js';
 import type { AuditLogRepository } from './domain/repositories/AuditLogRepository.js';
 import type { PasswordHasher } from './domain/auth/PasswordHasher.js';
+import type { EmailVerificationRepository } from './domain/repositories/EmailVerificationRepository.js';
+import type { EmailService } from './domain/services/EmailService.js';
+import type { CodeGenerator } from './domain/services/CodeGenerator.js';
 import type { Clock, IdGenerator } from './application/ports.js';
 
 /**
@@ -31,6 +34,15 @@ export interface AppDeps {
   tts: TTSProvider;
   /** Hasher de contraseñas (US-48): el alta deriva el hash, el login lo verifica. */
   hasher: PasswordHasher;
+  /** Verificaciones de email pendientes (US-93). */
+  emailVerifications: EmailVerificationRepository;
+  /** Generador del código OTP (US-93). */
+  codeGenerator: CodeGenerator;
+  /**
+   * Servicio de email (US-93). **Opcional**: presente solo si hay SMTP configurado.
+   * Ausente ⇒ la verificación se omite (alta auto-verificada y auto-login).
+   */
+  emailService?: EmailService;
   /** Bus de eventos de dominio (Observer): las rutas publican, los suscriptores registran. */
   bus: EventBus;
   newId: IdGenerator;

@@ -28,63 +28,64 @@
 
 ### B1 — Config, dependencia y esquema de datos
 
-- [ ] ❌ Añadir `nodemailer` (+ `@types/nodemailer` dev) al backend.
-- [ ] ❌ `src/config.ts`: parsear SMTP (opcional) + `EMAIL_FROM`; derivar `email.enabled`; params OTP
+- [x] ✅ Añadir `nodemailer` (+ `@types/nodemailer` dev) al backend.
+- [x] ✅ `src/config.ts`: parsear SMTP (opcional) + `EMAIL_FROM`; derivar `email.enabled`; params OTP
       (`OTP_TTL_MS`, `OTP_MAX_INTENTOS`, `OTP_RESEND_COOLDOWN_MS`) y rate-limit `RATE_LIMIT_VERIFY_*`/`RATE_LIMIT_RESEND_*`. Ampliar `config.test.ts`.
-- [ ] ❌ `.env.example`: documentar SMTP + `EMAIL_FROM` + params OTP (nota "sin SMTP → auto-verificado").
-- [ ] ❌ `prisma/schema.prisma`: `Guardian.emailVerificado` + modelo `EmailVerification`; migración
+- [x] ✅ `.env.example`: documentar SMTP + `EMAIL_FROM` + params OTP (nota "sin SMTP → auto-verificado").
+- [x] ✅ `prisma/schema.prisma`: `Guardian.emailVerificado` + modelo `EmailVerification`; migración
       `add_email_verification` con backfill `emailVerificado=true` para filas existentes.
-- [ ] ❌ `Docs/modelo-datos.md`: `erDiagram` + entidades (enforced).
+- [x] ✅ `Docs/modelo-datos.md`: `erDiagram` + entidades (enforced).
 
 ### B2 — Dominio
 
-- [ ] ❌ Puerto `EmailService` (`enviarCodigoVerificacion`).
-- [ ] ❌ Puerto `CodeGenerator` (`generar` 6 dígitos).
-- [ ] ❌ `EmailVerificationRepository` (guardar/buscar/borrar por guardián).
-- [ ] ❌ Entidad `EmailVerification` (invariantes: expiración, intentos).
-- [ ] ❌ `errors.ts`: `VerificationCodeError` (400); reutilizar `TooManyRequestsError`/`NotFoundError`.
+- [x] ✅ Puerto `EmailService` (`enviarCodigoVerificacion`).
+- [x] ✅ Puerto `CodeGenerator` (`generar` 6 dígitos).
+- [x] ✅ `EmailVerificationRepository` (guardar/buscar/borrar por guardián).
+- [x] ✅ Entidad `EmailVerification` (invariantes: expiración, intentos).
+- [x] ✅ `errors.ts`: `VerificationCodeError` (400); reutilizar `TooManyRequestsError`/`NotFoundError`.
 
 ### B3 — Aplicación (+ tests co-localizados)
 
-- [ ] ❌ Servicio `SendEmailVerification` (generar→hashear→persistir→enviar), reutilizable.
-- [ ] ❌ `RegisterGuardian` (modificar): rama con/sin SMTP; output con `emailVerificado`. Test actualizado.
-- [ ] ❌ `VerifyEmail` (nuevo) + `verify-email.test.ts`.
-- [ ] ❌ `ResendEmailVerification` (nuevo) + `resend-email-verification.test.ts`.
-- [ ] ❌ DTOs en `dto.ts`.
+- [x] ✅ Servicio `SendEmailVerification` (generar→hashear→persistir→enviar), reutilizable.
+- [x] ✅ `RegisterGuardian` (modificar): rama con/sin SMTP; output con `emailVerificado`. Test actualizado.
+- [x] ✅ `VerifyEmail` (nuevo) + `verify-email.test.ts`.
+- [x] ✅ `ResendEmailVerification` (nuevo) + `resend-email-verification.test.ts`.
+- [x] ✅ DTOs en `dto.ts`.
 
 ### B4 — Infraestructura y rutas (+ tests)
 
-- [ ] ❌ `SmtpEmailService` (nodemailer) + función pura de plantilla ES/EN (test).
-- [ ] ❌ `CryptoCodeGenerator` (`crypto.randomInt`) + test de formato.
-- [ ] ❌ `PrismaEmailVerificationRepository` + test de integración (Testcontainers).
-- [ ] ❌ Subscriber `email_verificado` → `AuditLog`.
-- [ ] ❌ `dependencies.ts`: cablear SMTP solo si `email.enabled`.
-- [ ] ❌ Rutas `POST /guardians` (respuesta condicional), `POST /guardians/verify-email`,
+- [x] ✅ `SmtpEmailService` (nodemailer) + función pura de plantilla ES/EN (test).
+- [x] ✅ `CryptoCodeGenerator` (`crypto.randomInt`) + test de formato.
+- [x] ✅ `PrismaEmailVerificationRepository` + test de integración (Testcontainers).
+- [x] ✅ Subscriber `email_verificado` → `AuditLog`.
+- [x] ✅ `dependencies.ts`: cablear SMTP solo si `email.enabled`.
+- [x] ✅ Rutas `POST /guardians` (respuesta condicional), `POST /guardians/verify-email`,
       `POST /guardians/resend-verification` + `guardians.test.ts` + dobles/servidor de test.
 
 ### A1 — App: dominio/HTTP/schemas
 
-- [ ] ❌ `types.ts` (`RegisterOutcome`), `gateways.ts` (`verifyEmail`, `resendVerification`).
-- [ ] ❌ `http.ts` (rama de alta + verify + resend), `schemas.ts` (unión) + `http.test.ts`.
+- [x] ✅ `types.ts` (`RegisterOutcome`), `gateways.ts` (`verifyEmail`, `resendVerification`).
+- [x] ✅ `http.ts` (rama de alta + verify + resend), `schemas.ts` (unión) + `http.test.ts`.
 
 ### A2 — App: pantalla/navegación/i18n
 
-- [ ] ❌ `VerifyEmailScreen.tsx` (código 6 dígitos, reenviar, errores).
-- [ ] ❌ `navigation.ts` + `App.tsx` (ruta `VerifyEmail`), `ConsentScreen.tsx` (ramificar).
-- [ ] ❌ i18n `es.ts`/`en.ts` (bloque `verify`).
+- [x] ✅ `VerifyEmailScreen.tsx` (código 6 dígitos, reenviar, errores).
+- [x] ✅ `navigation.ts` + `App.tsx` (ruta `VerifyEmail`), `ConsentScreen.tsx` (ramificar).
+- [x] ✅ i18n `es.ts`/`en.ts` (bloque `verify`).
 
 ### A3 — Tests app
 
-- [ ] ❌ Test de componente `VerifyEmailScreen` (Vitest + jsdom).
-- [ ] ❌ `http.test.ts` (arriba). E2E onboarding sigue verde sin cambios (modo sin SMTP).
+- [x] ✅ Test de componente `VerifyEmailScreen` (Vitest + jsdom).
+- [x] ✅ `http.test.ts` (arriba). E2E onboarding sigue verde sin cambios (modo sin SMTP).
 
 ### Docs y cierre
 
 - [x] ✅ US-93 creada + trazabilidad en `README.md`.
-- [ ] ❌ `Docs/cumplimiento-menores.md`: fila **C-17**.
-- [ ] ❌ `Docs/phases.md`: entrada de la feature.
-- [ ] ❌ CHANGELOG backend + app bajo `## [Unreleased]` (versionado diferido).
-- [ ] ❌ Gate `pnpm check` verde → pruebas manuales con el usuario → `cerrar-feature` (tras confirmación).
+- [x] ✅ `Docs/cumplimiento-menores.md`: fila **C-17**.
+- [x] ✅ `Docs/phases.md`: entrada de la feature.
+- [x] ✅ CHANGELOG backend + app bajo `## [Unreleased]` (versionado diferido).
+- [x] ✅ Gate `pnpm check` verde (backend 442 + app 282).
+- [ ] 🔄 Pruebas manuales con el usuario (con y sin SMTP) → `cerrar-feature` (tras confirmación).
 
 ## Verificación (DoD)
 
