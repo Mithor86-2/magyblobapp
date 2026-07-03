@@ -913,3 +913,22 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
   6. Dockerfile: copiar `prisma.config.ts` en build (postinstall) y runtime (`migrate deploy`).
 - **Prevención:** agrupar `prisma` + `@prisma/client` en Dependabot e **ignorar majors** (revisarlos a
   mano). Los majors sueltos automáticos son la trampa.
+
+## Seguridad del API público (2026-07-03, US-92)
+
+### `@fastify/rate-limit` + `setErrorHandler` global: el `errorResponseBuilder` se **lanza**, no se envía
+
+- **Síntoma:** al superar el límite salía **500 con `{"error":{}}`** en vez de 429, aunque el
+  `errorResponseBuilder` devolvía `{ error: { tipo, mensaje } }`.
+- **Causa:** con un `setErrorHandler` global registrado, el valor que devuelve `errorResponseBuilder`
+  se propaga hacia ese manejador **como si fuera el error** (no se serializa como respuesta directa).
+  Nuestro manejador leía `error.name`/`error.message`/`error.statusCode` de ese objeto plano → sin
+  `statusCode` caía a 500 y sin `name`/`message` el cuerpo quedaba vacío.
+- **Solución:** que `errorResponseBuilder` devuelva un **`Error` con `statusCode`** (aquí
+  `TooManyRequestsError`, statusCode 429). Así el manejador central lo traduce con el cuerpo uniforme
+  `{ error: { tipo, mensaje } }`, igual que el resto de errores de dominio.
+
+### `sonarjs/super-linear-regex` salta con dos `\d+` aunque haya un literal entre medias
+
+- Parsear "a + b" con `/(\d+) \+ (\d+)/` (o `\s*`) dispara la regla por los cuantificadores abiertos.
+  Se resuelve **acotando** el cuantificador: `/(\d{1,2}) \+ (\d{1,2})/` (los sumandos son de una cifra).
