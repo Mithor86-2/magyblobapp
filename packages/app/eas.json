@@ -13,12 +13,18 @@
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://magyblobapp.onrender.com" }
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://magyblobapp.onrender.com",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://8b77e9d51046831d4cd11a61de7a613b@o4511624223195136.ingest.us.sentry.io/4511624281063424"
+      }
     },
     "production": {
       "autoIncrement": true,
       "android": { "buildType": "app-bundle" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://magyblobapp.onrender.com" }
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://magyblobapp.onrender.com",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://8b77e9d51046831d4cd11a61de7a613b@o4511624223195136.ingest.us.sentry.io/4511624281063424"
+      }
     }
   },
   "submit": {

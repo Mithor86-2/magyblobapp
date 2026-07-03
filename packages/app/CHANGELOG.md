@@ -27,6 +27,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- **Los crashes del APK no llegaban a Sentry (US-40).** El DSN (`EXPO_PUBLIC_SENTRY_DSN`) solo estaba
+  en el `.env` local (dev), pero **`eas.json` no lo inyectaba** en los perfiles `preview`/`production`,
+  así que el APK de EAS arrancaba sin DSN → Sentry no se inicializaba → nada se reportaba. Se añade el
+  DSN (público por diseño, ya iba embebido en el bundle) al `env` de `preview` y `production`; el APK
+  reporta ahora con `environment: production`. _(Symbolicación de stacks: pendiente añadir el plugin
+  `@sentry/react-native/expo` + `SENTRY_AUTH_TOKEN` para subir source maps.)_
 - **Crash nativo del lector al navegar atrás a mitad del giro de página (US-83).** `BookPages` no
   cancelaba las animaciones de reanimated en vuelo al desmontarse; al volver del lector con un giro a
   medias, el callback tocaba un nodo ya destruido y en reanimated 4 / New Architecture provocaba un
