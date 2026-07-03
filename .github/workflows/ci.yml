@@ -105,3 +105,10 @@ jobs:
           tags: magyblob-backend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      # Smoke de runtime: importa el cliente Prisma compilado dentro de la imagen. Cazaría
+      # el fallo build-ok/runtime-ko en el que el generador emite imports `.ts` que `tsc`
+      # no reescribe → `node dist` crashea con ERR_MODULE_NOT_FOUND (rompió el deploy de
+      # Render). No necesita BD: el error es de resolución de módulos, al importar.
+      - name: Smoke — el cliente Prisma compilado resuelve en runtime
+        run: |
+          docker run --rm magyblob-backend:ci node -e "import('./dist/generated/prisma/client.js').then(() => { console.log('client import OK'); }).catch((e) => { console.error(e); process.exit(1); })"

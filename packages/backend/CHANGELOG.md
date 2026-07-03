@@ -19,6 +19,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.9.2] - 2026-07-03
+
+### Fixed
+
+- **Producción no arrancaba en Render tras Prisma 7 (build OK, runtime KO).** El generador
+  `prisma-client` emitía imports con extensión `.ts` (no determinista, distinto que en local) que
+  `tsc` no reescribe: el `dist/generated/prisma/client.js` importaba `./enums.ts` (inexistente en
+  runtime) → `node dist/index.js` crasheaba con `ERR_MODULE_NOT_FOUND` y el deploy de Render fallaba
+  (v1.9.0/v1.9.1). Se fija `importFileExtension = "js"` en el generador (`schema.prisma`) → imports
+  `.js` que resuelven en runtime y, bajo tsc/vitest (NodeNext), mapean al `.ts` fuente. Verificado
+  arrancando la imagen (`Server listening` + `/health` 200). Nuevo **smoke de runtime en CI** (importa
+  el cliente compilado dentro de la imagen) para cazar esta clase de fallo build-ok/runtime-ko.
+
 ## [1.9.1] - 2026-07-03
 
 Sin cambios en el backend; versión unificada del monorepo (patch con fixes de crash en el app).
