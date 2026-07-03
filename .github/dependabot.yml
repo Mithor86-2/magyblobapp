@@ -21,10 +21,22 @@ updates:
     commit-message:
       prefix: chore
       include: scope
-    # Los majors se gestionan a MANO (rompen: Prisma 6→7, Expo SDK, Vitest, etc.).
+    # Espera 7 días desde la publicación antes de proponer una versión: así los PRs no
+    # chocan con la política de supply-chain `minimumReleaseAge` de pnpm (que rechaza
+    # paquetes recién publicados) — antes cada grupo minor/patch fallaba el CI por traer
+    # versiones de <24 h. Ver Docs/lecciones-aprendidas.md.
+    cooldown:
+      default-days: 7
+    # Los majors se gestionan a MANO (rompen: Prisma 6→7, Expo SDK, Vitest, etc.). El
+    # stack de animación nativa (reanimated/worklets/gesture-handler) se ignora del todo:
+    # es sensible a crashes en dispositivo (reanimated 4 / New Arch) y se sube a mano con
+    # pruebas en dispositivo, nunca por un bump automático del grupo minor/patch.
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
+      - dependency-name: 'react-native-reanimated'
+      - dependency-name: 'react-native-worklets'
+      - dependency-name: 'react-native-gesture-handler'
     groups:
       # Prisma cliente + CLI + adapter SIEMPRE juntos (deben ir en la misma versión).
       prisma:
