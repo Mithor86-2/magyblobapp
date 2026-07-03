@@ -4,8 +4,11 @@
 # Settings → Security → Code security del repo; este fichero solo configura las
 # PRs de actualización. Las PRs apuntan a `develop` (Git Flow: main es producción).
 #
-# Nota pnpm: el ecosistema `npm` cubre el workspace pnpm desde la raíz
-# (pnpm-lock.yaml está en `/`). Se agrupan minor+patch para reducir el ruido de PRs.
+# Política (aprendida a las malas, ver Docs/lecciones-aprendidas.md): se agrupan
+# minor+patch en un PR, y los **majors se IGNORAN** (se revisan y suben a mano). Un
+# major suelto rompió el CI (Dependabot subió solo `@prisma/client` a 7 dejando el CLI
+# en 6). Además Prisma cliente+CLI+adapter van en un **grupo** para no volver a
+# desalinearse. Nota pnpm: el ecosistema `npm` cubre el workspace desde la raíz.
 version: 2
 updates:
   # --- Dependencias del monorepo (pnpm workspace) ---
@@ -18,8 +21,17 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    # Los majors se gestionan a MANO (rompen: Prisma 6→7, Expo SDK, Vitest, etc.).
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
-      # Un solo PR semanal con todas las actualizaciones menores/parche.
+      # Prisma cliente + CLI + adapter SIEMPRE juntos (deben ir en la misma versión).
+      prisma:
+        patterns:
+          - 'prisma'
+          - '@prisma/*'
+      # Un solo PR semanal con el resto de actualizaciones menores/parche.
       npm-minor-patch:
         update-types:
           - minor
@@ -34,6 +46,9 @@ updates:
     commit-message:
       prefix: ci
       include: scope
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
       github-actions:
         update-types:
@@ -49,3 +64,7 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    # El major de la imagen base (p. ej. node 24→26) se sube a mano, no automático.
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
