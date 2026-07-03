@@ -1,7 +1,7 @@
 # Multi-stage build del backend dentro del monorepo pnpm.
 # Contexto de build = raíz del repo (ver docker-compose.yml).
 
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
