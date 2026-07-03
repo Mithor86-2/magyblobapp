@@ -1,0 +1,42 @@
+# Smoke POST-DEPLOY: tras integrar en main, Render auto-despliega el backend. Este
+# workflow espera a que producción sirva la VERSIÓN esperada en /health y falla si no
+# llega en el plazo (deploy fallido, o una instancia vieja quedó viva). Cierra el único
+# punto del pipeline sin verificación (ver Docs/analisis-pruebas-cicd.md). No necesita
+# secretos: solo hace GET al /health público, que ahora incluye `version`.
+name: Smoke post-deploy (Render)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: post-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  health:
+    name: Verifica que Render sirve la versión esperada
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Esperar la versión esperada en /health (Render + cold start)
+        env:
+          URL: https://magyblobapp.onrender.com/health
+        run: |
+          EXPECTED=$(node -p "require('./package.json').version")
+          echo "Esperando que $URL sirva version=$EXPECTED (Render tarda unos min en build+deploy)…"
+          for i in $(seq 1 45); do
+            BODY=$(curl -s --max-time 70 "$URL" || true)
+            GOT=$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(String(JSON.parse(s).version||''))}catch{process.stdout.write('')}})")
+            echo "intento $i: version='$GOT' (esperada '$EXPECTED')"
+            if [ "$GOT" = "$EXPECTED" ]; then
+              echo "✅ Render sirve v$EXPECTED — deploy OK."
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "❌ Render no llegó a servir v$EXPECTED en el plazo: el deploy falló o no completó."
+          echo "   Revisa los logs del deploy en el panel de Render."
+          exit 1
