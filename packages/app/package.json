@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e:install": "playwright install chromium webkit",
+    "e2e:install": "playwright install chromium",
     "test:e2e": "EXPO_PUBLIC_API_URL=http://127.0.0.1:4173 EXPO_PUBLIC_SENTRY_DSN= expo export --platform web --clear && playwright test"
   },
   "dependencies": {
