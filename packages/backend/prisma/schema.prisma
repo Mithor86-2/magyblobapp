@@ -7,6 +7,12 @@ generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
   moduleFormat = "esm"
+  // Fuerza extensión `.js` en los imports del cliente generado. Sin esto, el generador
+  // puede emitir imports con `.ts` (no determinista) que `tsc` NO reescribe → el
+  // `dist/generated/prisma/client.js` importaría `./enums.ts` (inexistente en runtime) y
+  // `node dist/index.js` crashea (ERR_MODULE_NOT_FOUND). Con `.js` resuelve en runtime y,
+  // bajo tsc/vitest (NodeNext), `.js` mapea al `.ts` fuente.
+  importFileExtension = "js"
 }
 
 datasource db {
