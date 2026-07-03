@@ -51,8 +51,8 @@
     "eslint-plugin-sonarjs": "^4.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
-    "prettier": "^3.4.2",
+    "prettier": "^3.8.5",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.1"
+    "typescript-eslint": "^8.62.0"
   }
 }
