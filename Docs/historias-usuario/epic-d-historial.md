@@ -30,8 +30,8 @@ app.**
 
 - Dado un cuento del Historial, Cuando lo toco, Entonces se abre una vista de lectura con su
   **título y cuerpo** completos (paginados) y el Autor.
-- Dado un cuento `nuevo` en la lectura, Cuando **llego a la última página**, Entonces aparece una
-  **modal** preguntando si marcarlo como leído; al **confirmar** queda `leído` (el Historial lo
+- Dado un cuento `nuevo` en la lectura, Cuando **llego a la última página**, Entonces **medio segundo
+  después** aparece una **modal** preguntando si marcarlo como leído; al **confirmar** queda `leído` (el Historial lo
   refleja al volver) y al **cancelar** no cambia su estado. La modal se muestra **una sola vez** por
   lectura y **no** aparece si el cuento ya estaba leído.
 - Dada la vista de lectura, Cuando pulso "Marcar como leído" o termino la narración, Entonces el

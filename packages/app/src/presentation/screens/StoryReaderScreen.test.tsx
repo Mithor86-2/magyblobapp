@@ -114,29 +114,48 @@ describe('StoryReaderScreen — marcar leído explícito (A2)', () => {
     expect(screen.getByText(/Fin de la historia/)).toBeInTheDocument();
   });
 
-  it('US-27: al llegar a la última página ofrece la modal y, al confirmar, marca leído', () => {
-    renderReader();
-    expect(confirmMock).not.toHaveBeenCalled();
+  it('US-27: la modal sale medio segundo después de llegar a la última página y, al confirmar, marca leído', () => {
+    vi.useFakeTimers();
+    try {
+      renderReader();
+      expect(confirmMock).not.toHaveBeenCalled();
 
-    // Avanzar hasta la última página (historia + fin) dispara la modal una sola vez.
-    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
-    expect(confirmMock).toHaveBeenCalledTimes(1);
+      // Avanzar hasta la última página (historia + fin).
+      fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+      // Aún no: la modal espera 500 ms tras mostrarse la página.
+      expect(confirmMock).not.toHaveBeenCalled();
 
-    // Confirmar la modal marca el cuento como leído.
-    const { onConfirm } = confirmMock.mock.calls[0][0] as { onConfirm: () => void };
-    act(() => {
-      onConfirm();
-    });
-    expect(markReadMock).toHaveBeenCalledWith('s1');
-    expect(screen.getByText('Leído')).toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+
+      // Confirmar la modal marca el cuento como leído.
+      const { onConfirm } = confirmMock.mock.calls[0][0] as { onConfirm: () => void };
+      act(() => {
+        onConfirm();
+      });
+      expect(markReadMock).toHaveBeenCalledWith('s1');
+      expect(screen.getByText('Leído')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('US-27: no ofrece la modal si el cuento ya estaba leído', () => {
-    renderReader({ ...STORY, estado: 'leido' });
-    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
-    expect(confirmMock).not.toHaveBeenCalled();
+    vi.useFakeTimers();
+    try {
+      renderReader({ ...STORY, estado: 'leido' });
+      fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(confirmMock).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('US-78: "Continuar la historia" genera el capítulo nuevo y abre su lector', async () => {
