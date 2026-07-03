@@ -8,12 +8,14 @@ import { MockProvider } from '../../src/infrastructure/ai/MockProvider.js';
 import { InMemoryEventBus } from '../../src/infrastructure/events/InMemoryEventBus.js';
 import { wireDomainEvents } from '../../src/infrastructure/events/subscribers.js';
 import {
+  FakeCodeGenerator,
   FakePasswordHasher,
   FakeTTSProvider,
   InMemoryAchievementRepository,
   InMemoryActivityRepository,
   InMemoryAuditLogRepository,
   InMemoryChildProfileRepository,
+  InMemoryEmailVerificationRepository,
   InMemoryGuardianRepository,
   InMemoryInteractionEventRepository,
   InMemoryStoryNarrationRepository,
@@ -21,6 +23,7 @@ import {
   relojFijo,
   secuencialIdGenerator,
 } from './doubles.js';
+import type { EmailService } from '../../src/domain/services/EmailService.js';
 
 export const TEST_CONFIG: Config = {
   nodeEnv: 'test',
@@ -52,13 +55,26 @@ export const TEST_CONFIG: Config = {
       registro: { max: 100, ventanaMs: 60_000 },
       login: { max: 100, ventanaMs: 60_000 },
       refresh: { max: 100, ventanaMs: 60_000 },
+      verify: { max: 100, ventanaMs: 60_000 },
+      resend: { max: 100, ventanaMs: 60_000 },
     },
     parentalGate: { ttlMs: 300_000 },
   },
+  // Verificación de email (US-93): en TEST_CONFIG está desactivada (`enabled=false`),
+  // así el alta auto-verifica (como el onboarding por defecto). Los tests que ejercen
+  // la verificación construyen deps con un `FakeEmailService`.
+  email: {
+    enabled: false,
+    otp: { ttlMs: 600_000, maxIntentos: 5, resendCooldownMs: 60_000 },
+  },
 };
 
-/** Dependencias en memoria + handles a los repos para inspeccionarlos en los tests. */
-export function makeInMemoryDeps() {
+/**
+ * Dependencias en memoria + handles a los repos para inspeccionarlos en los tests.
+ * `emailService` es opcional (US-93): si se pasa, el alta exige verificación por OTP;
+ * si se omite, el alta auto-verifica (comportamiento por defecto sin SMTP).
+ */
+export function makeInMemoryDeps(options: { emailService?: EmailService } = {}) {
   const guardians = new InMemoryGuardianRepository();
   const profiles = new InMemoryChildProfileRepository();
   const stories = new InMemoryStoryRepository();
@@ -69,6 +85,8 @@ export function makeInMemoryDeps() {
   const audit = new InMemoryAuditLogRepository();
   const tts = new FakeTTSProvider();
   const hasher = new FakePasswordHasher();
+  const emailVerifications = new InMemoryEmailVerificationRepository();
+  const codeGenerator = new FakeCodeGenerator();
 
   const deps: AppDeps = {
     guardians,
@@ -82,6 +100,9 @@ export function makeInMemoryDeps() {
     ai: new MockProvider(),
     tts,
     hasher,
+    emailVerifications,
+    codeGenerator,
+    emailService: options.emailService,
     bus: new InMemoryEventBus(),
     newId: secuencialIdGenerator(),
     now: relojFijo(),
@@ -102,6 +123,8 @@ export function makeInMemoryDeps() {
     audit,
     tts,
     hasher,
+    emailVerifications,
+    codeGenerator,
   };
 }
 

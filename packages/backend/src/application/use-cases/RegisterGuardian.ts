@@ -4,17 +4,28 @@ import type { GuardianRepository } from '../../domain/repositories/GuardianRepos
 import type { PasswordHasher } from '../../domain/auth/PasswordHasher.js';
 import type { Clock, IdGenerator } from '../ports.js';
 import type { GuardianOutput, RegisterGuardianInput } from '../dto.js';
+import type { SendEmailVerification } from '../services/SendEmailVerification.js';
 
 export interface RegisterGuardianDeps {
   guardians: GuardianRepository;
   hasher: PasswordHasher;
   newId: IdGenerator;
   now: Clock;
+  /**
+   * Servicio de verificación de email (US-93). **Opcional**: si está presente (SMTP
+   * configurado), la cuenta nace `emailVerificado=false` y se envía un OTP; si es
+   * `undefined` (sin SMTP), la cuenta nace verificada y el alta auto-loguea como antes.
+   */
+  verification?: SendEmailVerification;
 }
 
 /**
  * Da de alta al adulto responsable y registra su consentimiento. Es el paso previo
  * obligatorio a crear perfiles de niños (ver Docs/cumplimiento-menores.md).
+ *
+ * Verificación de email (US-93): si hay servicio de verificación inyectado, la
+ * cuenta queda **no verificada** y se envía un código OTP; en otro caso queda
+ * verificada al alta (arranque reproducible sin SMTP).
  */
 export class RegisterGuardian {
   constructor(private readonly deps: RegisterGuardianDeps) {}
@@ -34,6 +45,7 @@ export class RegisterGuardian {
     // ven nunca la contraseña en claro (US-48).
     const passwordHash = await this.deps.hasher.hash(input.password);
 
+    const requiereVerificacion = this.deps.verification !== undefined;
     const guardian = new Guardian({
       id: this.deps.newId(),
       nombre: input.nombre,
@@ -47,10 +59,17 @@ export class RegisterGuardian {
         fecha: this.deps.now(),
         version: input.consentimientoVersion,
       },
+      // Sin verificación por email, la cuenta nace verificada (US-93).
+      emailVerificado: !requiereVerificacion,
       creadoEn: this.deps.now(),
     });
 
     await this.deps.guardians.save(guardian);
+
+    // Con SMTP configurado, envía el código OTP tras persistir la cuenta.
+    if (this.deps.verification) {
+      await this.deps.verification.enviar({ id: guardian.id, email: guardian.email });
+    }
 
     return {
       id: guardian.id,
@@ -59,6 +78,7 @@ export class RegisterGuardian {
       email: guardian.email,
       parentesco: guardian.parentesco,
       consentimientoDado: guardian.haConsentido(),
+      emailVerificado: guardian.emailVerificado,
     };
   }
 }

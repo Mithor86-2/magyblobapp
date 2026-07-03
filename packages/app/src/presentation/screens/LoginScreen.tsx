@@ -6,6 +6,7 @@ import { BubblyButton } from '../components/BubblyButton';
 import { TextField } from '../components/TextField';
 import { useDialog } from '../components/DialogProvider';
 import { ApiError } from '../../domain/errors';
+import { requiereVerificacion } from '../../domain/types';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
@@ -39,8 +40,16 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
     setSubmitting(true);
     trackAction('guardian.login');
     try {
-      const session = await api.guardians.login({ email: email.trim(), password });
-      setSession(session, CONSENT_VERSION);
+      const outcome = await api.guardians.login({ email: email.trim(), password });
+      // US-93: una cuenta sin verificar no recibe sesión; va a la pantalla de OTP.
+      if (requiereVerificacion(outcome)) {
+        navigation.replace('VerifyEmail', {
+          guardianId: outcome.guardianId,
+          email: outcome.email,
+        });
+        return;
+      }
+      setSession(outcome, CONSENT_VERSION);
       navigation.replace('SelectProfile');
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {

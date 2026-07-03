@@ -18,6 +18,7 @@ import { DashboardScreen } from './src/presentation/screens/DashboardScreen';
 import { WelcomeScreen } from './src/presentation/screens/WelcomeScreen';
 import { ConsentScreen } from './src/presentation/screens/ConsentScreen';
 import { LoginScreen } from './src/presentation/screens/LoginScreen';
+import { VerifyEmailScreen } from './src/presentation/screens/VerifyEmailScreen';
 import { SelectProfileScreen } from './src/presentation/screens/SelectProfileScreen';
 import { ParentalScreen } from './src/presentation/screens/ParentalScreen';
 import { AchievementsScreen } from './src/presentation/screens/AchievementsScreen';
@@ -266,6 +267,11 @@ function ThemedApp() {
               name="Login"
               component={LoginScreen}
               options={{ title: t('nav.login') }}
+            />
+            <Stack.Screen
+              name="VerifyEmail"
+              component={VerifyEmailScreen}
+              options={{ title: t('nav.verifyEmail') }}
             />
             <Stack.Screen
               name="SelectProfile"

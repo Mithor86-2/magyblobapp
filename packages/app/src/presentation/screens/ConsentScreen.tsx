@@ -7,7 +7,7 @@ import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { ParentalGate } from '../components/ParentalGate';
 import { useDialog } from '../components/DialogProvider';
-import { PARENTESCOS } from '../../domain/types';
+import { PARENTESCOS, requiereVerificacion } from '../../domain/types';
 import type { Parentesco } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { parentescoLabel } from '../labels';
@@ -58,7 +58,7 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
     if (!parentesco) return;
     setSubmitting(true);
     try {
-      const session = await api.guardians.register({
+      const outcome = await api.guardians.register({
         nombre: nombre.trim(),
         apellidos: apellidos.trim(),
         email: email.trim(),
@@ -67,7 +67,16 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
         consentimientoAceptado: true,
         consentimientoVersion: CONSENT_VERSION,
       });
-      setSession(session, CONSENT_VERSION);
+      // US-93: si el backend exige verificar el email, va a la pantalla de OTP; si no
+      // (sin SMTP), abre sesión y continúa como antes.
+      if (requiereVerificacion(outcome)) {
+        navigation.replace('VerifyEmail', {
+          guardianId: outcome.guardianId,
+          email: outcome.email,
+        });
+        return;
+      }
+      setSession(outcome, CONSENT_VERSION);
       navigation.replace('SelectProfile');
     } catch (error) {
       const mensaje = error instanceof ApiError ? error.message : t('consent.errorGeneric');

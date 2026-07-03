@@ -33,6 +33,44 @@ export interface Config {
   auth: AuthConfig;
   /** Endurecimiento de la superficie pública del API (US-92). */
   security: SecurityConfig;
+  /** Verificación de titularidad del email por OTP (US-93). */
+  email: EmailConfig;
+}
+
+/**
+ * Configuración de la verificación de email por OTP (US-93). El SMTP es opcional:
+ * si falta cualquier credencial (`enabled=false`), el alta **omite** la verificación
+ * (la cuenta queda verificada y se auto-loguea), preservando el arranque reproducible
+ * (US-06) — igual patrón que la IA cloud ("sin key cae a mock"). El secreto SMTP vive
+ * solo en variables de entorno, nunca en BD ni en el repo.
+ */
+export interface EmailConfig {
+  /** ¿Hay SMTP completo configurado? Si no, la verificación se omite (auto-verificado). */
+  enabled: boolean;
+  /** Credenciales SMTP; `undefined` cuando `enabled` es `false`. */
+  smtp?: SmtpConfig;
+  /** Remitente de los correos (env `EMAIL_FROM`; por defecto el `SMTP_USER`). */
+  from?: string;
+  /** Parámetros del código OTP. */
+  otp: OtpConfig;
+}
+
+/** Credenciales del servidor SMTP saliente (env `SMTP_*`). */
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+}
+
+/** Parámetros del OTP de verificación (env `OTP_*`). */
+export interface OtpConfig {
+  /** Vida del código en ms (env `OTP_TTL_MS`). Por defecto 10 min. */
+  ttlMs: number;
+  /** Máximo de intentos de validación antes de exigir reenvío (env `OTP_MAX_INTENTOS`). */
+  maxIntentos: number;
+  /** Cooldown entre reenvíos en ms (env `OTP_RESEND_COOLDOWN_MS`). */
+  resendCooldownMs: number;
 }
 
 /**
@@ -75,6 +113,10 @@ export interface RateLimitConfig {
   login: LimiteTasa;
   /** Refresh de sesión (`POST /guardians/refresh`). Límite moderado. */
   refresh: LimiteTasa;
+  /** Verificación de email (`POST /guardians/verify-email`, US-93). Frena la fuerza bruta del OTP. */
+  verify: LimiteTasa;
+  /** Reenvío de código (`POST /guardians/resend-verification`, US-93). Estricto. */
+  resend: LimiteTasa;
 }
 
 export interface ParentalGateConfig {
@@ -244,6 +286,21 @@ const envSchema = z
     RATE_LIMIT_REFRESH_MAX: enteroPositivoConDefecto(30),
     RATE_LIMIT_REFRESH_WINDOW_MS: enteroPositivoConDefecto(60_000),
     PARENTAL_CHALLENGE_TTL_MS: enteroPositivoConDefecto(300_000),
+
+    // Verificación de email por OTP (US-93). SMTP opcional: sin credenciales, la
+    // verificación se omite (auto-verificado) y el alta auto-loguea como antes.
+    SMTP_HOST: cadenaOpcional,
+    SMTP_PORT: enteroPositivoConDefecto(465),
+    SMTP_USER: cadenaOpcional,
+    SMTP_PASSWORD: cadenaOpcional,
+    EMAIL_FROM: cadenaOpcional,
+    OTP_TTL_MS: enteroPositivoConDefecto(600_000),
+    OTP_MAX_INTENTOS: enteroPositivoConDefecto(5),
+    OTP_RESEND_COOLDOWN_MS: enteroPositivoConDefecto(60_000),
+    RATE_LIMIT_VERIFY_MAX: enteroPositivoConDefecto(10),
+    RATE_LIMIT_VERIFY_WINDOW_MS: enteroPositivoConDefecto(60_000),
+    RATE_LIMIT_RESEND_MAX: enteroPositivoConDefecto(5),
+    RATE_LIMIT_RESEND_WINDOW_MS: enteroPositivoConDefecto(3_600_000),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
@@ -268,6 +325,30 @@ export class ConfigError extends Error {
     super(`Configuración inválida:\n${detalle}`);
     this.name = 'ConfigError';
   }
+}
+
+/**
+ * Deriva la configuración de email (US-93) desde el entorno ya parseado. La
+ * verificación se considera **activa** solo si están presentes las cuatro
+ * credenciales SMTP; en otro caso `enabled=false` y el alta omite la verificación
+ * (auto-verificado), preservando el arranque reproducible.
+ */
+function leerConfigEmail(env: ParsedEnv): EmailConfig {
+  const otp: OtpConfig = {
+    ttlMs: env.OTP_TTL_MS,
+    maxIntentos: env.OTP_MAX_INTENTOS,
+    resendCooldownMs: env.OTP_RESEND_COOLDOWN_MS,
+  };
+  const { SMTP_HOST, SMTP_USER, SMTP_PASSWORD } = env;
+  if (SMTP_HOST === undefined || SMTP_USER === undefined || SMTP_PASSWORD === undefined) {
+    return { enabled: false, otp };
+  }
+  return {
+    enabled: true,
+    smtp: { host: SMTP_HOST, port: env.SMTP_PORT, user: SMTP_USER, password: SMTP_PASSWORD },
+    from: env.EMAIL_FROM ?? SMTP_USER,
+    otp,
+  };
 }
 
 function leerClavesCloud(env: ParsedEnv): Partial<Record<CloudTarget, string>> {
@@ -363,8 +444,17 @@ export function loadConfig(
           max: parsed.RATE_LIMIT_REFRESH_MAX,
           ventanaMs: parsed.RATE_LIMIT_REFRESH_WINDOW_MS,
         },
+        verify: {
+          max: parsed.RATE_LIMIT_VERIFY_MAX,
+          ventanaMs: parsed.RATE_LIMIT_VERIFY_WINDOW_MS,
+        },
+        resend: {
+          max: parsed.RATE_LIMIT_RESEND_MAX,
+          ventanaMs: parsed.RATE_LIMIT_RESEND_WINDOW_MS,
+        },
       },
       parentalGate: { ttlMs: parsed.PARENTAL_CHALLENGE_TTL_MS },
     },
+    email: leerConfigEmail(parsed),
   };
 }

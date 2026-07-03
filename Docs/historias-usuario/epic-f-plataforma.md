@@ -1640,3 +1640,54 @@ consentimiento lo dé una persona adulta, no un script.
 - **(Sin terceros)** Dado el flujo de puerta parental, Entonces **ningún dato sale de la máquina**
   (cumple C-2 de [../cumplimiento-menores.md](../cumplimiento-menores.md)); la verificación por email
   queda documentada como mejora futura.
+
+## US-93 — Verificación de titularidad del email por OTP (SMTP) · Should (Mejoras) {#us-93}
+
+Como **padre/tutor** quiero **demostrar que el email con el que creo la cuenta es mío** introduciendo un
+**código de 6 dígitos** que recibo por correo, para que nadie pueda registrar una cuenta con un email
+ajeno y para reforzar el **consentimiento parental verificable**.
+
+**Contexto.** Materializa la mejora futura anotada en [US-92](#us-92)/C-16: la _verificación de
+titularidad del email (doble opt-in)_. Hoy `POST /guardians` **auto-loguea** (emite tokens) sin
+comprobar el email. Con esta historia, cuando hay **SMTP configurado**, el alta crea la cuenta como
+**no verificada**, **no** emite sesión y envía un **OTP de 6 dígitos** (hash bcrypt, caducidad 10 min,
+máx. 5 intentos, reenvío con cooldown) al email del adulto; la sesión (`accessToken`+`refreshToken`) se
+emite **solo** al validar el código en `POST /guardians/verify-email`. **Sin SMTP configurado** el paso
+se **omite** (la cuenta queda verificada al crearse y el alta conserva el auto-login), igual que la IA
+cloud "sin key cae a mock" — así se preserva el arranque reproducible ([US-06](#us-06)). Es **refuerzo**
+de C-1/C-10: server-side, sin SDK de terceros en la app y **sin PII del menor** (solo viaja el email del
+adulto y un código numérico). **Backend + app.** Ver el plan
+[93-verificacion-email-otp](../planes/feature-93-verificacion-email-otp.md).
+
+> **Cumplimiento.** Enviar el OTP usa un servidor SMTP (contacto server-side con un tercero), pero solo
+> transporta el **email del adulto** y un **código numérico** — nunca datos del niño ni identificadores,
+> ni añade un SDK de terceros a la app. Refuerza C-1/C-10 (ver **C-17** en
+> [../cumplimiento-menores.md](../cumplimiento-menores.md)). Sin SMTP no sale nada de la máquina.
+
+**Criterios de aceptación**
+
+- Dado un backend **con SMTP configurado**, Cuando el adulto hace `POST /guardians` con datos válidos y
+  supera la puerta parental, Entonces la cuenta se crea con `emailVerificado=false`, se **envía un OTP de
+  6 dígitos** al email, y la respuesta incluye `requiereVerificacion:true` **sin** `accessToken`/`refreshToken`.
+- Dado un OTP vigente, Cuando el adulto hace `POST /guardians/verify-email` con el `guardianId` y el
+  **código correcto**, Entonces la cuenta pasa a `emailVerificado=true` y la respuesta incluye el
+  `Guardian` **y** `accessToken`+`refreshToken` (la sesión se emite al verificar).
+- Dado un código **incorrecto**, Cuando se verifica, Entonces responde **400** y se **incrementa** el
+  contador de intentos; superados **5 intentos**, responde **429**; con el código **caducado** (>10 min),
+  responde **400** solicitando reenviar.
+- Dado que el adulto no recibió el correo, Cuando pulsa **reenviar** (`POST /guardians/resend-verification`),
+  Entonces se genera y envía un **nuevo** código (respetando un **cooldown**), invalidando el anterior.
+- Dado un backend **sin SMTP configurado**, Cuando el adulto hace `POST /guardians`, Entonces la cuenta se
+  crea **verificada** y se **auto-loguea** (tokens en la respuesta), sin pantalla de verificación
+  (arranque reproducible intacto, [US-06](#us-06)).
+- (App) Dado el alta con verificación requerida, Cuando se crea la cuenta, Entonces la app abre la pantalla
+  **Verificar email**, y al introducir el código correcto **inicia sesión** y navega a Seleccionar perfil;
+  muestra errores claros ante código incorrecto/caducado/intentos agotados y permite reenviar.
+- (Seguridad) Dado el OTP, Entonces **nunca** se guarda en claro (hash bcrypt) ni se registra en logs, y
+  el secreto SMTP va en variables de entorno, nunca en BD ni en el repo.
+- (No-funcional) Dado el flujo, Cuando no hay SMTP, Entonces **no** sale nada de la máquina; y con SMTP,
+  el correo solo transporta email del adulto + código (no afecta a la política de datos del menor).
+- (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: alta con verificación activa
+  (OTP creado+enviado, sin tokens) y desactivada (verificado + tokens), verify-email (OK→tokens, 400
+  incorrecto, 400 caducado, 429 intentos), reenvío, y en la app que `http.ts` mapea la respuesta de alta
+  (unión) y `verifyEmail`/`resendVerification`, más el test de la pantalla `VerifyEmailScreen`.

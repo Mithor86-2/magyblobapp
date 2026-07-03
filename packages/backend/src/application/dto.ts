@@ -32,6 +32,19 @@ export interface GuardianOutput {
   email: string;
   parentesco: Parentesco;
   consentimientoDado: boolean;
+  /** Titularidad del email verificada (US-93). Sin SMTP, `true` desde el alta. */
+  emailVerificado: boolean;
+}
+
+// --- VerifyEmail / ResendEmailVerification (US-93) ---
+export interface VerifyEmailInput {
+  guardianId: string;
+  /** Código OTP de 6 dígitos introducido por el adulto. */
+  codigo: string;
+}
+
+export interface ResendEmailVerificationInput {
+  guardianId: string;
 }
 
 // --- LoginGuardian ---
