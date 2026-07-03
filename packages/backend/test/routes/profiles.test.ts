@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
-import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
+import { altaGuardian, authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 describe('rutas de profiles', () => {
   let app: FastifyInstance;
@@ -17,19 +16,7 @@ describe('rutas de profiles', () => {
   });
 
   async function altaAdulto(): Promise<string> {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: {
-        nombre: 'Ana',
-        apellidos: 'García',
-        email: 'ana@example.com',
-        parentesco: 'madre',
-        password: CLAVE_DE_PRUEBA,
-        consentimientoAceptado: true,
-        consentimientoVersion: 'v1',
-      },
-    });
+    const res = await altaGuardian(app);
     return res.json().id as string;
   }
 

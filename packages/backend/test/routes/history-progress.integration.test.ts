@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
-import { CLAVE_DE_PRUEBA } from '../support/doubles.js';
+import { altaGuardian, authHeaders, buildTestServer, makeInMemoryDeps } from '../support/server.js';
 
 /**
  * Integración de F2 (historial + progreso) por HTTP con dobles en memoria:
@@ -21,19 +20,7 @@ describe('Historial y progreso (integración)', () => {
   });
 
   async function crearPerfil(): Promise<string> {
-    const guardian = await app.inject({
-      method: 'POST',
-      url: '/guardians',
-      payload: {
-        nombre: 'Ana',
-        apellidos: 'García',
-        email: 'ana@example.com',
-        parentesco: 'madre',
-        password: CLAVE_DE_PRUEBA,
-        consentimientoAceptado: true,
-        consentimientoVersion: 'v1',
-      },
-    });
+    const guardian = await altaGuardian(app);
     const guardianId = guardian.json().id as string;
     const profile = await app.inject({
       method: 'POST',

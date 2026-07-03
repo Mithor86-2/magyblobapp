@@ -62,49 +62,49 @@ Objetivo: cerrar el riesgo más grave (forja de tokens) y limpiar el rastro del 
   `email = sec-test-delete-me-1783095528@example.com` (`guardianId f882d8d6-2324-4ab7-b5d2-fed4988eeba6`).
 - ⬜ **T0.3 — Revisar logs de Render** para confirmar que no se registran secretos ni contraseñas.
 
-## Fase 1 — Rate limiting en auth (H2, H1) ⬜
+## Fase 1 — Rate limiting en auth (H2, H1) ✅
 
 Objetivo: frenar fuerza bruta, credential stuffing y alta masiva. Es la mitigación de mayor
 impacto/menor coste.
 
-- ⬜ **T1.1 — Añadir `@fastify/rate-limit`** al backend y registrarlo en `server.ts`.
-- ⬜ **T1.2 — `trustProxy` + IP real.** Render está tras Cloudflare (`server: cloudflare`): habilitar
-  `trustProxy` en Fastify y derivar la IP de `X-Forwarded-For` para que el límite sea por cliente
-  real, no por la IP del proxy. Reutilizar el criterio de `anonymousRateLimit.ts`.
-- ⬜ **T1.3 — Límites por endpoint** (más estrictos que un global):
-  - `POST /guardians/login` — p. ej. 5–10/min por IP (+ opcional por email).
-  - `POST /guardians` (registro) — p. ej. 3–5/hora por IP.
-  - `POST /guardians/refresh` — límite moderado.
+- ✅ **T1.1 — Añadir `@fastify/rate-limit`** al backend y registrarlo en `server.ts` (`global: false`,
+  se activa por ruta; 429 con el cuerpo de error uniforme vía `TooManyRequestsError`).
+- ✅ **T1.2 — `trustProxy` + IP real.** `trustProxy` activable por env (`TRUST_PROXY`, por defecto en
+  producción) en el constructor de Fastify → `request.ip` sale de `X-Forwarded-For`.
+- ✅ **T1.3 — Límites por endpoint** (configurables por env, defaults en `config.ts`):
+  - `POST /guardians/login` — 10/min por IP.
+  - `POST /guardians` y `GET /guardians/challenge` (registro) — 5/hora por IP.
+  - `POST /guardians/refresh` — 30/min por IP.
   - Respuesta `429` reutilizando `TooManyRequestsError`.
-- ⬜ **T1.4 — Tests de integración** (`app.inject`) que verifican el `429` al superar el umbral en
-  login y registro. Co-localizados según convención.
-- ⬜ **T1.5 — Documentar** en [cumplimiento-menores.md](../cumplimiento-menores.md) y en la historia
-  de usuario correspondiente.
+- ✅ **T1.4 — Tests de integración** (`app.inject`): 429 al superar el umbral de login
+  (`guardians.test.ts`), con servidor de límites minúsculos.
+- ✅ **T1.5 — Documentar** en [cumplimiento-menores.md](../cumplimiento-menores.md) (C-16) y en US-92.
 
-## Fase 2 — Puerta parental server-side en el alta (H3, H1) ⬜
+## Fase 2 — Puerta parental server-side en el alta (H3, H1) ✅
 
 Objetivo: subir el listón del consentimiento parental verificable con un reto de adulto resuelto en
 el servidor, **sin terceros** (D1 = opción b). Materializa la puerta parental C-6 en el backend.
 
 - ✅ **T2.1 — Decidir D1** → opción (b) elegida.
-- ⬜ **T2.2 — Endpoint de reto.** `GET /guardians/challenge` devuelve un reto legible (p. ej. suma de
-  dos números) y un `challengeToken` firmado (HMAC con `JWT_SECRET`) que codifica la respuesta
-  esperada + expiración corta. Sin estado en BD.
-- ⬜ **T2.3 — Exigir el reto en el alta.** `POST /guardians` pasa a requerir `challengeToken` +
+- ✅ **T2.2 — Endpoint de reto.** `GET /guardians/challenge` (módulo `parentalChallenge.ts`) devuelve
+  la pregunta y un `challengeToken` `exp.firma` (HMAC con el secreto JWT); la respuesta no viaja en
+  el token. Sin estado en BD.
+- ✅ **T2.3 — Exigir el reto en el alta.** `POST /guardians` requiere `challengeToken` +
   `challengeRespuesta`; se validan (firma, no expirado, respuesta correcta) **antes** de
-  `RegisterGuardian`. Reto inválido → `400`; expirado → `400` con mensaje claro.
-- ⬜ **T2.4 — App:** la pantalla de alta (`ConsentScreen`) obtiene el reto y envía la respuesta.
-- ⬜ **T2.5 — Tests** de integración (alta sin reto → 400; con reto válido → 201) y unitarios de la
-  utilidad de firma/validación del reto.
-- ⬜ **T2.6 — Actualizar** [cumplimiento-menores.md](../cumplimiento-menores.md) (C-6 ahora en
-  backend; C-10 verificación de email como mejora futura documentada) e historias de usuario.
+  `RegisterGuardian` → `ParentalChallengeError` (400). Falta de campos → 400 por esquema.
+- ✅ **T2.4 — App:** el gateway `api.guardians.register` resuelve el reto de forma transparente (el
+  `ParentalGate` cliente sigue haciendo la verificación humana; no cambia la UI del formulario).
+- ✅ **T2.5 — Tests**: unitarios de `parentalChallenge` (`parentalChallenge.test.ts`), integración del
+  alta (sin reto → 400; respuesta incorrecta → 400; con reto válido → 201) y del gateway del app.
+- ✅ **T2.6 — Actualizar** [cumplimiento-menores.md](../cumplimiento-menores.md) (C-6 reforzado, C-16;
+  verificación de email como mejora futura) e historias de usuario (US-92).
 
-## Fase 3 — Cabeceras y CORS (H5, H4) ⬜
+## Fase 3 — Cabeceras y CORS (H5, H4) ✅
 
-- ⬜ **T3.1 — `@fastify/helmet`** con configuración razonable para API JSON (sin romper la app).
-- ⬜ **T3.2 — `@fastify/cors`** con allowlist de orígenes (dev de Expo-web + prod web si existe);
-  denegar por defecto. La app nativa no se ve afectada.
-- ⬜ **T3.3 — Verificar** cabeceras en `/health` y preflight tras el cambio.
+- ✅ **T3.1 — `@fastify/helmet`** registrado en `server.ts` (cabeceras de seguridad estándar).
+- ✅ **T3.2 — `@fastify/cors`** con allowlist por env (`CORS_ORIGINS`); sin lista, deniega
+  cross-site en producción y refleja todos en desarrollo. La app nativa no se ve afectada.
+- ⬜ **T3.3 — Verificar** cabeceras en `/health` y preflight **tras desplegar** (paso en vivo, pendiente).
 
 ## Fase 4 — Gestión de sesión / revocación (H6) ⬜
 

@@ -27,6 +27,7 @@ import {
   childProfileSchema,
   guardianSessionSchema,
   historySchema,
+  parentalChallengeSchema,
   sessionTokensSchema,
   storySchema,
 } from './schemas';
@@ -270,14 +271,49 @@ async function request<TResponse>(
 }
 
 /**
+ * Resuelve el reto parental (US-92) calculando la suma de la pregunta
+ * ("¿Cuánto es a + b?"). Si el formato cambiara y no se pudiera parsear, lanza un
+ * `ApiError` controlado (la UI lo trata como el resto de errores del alta).
+ */
+function resolverReto(pregunta: string): number {
+  const m = /(\d{1,2}) \+ (\d{1,2})/.exec(pregunta);
+  if (m === null) {
+    throw new ApiError(0, 'malformed', 'No se pudo completar la verificación parental.');
+  }
+  return Number(m[1]) + Number(m[2]);
+}
+
+/**
  * Composition de los gateways HTTP. `baseUrl` y `session` inyectables (tests);
  * por defecto, el env y sin sesión (el composition root cablea el store).
  */
 export function createApiGateways(baseUrl: string = getBaseUrl(), session?: SessionStore): Api {
   return {
     guardians: {
-      register: (input: RegisterGuardianInput) =>
-        request(baseUrl, '/guardians', { method: 'POST', body: input }, guardianSessionSchema),
+      register: async (input: RegisterGuardianInput) => {
+        // Puerta parental server-side (US-92): antes del alta se obtiene un reto
+        // firmado y se resuelve. El humano ya superó el `ParentalGate` cliente;
+        // aquí solo se satisface la barrera del backend (anti-bot + rate limit).
+        const reto = await request(
+          baseUrl,
+          '/guardians/challenge',
+          { method: 'GET' },
+          parentalChallengeSchema,
+        );
+        return request(
+          baseUrl,
+          '/guardians',
+          {
+            method: 'POST',
+            body: {
+              ...input,
+              challengeToken: reto.challengeToken,
+              challengeRespuesta: resolverReto(reto.pregunta),
+            },
+          },
+          guardianSessionSchema,
+        );
+      },
       login: (input: LoginGuardianInput) =>
         request(
           baseUrl,

@@ -1,6 +1,10 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import fastifyRateLimit from '@fastify/rate-limit';
+import fastifyHelmet from '@fastify/helmet';
+import fastifyCors from '@fastify/cors';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { loadConfig, type Config } from './config.js';
+import { TooManyRequestsError } from './domain/errors.js';
 import type { AppDeps } from './dependencies.js';
 import { registerAuth } from './auth.js';
 import { healthRoutes } from './routes/health.js';
@@ -37,6 +41,10 @@ export async function buildServer(
             }
           : undefined,
     },
+    // Confía en el proxy (Render/Cloudflare) para derivar `request.ip` de
+    // `X-Forwarded-For`, de modo que el rate limit (US-92) cuente por cliente
+    // real y no por la IP del proxy. Configurable por env (`TRUST_PROXY`).
+    trustProxy: config.security.trustProxy,
   });
 
   const resolved =
@@ -53,6 +61,25 @@ export async function buildServer(
   // la serialización sigue siendo la de Fastify por defecto (no afecta a la narración).
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+
+  // Endurecimiento de la capa HTTP (US-92). Se registran antes que las rutas.
+  // Cabeceras de seguridad estándar (CSP, X-Frame-Options, etc.).
+  await app.register(fastifyHelmet);
+  // CORS: la app nativa no lo usa; se permite solo la allowlist configurada. Sin
+  // allowlist, en producción se deniega cualquier origen cross-site y fuera de
+  // producción se reflejan todos (comodidad con Expo web en desarrollo).
+  await app.register(fastifyCors, { origin: resolverOrigenCors(config) });
+  // Rate limiting sin ámbito global: se activa por ruta (solo las de auth lo
+  // declaran en su `config.rateLimit`). El 429 usa el cuerpo de error uniforme.
+  // Al haber un `setErrorHandler` global, el valor devuelto por
+  // `errorResponseBuilder` se propaga como error hacia ese manejador. Devolvemos
+  // un `TooManyRequestsError` (statusCode 429) para que se traduzca con el cuerpo
+  // de error uniforme `{ error: { tipo, mensaje } }`, igual que el resto.
+  await app.register(fastifyRateLimit, {
+    global: false,
+    errorResponseBuilder: (_request, context) =>
+      new TooManyRequestsError(`Demasiadas peticiones. Inténtalo de nuevo en ${context.after}.`),
+  });
 
   registerErrorHandler(app);
   // Autenticación JWT (US-45): registra @fastify/jwt y el decorador `authenticate`
@@ -74,4 +101,14 @@ export async function buildServer(
   settingsRoutes(app, config);
 
   return app;
+}
+
+/**
+ * Resuelve el valor `origin` de CORS (US-92): si hay allowlist configurada, solo
+ * esos orígenes; si está vacía, se deniega cualquier origen cross-site en
+ * producción (`false`) y se reflejan todos fuera de producción (`true`).
+ */
+function resolverOrigenCors(config: Config): string[] | boolean {
+  if (config.security.corsOrigins.length > 0) return config.security.corsOrigins;
+  return config.nodeEnv !== 'production';
 }

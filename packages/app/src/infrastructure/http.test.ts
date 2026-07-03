@@ -88,8 +88,13 @@ describe('createApiGateways (adaptador HTTP)', () => {
     vi.restoreAllMocks();
   });
 
-  it('guardians.register hace POST /guardians con cuerpo JSON y devuelve la sesión', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okResponse(GUARDIAN_SESSION));
+  it('guardians.register resuelve la puerta parental y hace POST /guardians (US-92)', async () => {
+    const fetchMock = vi
+      .fn()
+      // 1) Reto parental: GET /guardians/challenge
+      .mockResolvedValueOnce(okResponse({ pregunta: '¿Cuánto es 3 + 4?', challengeToken: 'tok-1' }))
+      // 2) Alta: POST /guardians
+      .mockResolvedValueOnce(okResponse(GUARDIAN_SESSION));
     vi.stubGlobal('fetch', fetchMock);
 
     const input = {
@@ -104,12 +109,22 @@ describe('createApiGateways (adaptador HTTP)', () => {
     const result = await api.guardians.register(input);
 
     expect(result).toEqual(GUARDIAN_SESSION);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, options] = fetchMock.mock.calls[0];
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const [challengeUrl, challengeOptions] = fetchMock.mock.calls[0];
+    expect(challengeUrl).toBe(`${BASE}/guardians/challenge`);
+    expect(challengeOptions.method).toBe('GET');
+
+    const [url, options] = fetchMock.mock.calls[1];
     expect(url).toBe(`${BASE}/guardians`);
     expect(options.method).toBe('POST');
     expect(options.headers).toEqual({ 'Content-Type': 'application/json' });
-    expect(JSON.parse(options.body)).toEqual(input);
+    // El cuerpo lleva los datos del alta más el token y la respuesta del reto (3 + 4 = 7).
+    expect(JSON.parse(options.body)).toEqual({
+      ...input,
+      challengeToken: 'tok-1',
+      challengeRespuesta: 7,
+    });
   });
 
   it('guardians.login hace POST /guardians/login con email + contraseña y devuelve la sesión', async () => {

@@ -31,6 +31,58 @@ export interface Config {
   tts: TtsConfig;
   /** Autenticación de la sesión del guardián con JWT (US-45). */
   auth: AuthConfig;
+  /** Endurecimiento de la superficie pública del API (US-92). */
+  security: SecurityConfig;
+}
+
+/**
+ * Configuración de seguridad de la capa HTTP (US-92): rate limiting de los
+ * endpoints de autenticación, política CORS, confianza en el proxy (Render está
+ * tras un proxy: la IP real llega en `X-Forwarded-For`) y la puerta parental del
+ * alta. Todos los valores tienen defaults razonables y son sobreescribibles por
+ * env para poder endurecerlos en producción o relajarlos en tests.
+ */
+export interface SecurityConfig {
+  /**
+   * Confía en la cabecera del proxy para derivar `request.ip` (env `TRUST_PROXY`).
+   * Necesario en Render/Cloudflare para que el rate limit cuente por cliente real
+   * y no por la IP del proxy. Por defecto activo en producción.
+   */
+  trustProxy: boolean;
+  /**
+   * Orígenes permitidos por CORS (env `CORS_ORIGINS`, lista separada por comas).
+   * Si está vacío: en producción se **deniega** cualquier origen cross-site (la
+   * app nativa no usa CORS); fuera de producción se **reflejan todos** (comodidad
+   * de desarrollo con Expo web).
+   */
+  corsOrigins: string[];
+  /** Límites de tasa por endpoint de autenticación (max peticiones / ventana ms). */
+  rateLimit: RateLimitConfig;
+  /** Puerta parental del alta (reto de adulto firmado, sin terceros). */
+  parentalGate: ParentalGateConfig;
+}
+
+/** Un límite de tasa: nº máximo de peticiones dentro de la ventana (en ms). */
+export interface LimiteTasa {
+  max: number;
+  ventanaMs: number;
+}
+
+export interface RateLimitConfig {
+  /** Alta de guardián (`POST /guardians`). Estricto: pocas altas por ventana. */
+  registro: LimiteTasa;
+  /** Login (`POST /guardians/login`). Frena la fuerza bruta de contraseñas. */
+  login: LimiteTasa;
+  /** Refresh de sesión (`POST /guardians/refresh`). Límite moderado. */
+  refresh: LimiteTasa;
+}
+
+export interface ParentalGateConfig {
+  /**
+   * Vida del reto parental en ms (env `PARENTAL_CHALLENGE_TTL_MS`). El reto se
+   * firma con el secreto JWT y expira pronto para no ser reutilizable.
+   */
+  ttlMs: number;
 }
 
 export interface AuthConfig {
@@ -95,6 +147,31 @@ function enteroPositivoConDefecto(valorDefecto: number): z.ZodType<number> {
   return z.coerce.number().int().positive().catch(valorDefecto).default(valorDefecto);
 }
 
+/**
+ * Interpreta un booleano tolerante desde una cadena de env: `'true'/'1'/'yes'/'on'`
+ * ⇒ `true`; `'false'/'0'/'no'/'off'` ⇒ `false`; ausente o cualquier otra cosa ⇒
+ * `valorDefecto`. Evita que un valor mal escrito aborte el arranque.
+ */
+function parseBooleano(valor: string | undefined, valorDefecto: boolean): boolean {
+  if (valor === undefined) return valorDefecto;
+  const v = valor.trim().toLowerCase();
+  if (['true', '1', 'yes', 'on'].includes(v)) return true;
+  if (['false', '0', 'no', 'off'].includes(v)) return false;
+  return valorDefecto;
+}
+
+/**
+ * Parte una lista separada por comas en cadenas recortadas no vacías. Ausente o
+ * vacía ⇒ `[]`. Se usa para `CORS_ORIGINS`.
+ */
+function parseLista(valor: string | undefined): string[] {
+  if (valor === undefined) return [];
+  return valor
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s !== '');
+}
+
 /** Cadena recortada, vacía ⇒ `undefined` (para secretos/IDs opcionales). */
 const cadenaOpcional = z
   .string()
@@ -156,6 +233,17 @@ const envSchema = z
     GEMINI_API_KEY: cadenaOpcional,
     OPENROUTER_API_KEY: cadenaOpcional,
     CEREBRAS_API_KEY: cadenaOpcional,
+
+    // Seguridad de la capa HTTP (US-92)
+    TRUST_PROXY: cadenaOpcional,
+    CORS_ORIGINS: cadenaOpcional,
+    RATE_LIMIT_REGISTRO_MAX: enteroPositivoConDefecto(5),
+    RATE_LIMIT_REGISTRO_WINDOW_MS: enteroPositivoConDefecto(3_600_000),
+    RATE_LIMIT_LOGIN_MAX: enteroPositivoConDefecto(10),
+    RATE_LIMIT_LOGIN_WINDOW_MS: enteroPositivoConDefecto(60_000),
+    RATE_LIMIT_REFRESH_MAX: enteroPositivoConDefecto(30),
+    RATE_LIMIT_REFRESH_WINDOW_MS: enteroPositivoConDefecto(60_000),
+    PARENTAL_CHALLENGE_TTL_MS: enteroPositivoConDefecto(300_000),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
@@ -259,6 +347,24 @@ export function loadConfig(
       secret: resolverSecretoJwt(parsed, warn),
       accessTtl: parsed.JWT_ACCESS_TTL,
       refreshTtl: parsed.JWT_REFRESH_TTL,
+    },
+    security: {
+      // Por defecto se confía en el proxy en producción (Render/Cloudflare), donde
+      // la IP real del cliente llega en `X-Forwarded-For`; en local, no.
+      trustProxy: parseBooleano(parsed.TRUST_PROXY, parsed.NODE_ENV === 'production'),
+      corsOrigins: parseLista(parsed.CORS_ORIGINS),
+      rateLimit: {
+        registro: {
+          max: parsed.RATE_LIMIT_REGISTRO_MAX,
+          ventanaMs: parsed.RATE_LIMIT_REGISTRO_WINDOW_MS,
+        },
+        login: { max: parsed.RATE_LIMIT_LOGIN_MAX, ventanaMs: parsed.RATE_LIMIT_LOGIN_WINDOW_MS },
+        refresh: {
+          max: parsed.RATE_LIMIT_REFRESH_MAX,
+          ventanaMs: parsed.RATE_LIMIT_REFRESH_WINDOW_MS,
+        },
+      },
+      parentalGate: { ttlMs: parsed.PARENTAL_CHALLENGE_TTL_MS },
     },
   };
 }

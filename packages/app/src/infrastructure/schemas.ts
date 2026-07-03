@@ -35,6 +35,12 @@ export const sessionTokensSchema = z.object({
 /** Respuesta de alta/login: guardián + sesión JWT (US-45). */
 export const guardianSessionSchema = guardianSchema.extend(sessionTokensSchema.shape);
 
+/** Reto de la puerta parental del alta (US-92): pregunta legible + token firmado. */
+export const parentalChallengeSchema = z.object({
+  pregunta: z.string(),
+  challengeToken: z.string(),
+});
+
 export const childProfileSchema = z.object({
   id: z.string(),
   guardianId: z.string(),
