@@ -14,6 +14,9 @@ FROM base AS build
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY packages/backend/package.json packages/backend/
 COPY packages/backend/prisma packages/backend/prisma
+# Prisma 7: el `postinstall` (prisma generate) carga prisma.config.ts (schema +
+# datasource); debe estar antes del install.
+COPY packages/backend/prisma.config.ts packages/backend/
 RUN pnpm install --frozen-lockfile --filter "@magyblob/backend..."
 # Código y compilación (build copia src/generated -> dist/generated).
 COPY tsconfig.base.json ./
@@ -31,6 +34,8 @@ COPY --from=build /app/deploy/dist ./dist
 COPY --from=build /app/deploy/package.json ./package.json
 # Esquema + migraciones para aplicar `migrate deploy` al arrancar (sin pasos ocultos).
 COPY --from=build /app/packages/backend/prisma ./prisma
+# Prisma 7: la config (schema + datasource url desde DATABASE_URL) que lee `migrate deploy`.
+COPY --from=build /app/packages/backend/prisma.config.ts ./prisma.config.ts
 EXPOSE 3000
 # Aplica migraciones pendientes y arranca. Si la DB no está lista, el depends_on
 # de compose (postgres healthy) ya lo cubre.

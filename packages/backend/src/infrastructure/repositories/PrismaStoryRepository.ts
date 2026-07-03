@@ -1,4 +1,4 @@
-import type { Story as PrismaStory } from '../../generated/prisma/index.js';
+import type { Story as PrismaStory } from '../../generated/prisma/client.js';
 import { Story } from '../../domain/entities/Story.js';
 import type { StoryRepository } from '../../domain/repositories/StoryRepository.js';
 import type { CodigoIdioma } from '../../domain/value-objects/Idioma.js';

@@ -1,4 +1,4 @@
-import type { ChildProfile as PrismaChildProfile } from '../../generated/prisma/index.js';
+import type { ChildProfile as PrismaChildProfile } from '../../generated/prisma/client.js';
 import { ChildProfile } from '../../domain/entities/ChildProfile.js';
 import type { ChildProfileRepository } from '../../domain/repositories/ChildProfileRepository.js';
 import { Edad } from '../../domain/value-objects/Edad.js';
