@@ -146,6 +146,29 @@ describe('createApiGateways (adaptador HTTP)', () => {
     });
   });
 
+  it('guardians.register lanza ApiError si el reto parental no se puede parsear (US-92)', async () => {
+    // El reto llega con un formato inesperado (sin "a + b"): resolverReto no puede calcular
+    // la respuesta y lanza un ApiError controlado antes de llegar al POST del alta.
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(okResponse({ pregunta: 'formato inesperado', challengeToken: 'tok' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      api.guardians.register({
+        nombre: 'Ana',
+        apellidos: 'Pérez',
+        email: 'ana@example.com',
+        parentesco: 'madre',
+        password: 'Contrasena123',
+        consentimientoAceptado: true,
+        consentimientoVersion: '1.0',
+      }),
+    ).rejects.toThrow(ApiError);
+    // Solo se llamó al reto (GET), no se llegó a hacer el POST /guardians.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('guardians.register devuelve el estado pendiente si el backend exige verificar (US-93)', async () => {
     const pendiente = { ...GUARDIAN, emailVerificado: false, requiereVerificacion: true };
     const fetchMock = vi
