@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.10.0] - 2026-07-04
+
+### Added
+
 - Lectura de cuento (US-27): al **llegar a la última página** aparece —**medio segundo después**,
   para dar tiempo a ver el final— una **modal** que pregunta si marcar el cuento como leído y, al
   confirmar, lo marca (idempotente). Se muestra una sola vez por lectura y no aparece si ya estaba

@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.10.0] - 2026-07-04
+
+### Added
+
 - Verificación de titularidad del email por OTP (US-93): con SMTP configurado, el alta
   (`POST /guardians`) crea la cuenta como no verificada, envía un código de 6 dígitos (hash bcrypt,
   caducidad 10 min, máx. 5 intentos) y **no** emite sesión; `POST /guardians/verify-email` valida el
