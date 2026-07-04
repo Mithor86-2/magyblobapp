@@ -127,6 +127,10 @@ function BurstStar({ angulo }: { angulo: number }) {
   const p = useSharedValue(0);
   useEffect(() => {
     p.value = withTiming(1, { duration: ESTALLIDO_MS, easing: Easing.out(Easing.quad) });
+    // Cancela la animación en vuelo al desmontar: la estrella se desmonta sola al acabar
+    // el estallido (y al navegar fuera de Inicio); sin esto, en reanimated 4 / New Arch
+    // la animación tocaría un nodo destruido y crashea en nativo (misma causa que el loop).
+    return () => cancelAnimation(p);
   }, [p]);
   const style = useAnimatedStyle(() => ({
     opacity: 1 - p.value,

@@ -40,4 +40,20 @@ describe('AnimatedAvatar (US-90)', () => {
     expect(() => unmount()).not.toThrow();
     expect(cancelAnimation).toHaveBeenCalled();
   });
+
+  it('cancela también el estallido de estrellas al desmontar tras tocar', () => {
+    vi.mocked(cancelAnimation).mockClear();
+    const { unmount } = render(
+      <AnimatedAvatar emoji="🦊" accessibilityLabel="zorro" interactive />,
+    );
+    // Toca para montar las estrellas (cada una con su animación en vuelo).
+    fireEvent.click(screen.getByRole('button', { name: 'zorro' }));
+    expect(screen.getAllByText('⭐').length).toBeGreaterThan(0);
+    // Al desmontar (navegar fuera de Inicio) se cancelan las animaciones de las estrellas
+    // además de las del propio avatar; sin ello el estallido en vuelo crashea en nativo.
+    const antes = vi.mocked(cancelAnimation).mock.calls.length;
+    expect(() => unmount()).not.toThrow();
+    // Avatar (progreso + escala) + una cancelación por estrella (8) ⇒ > 2 llamadas nuevas.
+    expect(vi.mocked(cancelAnimation).mock.calls.length - antes).toBeGreaterThan(2);
+  });
 });

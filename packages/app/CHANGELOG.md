@@ -32,6 +32,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- Crash nativo (reanimated 4 / New Arch) por animación en vuelo al desmontar: la estrella del
+  estallido del avatar (`BurstStar` en `AnimatedAvatar`) no cancelaba su `withTiming` al
+  desmontarse. Se añade `cancelAnimation` en el cleanup. Auditado el resto de animaciones
+  (`AnimatedAvatar` idle, `BookPages`, `BouncingHeaderImage`, `Appear`): ya cancelaban/paraban al
+  desmontar.
+
 ### Security
 
 ## [1.9.3] - 2026-07-03
