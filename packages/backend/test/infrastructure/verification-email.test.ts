@@ -13,6 +13,13 @@ describe('componerCorreoVerificacion', () => {
     expect(text).toContain('code');
   });
 
+  it('usa la marca "Aprendizaje Mágico" en asunto, texto y html', () => {
+    const { subject, text, html } = componerCorreoVerificacion('123456');
+    expect(subject).toContain('Aprendizaje Mágico');
+    expect(text).toContain('Aprendizaje Mágico');
+    expect(html).toContain('Aprendizaje Mágico');
+  });
+
   it('no filtra otros datos: solo transporta el código dado', () => {
     const { text } = componerCorreoVerificacion('000111');
     expect(text).toContain('000111');
