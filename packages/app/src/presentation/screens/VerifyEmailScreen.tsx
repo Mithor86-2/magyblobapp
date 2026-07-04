@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
-import { TextField } from '../components/TextField';
+import { CodeInput } from '../components/CodeInput';
 import { useDialog } from '../components/DialogProvider';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
@@ -98,14 +98,14 @@ export function VerifyEmailScreen({ navigation, route }: RootScreenProps<'Verify
       <Text style={styles.title}>{t('verify.title')}</Text>
       <Text style={styles.body}>{t('verify.body', { email })}</Text>
 
-      <TextField
+      <Text style={styles.codeLabel}>{t('verify.codeLabel')}</Text>
+      <CodeInput
         testID="verify-codigo"
-        label={t('verify.codeLabel')}
         value={codigo}
-        onChangeText={(v) => setCodigo(v.replace(/\D/g, '').slice(0, CODE_LENGTH))}
-        placeholder={t('verify.codePlaceholder')}
-        keyboardType="number-pad"
-        autoCapitalize="none"
+        onChangeText={setCodigo}
+        length={CODE_LENGTH}
+        autoFocus
+        accessibilityLabel={t('verify.codeLabel')}
       />
 
       <Pressable
@@ -132,6 +132,10 @@ const makeStyles = (colors: ColorTokens) =>
     },
     body: {
       ...typography.bodyMd,
+      color: colors.onSurfaceVariant,
+    },
+    codeLabel: {
+      ...typography.labelBold,
       color: colors.onSurfaceVariant,
     },
     link: {
