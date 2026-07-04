@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { useEffect, type ComponentProps, type ReactNode } from 'react';
+import { createContext, useEffect, type ComponentProps, type ReactNode } from 'react';
 import type { Achievement, ChildProfile } from '../../domain/types';
 
 /**
@@ -20,6 +20,9 @@ vi.mock('@react-navigation/native', () => ({
   useFocusEffect: (cb: () => void) => {
     useEffect(() => cb(), [cb]);
   },
+  // `AnimatedAvatar` (en Home) lee el foco vía `NavigationContext` (useIsScreenActive);
+  // sin provider en el test, useContext devuelve undefined → animación activa.
+  NavigationContext: createContext<unknown>(undefined),
 }));
 
 const perfil: ChildProfile = {

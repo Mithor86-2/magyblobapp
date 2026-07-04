@@ -8,6 +8,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+import { useIsScreenActive } from '../hooks/useIsScreenActive';
 
 /** Amplitud del rebote vertical (px a cada lado del centro) — sutil, no distractor. */
 const AMPLITUD = 8;
@@ -34,18 +35,25 @@ export function BouncingHeaderImage({
   accessibilityLabel?: string;
 }) {
   const offset = useSharedValue(-AMPLITUD);
+  // Pausa el bucle cuando la pantalla no está enfocada: en un tab navigator la vista
+  // nativa se desacopla al desenfocar y animar sobre ella crashea (ver el hook).
+  const activo = useIsScreenActive();
 
   useEffect(() => {
+    if (!activo) {
+      cancelAnimation(offset);
+      return;
+    }
     // Oscila indefinidamente entre -AMPLITUD y +AMPLITUD (reverse = true).
     offset.value = withRepeat(
       withTiming(AMPLITUD, { duration: DURACION_MS, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
     );
-    // Cancela el bucle al desmontar (navegar fuera): si no, la animación en vuelo
-    // tocaría un nodo destruido y en reanimated 4 / New Arch crashea en nativo.
+    // Cancela el bucle al desmontar o al desenfocar: si no, la animación en vuelo
+    // tocaría un nodo destruido/desacoplado y en reanimated 4 / New Arch crashea.
     return () => cancelAnimation(offset);
-  }, [offset]);
+  }, [offset, activo]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: offset.value }],

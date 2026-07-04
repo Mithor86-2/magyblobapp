@@ -9,6 +9,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { useIsScreenActive } from '../hooks/useIsScreenActive';
 
 /** Amplitud del rebote vertical (px): normal (con giro) y **más suave** (tramo sin giro). */
 const REBOTE_PX = 5;
@@ -59,16 +60,24 @@ export function AnimatedAvatar({
   const escala = useSharedValue(1);
   // Cada toque remonta el estallido (key incremental) para reiniciar su animación.
   const [estallido, setEstallido] = useState(0);
+  // Pausa el bucle idle cuando la pantalla no está enfocada: en un tab navigator la
+  // vista nativa se desacopla al desenfocar y animar sobre ella crashea (ver el hook).
+  const activo = useIsScreenActive();
 
   useEffect(() => {
+    if (!activo) {
+      cancelAnimation(progreso);
+      cancelAnimation(escala);
+      return;
+    }
     progreso.value = withRepeat(withTiming(1, { duration: LOOP_MS, easing: Easing.linear }), -1);
-    // Cancela las animaciones en vuelo al desmontar (navegar fuera): sin esto, en
-    // reanimated 4 / New Arch el bucle tocaría un nodo destruido y crashea en nativo.
+    // Cancela las animaciones en vuelo al desmontar o al desenfocar: sin esto, en
+    // reanimated 4 / New Arch el bucle tocaría un nodo destruido/desacoplado y crashea.
     return () => {
       cancelAnimation(progreso);
       cancelAnimation(escala);
     };
-  }, [progreso, escala]);
+  }, [progreso, escala, activo]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const p = progreso.value;
