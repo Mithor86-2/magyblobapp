@@ -956,3 +956,24 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
   por la otra tarea** (fila de trazabilidad del README) a un commit que no era el suyo. El contenido era
   correcto, pero la atribución quedó mezclada. Refuerza la regla del repo: **staging selectivo
   (`git add <file>`), nunca `git add -A`**, y más aún si hay trabajo concurrente.
+
+### Reanimated 4 / New Arch: `stof: out of range` al tocar con animaciones en bucle
+
+- **Síntoma:** crash nativo `java.lang.ArrayIndexOutOfBoundsException: stof: out of range` en
+  `com.swmansion.reanimated.NativeProxy.performNonLayoutOperations` → `NodesManager.onEventDispatch`,
+  disparado por un **evento táctil/scroll** (`JSTouchDispatcher.handleTouchEvent` /
+  `ReactScrollView.onTouchEvent`). Dev build Android (RN 0.85.3, reanimated 4.3.1, New Architecture).
+- **Causa:** al llegar un toque/scroll, reanimated vuelca las operaciones pendientes de **todos** los
+  nodos animados y peta parseando un transform como float. Se dispara siempre que haya una **animación
+  reanimated en bucle activa** en la pantalla que se toca. No es un valor nuestro fuera de rango: es un
+  bug del pipeline de eventos de reanimated en ese combo bleeding-edge.
+- **Lo que NO bastó:** (1) `cancelAnimation` en el cleanup de desmontaje — el crash salta sin
+  desmontar; (2) pausar las animaciones al **desenfocar** la pestaña (hook `useIsScreenActive`) — el
+  crash salta también en la **pantalla enfocada** al hacer scroll/tocar.
+- **Solución (lo que funcionó):** **desactivar las animaciones decorativas en bucle**. `AnimatedAvatar`
+  (balanceo idle, US-90) y `BouncingHeaderImage` (rebote de cabecera, US-86) pasan a render **estático
+  sin reanimated**. Las animaciones **puntuales** (giro de página del lector `BookPages`) no dan
+  problema (transitorias y en una sola pantalla). Es solo JS → recargar Metro, sin rebuild nativo.
+- **Lección:** en este combo (Expo 56 / RN 0.85 / reanimated 4.3.1 / New Arch) las animaciones
+  reanimated **en bucle infinito** son inestables ante eventos táctiles. Evítalas o difiere el
+  movimiento a la API `Animated` de RN (como `Appear`, estable aquí) hasta que el combo lo soporte.
