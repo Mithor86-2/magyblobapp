@@ -31,6 +31,100 @@ export interface Config {
   tts: TtsConfig;
   /** Autenticación de la sesión del guardián con JWT (US-45). */
   auth: AuthConfig;
+  /** Endurecimiento de la superficie pública del API (US-92). */
+  security: SecurityConfig;
+  /** Verificación de titularidad del email por OTP (US-93). */
+  email: EmailConfig;
+}
+
+/**
+ * Configuración de la verificación de email por OTP (US-93). El SMTP es opcional:
+ * si falta cualquier credencial (`enabled=false`), el alta **omite** la verificación
+ * (la cuenta queda verificada y se auto-loguea), preservando el arranque reproducible
+ * (US-06) — igual patrón que la IA cloud ("sin key cae a mock"). El secreto SMTP vive
+ * solo en variables de entorno, nunca en BD ni en el repo.
+ */
+export interface EmailConfig {
+  /** ¿Hay SMTP completo configurado? Si no, la verificación se omite (auto-verificado). */
+  enabled: boolean;
+  /** Credenciales SMTP; `undefined` cuando `enabled` es `false`. */
+  smtp?: SmtpConfig;
+  /** Remitente de los correos (env `EMAIL_FROM`; por defecto el `SMTP_USER`). */
+  from?: string;
+  /** Parámetros del código OTP. */
+  otp: OtpConfig;
+}
+
+/** Credenciales del servidor SMTP saliente (env `SMTP_*`). */
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+}
+
+/** Parámetros del OTP de verificación (env `OTP_*`). */
+export interface OtpConfig {
+  /** Vida del código en ms (env `OTP_TTL_MS`). Por defecto 10 min. */
+  ttlMs: number;
+  /** Máximo de intentos de validación antes de exigir reenvío (env `OTP_MAX_INTENTOS`). */
+  maxIntentos: number;
+  /** Cooldown entre reenvíos en ms (env `OTP_RESEND_COOLDOWN_MS`). */
+  resendCooldownMs: number;
+}
+
+/**
+ * Configuración de seguridad de la capa HTTP (US-92): rate limiting de los
+ * endpoints de autenticación, política CORS, confianza en el proxy (Render está
+ * tras un proxy: la IP real llega en `X-Forwarded-For`) y la puerta parental del
+ * alta. Todos los valores tienen defaults razonables y son sobreescribibles por
+ * env para poder endurecerlos en producción o relajarlos en tests.
+ */
+export interface SecurityConfig {
+  /**
+   * Confía en la cabecera del proxy para derivar `request.ip` (env `TRUST_PROXY`).
+   * Necesario en Render/Cloudflare para que el rate limit cuente por cliente real
+   * y no por la IP del proxy. Por defecto activo en producción.
+   */
+  trustProxy: boolean;
+  /**
+   * Orígenes permitidos por CORS (env `CORS_ORIGINS`, lista separada por comas).
+   * Si está vacío: en producción se **deniega** cualquier origen cross-site (la
+   * app nativa no usa CORS); fuera de producción se **reflejan todos** (comodidad
+   * de desarrollo con Expo web).
+   */
+  corsOrigins: string[];
+  /** Límites de tasa por endpoint de autenticación (max peticiones / ventana ms). */
+  rateLimit: RateLimitConfig;
+  /** Puerta parental del alta (reto de adulto firmado, sin terceros). */
+  parentalGate: ParentalGateConfig;
+}
+
+/** Un límite de tasa: nº máximo de peticiones dentro de la ventana (en ms). */
+export interface LimiteTasa {
+  max: number;
+  ventanaMs: number;
+}
+
+export interface RateLimitConfig {
+  /** Alta de guardián (`POST /guardians`). Estricto: pocas altas por ventana. */
+  registro: LimiteTasa;
+  /** Login (`POST /guardians/login`). Frena la fuerza bruta de contraseñas. */
+  login: LimiteTasa;
+  /** Refresh de sesión (`POST /guardians/refresh`). Límite moderado. */
+  refresh: LimiteTasa;
+  /** Verificación de email (`POST /guardians/verify-email`, US-93). Frena la fuerza bruta del OTP. */
+  verify: LimiteTasa;
+  /** Reenvío de código (`POST /guardians/resend-verification`, US-93). Estricto. */
+  resend: LimiteTasa;
+}
+
+export interface ParentalGateConfig {
+  /**
+   * Vida del reto parental en ms (env `PARENTAL_CHALLENGE_TTL_MS`). El reto se
+   * firma con el secreto JWT y expira pronto para no ser reutilizable.
+   */
+  ttlMs: number;
 }
 
 export interface AuthConfig {
@@ -95,6 +189,31 @@ function enteroPositivoConDefecto(valorDefecto: number): z.ZodType<number> {
   return z.coerce.number().int().positive().catch(valorDefecto).default(valorDefecto);
 }
 
+/**
+ * Interpreta un booleano tolerante desde una cadena de env: `'true'/'1'/'yes'/'on'`
+ * ⇒ `true`; `'false'/'0'/'no'/'off'` ⇒ `false`; ausente o cualquier otra cosa ⇒
+ * `valorDefecto`. Evita que un valor mal escrito aborte el arranque.
+ */
+function parseBooleano(valor: string | undefined, valorDefecto: boolean): boolean {
+  if (valor === undefined) return valorDefecto;
+  const v = valor.trim().toLowerCase();
+  if (['true', '1', 'yes', 'on'].includes(v)) return true;
+  if (['false', '0', 'no', 'off'].includes(v)) return false;
+  return valorDefecto;
+}
+
+/**
+ * Parte una lista separada por comas en cadenas recortadas no vacías. Ausente o
+ * vacía ⇒ `[]`. Se usa para `CORS_ORIGINS`.
+ */
+function parseLista(valor: string | undefined): string[] {
+  if (valor === undefined) return [];
+  return valor
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s !== '');
+}
+
 /** Cadena recortada, vacía ⇒ `undefined` (para secretos/IDs opcionales). */
 const cadenaOpcional = z
   .string()
@@ -156,6 +275,32 @@ const envSchema = z
     GEMINI_API_KEY: cadenaOpcional,
     OPENROUTER_API_KEY: cadenaOpcional,
     CEREBRAS_API_KEY: cadenaOpcional,
+
+    // Seguridad de la capa HTTP (US-92)
+    TRUST_PROXY: cadenaOpcional,
+    CORS_ORIGINS: cadenaOpcional,
+    RATE_LIMIT_REGISTRO_MAX: enteroPositivoConDefecto(5),
+    RATE_LIMIT_REGISTRO_WINDOW_MS: enteroPositivoConDefecto(3_600_000),
+    RATE_LIMIT_LOGIN_MAX: enteroPositivoConDefecto(10),
+    RATE_LIMIT_LOGIN_WINDOW_MS: enteroPositivoConDefecto(60_000),
+    RATE_LIMIT_REFRESH_MAX: enteroPositivoConDefecto(30),
+    RATE_LIMIT_REFRESH_WINDOW_MS: enteroPositivoConDefecto(60_000),
+    PARENTAL_CHALLENGE_TTL_MS: enteroPositivoConDefecto(300_000),
+
+    // Verificación de email por OTP (US-93). SMTP opcional: sin credenciales, la
+    // verificación se omite (auto-verificado) y el alta auto-loguea como antes.
+    SMTP_HOST: cadenaOpcional,
+    SMTP_PORT: enteroPositivoConDefecto(465),
+    SMTP_USER: cadenaOpcional,
+    SMTP_PASSWORD: cadenaOpcional,
+    EMAIL_FROM: cadenaOpcional,
+    OTP_TTL_MS: enteroPositivoConDefecto(600_000),
+    OTP_MAX_INTENTOS: enteroPositivoConDefecto(5),
+    OTP_RESEND_COOLDOWN_MS: enteroPositivoConDefecto(60_000),
+    RATE_LIMIT_VERIFY_MAX: enteroPositivoConDefecto(10),
+    RATE_LIMIT_VERIFY_WINDOW_MS: enteroPositivoConDefecto(60_000),
+    RATE_LIMIT_RESEND_MAX: enteroPositivoConDefecto(5),
+    RATE_LIMIT_RESEND_WINDOW_MS: enteroPositivoConDefecto(3_600_000),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
@@ -180,6 +325,30 @@ export class ConfigError extends Error {
     super(`Configuración inválida:\n${detalle}`);
     this.name = 'ConfigError';
   }
+}
+
+/**
+ * Deriva la configuración de email (US-93) desde el entorno ya parseado. La
+ * verificación se considera **activa** solo si están presentes las cuatro
+ * credenciales SMTP; en otro caso `enabled=false` y el alta omite la verificación
+ * (auto-verificado), preservando el arranque reproducible.
+ */
+function leerConfigEmail(env: ParsedEnv): EmailConfig {
+  const otp: OtpConfig = {
+    ttlMs: env.OTP_TTL_MS,
+    maxIntentos: env.OTP_MAX_INTENTOS,
+    resendCooldownMs: env.OTP_RESEND_COOLDOWN_MS,
+  };
+  const { SMTP_HOST, SMTP_USER, SMTP_PASSWORD } = env;
+  if (SMTP_HOST === undefined || SMTP_USER === undefined || SMTP_PASSWORD === undefined) {
+    return { enabled: false, otp };
+  }
+  return {
+    enabled: true,
+    smtp: { host: SMTP_HOST, port: env.SMTP_PORT, user: SMTP_USER, password: SMTP_PASSWORD },
+    from: env.EMAIL_FROM ?? SMTP_USER,
+    otp,
+  };
 }
 
 function leerClavesCloud(env: ParsedEnv): Partial<Record<CloudTarget, string>> {
@@ -260,5 +429,32 @@ export function loadConfig(
       accessTtl: parsed.JWT_ACCESS_TTL,
       refreshTtl: parsed.JWT_REFRESH_TTL,
     },
+    security: {
+      // Por defecto se confía en el proxy en producción (Render/Cloudflare), donde
+      // la IP real del cliente llega en `X-Forwarded-For`; en local, no.
+      trustProxy: parseBooleano(parsed.TRUST_PROXY, parsed.NODE_ENV === 'production'),
+      corsOrigins: parseLista(parsed.CORS_ORIGINS),
+      rateLimit: {
+        registro: {
+          max: parsed.RATE_LIMIT_REGISTRO_MAX,
+          ventanaMs: parsed.RATE_LIMIT_REGISTRO_WINDOW_MS,
+        },
+        login: { max: parsed.RATE_LIMIT_LOGIN_MAX, ventanaMs: parsed.RATE_LIMIT_LOGIN_WINDOW_MS },
+        refresh: {
+          max: parsed.RATE_LIMIT_REFRESH_MAX,
+          ventanaMs: parsed.RATE_LIMIT_REFRESH_WINDOW_MS,
+        },
+        verify: {
+          max: parsed.RATE_LIMIT_VERIFY_MAX,
+          ventanaMs: parsed.RATE_LIMIT_VERIFY_WINDOW_MS,
+        },
+        resend: {
+          max: parsed.RATE_LIMIT_RESEND_MAX,
+          ventanaMs: parsed.RATE_LIMIT_RESEND_WINDOW_MS,
+        },
+      },
+      parentalGate: { ttlMs: parsed.PARENTAL_CHALLENGE_TTL_MS },
+    },
+    email: leerConfigEmail(parsed),
   };
 }

@@ -22,6 +22,13 @@ nada**: define la arquitectura, el orden de fases y el gate (Definition of Done)
   fuente conceptual; su materialización relacional vive en el esquema Prisma
   [packages/backend/prisma/schema.prisma](packages/backend/prisma/schema.prisma). Si cambias el
   esquema, actualiza también este doc.
+- [Docs/flujo-cicd.md](Docs/flujo-cicd.md) — documento general del flujo de CI/CD: fases (local → CI →
+  despliegue), la lista completa de tests por paso, las condiciones de aceptación y las reglas de rama
+  de GitHub (rulesets). **Actualízalo en el mismo cambio** que toque un workflow, un script de test o
+  una condición de aceptación.
+- [Docs/mejoras-cicd-pendientes.md](Docs/mejoras-cicd-pendientes.md) — backlog de mejoras de CI/CD
+  pendientes (con checkboxes y criterios de aceptación). Mueve cada tarea a "ya implementado" al
+  cerrarla.
 
 **Regla de planes (enforced):** todo plan de implementación se escribe como documento en
 [Docs/planes/](Docs/planes/) (un fichero por fase, p. ej. [Docs/planes/fase-5.md](Docs/planes/fase-5.md)),
@@ -68,6 +75,12 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
   de feature), criterio SemVer y mecánica Keep a Changelog, más las recetas para resolver conflictos
   de versión / CHANGELOG / `pnpm-lock` al mergear en paralelo. La invoca `cerrar-feature`; ver
   "Versionado y changelog" más abajo. Vive en el repo: [.claude/skills/versionar/](.claude/skills/versionar/).
+- **`crear-release`** — al publicar un **release a producción** (di "crea nuevo release"). Runbook
+  end-to-end: versiona (delega en `versionar`), dispara el build EAS de la APK (`preview`) y actualiza
+  el enlace de descarga del README, integra `develop`→`main` por **PR con CI verde** (auto-deploy del
+  backend en Render), verifica `/health` en prod y crea el **GitHub Release** con notas del CHANGELOG.
+  **Muestra el plan y pide confirmación** antes de cada paso externo (push, merge a `main`, Release,
+  build EAS). Vive en el repo: [.claude/skills/crear-release/](.claude/skills/crear-release/).
 - **`gitflow-es:git`** / **`gitflow-es:commit`** (plugin `gitflow-es`) — para cualquier operación de
   ramas o commits (start/finish de features, hotfixes, releases, mensajes en Conventional Commits en
   español). Ver "Git workflow" más abajo.

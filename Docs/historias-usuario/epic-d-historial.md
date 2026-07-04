@@ -16,19 +16,26 @@ Como **padre/tutor** quiero revisar los cuentos creados para releerlos.
 ## US-27 — Releer un cuento desde el Historial · Should (Mejoras)
 
 Como **padre/tutor** (o niño/a acompañado) quiero abrir un cuento guardado y volver a leerlo
-completo desde el Historial, marcándolo como leído al abrirlo.
+completo desde el Historial, y marcarlo como leído cuando termino de leerlo.
 
-**Contexto.** Hoy el Historial **lista** los cuentos y permite "marcar leído" con un botón, pero no
-hay una vista de lectura. Se añade una **pantalla de detalle** (título + cuerpo, reutilizando el
-estilo de la tarjeta del generador y el `AuthorBadge`) a la que se llega tocando el cuento; al
-abrirla se marca `leído` (US-07/US-08, reutiliza `POST /stories/:id/read`). **Solo app.**
+**Contexto.** El Historial **lista** los cuentos y permite "marcar leído" con un botón. Se añade una
+**pantalla de detalle/lectura** (título + cuerpo paginado como libro, `AuthorBadge`) a la que se
+llega tocando el cuento (reutiliza `POST /stories/:id/read`). El marcado como leído es **explícito**
+(coherente con US-73, para que "leído" refleje lectura/escucha real y no el mero hecho de abrir):
+mediante el botón "Marcar como leído", al terminar la narración, o **al llegar a la última página**,
+donde se muestra una **modal** que pregunta si marcarlo como leído y, al confirmar, lo marca. **Solo
+app.**
 
 **Criterios de aceptación**
 
 - Dado un cuento del Historial, Cuando lo toco, Entonces se abre una vista de lectura con su
-  **título y cuerpo** completos (y el Autor).
-- Dado que abro un cuento `nuevo`, Cuando se muestra la vista de lectura, Entonces queda marcado
-  como `leído` (y el Historial lo refleja al volver).
+  **título y cuerpo** completos (paginados) y el Autor.
+- Dado un cuento `nuevo` en la lectura, Cuando **llego a la última página**, Entonces **medio segundo
+  después** aparece una **modal** preguntando si marcarlo como leído; al **confirmar** queda `leído` (el Historial lo
+  refleja al volver) y al **cancelar** no cambia su estado. La modal se muestra **una sola vez** por
+  lectura y **no** aparece si el cuento ya estaba leído.
+- Dada la vista de lectura, Cuando pulso "Marcar como leído" o termino la narración, Entonces el
+  cuento queda `leído` (marcado idempotente).
 - Dada la vista de lectura, Cuando pulso "atrás", Entonces vuelvo al Historial sin perder su estado.
 
 ## US-62 — Fecha de generación y filtros en el Historial · Should (Mejoras)

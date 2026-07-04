@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Text } from 'react-native';
 import { BookPages } from './BookPages';
@@ -92,5 +92,24 @@ describe('BookPages (US-83)', () => {
     expect(screen.getByText('¡Fin de la historia!')).toBeInTheDocument();
     expect(screen.getByText('Página 3 de 3')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeDisabled();
+  });
+
+  it('US-27: llama onReachedEnd una sola vez al llegar a la última página', () => {
+    const onReachedEnd = vi.fn();
+    render(<BookPages paginas={PAGINAS} onReachedEnd={onReachedEnd} />);
+
+    // En la primera página aún no se ha avisado.
+    expect(onReachedEnd).not.toHaveBeenCalled();
+
+    siguiente(); // página 2 de 3
+    expect(onReachedEnd).not.toHaveBeenCalled();
+
+    siguiente(); // página 3 de 3 (última) → avisa
+    expect(onReachedEnd).toHaveBeenCalledTimes(1);
+
+    // Volver atrás y avanzar de nuevo NO vuelve a avisar (una sola vez por lectura).
+    anterior();
+    siguiente();
+    expect(onReachedEnd).toHaveBeenCalledTimes(1);
   });
 });

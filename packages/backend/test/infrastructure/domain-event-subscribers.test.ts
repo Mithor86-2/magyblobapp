@@ -102,4 +102,13 @@ describe('wireDomainEvents', () => {
     expect(audit.items[0].accion).toBe('login');
     expect(audit.items[0].entidad).toBe('Guardian');
   });
+
+  it('audita la verificación de email del adulto (US-93)', async () => {
+    await bus.publish({ tipo: 'email_verificado', guardianId: 'g-1' });
+
+    expect(audit.items).toHaveLength(1);
+    expect(audit.items[0].accion).toBe('verificar_email');
+    expect(audit.items[0].entidad).toBe('Guardian');
+    expect(audit.items[0].guardianId).toBe('g-1');
+  });
 });

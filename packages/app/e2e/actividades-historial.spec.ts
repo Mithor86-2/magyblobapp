@@ -62,7 +62,7 @@ async function completarOnboarding(page: Page, correo: string): Promise<void> {
   await page.getByRole('button', { name: 'Crear nuevo perfil' }).click();
 
   // Crear perfil de niño
-  await page.getByPlaceholder('Tu nombre').fill(NOMBRE_NINO);
+  await page.getByPlaceholder('Nombre del peque').fill(NOMBRE_NINO);
   await page.getByRole('button', { name: '4', exact: true }).click();
   await page.getByRole('button', { name: 'zorro' }).click();
   await page.getByRole('button', { name: 'Animales' }).click();

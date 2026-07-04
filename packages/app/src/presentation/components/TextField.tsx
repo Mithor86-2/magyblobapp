@@ -7,7 +7,7 @@ interface TextFieldProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
-  keyboardType?: 'default' | 'email-address';
+  keyboardType?: 'default' | 'email-address' | 'number-pad';
   autoCapitalize?: 'none' | 'words' | 'sentences';
   /** Oculta el texto introducido (contraseñas). Opcional y aditivo. */
   secureTextEntry?: boolean;

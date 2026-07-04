@@ -55,6 +55,7 @@ export const en: typeof es = {
     login: 'Log in',
     selectProfile: 'Choose profile',
     createProfile: 'Create profile',
+    verifyEmail: 'Verify email',
     parental: 'Adults zone',
     achievements: 'My achievements',
     storyReader: 'Story',
@@ -82,6 +83,7 @@ export const en: typeof es = {
     haveAccount: 'I already have an account',
     retry: 'Try again',
     ups: 'Oops',
+    ok: 'Done',
     email: 'Email',
     emailPlaceholder: 'you@email.com',
     password: 'Password',
@@ -184,13 +186,29 @@ export const en: typeof es = {
     errorGeneric: 'Could not complete the registration.',
   },
 
+  // Email verification via OTP (US-93).
+  verify: {
+    title: 'Verify your email',
+    body: "We've sent a 6-digit code to {{email}}. Enter it here to activate your account.",
+    codeLabel: 'Verification code',
+    codePlaceholder: '000000',
+    submit: 'Verify',
+    resend: 'Resend code',
+    resendCooldown: 'You can resend in {{segundos}}s',
+    resentOk: "We've sent you a new code.",
+    errorCode: 'The code is incorrect or has expired. Check it or request a new one.',
+    errorTooMany: 'Too many attempts. Request a new code.',
+    errorResend: 'Could not resend the code. Please try again.',
+    errorGeneric: 'Could not verify the email.',
+  },
+
   createProfile: {
-    name: "What's your name?",
-    namePlaceholder: 'Your name',
-    age: 'How old are you?',
+    name: "What's your little one's name?",
+    namePlaceholder: "Little one's name",
+    age: 'How old is your little one?',
     language: 'Language',
-    avatar: 'Choose your avatar',
-    interests: 'What do you like?',
+    avatar: "Choose your little one's avatar",
+    interests: 'What does your little one like?',
     submit: 'Done!',
     errorGeneric: 'Could not create the profile.',
   },
@@ -250,6 +268,11 @@ export const en: typeof es = {
     continueError: 'Could not continue the story.',
     // Book's last page (US-83, adjustment #5).
     end: '⭐ The end of the story! ⭐',
+    // Modal on reaching the last page (US-27).
+    markReadPromptTitle: 'Mark as read?',
+    markReadPromptBody: "You've reached the end of the story. Do you want to mark it as read?",
+    markReadPromptConfirm: 'Yes, mark it',
+    markReadPromptCancel: 'Not now',
   },
 
   history: {

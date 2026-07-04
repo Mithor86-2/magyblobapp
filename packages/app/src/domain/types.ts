@@ -55,6 +55,8 @@ export interface Guardian {
   email: string;
   parentesco: Parentesco;
   consentimientoDado: boolean;
+  /** Titularidad del email verificada por OTP (US-93). Opcional: backend antiguo la omite. */
+  emailVerificado?: boolean;
 }
 
 // Login real con email + contraseña (US-48; revierte el login ligero de US-19).
@@ -73,6 +75,28 @@ export interface SessionTokens {
 
 /** Respuesta de alta/login: el guardián junto con su sesión JWT. */
 export interface GuardianSession extends Guardian, SessionTokens {}
+
+/**
+ * Alta/login pendiente de verificar el email (US-93). El backend con SMTP no emite
+ * sesión hasta validar el código OTP; la app usa `guardianId`/`email` para ir a la
+ * pantalla de verificación.
+ */
+export interface PendingEmailVerification {
+  requiereVerificacion: true;
+  guardianId: string;
+  email: string;
+}
+
+/**
+ * Resultado del alta o el login (US-93): o bien la sesión (email ya verificado o sin
+ * SMTP), o bien la señal de que hay que verificar el email antes de entrar.
+ */
+export type AuthOutcome = GuardianSession | PendingEmailVerification;
+
+/** Discrimina el resultado: `true` ⇒ hay que verificar el email antes de la sesión. */
+export function requiereVerificacion(outcome: AuthOutcome): outcome is PendingEmailVerification {
+  return 'requiereVerificacion' in outcome;
+}
 
 // --- ChildProfile ---
 export interface CreateChildProfileInput {

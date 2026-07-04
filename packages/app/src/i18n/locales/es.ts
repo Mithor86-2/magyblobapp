@@ -57,6 +57,7 @@ export const es = {
     login: 'Iniciar sesión',
     selectProfile: 'Elegir perfil',
     createProfile: 'Crear perfil',
+    verifyEmail: 'Verificar email',
     parental: 'Zona de adultos',
     achievements: 'Mis logros',
     storyReader: 'Cuento',
@@ -85,6 +86,7 @@ export const es = {
     haveAccount: 'Ya tengo cuenta',
     retry: 'Reintentar',
     ups: 'Ups',
+    ok: 'Listo',
     email: 'Email',
     emailPlaceholder: 'tu@email.com',
     password: 'Contraseña',
@@ -187,13 +189,29 @@ export const es = {
     errorGeneric: 'No se pudo completar el registro.',
   },
 
+  // Verificación de email por OTP (US-93).
+  verify: {
+    title: 'Verifica tu email',
+    body: 'Te hemos enviado un código de 6 dígitos a {{email}}. Escríbelo aquí para activar tu cuenta.',
+    codeLabel: 'Código de verificación',
+    codePlaceholder: '000000',
+    submit: 'Verificar',
+    resend: 'Reenviar código',
+    resendCooldown: 'Puedes reenviar en {{segundos}} s',
+    resentOk: 'Te hemos enviado un código nuevo.',
+    errorCode: 'El código no es correcto o ha caducado. Revísalo o pide uno nuevo.',
+    errorTooMany: 'Demasiados intentos. Pide un código nuevo.',
+    errorResend: 'No se pudo reenviar el código. Inténtalo de nuevo.',
+    errorGeneric: 'No se pudo verificar el email.',
+  },
+
   createProfile: {
-    name: '¿Cómo te llamas?',
-    namePlaceholder: 'Tu nombre',
-    age: '¿Cuántos años tienes?',
+    name: '¿Cómo se llama tu peque?',
+    namePlaceholder: 'Nombre del peque',
+    age: '¿Cuántos años tiene tu peque?',
     language: 'Idioma',
-    avatar: 'Elige tu avatar',
-    interests: '¿Qué te gusta?',
+    avatar: 'Elige tu avatar de tu peque',
+    interests: '¿Qué le gusta a tu peque?',
     submit: '¡Listo!',
     errorGeneric: 'No se pudo crear el perfil.',
   },
@@ -253,6 +271,11 @@ export const es = {
     continueError: 'No se pudo continuar la historia.',
     // Última página del libro (US-83, ajuste #5).
     end: '⭐ ¡Fin de la historia! ⭐',
+    // Modal al llegar a la última página (US-27).
+    markReadPromptTitle: '¿Marcar como leído?',
+    markReadPromptBody: 'Has llegado al final del cuento. ¿Quieres marcarlo como leído?',
+    markReadPromptConfirm: 'Sí, marcar',
+    markReadPromptCancel: 'Ahora no',
   },
 
   history: {

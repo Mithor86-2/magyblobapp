@@ -19,6 +19,51 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.10.0] - 2026-07-04
+
+### Added
+
+- Lectura de cuento (US-27): al **llegar a la última página** aparece —**medio segundo después**,
+  para dar tiempo a ver el final— una **modal** que pregunta si marcar el cuento como leído y, al
+  confirmar, lo marca (idempotente). Se muestra una sola vez por lectura y no aparece si ya estaba
+  leído; complementa el botón "Marcar como leído" y el fin de la narración. `BookPages` expone
+  `onReachedEnd`.
+- Pantalla **Verificar email** (US-93): tras crear la cuenta con verificación requerida, la app pide un
+  código OTP de 6 dígitos —en **6 casillas, una por dígito** (`CodeInput`)— enviado al email del adulto,
+  con opción de **reenviar** (cooldown) y estados de error (código incorrecto/caducado/intentos agotados).
+  Al validar el código correcto, inicia sesión y navega a Seleccionar perfil. Si el backend no requiere
+  verificación (sin SMTP), el onboarding es el de siempre (auto-login).
+
+### Changed
+
+- Inicio (US-94): los cuatro accesos rápidos (Crear un cuento, Ver actividades, Mis logros, Buscar)
+  pasan a una **rejilla de 2 columnas** y cada uno muestra un **icono** sobre la etiqueta (libro,
+  paleta, trofeo y lupa). El mismo icono acompaña ahora la acción equivalente donde aparece: "Generar
+  cuento" (Cuentos y Dashboard) → libro; "Generar actividades" (Actividades y Dashboard) → paleta.
+  `BubblyButton` admite `layout: 'row' | 'stack'` (tile vertical) y el wrapper `Icon` añade el nombre
+  semántico `achievements` (trofeo).
+- El alta (`api.guardians.register`) resuelve de forma transparente la puerta parental server-side
+  del backend (US-92): obtiene el reto de `GET /guardians/challenge` y envía la respuesta junto al
+  alta. El `ParentalGate` cliente (verificación humana) se mantiene; no cambia la UI del formulario.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Crash nativo de **reanimated 4 / New Architecture** (`stof: out of range` en
+  `performNonLayoutOperations`) al procesar eventos **táctiles/scroll** mientras había una
+  **animación reanimated en bucle activa** en la pantalla visible (el `cancelAnimation` al desmontar
+  y la pausa al desenfocar no bastaban: el crash salta también en la pantalla enfocada al tocar/scrollear).
+  Se **desactivan las animaciones decorativas en bucle**: el **balanceo idle del avatar**
+  (`AnimatedAvatar`, US-90) y el **rebote de la cabecera** (`BouncingHeaderImage`, US-86) pasan a
+  renderizarse **estáticos** (sin reanimated). Las animaciones puntuales del lector (giro de página)
+  no se ven afectadas. Pendiente reintroducir el movimiento cuando el combo Expo/RN/reanimated lo
+  permita sin crashear.
+
+### Security
+
 ## [1.9.3] - 2026-07-03
 
 Sin cambios en el runtime del app; versión unificada del monorepo. Cambios en tooling de pruebas

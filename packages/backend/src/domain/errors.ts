@@ -53,3 +53,28 @@ export class InvalidCredentialsError extends DomainError {
     this.name = 'InvalidCredentialsError';
   }
 }
+
+/**
+ * El código de verificación de email (OTP, US-93) es incorrecto o ha caducado.
+ * HTTP 400. El mensaje distingue el motivo (incorrecto / caducado) para guiar al
+ * adulto, pero no revela el código ni cuántos intentos quedan.
+ */
+export class VerificationCodeError extends DomainError {
+  constructor(message = 'El código de verificación no es válido.') {
+    super(message);
+    this.name = 'VerificationCodeError';
+  }
+}
+
+/**
+ * La puerta parental del alta no se ha superado (US-92): reto ausente, mal
+ * formado, caducado o con respuesta incorrecta. HTTP 400. Es una política de la
+ * capa HTTP (anti-bot / consentimiento parental), modelada como `DomainError`
+ * para que el manejo de errores centralizado la traduzca con el cuerpo uniforme.
+ */
+export class ParentalChallengeError extends DomainError {
+  constructor(message = 'No se ha superado la verificación parental. Vuelve a intentarlo.') {
+    super(message);
+    this.name = 'ParentalChallengeError';
+  }
+}

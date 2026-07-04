@@ -23,6 +23,7 @@ export default defineConfig({
         'src/infrastructure/db/**',
         'src/infrastructure/config/syncAppSettings.ts', // IO de BD → test:integration (US-70)
         'src/infrastructure/tts/ElevenLabsProvider.ts', // → E2E/manual
+        'src/infrastructure/email/SmtpEmailService.ts', // SMTP real → E2E/manual (US-93)
         'src/infrastructure/ai/aiLog.ts', // logger, ejercitado en E2E/manual
         // INFRASTRUCTURE tier (TypeScript valida; 0% objetivo): interfaces/puertos,
         // type-aliases, DTOs, vocabularios cerrados, config y bootstrap.
@@ -32,6 +33,7 @@ export default defineConfig({
         'src/dependencies.ts',
         'src/domain/ai/AIProvider.ts',
         'src/domain/tts/TTSProvider.ts',
+        'src/domain/services/**', // puertos EmailService/CodeGenerator (US-93)
         'src/domain/events/**',
         'src/domain/repositories/**',
         'src/domain/**/*Repository.ts',

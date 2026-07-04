@@ -31,11 +31,32 @@ model Guardian {
   consentimientoDado Boolean
   consentimientoEn   DateTime
   consentimientoVer  String
-  creadoEn           DateTime       @default(now())
+  /// Titularidad del email verificada por OTP (US-93). Las cuentas creadas sin SMTP
+  /// configurado quedan verificadas al alta; con SMTP, hasta validar el código.
+  emailVerificado    Boolean            @default(false)
+  creadoEn           DateTime           @default(now())
   perfiles           ChildProfile[]
   auditLogs          AuditLog[]
+  emailVerification  EmailVerification?
 
   @@map("guardians")
+}
+
+/// Verificación de titularidad del email por OTP (US-93). Estado transitorio de
+/// seguridad, 1-1 con el guardián; se borra en cascada con él. El código se guarda
+/// **hasheado** (bcrypt), nunca en claro. `intentos` limita la fuerza bruta y
+/// `expiraEn` la caducidad; `verificadoEn` marca el consumo.
+model EmailVerification {
+  id           String    @id @default(uuid())
+  guardianId   String    @unique
+  guardian     Guardian  @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  codigoHash   String
+  expiraEn     DateTime
+  intentos     Int       @default(0)
+  verificadoEn DateTime?
+  creadoEn     DateTime  @default(now())
+
+  @@map("email_verifications")
 }
 
 /// Perfil de un niño. Borrado en cascada al borrar su Guardian (GDPR).

@@ -20,6 +20,7 @@ erDiagram
     ChildProfile ||--o{ InteractionEvent : "produce"
     ChildProfile ||--o{ Achievement : "desbloquea"
     Guardian     ||--o{ AuditLog : "actor de"
+    Guardian     ||--o| EmailVerification : "verifica"
 
     Guardian {
         uuid     id                  PK
@@ -32,6 +33,17 @@ erDiagram
         boolean  consentimientoDado  "consentimiento parental verificable"
         datetime consentimientoEn    "fecha del consentimiento"
         string   consentimientoVer   "versión de los términos aceptados"
+        boolean  emailVerificado     "titularidad del email verificada por OTP (US-93)"
+        datetime creadoEn
+    }
+
+    EmailVerification {
+        uuid     id           PK
+        uuid     guardianId   FK "-> Guardian.id (único, 1-1)"
+        string   codigoHash   "hash bcrypt del OTP de 6 dígitos; nunca en claro (US-93)"
+        datetime expiraEn     "caducidad del código"
+        int      intentos     "validaciones fallidas (límite anti fuerza bruta)"
+        datetime verificadoEn "cuándo se consumió; nulo si pendiente"
         datetime creadoEn
     }
 
@@ -109,7 +121,7 @@ erDiagram
     AuditLog {
         uuid     id         PK
         uuid     guardianId FK "-> Guardian.id (actor; opcional)"
-        string   accion     "crear | editar | borrar | consentimiento | login"
+        string   accion     "crear | editar | borrar | consentimiento | login | verificar_email"
         string   entidad    "Guardian | ChildProfile | Story | Activity"
         uuid     entidadId  "id afectado"
         json     metadatos  "contexto"
@@ -245,17 +257,17 @@ Solo donde aportan (regla YAGNI del plan); el resto son escalares simples.
 
 ## Vocabularios cerrados (enums)
 
-| Enum            | Valores                                            | Usado en                                 |
-| --------------- | -------------------------------------------------- | ---------------------------------------- |
-| **Temática**    | `animales · espacio · magia · aventuras · música`  | `ChildProfile.intereses[]`, `Story.tema` |
-| **Estilo**      | `aventura · divertido · educativo`                 | `Story.estilo`                           |
-| **Enseñanza**   | `amistad · emociones · valentia · honestidad`      | `Story.ensenanza` (opcional, US-69)      |
-| **Categoría**   | `arte · música · lógica`                           | `Activity.categoria`                     |
-| **EstadoStory** | `nuevo · leido`                                    | `Story.estado`                           |
-| **Idioma**      | `es · en`                                          | `ChildProfile.idioma`, `Story.idioma`    |
-| **ProveedorIa** | `mock · local · cloud`                             | `Story.proveedor`, `Activity.proveedor`  |
-| **Parentesco**  | `madre · padre · tutor_legal · abuelo_a · otro`    | `Guardian.parentesco`                    |
-| **AccionAudit** | `crear · editar · borrar · consentimiento · login` | `AuditLog.accion`                        |
+| Enum            | Valores                                                              | Usado en                                 |
+| --------------- | -------------------------------------------------------------------- | ---------------------------------------- |
+| **Temática**    | `animales · espacio · magia · aventuras · música`                    | `ChildProfile.intereses[]`, `Story.tema` |
+| **Estilo**      | `aventura · divertido · educativo`                                   | `Story.estilo`                           |
+| **Enseñanza**   | `amistad · emociones · valentia · honestidad`                        | `Story.ensenanza` (opcional, US-69)      |
+| **Categoría**   | `arte · música · lógica`                                             | `Activity.categoria`                     |
+| **EstadoStory** | `nuevo · leido`                                                      | `Story.estado`                           |
+| **Idioma**      | `es · en`                                                            | `ChildProfile.idioma`, `Story.idioma`    |
+| **ProveedorIa** | `mock · local · cloud`                                               | `Story.proveedor`, `Activity.proveedor`  |
+| **Parentesco**  | `madre · padre · tutor_legal · abuelo_a · otro`                      | `Guardian.parentesco`                    |
+| **AccionAudit** | `crear · editar · borrar · consentimiento · login · verificar_email` | `AuditLog.accion`                        |
 
 La **Temática es un único vocabulario compartido** por los intereses del perfil y el
 tema del cuento; los intereses pre-seleccionan el tema (decisión I-2).
@@ -285,6 +297,14 @@ tema del cuento; los intereses pre-seleccionan el tema (decisión I-2).
   El hash es **dato del adulto, no del menor**, e irreversible: **nunca** se persiste ni se
   registra la contraseña en claro (ni en logs ni en `AuditLog`). bcrypt incorpora la sal en
   el propio valor, así que no hay columna de sal aparte.
+- **`EmailVerification` (US-93):** verifica la **titularidad del email** del adulto por OTP.
+  Es estado **transitorio de seguridad** (1-1 con el `Guardian`, `@unique guardianId`,
+  cascada al borrar), separado de la identidad para no ensuciar `Guardian`. El código de 6
+  dígitos se guarda **hasheado con bcrypt** (`codigoHash`), **nunca en claro** ni en logs;
+  `expiraEn` acota la vida (10 min) e `intentos` limita la fuerza bruta. Con SMTP configurado,
+  `Guardian.emailVerificado` pasa a `true` solo al validar el código; sin SMTP se crea `true`
+  (verificación omitida, arranque reproducible). Refuerza C-1/C-10 (ver C-17 en
+  [cumplimiento-menores.md](cumplimiento-menores.md)).
 - **`InteractionEvent` (primera parte):** sin PII en `payload`, referencia al niño por
   `profileId` interno (pseudónimo); **nunca** alimenta analítica/publicidad de terceros
   ni usa identificadores de dispositivo (regla de las tiendas Kids/Families).

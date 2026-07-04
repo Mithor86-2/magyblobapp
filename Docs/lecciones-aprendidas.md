@@ -913,3 +913,67 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
   6. Dockerfile: copiar `prisma.config.ts` en build (postinstall) y runtime (`migrate deploy`).
 - **Prevención:** agrupar `prisma` + `@prisma/client` en Dependabot e **ignorar majors** (revisarlos a
   mano). Los majors sueltos automáticos son la trampa.
+
+## Seguridad del API público (2026-07-03, US-92)
+
+### `@fastify/rate-limit` + `setErrorHandler` global: el `errorResponseBuilder` se **lanza**, no se envía
+
+- **Síntoma:** al superar el límite salía **500 con `{"error":{}}`** en vez de 429, aunque el
+  `errorResponseBuilder` devolvía `{ error: { tipo, mensaje } }`.
+- **Causa:** con un `setErrorHandler` global registrado, el valor que devuelve `errorResponseBuilder`
+  se propaga hacia ese manejador **como si fuera el error** (no se serializa como respuesta directa).
+  Nuestro manejador leía `error.name`/`error.message`/`error.statusCode` de ese objeto plano → sin
+  `statusCode` caía a 500 y sin `name`/`message` el cuerpo quedaba vacío.
+- **Solución:** que `errorResponseBuilder` devuelva un **`Error` con `statusCode`** (aquí
+  `TooManyRequestsError`, statusCode 429). Así el manejador central lo traduce con el cuerpo uniforme
+  `{ error: { tipo, mensaje } }`, igual que el resto de errores de dominio.
+
+### `sonarjs/super-linear-regex` salta con dos `\d+` aunque haya un literal entre medias
+
+- Parsear "a + b" con `/(\d+) \+ (\d+)/` (o `\s*`) dispara la regla por los cuantificadores abiertos.
+  Se resuelve **acotando** el cuantificador: `/(\d{1,2}) \+ (\d{1,2})/` (los sumandos son de una cifra).
+
+## Inicio en 2 columnas + iconos (2026-07-04, US-94)
+
+### Rejilla de 2 columnas con `BubblyButton`: envolver cada botón, no darle ancho al botón
+
+- El `BubblyButton` es un `Pressable` sin ancho propio: en columna se estira al 100%, pero en un
+  contenedor `row` + `flexWrap` quedaría al ancho del contenido. La rejilla se hace **envolviendo cada
+  botón** en una celda `{ flexBasis: '47%', flexGrow: 1 }` con `gap` en el contenedor: `flexBasis < 50%`
+  garantiza dos por fila y `flexGrow` iguala anchos repartiendo el sobrante. El botón se estira dentro
+  de su celda (align stretch por defecto).
+
+### En 2 columnas el texto de 22px no cabe junto al icono → layout `stack`
+
+- Con `typography.button` (fontSize 22) e icono en fila, etiquetas como "Ver actividades" se truncan en
+  una columna estrecha. Solución: un layout **vertical** (icono grande arriba, etiqueta debajo con
+  `numberOfLines={2}`) como _tile_, añadido como `layout: 'stack'` en `BubblyButton` (el `row` sigue
+  siendo el defecto para el resto de la app).
+
+### `git add -A` en paralelo se traga cambios de otra tarea en curso
+
+- Un commit hecho a mano (`git add -A`) mientras había una feature en marcha **arrastró un doc editado
+  por la otra tarea** (fila de trazabilidad del README) a un commit que no era el suyo. El contenido era
+  correcto, pero la atribución quedó mezclada. Refuerza la regla del repo: **staging selectivo
+  (`git add <file>`), nunca `git add -A`**, y más aún si hay trabajo concurrente.
+
+### Reanimated 4 / New Arch: `stof: out of range` al tocar con animaciones en bucle
+
+- **Síntoma:** crash nativo `java.lang.ArrayIndexOutOfBoundsException: stof: out of range` en
+  `com.swmansion.reanimated.NativeProxy.performNonLayoutOperations` → `NodesManager.onEventDispatch`,
+  disparado por un **evento táctil/scroll** (`JSTouchDispatcher.handleTouchEvent` /
+  `ReactScrollView.onTouchEvent`). Dev build Android (RN 0.85.3, reanimated 4.3.1, New Architecture).
+- **Causa:** al llegar un toque/scroll, reanimated vuelca las operaciones pendientes de **todos** los
+  nodos animados y peta parseando un transform como float. Se dispara siempre que haya una **animación
+  reanimated en bucle activa** en la pantalla que se toca. No es un valor nuestro fuera de rango: es un
+  bug del pipeline de eventos de reanimated en ese combo bleeding-edge.
+- **Lo que NO bastó:** (1) `cancelAnimation` en el cleanup de desmontaje — el crash salta sin
+  desmontar; (2) pausar las animaciones al **desenfocar** la pestaña (hook `useIsScreenActive`) — el
+  crash salta también en la **pantalla enfocada** al hacer scroll/tocar.
+- **Solución (lo que funcionó):** **desactivar las animaciones decorativas en bucle**. `AnimatedAvatar`
+  (balanceo idle, US-90) y `BouncingHeaderImage` (rebote de cabecera, US-86) pasan a render **estático
+  sin reanimated**. Las animaciones **puntuales** (giro de página del lector `BookPages`) no dan
+  problema (transitorias y en una sola pantalla). Es solo JS → recargar Metro, sin rebuild nativo.
+- **Lección:** en este combo (Expo 56 / RN 0.85 / reanimated 4.3.1 / New Arch) las animaciones
+  reanimated **en bucle infinito** son inestables ante eventos táctiles. Evítalas o difiere el
+  movimiento a la API `Animated` de RN (como `Appear`, estable aquí) hasta que el combo lo soporte.

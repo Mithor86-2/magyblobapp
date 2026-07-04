@@ -50,6 +50,16 @@ describe('BubblyButton', () => {
     expect(impactAsync).toHaveBeenCalledWith('light');
   });
 
+  it('layout "stack" (tile de rejilla): sigue siendo un botón accesible por su nombre y pulsable', () => {
+    const onPress = vi.fn();
+    render(<BubblyButton label="Crear un cuento" icon="story" layout="stack" onPress={onPress} />);
+
+    const boton = screen.getByRole('button', { name: 'Crear un cuento' });
+    fireEvent.click(boton);
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
   it('usa accessibilityLabel como nombre accesible en botones solo-icono', () => {
     render(<BubblyButton icon="play" accessibilityLabel="Reproducir" onPress={vi.fn()} />);
 

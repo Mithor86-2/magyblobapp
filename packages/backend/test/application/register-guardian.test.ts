@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { RegisterGuardian } from '../../src/application/use-cases/RegisterGuardian.js';
+import { SendEmailVerification } from '../../src/application/services/SendEmailVerification.js';
 import { DomainError } from '../../src/domain/errors.js';
 import type { RegisterGuardianInput } from '../../src/application/dto.js';
 import {
   CLAVE_DE_PRUEBA,
+  FakeCodeGenerator,
+  FakeEmailService,
   FakePasswordHasher,
+  InMemoryEmailVerificationRepository,
   InMemoryGuardianRepository,
   relojFijo,
   secuencialIdGenerator,
@@ -42,6 +46,44 @@ describe('RegisterGuardian', () => {
     expect(out.id).toBe('g-1');
     expect(out.consentimientoDado).toBe(true);
     expect(guardians.items.size).toBe(1);
+  });
+
+  it('sin servicio de verificación, la cuenta nace verificada (US-93)', async () => {
+    const out = await useCase.execute(inputValido());
+    expect(out.emailVerificado).toBe(true);
+    const guardado = [...guardians.items.values()][0];
+    expect(guardado.emailVerificado).toBe(true);
+  });
+
+  it('con verificación activa, la cuenta nace no verificada y envía el OTP (US-93)', async () => {
+    const email = new FakeEmailService();
+    const verifications = new InMemoryEmailVerificationRepository();
+    const conVerificacion = new RegisterGuardian({
+      guardians,
+      hasher: new FakePasswordHasher(),
+      newId: secuencialIdGenerator('g'),
+      now: relojFijo(),
+      verification: new SendEmailVerification({
+        emailService: email,
+        codeGenerator: new FakeCodeGenerator('123456'),
+        hasher: new FakePasswordHasher(),
+        verifications,
+        newId: secuencialIdGenerator('v'),
+        now: relojFijo(),
+        ttlMs: 600_000,
+      }),
+    });
+
+    const out = await conVerificacion.execute(inputValido());
+
+    expect(out.emailVerificado).toBe(false);
+    // Se envió el código al email del adulto…
+    expect(email.enviados).toHaveLength(1);
+    expect(email.enviados[0]).toMatchObject({ email: 'ana@example.com', codigo: '123456' });
+    // …y se persistió el hash del código (nunca el código en claro).
+    const verificacion = await verifications.buscarPorGuardian(out.id);
+    expect(verificacion).not.toBeNull();
+    expect(verificacion?.codigoHash).toBe('hashed:123456');
   });
 
   it('hashea la contraseña con el PasswordHasher y guarda el hash, no el plano', async () => {

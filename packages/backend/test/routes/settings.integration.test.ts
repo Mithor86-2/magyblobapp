@@ -24,6 +24,19 @@ function configConClave(): Config {
       timeoutMs: 1000,
     },
     auth: { secret: 'test-secret-no-usar-en-produccion', accessTtl: '15m', refreshTtl: '7d' },
+    security: {
+      trustProxy: false,
+      corsOrigins: [],
+      rateLimit: {
+        registro: { max: 100, ventanaMs: 60_000 },
+        login: { max: 100, ventanaMs: 60_000 },
+        refresh: { max: 100, ventanaMs: 60_000 },
+        verify: { max: 100, ventanaMs: 60_000 },
+        resend: { max: 100, ventanaMs: 60_000 },
+      },
+      parentalGate: { ttlMs: 300_000 },
+    },
+    email: { enabled: false, otp: { ttlMs: 600_000, maxIntentos: 5, resendCooldownMs: 60_000 } },
   };
 }
 

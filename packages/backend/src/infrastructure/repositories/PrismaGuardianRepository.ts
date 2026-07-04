@@ -21,6 +21,7 @@ export class PrismaGuardianRepository implements GuardianRepository {
         consentimientoDado: guardian.consentimiento.dado,
         consentimientoEn: guardian.consentimiento.fecha,
         consentimientoVer: guardian.consentimiento.version,
+        emailVerificado: guardian.emailVerificado,
         creadoEn: guardian.creadoEn,
       },
     });
@@ -34,6 +35,10 @@ export class PrismaGuardianRepository implements GuardianRepository {
   async findByEmail(email: string): Promise<Guardian | null> {
     const row = await this.prisma.guardian.findUnique({ where: { email } });
     return row ? toGuardian(row) : null;
+  }
+
+  async marcarEmailVerificado(id: string): Promise<void> {
+    await this.prisma.guardian.update({ where: { id }, data: { emailVerificado: true } });
   }
 }
 
@@ -51,6 +56,7 @@ function toGuardian(row: PrismaGuardian): Guardian {
       fecha: row.consentimientoEn,
       version: row.consentimientoVer,
     },
+    emailVerificado: row.emailVerificado,
     creadoEn: row.creadoEn,
   });
 }

@@ -19,6 +19,39 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.10.0] - 2026-07-04
+
+### Added
+
+- Verificación de titularidad del email por OTP (US-93): con SMTP configurado, el alta
+  (`POST /guardians`) crea la cuenta como no verificada, envía un código de 6 dígitos (hash bcrypt,
+  caducidad 10 min, máx. 5 intentos) y **no** emite sesión; `POST /guardians/verify-email` valida el
+  código y emite los tokens, y `POST /guardians/resend-verification` reenvía con cooldown. Sin SMTP el
+  paso se omite (auto-verificado + auto-login, arranque reproducible intacto). Servicio de email SMTP
+  (`nodemailer`) cableado solo si hay credenciales; el correo solo transporta email del adulto + código
+  (sin PII del menor). Refuerza C-1/C-10 (C-17).
+- Puerta parental server-side en el alta (US-92): `GET /guardians/challenge` emite un reto
+  aritmético firmado (HMAC con el secreto JWT, con caducidad) y `POST /guardians` exige
+  `challengeToken` + `challengeRespuesta` correctos antes de crear la cuenta. Sin terceros ni estado
+  en BD (privacy-by-design, C-2/C-6).
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+- Rate limiting en los endpoints de autenticación (US-92): `@fastify/rate-limit` aplicado a
+  `POST /guardians`, `POST /guardians/login` y `POST /guardians/refresh` (429 al superar el umbral),
+  con `trustProxy` para contar por IP real tras el proxy de Render/Cloudflare. Frena fuerza bruta,
+  credential stuffing y alta masiva.
+- Cabeceras de seguridad HTTP con `@fastify/helmet` y política CORS con allowlist
+  (`@fastify/cors`): sin orígenes configurados, se deniega cualquier origen cross-site en producción.
+
 ## [1.9.3] - 2026-07-03
 
 ### Added

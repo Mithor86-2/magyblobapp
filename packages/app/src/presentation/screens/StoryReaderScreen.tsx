@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { AuthorBadge } from '../components/AuthorBadge';
 import { BookPages } from '../components/BookPages';
 import { BubblyButton } from '../components/BubblyButton';
+import { useDialog } from '../components/DialogProvider';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { Icon } from '../components/Icon';
 import { NarrationControls } from '../components/NarrationControls';
@@ -30,6 +31,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
   const { story } = route.params;
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
+  const dialog = useDialog();
   const styles = useThemedStyles(makeStyles);
   // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
@@ -60,6 +62,32 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
     setLeido(true);
     void api.stories.markRead(story.id).catch(() => {});
   }, [leido, story.id]);
+
+  // Temporizador de la modal de fin: se limpia al desmontar para no abrir el diálogo
+  // si se navega atrás durante el medio segundo de espera.
+  const modalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (modalTimerRef.current) clearTimeout(modalTimerRef.current);
+    },
+    [],
+  );
+
+  // Al llegar a la última página (US-27): si aún no está leído, pregunta con una modal
+  // —**medio segundo después** de mostrarse la página, para que se vea el final antes—
+  // si marcarlo como leído y, al confirmar, lo marca. Si ya lo está, no molesta.
+  const alLlegarFinal = useCallback(() => {
+    if (leido) return;
+    modalTimerRef.current = setTimeout(() => {
+      dialog.confirm({
+        title: t('reader.markReadPromptTitle'),
+        message: t('reader.markReadPromptBody'),
+        confirmLabel: t('reader.markReadPromptConfirm'),
+        cancelLabel: t('reader.markReadPromptCancel'),
+        onConfirm: marcarLeido,
+      });
+    }, 500);
+  }, [leido, dialog, t, marcarLeido]);
 
   // US-83 (#5): la 1ª página del libro es la portada (imagen + título); luego la
   // historia paginada y, al final, una página "FIN".
@@ -98,6 +126,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
               accessibilityLabel={story.titulo}
             />
           }
+          onReachedEnd={alLlegarFinal}
         />
         <NarrationControls story={story} onFinished={marcarLeido} />
         {leido ? (

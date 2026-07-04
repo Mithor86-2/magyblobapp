@@ -13,7 +13,7 @@ agentes en [CLAUDE.md](CLAUDE.md).
 
 ## Descargar la app (Android)
 
-**APK lista para instalar (v1.9.3):** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/154b4dd8-1230-48d6-8f9d-1564bdd90e26)
+**APK lista para instalar (v1.10.0):** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/0d9a360d-394e-47da-ab5d-38e8e9dd968b)
 → en esa página, **Install** (QR o descarga directa del `.apk`).
 
 En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos»; o por cable

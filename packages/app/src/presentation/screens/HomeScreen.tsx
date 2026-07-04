@@ -111,22 +111,43 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
         </Pressable>
       ) : null}
 
+      {/* Rejilla de 2 columnas (US-94): cada acción es un "tile" con icono sobre la etiqueta. */}
       <View style={styles.actions}>
-        <BubblyButton
-          label={t('home.createStory')}
-          onPress={() => navigation.navigate('Cuentos')}
-        />
-        <BubblyButton
-          label={t('home.seeActivities')}
-          onPress={() => navigation.navigate('Actividades')}
-          variant="secondary"
-        />
-        <BubblyButton
-          label={t('home.myAchievements')}
-          onPress={openAchievements}
-          variant="quaternary"
-        />
-        <BubblyButton label={t('home.search')} onPress={openSearch} variant="accent" />
+        <View style={styles.actionCell}>
+          <BubblyButton
+            label={t('home.createStory')}
+            icon="story"
+            layout="stack"
+            onPress={() => navigation.navigate('Cuentos')}
+          />
+        </View>
+        <View style={styles.actionCell}>
+          <BubblyButton
+            label={t('home.seeActivities')}
+            icon="activities"
+            layout="stack"
+            onPress={() => navigation.navigate('Actividades')}
+            variant="secondary"
+          />
+        </View>
+        <View style={styles.actionCell}>
+          <BubblyButton
+            label={t('home.myAchievements')}
+            icon="achievements"
+            layout="stack"
+            onPress={openAchievements}
+            variant="quaternary"
+          />
+        </View>
+        <View style={styles.actionCell}>
+          <BubblyButton
+            label={t('home.search')}
+            icon="search"
+            layout="stack"
+            onPress={openSearch}
+            variant="accent"
+          />
+        </View>
       </View>
 
       <VersionFooter />
@@ -194,7 +215,15 @@ const makeStyles = (colors: ColorTokens) =>
       color: colors.onSurfaceVariant,
     },
     actions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: spacing.elementGap,
       marginTop: spacing.lg,
+    },
+    // Dos columnas: cada celda ocupa ~la mitad y crece para repartir el espacio sobrante.
+    // `flexBasis` < 50% garantiza dos por fila; `flexGrow` iguala anchos con el `gap`.
+    actionCell: {
+      flexBasis: '47%',
+      flexGrow: 1,
     },
   });

@@ -913,3 +913,34 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
   ancla vite 5 y forzar vite 6 arriesga romper la suite, por fallos que no llegan a producción. Los 6
   residuos (dev/build-time, mayoría solo-Windows) se difieren a Dependabot/Expo. Ver
   [lecciones-aprendidas.md](lecciones-aprendidas.md) y [planes/chore-vitest-3.md](planes/chore-vitest-3.md).
+
+## Endurecimiento de seguridad del API público (2026-07-03, US-92)
+
+- **Por qué.** Auditoría en vivo del API en Render: el alta era un único `POST /guardians` sin
+  fricción y **sin** rate limiting (fuerza bruta y alta masiva viables), sin verificación de email.
+  Siendo app infantil, el listón de consentimiento parental verificable (C-1/C-10) es más alto.
+- **Puerta parental server-side SIN email (decisión D1 = opción b).** Se descartó el doble opt-in por
+  email porque exige un proveedor SMTP = **tercero**, que choca con la regla "sin terceros" (C-2,
+  privacy-by-design). En su lugar, un **reto aritmético firmado con HMAC** (secreto JWT) con caducidad,
+  **stateless** (no toca BD, no sale nada de la máquina). Materializa C-6 en el backend. Limitación
+  asumida: no es un CAPTCHA fuerte y no verifica titularidad del email (mejora futura documentada).
+- **El app resuelve el reto en el gateway, no en la UI.** El `ParentalGate` cliente ya hace la
+  verificación humana; el reto del backend es la barrera server-side (anti-bot + rate limit). Duplicar
+  la pregunta en el formulario sería fricción redundante, así que `api.guardians.register` obtiene y
+  resuelve el reto de forma transparente.
+- **`trustProxy` para el rate limit.** Render está tras Cloudflare; sin `trustProxy`, `request.ip` es
+  la IP del proxy y el límite sería global. Activable por env (`TRUST_PROXY`, por defecto en prod).
+- **Fase 4 (revocación de sesión / refresh stateless) diferida** a su propia feature (requiere
+  migración; `tokenVersion` en `Guardian` es la opción preferida por YAGNI).
+
+## Inicio en 2 columnas + iconos en las acciones (2026-07-04, US-94)
+
+- **Icono de "Crear un cuento" = libro (BookOpen), no varita.** Se eligió por **coherencia con la
+  pestaña Cuentos** (mismo glifo en la barra inferior) frente al refuerzo de marca "mágico" de la
+  varita. Actividades=paleta, logros=trofeo, buscar=lupa, todos alineados con la iconografía existente.
+- **Alcance "en toda la app" = Inicio + acciones equivalentes.** Los 4 botones solo existen en Inicio;
+  el usuario pidió que el mismo icono acompañe la acción **allá donde aparezca**, así que "Generar
+  cuento" (Cuentos/Dashboard) y "Generar actividades" (Actividades/Dashboard) reciben el mismo icono.
+- **2 columnas ⇒ layout vertical (`stack`) en el botón.** Con la fuente de botón (22px) el texto no
+  cabe junto al icono en una columna; se apila (icono grande arriba). Ver
+  [lecciones-aprendidas.md](lecciones-aprendidas.md).

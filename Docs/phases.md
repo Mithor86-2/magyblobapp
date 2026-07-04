@@ -880,3 +880,63 @@ Tres mejoras visuales tras probar el lote 3 en dev. Plan en
   por fichero, necesario al usar `Icon` en `SelectableChip`).
 - **DoD:** ✅ `pnpm check` verde (**backend 407 + app 270**) + cobertura OK · ⏳ pruebas en dev por el
   usuario (dev build) y confirmación antes del `finish`.
+
+### Endurecimiento de seguridad del API público (2026-07-03, rama `feature/92-seguridad-api`, US-92, sin release)
+
+Tras auditar en vivo el API en producción (Render): registro directo sin fricción, **sin** rate
+limiting (12 logins fallidos → ningún 429), sin verificación de email. Plan en
+[planes/seguridad-api-registro.md](planes/seguridad-api-registro.md). Cierre **sin push ni release**.
+
+- [x] ✅ **Fase 1 — Rate limiting** (`@fastify/rate-limit`, `global:false`) en `/guardians`,
+      `/guardians/login`, `/guardians/refresh` y `/guardians/challenge` → 429; `trustProxy` (env, por
+      defecto en prod) para contar por IP real tras Cloudflare. Límites configurables por env.
+- [x] ✅ **Fase 2 — Puerta parental server-side** (D1=opción b, sin terceros): `GET /guardians/challenge`
+      emite un reto aritmético firmado (HMAC del secreto JWT + caducidad, stateless) que el alta exige.
+      El app lo resuelve de forma transparente en el gateway (el `ParentalGate` cliente no cambia).
+- [x] ✅ **Fase 3 — Cabeceras y CORS**: `@fastify/helmet` + `@fastify/cors` con allowlist (`CORS_ORIGINS`).
+- [ ] ⏳ **Fase 0 (manual, usuario):** verificar `JWT_SECRET` en Render y borrar la cuenta de prueba.
+- [ ] ⏳ **T3.3 en vivo:** verificar 429/cabeceras **tras desplegar**.
+- **Fase 4** (revocación de sesión, H6) **diferida** a su propia feature.
+- **DoD:** ✅ `pnpm check` verde (**backend 417 + app 274**) + cobertura OK · pruebas ofrecidas al
+  usuario (unitarias/integración en verde + pasos manuales); cierre confirmado por el usuario.
+
+### Verificación de email por OTP (2026-07-03, rama `feature/93-verificacion-email-otp`, US-93, sin release)
+
+Materializa la mejora futura anotada en C-16/US-92 (verificación de titularidad del email / doble
+opt-in). Plan en [planes/feature-93-verificacion-email-otp.md](planes/feature-93-verificacion-email-otp.md).
+Decisiones con el usuario: **bloqueo duro** (sesión solo tras validar el código) y **sin SMTP →
+auto-verificar** (arranque reproducible intacto).
+
+- [x] ✅ **Backend.** `nodemailer` + `SmtpEmailService` (cableado solo si hay SMTP), `EmailService`/
+      `CodeGenerator` (puertos), entidad + repo `EmailVerification` (código bcrypt, caducidad 10 min,
+      máx. 5 intentos), migración `add_email_verification` (+ `Guardian.emailVerificado`, backfill a
+      `true`). Casos de uso `VerifyEmail`/`ResendEmailVerification` + servicio `SendEmailVerification`;
+      `RegisterGuardian` ramifica con/sin SMTP. Rutas `POST /guardians/verify-email` y
+      `/guardians/resend-verification` (públicas, rate-limited); alta y login devuelven
+      `requiereVerificacion` sin tokens si la cuenta no está verificada. Evento `email_verificado` →
+      `AuditLog accion=verificar_email`. Config SMTP/OTP validada con Zod.
+- [x] ✅ **App.** Pantalla **Verificar email** (código 6 dígitos + reenviar con cooldown + errores),
+      `AuthOutcome` (unión sesión | pendiente) en gateway/http/schemas, ramificación en `ConsentScreen`
+      y `LoginScreen`, ruta `VerifyEmail` en el stack, i18n ES/EN.
+- [x] ✅ **Docs.** US-93 + trazabilidad, C-17 en cumplimiento, modelo-datos (entidad + `emailVerificado`),
+      CHANGELOG (Unreleased) backend + app.
+- **DoD:** ✅ `pnpm check` verde (**backend 442 + app 282**) + cobertura CORE OK. Integración Prisma del
+  repo y E2E onboarding (modo sin SMTP) en sus suites Docker. Pendiente: **pruebas manuales del usuario**
+  (con y sin SMTP) y `finish` tras confirmación.
+
+### Inicio en 2 columnas + iconos en las acciones (2026-07-04, rama `feature/94-inicio-2-columnas-iconos`, US-94)
+
+Extiende la iconografía funcional (US-29) a los botones de acción y reorganiza los accesos de Inicio.
+Plan en [planes/feature-96-inicio-2-columnas-iconos.md](planes/feature-96-inicio-2-columnas-iconos.md).
+Decisiones con el usuario: alcance = **Inicio + acciones equivalentes** del resto de la app; icono de
+"Crear un cuento" = **libro** (coherente con la pestaña Cuentos, no la varita).
+
+- [x] ✅ **App.** Los 4 accesos de Inicio pasan a **rejilla de 2 columnas** de _tiles_ (icono grande
+      sobre etiqueta): cuento=libro, actividades=paleta, logros=trofeo, buscar=lupa. `BubblyButton`
+      gana `layout: 'row' | 'stack'`; el wrapper `Icon` añade `achievements` (lucide `Trophy`). Mismo
+      icono en la acción equivalente: "Generar cuento" (Cuentos/Dashboard) → libro; "Generar
+      actividades" (Actividades/Dashboard) → paleta.
+- [x] ✅ **Docs/tests.** US-94 + trazabilidad, CHANGELOG (Unreleased) del app; tests de los 4 botones
+      de Inicio (navegación) y del layout `stack` de `BubblyButton`.
+- **DoD:** ✅ `pnpm check` verde (**backend 452 + app 296**). Pendiente: pruebas manuales del usuario
+  (visual de la rejilla) y `finish` tras confirmación.

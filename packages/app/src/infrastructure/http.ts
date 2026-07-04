@@ -23,15 +23,19 @@ import {
   activitySchema,
   anonymousActivityListSchema,
   anonymousStorySchema,
+  authOutcomeSchema,
   childProfileListSchema,
   childProfileSchema,
   guardianSessionSchema,
   historySchema,
+  parentalChallengeSchema,
+  resendResultSchema,
   sessionTokensSchema,
   storySchema,
 } from './schemas';
 import type { Api } from '../domain/gateways';
 import type {
+  AuthOutcome,
   CreateChildProfileInput,
   GenerateStoryAnonymousRequest,
   GenerateStoryRequest,
@@ -270,22 +274,88 @@ async function request<TResponse>(
 }
 
 /**
+ * Resuelve el reto parental (US-92) calculando la suma de la pregunta
+ * ("¿Cuánto es a + b?"). Si el formato cambiara y no se pudiera parsear, lanza un
+ * `ApiError` controlado (la UI lo trata como el resto de errores del alta).
+ */
+function resolverReto(pregunta: string): number {
+  const m = /(\d{1,2}) \+ (\d{1,2})/.exec(pregunta);
+  if (m === null) {
+    throw new ApiError(0, 'malformed', 'No se pudo completar la verificación parental.');
+  }
+  return Number(m[1]) + Number(m[2]);
+}
+
+/**
+ * Normaliza la respuesta de alta/login al `AuthOutcome` del dominio (US-93): si trae
+ * `requiereVerificacion`, extrae `guardianId`/`email` para ir a la verificación; si
+ * no, es una sesión completa (con tokens).
+ */
+function aAuthOutcome(parsed: z.infer<typeof authOutcomeSchema>): AuthOutcome {
+  if ('requiereVerificacion' in parsed) {
+    return { requiereVerificacion: true, guardianId: parsed.id, email: parsed.email };
+  }
+  return parsed;
+}
+
+/**
  * Composition de los gateways HTTP. `baseUrl` y `session` inyectables (tests);
  * por defecto, el env y sin sesión (el composition root cablea el store).
  */
 export function createApiGateways(baseUrl: string = getBaseUrl(), session?: SessionStore): Api {
   return {
     guardians: {
-      register: (input: RegisterGuardianInput) =>
-        request(baseUrl, '/guardians', { method: 'POST', body: input }, guardianSessionSchema),
-      login: (input: LoginGuardianInput) =>
-        request(
+      register: async (input: RegisterGuardianInput) => {
+        // Puerta parental server-side (US-92): antes del alta se obtiene un reto
+        // firmado y se resuelve. El humano ya superó el `ParentalGate` cliente;
+        // aquí solo se satisface la barrera del backend (anti-bot + rate limit).
+        const reto = await request(
+          baseUrl,
+          '/guardians/challenge',
+          { method: 'GET' },
+          parentalChallengeSchema,
+        );
+        const outcome = await request(
+          baseUrl,
+          '/guardians',
+          {
+            method: 'POST',
+            body: {
+              ...input,
+              challengeToken: reto.challengeToken,
+              challengeRespuesta: resolverReto(reto.pregunta),
+            },
+          },
+          authOutcomeSchema,
+        );
+        return aAuthOutcome(outcome);
+      },
+      login: async (input: LoginGuardianInput) => {
+        const outcome = await request(
           baseUrl,
           '/guardians/login',
           { method: 'POST', body: input },
+          authOutcomeSchema,
+        );
+        return aAuthOutcome(outcome);
+      },
+      refresh: (refreshToken: string) => postRefresh(baseUrl, refreshToken),
+      // Verificación de email por OTP (US-93): valida el código y abre sesión.
+      verifyEmail: (guardianId: string, codigo: string) =>
+        request(
+          baseUrl,
+          '/guardians/verify-email',
+          { method: 'POST', body: { guardianId, codigo } },
           guardianSessionSchema,
         ),
-      refresh: (refreshToken: string) => postRefresh(baseUrl, refreshToken),
+      resendVerification: async (guardianId: string) => {
+        await request(
+          baseUrl,
+          '/guardians/resend-verification',
+          { method: 'POST', body: { guardianId } },
+          resendResultSchema,
+        );
+      },
     },
     profiles: {
       create: (input: CreateChildProfileInput) =>

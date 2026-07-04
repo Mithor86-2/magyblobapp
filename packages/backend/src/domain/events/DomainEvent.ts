@@ -49,6 +49,12 @@ export interface GuardianLogin {
   guardianId: string;
 }
 
+/** El adulto verificó la titularidad de su email por OTP (US-93). */
+export interface EmailVerificado {
+  tipo: 'email_verificado';
+  guardianId: string;
+}
+
 /** Unión discriminada por `tipo` de todos los eventos de dominio. */
 export type DomainEvent =
   | CuentoGenerado
@@ -56,4 +62,5 @@ export type DomainEvent =
   | ActividadCompletada
   | PerfilCreado
   | GuardianRegistrado
-  | GuardianLogin;
+  | GuardianLogin
+  | EmailVerificado;

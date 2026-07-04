@@ -38,7 +38,7 @@ test('onboarding: crear cuenta → crear perfil → generar cuento', async ({ pa
   await page.getByRole('button', { name: 'Crear nuevo perfil' }).click();
 
   // Crear perfil de niño
-  await page.getByPlaceholder('Tu nombre').fill('Mateo');
+  await page.getByPlaceholder('Nombre del peque').fill('Mateo');
   await page.getByRole('button', { name: '4', exact: true }).click();
   await page.getByRole('button', { name: 'zorro' }).click();
   await page.getByRole('button', { name: 'Animales' }).click();

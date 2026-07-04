@@ -170,6 +170,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
       ) : null}
       <BubblyButton
         label={quedanCuentos ? t('dashboard.generateStory') : t('dashboard.limitReached')}
+        icon="story"
         onPress={onGenerateStory}
         loading={loadingStory}
         disabled={!puedeGenerarCuento}
@@ -212,6 +213,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
       ) : null}
       <BubblyButton
         label={quedanActividades ? t('dashboard.generateActivities') : t('dashboard.limitReached')}
+        icon="activities"
         onPress={onGenerateActivities}
         loading={loadingActivities}
         disabled={!quedanActividades}

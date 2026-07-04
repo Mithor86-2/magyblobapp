@@ -33,7 +33,14 @@ export const ESTADOS_STORY = ['nuevo', 'leido'] as const;
 export type EstadoStory = (typeof ESTADOS_STORY)[number];
 
 /** Acción sensible del adulto registrada en el AuditLog. */
-export const ACCIONES_AUDIT = ['crear', 'editar', 'borrar', 'consentimiento', 'login'] as const;
+export const ACCIONES_AUDIT = [
+  'crear',
+  'editar',
+  'borrar',
+  'consentimiento',
+  'login',
+  'verificar_email',
+] as const;
 export type AccionAudit = (typeof ACCIONES_AUDIT)[number];
 
 /** Tipo de evento de uso de primera parte (InteractionEvent). */

@@ -17,6 +17,10 @@ import { PrismaInteractionEventRepository } from './repositories/PrismaInteracti
 import { PrismaAuditLogRepository } from './repositories/PrismaAuditLogRepository.js';
 import { PrismaSettingsRepository } from './repositories/PrismaSettingsRepository.js';
 import { BcryptPasswordHasher } from './auth/BcryptPasswordHasher.js';
+import { PrismaEmailVerificationRepository } from './repositories/PrismaEmailVerificationRepository.js';
+import { CryptoCodeGenerator } from './services/CryptoCodeGenerator.js';
+import { SmtpEmailService } from './email/SmtpEmailService.js';
+import type { EmailService } from '../domain/services/EmailService.js';
 
 /**
  * Raíz de composición de producción: cablea los repos Prisma y el AIProvider real
@@ -46,6 +50,12 @@ export async function buildProductionDeps(config: Config, logger?: TTSLogger): P
 
   const settings = new PrismaSettingsRepository(prisma);
 
+  // Verificación de email (US-93): solo se cablea el servicio SMTP si hay
+  // credenciales; sin ellas, `emailService` queda `undefined` y el alta auto-verifica.
+  const emailService: EmailService | undefined = config.email.enabled
+    ? new SmtpEmailService({ smtp: config.email.smtp!, from: config.email.from! })
+    : undefined;
+
   const deps: AppDeps = {
     guardians: new PrismaGuardianRepository(prisma),
     profiles: new PrismaChildProfileRepository(prisma),
@@ -64,6 +74,9 @@ export async function buildProductionDeps(config: Config, logger?: TTSLogger): P
       logger,
     }),
     hasher: new BcryptPasswordHasher(),
+    emailVerifications: new PrismaEmailVerificationRepository(prisma),
+    codeGenerator: new CryptoCodeGenerator(),
+    emailService,
     bus: new InMemoryEventBus(),
     newId: () => randomUUID(),
     now: () => new Date(),

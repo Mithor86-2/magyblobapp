@@ -14,6 +14,8 @@ export type RootStackParamList = {
   Welcome: undefined;
   Consent: undefined;
   Login: undefined;
+  /** Verificación de email por OTP tras el alta/login (US-93). */
+  VerifyEmail: { guardianId: string; email: string };
   SelectProfile: undefined;
   CreateProfile: undefined;
   Main: undefined;
