@@ -52,15 +52,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
-- Crash nativo (reanimated 4 / New Arch) por animación en vuelo al desmontar: la estrella del
-  estallido del avatar (`BurstStar` en `AnimatedAvatar`) no cancelaba su `withTiming` al
-  desmontarse. Se añade `cancelAnimation` en el cleanup.
-- Crash nativo al **cambiar de pestaña rápido**: las animaciones en **bucle infinito**
-  (`BouncingHeaderImage`, avatar idle de `AnimatedAvatar`) seguían corriendo cuando la pestaña se
-  **desenfocaba**; como el tab navigator no desmonta la pantalla sino que `react-native-screens`
-  **desacopla su vista nativa**, animar sobre ella crashea. Nuevo hook `useIsScreenActive` que
-  **pausa las animaciones en bucle al desenfocar** (y las reanuda al enfocar). Auditado el resto
-  (`BookPages`, `Appear`): ya paran al desmontar.
+- Crash nativo de **reanimated 4 / New Architecture** (`stof: out of range` en
+  `performNonLayoutOperations`) al procesar eventos **táctiles/scroll** mientras había una
+  **animación reanimated en bucle activa** en la pantalla visible (el `cancelAnimation` al desmontar
+  y la pausa al desenfocar no bastaban: el crash salta también en la pantalla enfocada al tocar/scrollear).
+  Se **desactivan las animaciones decorativas en bucle**: el **balanceo idle del avatar**
+  (`AnimatedAvatar`, US-90) y el **rebote de la cabecera** (`BouncingHeaderImage`, US-86) pasan a
+  renderizarse **estáticos** (sin reanimated). Las animaciones puntuales del lector (giro de página)
+  no se ven afectadas. Pendiente reintroducir el movimiento cuando el combo Expo/RN/reanimated lo
+  permita sin crashear.
 
 ### Security
 

@@ -103,12 +103,6 @@ export default defineConfig({
       'lucide-react-native': fileURLToPath(
         new URL('./test/lucide-react-native-stub.ts', import.meta.url),
       ),
-      // `@react-navigation/native` arrastra código que no parsea bajo Vitest; se aliasa a
-      // un stub para que los componentes que leen el foco de pantalla (`useIsScreenActive`)
-      // rendericen sin mockearlo en cada test. Los tests que ejercitan el foco lo re-mockean.
-      '@react-navigation/native': fileURLToPath(
-        new URL('./test/react-navigation-native-stub.ts', import.meta.url),
-      ),
     },
   },
   define: {
