@@ -932,3 +932,15 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
   la IP del proxy y el límite sería global. Activable por env (`TRUST_PROXY`, por defecto en prod).
 - **Fase 4 (revocación de sesión / refresh stateless) diferida** a su propia feature (requiere
   migración; `tokenVersion` en `Guardian` es la opción preferida por YAGNI).
+
+## Inicio en 2 columnas + iconos en las acciones (2026-07-04, US-94)
+
+- **Icono de "Crear un cuento" = libro (BookOpen), no varita.** Se eligió por **coherencia con la
+  pestaña Cuentos** (mismo glifo en la barra inferior) frente al refuerzo de marca "mágico" de la
+  varita. Actividades=paleta, logros=trofeo, buscar=lupa, todos alineados con la iconografía existente.
+- **Alcance "en toda la app" = Inicio + acciones equivalentes.** Los 4 botones solo existen en Inicio;
+  el usuario pidió que el mismo icono acompañe la acción **allá donde aparezca**, así que "Generar
+  cuento" (Cuentos/Dashboard) y "Generar actividades" (Actividades/Dashboard) reciben el mismo icono.
+- **2 columnas ⇒ layout vertical (`stack`) en el botón.** Con la fuente de botón (22px) el texto no
+  cabe junto al icono en una columna; se apila (icono grande arriba). Ver
+  [lecciones-aprendidas.md](lecciones-aprendidas.md).
