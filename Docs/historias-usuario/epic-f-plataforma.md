@@ -1691,3 +1691,37 @@ adulto y un código numérico). **Backend + app.** Ver el plan
   (OTP creado+enviado, sin tokens) y desactivada (verificado + tokens), verify-email (OK→tokens, 400
   incorrecto, 400 caducado, 429 intentos), reenvío, y en la app que `http.ts` mapea la respuesta de alta
   (unión) y `verifyEmail`/`resendVerification`, más el test de la pantalla `VerifyEmailScreen`.
+
+## US-94 — Inicio en 2 columnas + iconos en las acciones · Could (Mejoras) {#us-94}
+
+> **Ajuste de UI (iconografía de acciones).** Extiende [US-29](#us-29) (iconografía funcional con
+> `lucide-react-native`) a los **botones de acción**, y complementa [US-87](#us-87) (color por variante).
+
+**Como** niño (con el adulto), **quiero** que los cuatro botones de Inicio se vean en **dos columnas**
+con un **icono** cada uno, **para** reconocer cada acción de un vistazo y aprovechar mejor la pantalla;
+y que ese mismo icono acompañe la acción **allá donde aparezca** en la app.
+
+**Prioridad:** Could · **Fase:** Mejoras · **Pantalla:** Inicio / Cuentos / Actividades / Dashboard.
+
+**Alcance**
+
+1. `BubblyButton` admite un `layout?: 'row' | 'stack'` (por defecto `row`); en `stack` apila icono
+   (grande) sobre la etiqueta (hasta 2 líneas), para servir como "tile" en rejilla.
+2. El wrapper `Icon` añade el nombre semántico `achievements` (trofeo, lucide `Trophy`) para "Mis logros".
+3. Inicio: los 4 botones (Crear un cuento, Ver actividades, Mis logros, Buscar) pasan a una **rejilla de
+   2 columnas** de tiles con icono: `story` (libro, coherente con la pestaña Cuentos), `activities`
+   (paleta), `achievements` (trofeo) y `search` (lupa).
+4. Coherencia en el resto de la app: los botones de acción equivalentes muestran el mismo icono —
+   "Generar cuento" (Cuentos y Dashboard) → `story`; "Generar actividades" (Actividades y Dashboard) →
+   `activities`.
+
+**Criterios de aceptación**
+
+- **(Rejilla)** Dado Inicio, Entonces sus cuatro botones se disponen en **dos columnas** (dos filas de
+  dos), cada uno con su icono sobre la etiqueta.
+- **(Icono)** Dado cada botón de Inicio, Entonces muestra el icono de su acción: cuento=libro,
+  actividades=paleta, logros=trofeo, buscar=lupa.
+- **(Coherencia)** Dado un botón de acción equivalente en otra pantalla (Generar cuento / Generar
+  actividades), Entonces muestra el **mismo icono** que su tile de Inicio.
+- **(Accesibilidad)** Dado cualquiera de esos botones, Entonces conserva su **nombre accesible** (la
+  etiqueta) y su zona táctil ≥64px.

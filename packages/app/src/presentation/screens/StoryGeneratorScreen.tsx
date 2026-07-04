@@ -115,6 +115,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
       footer={
         <BubblyButton
           label={t('storyGenerator.generate')}
+          icon="story"
           onPress={onGenerate}
           loading={loading}
           disabled={!puedeGenerar}

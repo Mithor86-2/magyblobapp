@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import * as Haptics from 'expo-haptics';
 import { Icon, type IconName } from './Icon';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, radius, tapTarget, typography } from '../theme/tokens';
+import { type ColorTokens, radius, spacing, tapTarget, typography } from '../theme/tokens';
 
 interface BubblyButtonProps {
   /** Texto del botón. Opcional para botones solo-icono (usar `accessibilityLabel`). */
@@ -15,6 +15,12 @@ interface BubblyButtonProps {
   disabled?: boolean;
   loading?: boolean;
   variant?: 'primary' | 'secondary' | 'danger' | 'accent' | 'quaternary';
+  /**
+   * Disposición del contenido. `row` (por defecto): icono a la izquierda del texto (píldora).
+   * `stack`: icono grande **encima** del texto (hasta 2 líneas), para servir de "tile" en una
+   * rejilla de 2 columnas donde el texto no cabría en una sola línea junto al icono (US-94).
+   */
+  layout?: 'row' | 'stack';
 }
 
 /** Color de fondo por variante del botón, tomado de la paleta activa (US-66). */
@@ -66,6 +72,7 @@ export function BubblyButton({
   disabled = false,
   loading = false,
   variant = 'primary',
+  layout = 'row',
 }: BubblyButtonProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -73,6 +80,7 @@ export function BubblyButton({
   const borderColor = variantBorder(colors)[variant];
   const fg = variantFg(colors)[variant];
   const isDisabled = disabled || loading;
+  const isStack = layout === 'stack';
 
   // Confirmación táctil (Material 3 / HIG): háptico suave al pulsar el botón principal.
   // `impactAsync` es no-op en plataformas sin motor háptico (p. ej. web), así que degrada
@@ -94,20 +102,24 @@ export function BubblyButton({
       android_ripple={{ color: fg + '33', borderless: false }}
       style={({ pressed }) => [
         styles.base,
+        isStack && styles.baseStack,
         // La "sombra" (borde inferior) es un tono oscuro del propio color del botón (US-87).
         { backgroundColor: bg, borderBottomColor: borderColor },
         pressed && styles.pressed,
         isDisabled && styles.disabled,
       ]}
     >
-      <View style={styles.inner}>
+      <View style={[styles.inner, isStack && styles.innerStack]}>
         {loading ? (
           <ActivityIndicator color={fg} />
         ) : icon ? (
-          <Icon name={icon} color={fg} size="md" />
+          <Icon name={icon} color={fg} size={isStack ? 'lg' : 'md'} />
         ) : null}
         {label ? (
-          <Text style={[styles.label, { color: fg }]} numberOfLines={1}>
+          <Text
+            style={[styles.label, isStack && styles.labelStack, { color: fg }]}
+            numberOfLines={isStack ? 2 : 1}
+          >
             {label}
           </Text>
         ) : null}
@@ -127,6 +139,14 @@ const makeStyles = (colors: ColorTokens) =>
       // Recorta el android_ripple a la forma de píldora (sin esto desborda el radio).
       overflow: 'hidden',
     },
+    // Tile de rejilla (US-94): más alto, esquinas de tarjeta (no píldora) y con aire vertical
+    // para el icono grande sobre el texto; el ancho lo fija el contenedor (columna de la rejilla).
+    baseStack: {
+      minHeight: 108,
+      borderRadius: radius.lg,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.md,
+    },
     pressed: {
       borderBottomWidth: 1,
       transform: [{ translateY: 3 }],
@@ -140,9 +160,16 @@ const makeStyles = (colors: ColorTokens) =>
       justifyContent: 'center',
       gap: 12,
     },
+    innerStack: {
+      flexDirection: 'column',
+      gap: spacing.sm,
+    },
     label: {
       ...typography.button,
       color: colors.onPrimary,
       textAlign: 'center',
+    },
+    labelStack: {
+      lineHeight: 26,
     },
   });

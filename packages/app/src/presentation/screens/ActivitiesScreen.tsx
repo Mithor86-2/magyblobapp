@@ -84,6 +84,7 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
       footer={
         <BubblyButton
           label={generado ? t('activities.generateMore') : t('activities.generate')}
+          icon="activities"
           onPress={onGenerate}
           loading={loading}
           variant="secondary"

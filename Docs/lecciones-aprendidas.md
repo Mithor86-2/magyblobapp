@@ -932,3 +932,27 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
 
 - Parsear "a + b" con `/(\d+) \+ (\d+)/` (o `\s*`) dispara la regla por los cuantificadores abiertos.
   Se resuelve **acotando** el cuantificador: `/(\d{1,2}) \+ (\d{1,2})/` (los sumandos son de una cifra).
+
+## Inicio en 2 columnas + iconos (2026-07-04, US-94)
+
+### Rejilla de 2 columnas con `BubblyButton`: envolver cada botón, no darle ancho al botón
+
+- El `BubblyButton` es un `Pressable` sin ancho propio: en columna se estira al 100%, pero en un
+  contenedor `row` + `flexWrap` quedaría al ancho del contenido. La rejilla se hace **envolviendo cada
+  botón** en una celda `{ flexBasis: '47%', flexGrow: 1 }` con `gap` en el contenedor: `flexBasis < 50%`
+  garantiza dos por fila y `flexGrow` iguala anchos repartiendo el sobrante. El botón se estira dentro
+  de su celda (align stretch por defecto).
+
+### En 2 columnas el texto de 22px no cabe junto al icono → layout `stack`
+
+- Con `typography.button` (fontSize 22) e icono en fila, etiquetas como "Ver actividades" se truncan en
+  una columna estrecha. Solución: un layout **vertical** (icono grande arriba, etiqueta debajo con
+  `numberOfLines={2}`) como _tile_, añadido como `layout: 'stack'` en `BubblyButton` (el `row` sigue
+  siendo el defecto para el resto de la app).
+
+### `git add -A` en paralelo se traga cambios de otra tarea en curso
+
+- Un commit hecho a mano (`git add -A`) mientras había una feature en marcha **arrastró un doc editado
+  por la otra tarea** (fila de trazabilidad del README) a un commit que no era el suyo. El contenido era
+  correcto, pero la atribución quedó mezclada. Refuerza la regla del repo: **staging selectivo
+  (`git add <file>`), nunca `git add -A`**, y más aún si hay trabajo concurrente.

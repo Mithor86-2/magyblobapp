@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { useEffect, type ComponentProps, type ReactNode } from 'react';
+import { createContext, useEffect, type ComponentProps, type ReactNode } from 'react';
 import type { Achievement, ChildProfile } from '../../domain/types';
 
 /**
@@ -20,6 +20,9 @@ vi.mock('@react-navigation/native', () => ({
   useFocusEffect: (cb: () => void) => {
     useEffect(() => cb(), [cb]);
   },
+  // `AnimatedAvatar` (en Home) lee el foco vía `NavigationContext` (useIsScreenActive);
+  // sin provider en el test, useContext devuelve undefined → animación activa.
+  NavigationContext: createContext<unknown>(undefined),
 }));
 
 const perfil: ChildProfile = {
@@ -107,5 +110,32 @@ describe('HomeScreen — resumen de logros (A4)', () => {
     expect(
       screen.getByText('¡Lee cuentos y haz actividades para ganar tus primeros trofeos!'),
     ).toBeInTheDocument();
+  });
+});
+
+/**
+ * US-94: los cuatro accesos rápidos de Inicio (rejilla de 2 columnas con icono) siguen siendo
+ * botones accesibles por su nombre y navegan a su destino. Localizamos por rol/nombre, no por
+ * estructura, así que la disposición en columnas o el icono no afectan al contrato.
+ */
+describe('HomeScreen — accesos rápidos (US-94)', () => {
+  beforeEach(() => {
+    getMock.mockReset().mockResolvedValue([]);
+    navigateMock.mockReset();
+  });
+
+  const CASOS = [
+    { nombre: 'Crear un cuento', destino: 'Cuentos' },
+    { nombre: 'Ver actividades', destino: 'Actividades' },
+    { nombre: 'Mis logros', destino: 'Achievements' },
+    { nombre: 'Buscar', destino: 'SearchResults' },
+  ] as const;
+
+  it.each(CASOS)('el botón "$nombre" navega a $destino', async ({ nombre, destino }) => {
+    render(<HomeScreen {...props} />);
+    await waitFor(() => expect(getMock).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole('button', { name: nombre }));
+    expect(navigateMock).toHaveBeenCalledWith(destino);
   });
 });

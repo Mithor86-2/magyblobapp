@@ -923,3 +923,20 @@ auto-verificar** (arranque reproducible intacto).
 - **DoD:** ✅ `pnpm check` verde (**backend 442 + app 282**) + cobertura CORE OK. Integración Prisma del
   repo y E2E onboarding (modo sin SMTP) en sus suites Docker. Pendiente: **pruebas manuales del usuario**
   (con y sin SMTP) y `finish` tras confirmación.
+
+### Inicio en 2 columnas + iconos en las acciones (2026-07-04, rama `feature/94-inicio-2-columnas-iconos`, US-94)
+
+Extiende la iconografía funcional (US-29) a los botones de acción y reorganiza los accesos de Inicio.
+Plan en [planes/feature-96-inicio-2-columnas-iconos.md](planes/feature-96-inicio-2-columnas-iconos.md).
+Decisiones con el usuario: alcance = **Inicio + acciones equivalentes** del resto de la app; icono de
+"Crear un cuento" = **libro** (coherente con la pestaña Cuentos, no la varita).
+
+- [x] ✅ **App.** Los 4 accesos de Inicio pasan a **rejilla de 2 columnas** de _tiles_ (icono grande
+      sobre etiqueta): cuento=libro, actividades=paleta, logros=trofeo, buscar=lupa. `BubblyButton`
+      gana `layout: 'row' | 'stack'`; el wrapper `Icon` añade `achievements` (lucide `Trophy`). Mismo
+      icono en la acción equivalente: "Generar cuento" (Cuentos/Dashboard) → libro; "Generar
+      actividades" (Actividades/Dashboard) → paleta.
+- [x] ✅ **Docs/tests.** US-94 + trazabilidad, CHANGELOG (Unreleased) del app; tests de los 4 botones
+      de Inicio (navegación) y del layout `stack` de `BubblyButton`.
+- **DoD:** ✅ `pnpm check` verde (**backend 452 + app 296**). Pendiente: pruebas manuales del usuario
+  (visual de la rejilla) y `finish` tras confirmación.

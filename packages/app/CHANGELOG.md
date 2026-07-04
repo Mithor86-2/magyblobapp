@@ -22,6 +22,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Inicio (US-94): los cuatro accesos rápidos (Crear un cuento, Ver actividades, Mis logros, Buscar)
+  pasan a una **rejilla de 2 columnas** y cada uno muestra un **icono** sobre la etiqueta (libro,
+  paleta, trofeo y lupa). El mismo icono acompaña ahora la acción equivalente donde aparece: "Generar
+  cuento" (Cuentos y Dashboard) → libro; "Generar actividades" (Actividades y Dashboard) → paleta.
+  `BubblyButton` admite `layout: 'row' | 'stack'` (tile vertical) y el wrapper `Icon` añade el nombre
+  semántico `achievements` (trofeo).
 - El alta (`api.guardians.register`) resuelve de forma transparente la puerta parental server-side
   del backend (US-92): obtiene el reto de `GET /guardians/challenge` y envía la respuesta junto al
   alta. El `ParentalGate` cliente (verificación humana) se mantiene; no cambia la UI del formulario.
@@ -34,9 +40,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - Crash nativo (reanimated 4 / New Arch) por animación en vuelo al desmontar: la estrella del
   estallido del avatar (`BurstStar` en `AnimatedAvatar`) no cancelaba su `withTiming` al
-  desmontarse. Se añade `cancelAnimation` en el cleanup. Auditado el resto de animaciones
-  (`AnimatedAvatar` idle, `BookPages`, `BouncingHeaderImage`, `Appear`): ya cancelaban/paraban al
-  desmontar.
+  desmontarse. Se añade `cancelAnimation` en el cleanup.
+- Crash nativo al **cambiar de pestaña rápido**: las animaciones en **bucle infinito**
+  (`BouncingHeaderImage`, avatar idle de `AnimatedAvatar`) seguían corriendo cuando la pestaña se
+  **desenfocaba**; como el tab navigator no desmonta la pantalla sino que `react-native-screens`
+  **desacopla su vista nativa**, animar sobre ella crashea. Nuevo hook `useIsScreenActive` que
+  **pausa las animaciones en bucle al desenfocar** (y las reanuda al enfocar). Auditado el resto
+  (`BookPages`, `Appear`): ya paran al desmontar.
 
 ### Security
 
