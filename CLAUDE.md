@@ -75,6 +75,12 @@ a mano (solo estas tres son relevantes aquí; el resto de skills instaladas son 
   de feature), criterio SemVer y mecánica Keep a Changelog, más las recetas para resolver conflictos
   de versión / CHANGELOG / `pnpm-lock` al mergear en paralelo. La invoca `cerrar-feature`; ver
   "Versionado y changelog" más abajo. Vive en el repo: [.claude/skills/versionar/](.claude/skills/versionar/).
+- **`crear-release`** — al publicar un **release a producción** (di "crea nuevo release"). Runbook
+  end-to-end: versiona (delega en `versionar`), dispara el build EAS de la APK (`preview`) y actualiza
+  el enlace de descarga del README, integra `develop`→`main` por **PR con CI verde** (auto-deploy del
+  backend en Render), verifica `/health` en prod y crea el **GitHub Release** con notas del CHANGELOG.
+  **Muestra el plan y pide confirmación** antes de cada paso externo (push, merge a `main`, Release,
+  build EAS). Vive en el repo: [.claude/skills/crear-release/](.claude/skills/crear-release/).
 - **`gitflow-es:git`** / **`gitflow-es:commit`** (plugin `gitflow-es`) — para cualquier operación de
   ramas o commits (start/finish de features, hotfixes, releases, mensajes en Conventional Commits en
   español). Ver "Git workflow" más abajo.
