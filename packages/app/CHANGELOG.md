@@ -22,6 +22,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- Inicio (US-94): los cuatro accesos rápidos (Crear un cuento, Ver actividades, Mis logros, Buscar)
+  pasan a una **rejilla de 2 columnas** y cada uno muestra un **icono** sobre la etiqueta (libro,
+  paleta, trofeo y lupa). El mismo icono acompaña ahora la acción equivalente donde aparece: "Generar
+  cuento" (Cuentos y Dashboard) → libro; "Generar actividades" (Actividades y Dashboard) → paleta.
+  `BubblyButton` admite `layout: 'row' | 'stack'` (tile vertical) y el wrapper `Icon` añade el nombre
+  semántico `achievements` (trofeo).
 - El alta (`api.guardians.register`) resuelve de forma transparente la puerta parental server-side
   del backend (US-92): obtiene el reto de `GET /guardians/challenge` y envía la respuesta junto al
   alta. El `ParentalGate` cliente (verificación humana) se mantiene; no cambia la UI del formulario.

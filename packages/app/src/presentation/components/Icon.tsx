@@ -26,6 +26,7 @@ import {
   Square,
   Star,
   Tag,
+  Trophy,
   UserRound,
   Wand2,
   X,
@@ -59,6 +60,8 @@ const ICONS = {
   check: Check,
   search: Search,
   close: X,
+  // Logros / trofeos ("Mis logros", US-94).
+  achievements: Trophy,
   // Valoración (estrella; usar `fill` para el estado lleno).
   rating: Star,
   // Favorito (estrella; relleno cuando es favorito, US-64).
