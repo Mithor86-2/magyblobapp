@@ -1,6 +1,14 @@
 packages:
   - 'packages/*'
 
+# Fuerza versiones parcheadas de transitivos vulnerables (Dependabot). Todos son deps de
+# dev/build/test, sin exposición en producción; el detalle y la exclusión de `uuid` (riesgo
+# prebuild nativo) están en Docs/planes/deps-vulnerabilidades.md.
+overrides:
+  'vite@<=6.4.2': '>=6.4.3' # high: server.fs.deny bypass + path traversal + launch-editor
+  'esbuild@<0.28.1': '>=0.28.1' # dev server acepta requests / lectura de fichero
+  '@hono/node-server@<1.19.13': '>=1.19.13' # bypass serveStatic (tooling Prisma)
+
 # Dependencias cuyos scripts de instalación se permiten ejecutar (pnpm 11+).
 allowBuilds:
   '@prisma/client': true
