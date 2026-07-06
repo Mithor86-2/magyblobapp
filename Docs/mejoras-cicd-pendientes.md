@@ -23,6 +23,12 @@ En una app de menores el escaneo de secretos y de CVEs es especialmente pertinen
 - [ ] **`pnpm audit --audit-level=high`** como paso (informativo al principio) en el job `gate`.
       _Aceptación:_ el paso corre en CI y reporta CVEs ≥ high sin romper el build hasta decidir subirlo
       a bloqueante.
+      _Nota (2026-07-06):_ saneadas 6 de 7 vulnerabilidades transitivas (1 high + 4 moderate + 1 low)
+      con `overrides` en `pnpm-workspace.yaml` — ver
+      [planes/deps-vulnerabilidades.md](planes/deps-vulnerabilidades.md). Queda **1 moderate aceptada**:
+      `uuid` (v3/v5/v6, buffer bounds) vía `@expo/cli › xcode`; forzar `uuid ≥11.1.1` arriesga romper el
+      prebuild nativo (API v3→v11) y es tooling de build sin exposición en producción. Revisar cuando
+      Expo/`xcode` actualice `uuid`.
 - [ ] **Habilitar en Settings → Security** (repo ahora **público**, así que el _secret scanning_ es
       gratis): _Dependabot alerts_, _secret scanning_ + _push protection_.
       _Aceptación:_ los tres aparecen activos en la config del repo (hoy estaban en `null`).
