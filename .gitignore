@@ -41,3 +41,6 @@ packages/app/test-results/
 
 # APKs de build local/EAS (se distribuyen por GitHub Releases)
 *.apk
+
+# README local (runbook operativo completo; no se versiona — el README versionado es el conciso)
+README.local.md

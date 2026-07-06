@@ -19,6 +19,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.10.1] - 2026-07-06
+
+### Security
+
+- Forzadas versiones parcheadas de transitivos de dev/build vulnerables (Dependabot) vía `overrides`
+  en `pnpm-workspace.yaml`: `esbuild ≥0.28.1` (vía `tsx`) y `@hono/node-server ≥1.19.13` (vía la CLI
+  de Prisma). Sin exposición en producción; detalle en
+  [Docs/planes/deps-vulnerabilidades.md](../../Docs/planes/deps-vulnerabilidades.md).
+
 ## [1.10.0] - 2026-07-04
 
 ### Added

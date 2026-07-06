@@ -23,6 +23,12 @@ En una app de menores el escaneo de secretos y de CVEs es especialmente pertinen
 - [ ] **`pnpm audit --audit-level=high`** como paso (informativo al principio) en el job `gate`.
       _Aceptación:_ el paso corre en CI y reporta CVEs ≥ high sin romper el build hasta decidir subirlo
       a bloqueante.
+      _Nota (2026-07-06):_ saneadas 6 de 7 vulnerabilidades transitivas (1 high + 4 moderate + 1 low)
+      con `overrides` en `pnpm-workspace.yaml` — ver
+      [planes/deps-vulnerabilidades.md](planes/deps-vulnerabilidades.md). Queda **1 moderate aceptada**:
+      `uuid` (v3/v5/v6, buffer bounds) vía `@expo/cli › xcode`; forzar `uuid ≥11.1.1` arriesga romper el
+      prebuild nativo (API v3→v11) y es tooling de build sin exposición en producción. Revisar cuando
+      Expo/`xcode` actualice `uuid`.
 - [ ] **Habilitar en Settings → Security** (repo ahora **público**, así que el _secret scanning_ es
       gratis): _Dependabot alerts_, _secret scanning_ + _push protection_.
       _Aceptación:_ los tres aparecen activos en la config del repo (hoy estaban en `null`).
@@ -40,6 +46,18 @@ En una app de menores el escaneo de secretos y de CVEs es especialmente pertinen
       visibilidad al estado de producción desde GitHub (hoy la integración es un webhook de git plano,
       sin historial ni gates de entorno).
       _Aceptación:_ los deploys aparecen en la pestaña _Environments_ del repo.
+
+- [ ] **Optimizar el tamaño del APK** en el próximo compilado. El APK `preview` actual pesa ~91 MB
+      porque es **universal** (incluye las 4 arquitecturas de CPU × librerías nativas). Para bajarlo a
+      ~40 MB sin perder compatibilidad real: (1) **solo `arm64-v8a`** (cubre los móviles modernos)
+      pasando `reactNativeArchitectures=arm64-v8a` al build (gradle property; p. ej. `gradleCommand` en
+      el perfil `preview` de `eas.json` o vía `gradle.properties`) — es el mayor recorte (~½);
+      (2) **R8/ProGuard + shrink de recursos** con el plugin `expo-build-properties`
+      (`android.enableProguardInReleaseBuilds: true`, `enableShrinkResources: true`); (3) para
+      distribución real (Play Store) usar el **AAB** (perfil `production`, ya configurado), que Google
+      entrega por dispositivo. Las imágenes ya están optimizadas; el peso es código nativo, no assets.
+      _Aceptación:_ el APK `preview` baja de ~91 MB a ~40 MB manteniendo la instalación en dispositivos
+      arm64.
 
 ## 3. Eficiencia y cobertura (prioridad baja)
 
