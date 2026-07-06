@@ -41,6 +41,18 @@ En una app de menores el escaneo de secretos y de CVEs es especialmente pertinen
       sin historial ni gates de entorno).
       _Aceptación:_ los deploys aparecen en la pestaña _Environments_ del repo.
 
+- [ ] **Optimizar el tamaño del APK** en el próximo compilado. El APK `preview` actual pesa ~91 MB
+      porque es **universal** (incluye las 4 arquitecturas de CPU × librerías nativas). Para bajarlo a
+      ~40 MB sin perder compatibilidad real: (1) **solo `arm64-v8a`** (cubre los móviles modernos)
+      pasando `reactNativeArchitectures=arm64-v8a` al build (gradle property; p. ej. `gradleCommand` en
+      el perfil `preview` de `eas.json` o vía `gradle.properties`) — es el mayor recorte (~½);
+      (2) **R8/ProGuard + shrink de recursos** con el plugin `expo-build-properties`
+      (`android.enableProguardInReleaseBuilds: true`, `enableShrinkResources: true`); (3) para
+      distribución real (Play Store) usar el **AAB** (perfil `production`, ya configurado), que Google
+      entrega por dispositivo. Las imágenes ya están optimizadas; el peso es código nativo, no assets.
+      _Aceptación:_ el APK `preview` baja de ~91 MB a ~40 MB manteniendo la instalación en dispositivos
+      arm64.
+
 ## 3. Eficiencia y cobertura (prioridad baja)
 
 - [ ] **Cachear browsers de Playwright** (`~/.cache/ms-playwright`) y el **cliente Prisma** entre
