@@ -19,6 +19,18 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.10.2] - 2026-07-06
+
+### Fixed
+
+- Envío de email de verificación (US-93) fallaba con `ENETUNREACH`/`ETIMEDOUT` en PaaS sin salida
+  IPv6 (p. ej. Render): nodemailer 9 resolvía el host SMTP a IPv4 **e** IPv6 y elegía una al azar.
+  Ahora `SmtpEmailService` resuelve el registro A (IPv4) y conecta contra esa IP (con `tls.servername`
+  para validar el certificado), evitando cualquier intento por IPv6. Desbloquea el alta de guardián en
+  producción cuando hay SMTP configurado.
+
+### Security
+
 ## [1.10.1] - 2026-07-06
 
 ### Security

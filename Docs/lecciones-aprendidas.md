@@ -993,3 +993,27 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
 - **Lección:** para saldar CVEs de dependencias transitivas de dev/build/test sin esperar al upstream,
   `overrides` en `pnpm-workspace.yaml` es el mecanismo. Deja fuera lo que arriesgue romper (p. ej.
   forzar `uuid` v11 bajo `xcode`/Expo, que espera la API v3) y documenta el riesgo aceptado.
+
+### nodemailer en Render: `ENETUNREACH` a una IPv6 porque el PaaS no tiene salida IPv6
+
+- **Síntoma:** con SMTP configurado (Gmail), el alta de guardián (`POST /guardians`) devolvía **500**
+  en producción (Render); el reto parental (`GET /guardians/challenge`, sin BD ni SMTP) y el login (BD,
+  sin SMTP) iban bien. `/health` seguía en 200 porque no toca BD ni SMTP. En los logs de Render:
+  `connect ENETUNREACH 2607:f8b0:4004:...:587` (una **IPv6 de Gmail**) y a veces `ETIMEDOUT` en
+  `SMTPConnection`. La cuenta **sí** se guardaba (un reintento daba 409 "ya existe"): reventaba el paso
+  siguiente, `verification.enviar` → `nodemailer.sendMail`.
+- **Causa:** Render **no rutea IPv6 saliente**, pero su interfaz de red **anuncia** una IPv6, así que
+  nodemailer 9 (`lib/shared/index.js#resolveHostname`) resuelve el host SMTP a IPv4 **e** IPv6 y elige
+  una dirección **al azar** (`formatDNSValue` usa `Math.random()`); cuando le toca la IPv6, la conexión
+  falla. **La opción `family: 4` no sirve**: nodemailer no la reenvía al socket, hace su propia
+  resolución (y encima con `family` el objeto deja de encajar en el tipo de `createTransport`). Cambiar
+  el puerto 465→587 tampoco cambia nada (es un problema de red, no de TLS).
+- **Solución (lo que funcionó):** resolver nosotros el registro **A** (IPv4) con `dns.resolve4` y pasar
+  esa **IP como `host`** a `createTransport`; con una IP, nodemailer se salta su resolución DNS y nunca
+  intenta IPv6. Se conserva `tls: { servername: host }` para que la validación del certificado siga
+  contra el nombre real (SNI). Se resuelve en cada envío (volumen de OTP bajo) para no cachear una IP
+  que rote. Ver [SmtpEmailService](../packages/backend/src/infrastructure/email/SmtpEmailService.ts).
+- **Lección:** en PaaS sin egress IPv6 (Render), fuerza IPv4 **pre-resolviendo** el host y conectando
+  por IP + `tls.servername`; no confíes en `family` ni en el orden de resolución de la librería. El
+  diagnóstico rápido: si un endpoint que toca un servicio externo da 500 pero los que no lo tocan van
+  bien, mira los logs del servidor por `ENETUNREACH`/`ETIMEDOUT` antes de sospechar de la BD.
