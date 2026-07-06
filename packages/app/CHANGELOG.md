@@ -19,6 +19,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.10.2] - 2026-07-06
+
+### Changed
+
+- Sin cambios funcionales en la app; versión alineada con el release de corrección del backend
+  (fix del envío de email de verificación en producción, ver CHANGELOG de `@magyblob/backend`).
+
 ## [1.10.1] - 2026-07-06
 
 ### Security
