@@ -977,3 +977,19 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
 - **Lección:** en este combo (Expo 56 / RN 0.85 / reanimated 4.3.1 / New Arch) las animaciones
   reanimated **en bucle infinito** son inestables ante eventos táctiles. Evítalas o difiere el
   movimiento a la API `Animated` de RN (como `Appear`, estable aquí) hasta que el combo lo soporte.
+
+### pnpm 11 ya no lee el campo `pnpm` del `package.json`: los `overrides` van en `pnpm-workspace.yaml`
+
+- **Síntoma:** al añadir `"pnpm": { "overrides": { … } }` al `package.json` raíz para forzar versiones
+  parcheadas de transitivos (fix de vulnerabilidades de Dependabot), `pnpm install` avisa
+  `The "pnpm" field in package.json is no longer read by pnpm … keys were ignored: "pnpm.overrides"` y
+  el override **no se aplica** (el lockfile no cambia).
+- **Causa:** en pnpm 10/11 los settings (incluidos `overrides`, `catalog`, `packageExtensions`) se
+  movieron del `package.json` a `pnpm-workspace.yaml`.
+- **Solución:** declararlos bajo `overrides:` en [pnpm-workspace.yaml](../pnpm-workspace.yaml). Sintaxis
+  de selector con rango: `'vite@<=6.4.2': '>=6.4.3'` (reemplaza cualquier versión que cumpla el
+  selector por el rango destino; el resolver deduplica a la última compatible — p. ej. `vite` saltó a
+  8.1.3 junto a vitest). Tras editar, `pnpm install` regenera `pnpm-lock.yaml` y `pnpm audit` confirma.
+- **Lección:** para saldar CVEs de dependencias transitivas de dev/build/test sin esperar al upstream,
+  `overrides` en `pnpm-workspace.yaml` es el mecanismo. Deja fuera lo que arriesgue romper (p. ej.
+  forzar `uuid` v11 bajo `xcode`/Expo, que espera la API v3) y documenta el riesgo aceptado.
