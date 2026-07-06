@@ -19,6 +19,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.10.1] - 2026-07-06
+
+### Security
+
 - Forzadas versiones parcheadas de transitivos de test vulnerables (Dependabot) vía `overrides` en
   `pnpm-workspace.yaml`: `vite ≥6.4.3` y `esbuild ≥0.28.1` (vía `@vitest/coverage-v8`). Resuelve la
   vulnerabilidad **high** de `vite`; sin exposición en producción (la app no sirve dev server web).
