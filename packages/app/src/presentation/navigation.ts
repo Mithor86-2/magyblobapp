@@ -22,8 +22,12 @@ export type RootStackParamList = {
   Parental: undefined;
   /** Vitrina de logros del perfil, abierta desde Inicio (US-68). */
   Achievements: undefined;
-  /** Vista de lectura de un cuento abierto desde el Historial (US-27). */
-  StoryReader: { story: Story };
+  /**
+   * Vista de lectura de un cuento abierto desde el Historial (US-27). En modo
+   * anónimo (`anonimo: true`, US-96) el cuento generado sin sesión también abre el
+   * lector, pero las acciones que requieren cuenta piden iniciar sesión.
+   */
+  StoryReader: { story: Story; anonimo?: boolean };
   /** Búsqueda global (cuentos + actividades) del perfil activo (US-82). */
   SearchResults: undefined;
 };

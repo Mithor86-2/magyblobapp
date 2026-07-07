@@ -60,7 +60,7 @@ describe('DashboardScreen — modo anónimo efímero (US-50)', () => {
     navigation.navigate.mockReset();
   });
 
-  it('genera un cuento anónimo (sin profileId ni nombre) al pulsar Generar cuento', async () => {
+  it('genera un cuento anónimo (sin profileId ni nombre) y abre el lector (US-96)', async () => {
     render(<DashboardScreen {...props} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Generar cuento' }));
@@ -70,7 +70,24 @@ describe('DashboardScreen — modo anónimo efímero (US-50)', () => {
     expect(arg).not.toHaveProperty('profileId');
     expect(arg.temas.length).toBeGreaterThan(0);
     expect(arg.estilos.length).toBeGreaterThan(0);
-    expect(await screen.findByText('El zorro valiente')).toBeTruthy();
+
+    // US-96: ya no pinta el cuento inline; navega al lector en modo anónimo con el
+    // `AnonymousStory` adaptado a `Story` (id/perfil 'anon', estado 'nuevo').
+    await waitFor(() =>
+      expect(navigation.navigate).toHaveBeenCalledWith(
+        'StoryReader',
+        expect.objectContaining({
+          anonimo: true,
+          story: expect.objectContaining({
+            id: 'anon',
+            profileId: 'anon',
+            titulo: 'El zorro valiente',
+            estado: 'nuevo',
+          }),
+        }),
+      ),
+    );
+    expect(screen.queryByText('Érase una vez...')).not.toBeInTheDocument();
   });
 
   it('genera actividades anónimas al pulsar Generar actividades', async () => {
