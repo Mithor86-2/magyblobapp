@@ -26,6 +26,8 @@ vi.mock('../components/ActivityCard', () => ({
   ActivityCard: ({ activity }: { activity: { titulo: string } }) => activity.titulo,
 }));
 vi.mock('../components/Icon', () => ({ Icon: () => null }));
+// El pie de versión (US-99) usa expo-application (nativo): se sustituye por un stub.
+vi.mock('../components/VersionFooter', () => ({ VersionFooter: () => 'versión-app' }));
 vi.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: ReactNode }) => children,
 }));
@@ -105,6 +107,12 @@ describe('DashboardScreen — modo anónimo efímero (US-50)', () => {
     // El Screen pinta la imagen de cabecera (headerImageName="dashboard");
     // react-native-web la expone con role="img".
     expect(screen.getByRole('img')).toBeInTheDocument();
+  });
+
+  it('muestra la versión de la app en la pantalla sin sesión (US-99)', () => {
+    render(<DashboardScreen {...props} />);
+
+    expect(screen.getByText('versión-app')).toBeInTheDocument();
   });
 
   it('navega a crear cuenta y a iniciar sesión desde el Dashboard', () => {

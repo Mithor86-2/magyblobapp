@@ -120,29 +120,42 @@ class HotSwapAIProvider implements AIProvider {
     return this.base.generateImage(input);
   }
 
-  /** Proveedor activo para esta petición; cae al base si cloud no aplica. */
+  /**
+   * Proveedor activo para esta petición. Construye la **cascada** de `ai.cloud`
+   * (US-99): el `target` primario más sus `fallbacks`, en orden, descartando los
+   * pasos sin API key en env; anida `FallbackProvider` (cada paso cae al siguiente
+   * ante fallo) y termina en el **mock**. Sin ningún paso con key, o con cloud
+   * inactivo, cae al modo base (privacidad por defecto).
+   */
   private async resolver(): Promise<AIProvider> {
     const cfg = await readCloudSetting(this.settings);
     if (cfg === null || !cfg.activo) return this.base;
 
-    const apiKey = this.config.cloudApiKeys[cfg.target];
-    if (apiKey === undefined) {
+    // Cadena ordenada: primario + fallbacks. Se conserva solo lo que tenga API key.
+    const pasos = [{ target: cfg.target, model: cfg.model }, ...(cfg.fallbacks ?? [])];
+    const disponibles = pasos.filter((paso) => {
+      if (this.config.cloudApiKeys[paso.target] !== undefined) return true;
       this.logger.warn(
-        { target: cfg.target, env: CLOUD_PRESETS[cfg.target].apiKeyEnv },
-        'ai.cloud activo pero falta la API key en env; usando el modo base.',
+        { target: paso.target, env: CLOUD_PRESETS[paso.target].apiKeyEnv },
+        'ai.cloud: falta la API key del target; se omite de la cascada.',
       );
-      return this.base;
-    }
-
-    const cloud = new CloudProvider({
-      baseUrl: CLOUD_PRESETS[cfg.target].baseUrl,
-      apiKey,
-      model: cfg.model,
-      timeoutMs: this.config.aiTimeoutMs,
-      settings: this.settings,
-      logger: this.logger,
+      return false;
     });
-    return new FallbackProvider(cloud, this.mock, this.logger);
+    if (disponibles.length === 0) return this.base;
+
+    // Se anida de derecha a izquierda: cloud_1 → cloud_2 → … → mock.
+    return disponibles.reduceRight<AIProvider>((siguiente, paso) => {
+      const cloud = new CloudProvider({
+        baseUrl: CLOUD_PRESETS[paso.target].baseUrl,
+        apiKey: this.config.cloudApiKeys[paso.target]!,
+        model: paso.model,
+        proveedor: paso.target,
+        timeoutMs: this.config.aiTimeoutMs,
+        settings: this.settings,
+        logger: this.logger,
+      });
+      return new FallbackProvider(cloud, siguiente, this.logger);
+    }, this.mock);
   }
 }
 

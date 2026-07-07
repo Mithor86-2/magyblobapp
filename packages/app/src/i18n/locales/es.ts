@@ -48,6 +48,11 @@ export const es = {
       mock: 'Simulada',
       local: 'IA local',
       cloud: 'IA en la nube',
+      // Targets cloud concretos (US-99): misma etiqueta con la letra del proveedor al final.
+      gemini: 'IA en la nube (G)',
+      groq: 'IA en la nube (GQ)',
+      openrouter: 'IA en la nube (OR)',
+      cerebras: 'IA en la nube (CB)',
     },
   },
 

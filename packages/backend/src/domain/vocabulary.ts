@@ -52,8 +52,20 @@ export const TIPOS_EVENTO = [
 ] as const;
 export type TipoEvento = (typeof TIPOS_EVENTO)[number];
 
-/** Proveedor de IA que generó realmente el contenido (el efectivo, incluido el fallback). */
-export const PROVEEDORES_IA = ['mock', 'local', 'cloud'] as const;
+/**
+ * Proveedor de IA que generó realmente el contenido (el efectivo, incluido el fallback).
+ * `cloud` es el genérico histórico; desde US-99 el `CloudProvider` estampa su **target**
+ * concreto (`gemini | groq | openrouter | cerebras`) para poder distinguirlo en el autor.
+ */
+export const PROVEEDORES_IA = [
+  'mock',
+  'local',
+  'cloud',
+  'gemini',
+  'groq',
+  'openrouter',
+  'cerebras',
+] as const;
 export type ProveedorIa = (typeof PROVEEDORES_IA)[number];
 
 /** Type guard: ¿`value` es un tema del vocabulario cerrado? */

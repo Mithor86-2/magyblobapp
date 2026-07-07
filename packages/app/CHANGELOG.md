@@ -9,6 +9,13 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- **Versión de la app en la pantalla sin sesión (US-99).** El `Dashboard` (inicio sin sesión) muestra
+  ahora el `VersionFooter` al pie, como el resto de pantallas.
+- **El "Autor" distingue el proveedor cloud concreto (US-99).** El `AuthorBadge` de cuentos y
+  actividades añade la letra del proveedor al final: **G** (Gemini), **GQ** (Groq), OR (OpenRouter),
+  CB (Cerebras), conservando el icono/etiqueta de "IA en la nube". `PROVEEDORES_IA` se amplía con esos
+  targets.
+
 ### Changed
 
 ### Deprecated

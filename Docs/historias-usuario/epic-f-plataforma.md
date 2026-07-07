@@ -1859,3 +1859,36 @@ datos, en vez de ver un error crudo y quedar en un estado inconsistente.
   nuevo, los datos se consultan otra vez.
 - **(Contenido puntual)** Dado un `404` de un cuento/actividad concretos (no del perfil), Entonces
   **no** se cierra la sesión.
+
+## US-99 — Cascada de proveedores de IA + versión y autor cloud · Should (Mejoras) {#us-99}
+
+> **Robustez y transparencia de la IA.** Amplía el modo cloud (US-14/US-25): en vez de un único
+> proveedor cloud con caída directa al mock, se encadenan varios; y el "Autor" (US-25) deja de ser un
+> genérico "IA en la nube" para decir **qué** proveedor generó el contenido.
+
+**Como** responsable del producto, **quiero** que la generación intente varios proveedores en cascada
+(primero uno, si no responde otro, y por último el mock) y que se vea qué proveedor generó cada
+contenido, **para** más disponibilidad y transparencia; y **como** adulto sin sesión quiero ver la
+versión de la app.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Dashboard / Autor (cuentos y actividades).
+
+**Alcance**
+
+1. `ai.cloud` admite `fallbacks: [{target, model}, …]`. La capa de IA intenta el `target` primario y,
+   si falla, cada paso de la cascada; si todos fallan, el **mock**. Los pasos sin API key en env se
+   omiten. Default del proyecto: **Gemini → Groq → mock**.
+2. El proveedor efectivo se estampa por su **target concreto** (`gemini | groq | …`) en vez del
+   genérico `cloud`; se persiste en `Story`/`Activity` (columna `String`, sin migración).
+3. El `AuthorBadge` muestra la letra del proveedor al final: **G** (Gemini), **GQ** (Groq), OR, CB.
+4. La pantalla sin sesión (`Dashboard`) muestra el `VersionFooter`.
+
+**Criterios de aceptación**
+
+- **(Cascada)** Dado el cloud con cascada Gemini→Groq, Cuando Gemini no responde, Entonces se genera
+  con Groq; y si ambos fallan, con el mock.
+- **(Omitir sin key)** Dado un paso de la cascada sin API key en env, Entonces se omite y se usa el
+  siguiente.
+- **(Autor)** Dado un cuento/actividad generado por Gemini, Entonces el Autor muestra "IA en la nube
+  (G)"; por Groq, "(GQ)".
+- **(Versión sin sesión)** Dado el Dashboard, Entonces se muestra la versión de la app al pie.

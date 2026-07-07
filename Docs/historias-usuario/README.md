@@ -128,6 +128,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-96 | Cuento anónimo abre el lector + puerta de sesión       | Should    | Mejoras | Dashboard / Lector                         | [F](epic-f-plataforma.md#us-96)  |
 | US-97 | La última línea del cuento no se recorta               | Should    | Mejoras | Lector                                     | [F](epic-f-plataforma.md#us-97)  |
 | US-98 | Incoherencia de datos de sesión → error + logout       | Should    | Mejoras | Toda la app (peticiones de datos)          | [F](epic-f-plataforma.md#us-98)  |
+| US-99 | Cascada IA (Gemini→Groq→mock) + versión + autor cloud  | Should    | Mejoras | Dashboard / Autor (cuentos·actividades)    | [F](epic-f-plataforma.md#us-99)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

@@ -70,10 +70,15 @@ const ICONS = {
   'cat-arte': Palette,
   'cat-musica': Music,
   'cat-logica': Puzzle,
-  // Proveedor de IA "Autor" (US-25).
+  // Proveedor de IA "Autor" (US-25). Los targets cloud concretos (US-99) comparten
+  // el icono de nube; la letra que los distingue (G/GQ/…) va en la etiqueta.
   'prov-mock': Sparkles,
   'prov-local': MonitorSmartphone,
   'prov-cloud': Cloud,
+  'prov-gemini': Cloud,
+  'prov-groq': Cloud,
+  'prov-openrouter': Cloud,
+  'prov-cerebras': Cloud,
   // Iconos por categoría de los chips (US-89): un icono por opción de tema/estilo/enseñanza.
   'tema-animales': PawPrint,
   'tema-espacio': Rocket,
