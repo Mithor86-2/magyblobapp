@@ -16,8 +16,14 @@
  *   frase no se parte).
  * - Un cuerpo vacío devuelve `['']` (una página en blanco, indicador "1/1") y **no**
  *   se intenta rellenar hasta el mínimo: sin contenido no hay nada que paginar.
+ *
+ * El objetivo por defecto es de **~60 palabras por página** (US-97): en pantallas
+ * donde la hoja del lector cae a su alto mínimo (~320px), 120 palabras desbordaban
+ * el alto fijo y la última línea salía recortada. Con ~60 palabras el texto cabe en
+ * las ~8 líneas útiles de `bodyLg` incluso en el caso más estrecho; `BookPages` añade
+ * además una red de seguridad que encoge la fuente para tamaños accesibles.
  */
-export function paginarCuento(cuerpo: string, palabrasPorPagina = 120, minPaginas = 4): string[] {
+export function paginarCuento(cuerpo: string, palabrasPorPagina = 60, minPaginas = 4): string[] {
   const parrafos = cuerpo
     .split(/\n+/)
     .map((p) => p.trim())

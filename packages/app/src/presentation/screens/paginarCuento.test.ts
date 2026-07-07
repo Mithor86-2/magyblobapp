@@ -79,6 +79,24 @@ describe('paginarCuento (A2/US-73, A1/US-74)', () => {
     expect(paginarCuento('Solo esto.').length).toBeGreaterThanOrEqual(1);
   });
 
+  it('US-97: con el objetivo por defecto (60) ninguna página supera 60 palabras', () => {
+    // Cuerpo largo en varios párrafos, algunos claramente por encima de 60 palabras,
+    // para forzar el reparto por frases. Con el objetivo por defecto (~60), cada página
+    // debe caber en el alto mínimo de la hoja del lector sin recortar la última línea.
+    const frase = 'El pequeño dragón sobrevoló el valle buscando a su amigo el búho sabio.';
+    const parrafoLargo = Array.from({ length: 8 }, () => frase).join(' ');
+    const cuerpo = `${parrafoLargo}\n\n${parrafoLargo}\n\n${parrafoLargo}`;
+
+    const paginas = paginarCuento(cuerpo);
+
+    for (const pagina of paginas) {
+      expect(contar(pagina)).toBeLessThanOrEqual(60);
+    }
+    // No se pierde texto al trocear: la primera y la última frase siguen presentes.
+    const unido = paginas.join(' ');
+    expect(unido).toContain(frase);
+  });
+
   it('respeta el límite aproximado: cada frase que quepa no se parte', () => {
     // Objetivo pequeño (5) con frases de 3 palabras: una frase por página como mucho.
     const parrafo = 'Uno dos tres. Cuatro cinco seis. Siete ocho nueve.';

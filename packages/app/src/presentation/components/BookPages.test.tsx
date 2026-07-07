@@ -94,6 +94,18 @@ describe('BookPages (US-83)', () => {
     expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeDisabled();
   });
 
+  it('US-97: renderiza el texto COMPLETO de la página (la red anti-recorte no lo trunca)', () => {
+    // Aunque el lector limite las líneas visibles y encoja la fuente para que nada se
+    // recorte, el texto lógico de la página sigue presente ENTERO en el árbol: no se
+    // pierde contenido, solo se ajusta el tamaño para caber en la hoja.
+    const largo =
+      'Joaquín vuelve a la tierra y descubre que el jardín ha florecido con mil colores ' +
+      'mientras sus amigos lo esperan bajo el gran roble para celebrar juntos el final ' +
+      'de una aventura que jamás olvidarán, contándose historias hasta el anochecer.';
+    render(<BookPages paginas={[largo]} />);
+    expect(screen.getByText(largo)).toBeInTheDocument();
+  });
+
   it('US-27: llama onReachedEnd una sola vez al llegar a la última página', () => {
     const onReachedEnd = vi.fn();
     render(<BookPages paginas={PAGINAS} onReachedEnd={onReachedEnd} />);

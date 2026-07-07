@@ -149,9 +149,19 @@ export function BookPages({
 
   // Alto FIJO de la hoja: TODAS las páginas del cuento miden igual (no crecen con el
   // texto), así el libro no cambia de tamaño al pasar página. Se acota para caber una
-  // página de texto (paginarCuento ~120 palabras) en móvil; las páginas cortas centran
-  // su contenido dejando espacio, como en un libro real.
+  // página de texto (paginarCuento ~60 palabras) en móvil; el texto se alinea arriba y
+  // reserva el hueco del número de página, para que nada se solape ni se recorte.
   const pageHeight = Math.max(320, Math.min(460, Math.round(height * 0.52)));
+
+  // Red de seguridad (US-97): calcula cuántas líneas de `bodyLg` caben de verdad en la
+  // hoja (alto − padding vertical − hueco del número de página) y limita el texto a ese
+  // número de líneas, además de encoger la fuente (`adjustsFontSizeToFit`). Así, aunque
+  // el sistema use un tamaño de fuente accesible o aparezca una palabra muy larga, el
+  // texto SIEMPRE cabe dentro de la hoja y la última línea nunca sale cortada.
+  const lineHeightBody = typography.bodyLg.lineHeight ?? 30;
+  const altoNumeroPagina = (typography.labelBold.lineHeight ?? 20) + spacing.sm;
+  const altoTextoUtil = pageHeight - spacing.md * 2 - altoNumeroPagina;
+  const maxLineasTexto = Math.max(1, Math.floor(altoTextoUtil / lineHeightBody));
   const item = itemsSeguro[indice] ?? itemsSeguro[0]!;
 
   return (
@@ -170,7 +180,12 @@ export function BookPages({
             </View>
           ) : (
             <View style={styles.texto}>
-              <Text style={styles.body} accessibilityRole="text">
+              <Text
+                style={styles.body}
+                accessibilityRole="text"
+                numberOfLines={maxLineasTexto}
+                adjustsFontSizeToFit
+              >
                 {item.texto}
               </Text>
             </View>
@@ -244,10 +259,12 @@ const makeStyles = (colors: ColorTokens) =>
       // Ocupa el ancho de la hoja para que `adjustsFontSizeToFitWidth` acote y encoja a 1 línea.
       alignSelf: 'stretch',
     },
-    // Página de texto: contenido centrado verticalmente dentro de la hoja.
+    // Página de texto: contenido alineado ARRIBA (US-97), no centrado, para que el
+    // texto no invada el hueco del número de página ni se recorte por abajo cuando la
+    // hoja es pequeña. `flex:1` reserva el espacio y el número de página queda debajo.
     texto: {
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
     },
     // Número de página impreso al pie de la hoja (US-91).
     numeroPagina: {
