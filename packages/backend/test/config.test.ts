@@ -166,3 +166,58 @@ describe('loadConfig — producción (validación estricta)', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 });
+
+describe('loadConfig — selección de proveedor de email (US-93)', () => {
+  it('sin credenciales, la verificación queda desactivada (auto-verificado)', () => {
+    const { email } = loadConfig({});
+    expect(email.enabled).toBe(false);
+    expect(email.provider).toBeUndefined();
+  });
+
+  it('elige Brevo cuando hay BREVO_API_KEY y EMAIL_FROM', () => {
+    const { email } = loadConfig({ BREVO_API_KEY: 'k-brevo', EMAIL_FROM: 'remitente@dominio.com' });
+    expect(email.enabled).toBe(true);
+    expect(email.provider).toBe('brevo');
+    expect(email.brevo?.apiKey).toBe('k-brevo');
+    expect(email.from).toBe('remitente@dominio.com');
+  });
+
+  it('Brevo tiene prioridad sobre SMTP cuando ambos están presentes', () => {
+    const { email } = loadConfig({
+      BREVO_API_KEY: 'k-brevo',
+      EMAIL_FROM: 'remitente@dominio.com',
+      SMTP_HOST: 'smtp.dominio.com',
+      SMTP_USER: 'user@dominio.com',
+      SMTP_PASSWORD: 'secreto',
+    });
+    expect(email.provider).toBe('brevo');
+    expect(email.smtp).toBeUndefined();
+  });
+
+  it('cae a SMTP y avisa si hay BREVO_API_KEY pero falta EMAIL_FROM', () => {
+    const warn = vi.fn();
+    const { email } = loadConfig(
+      {
+        BREVO_API_KEY: 'k-brevo',
+        SMTP_HOST: 'smtp.dominio.com',
+        SMTP_USER: 'user@dominio.com',
+        SMTP_PASSWORD: 'secreto',
+      },
+      warn,
+    );
+    expect(email.provider).toBe('smtp');
+    expect(email.from).toBe('user@dominio.com');
+    expect(warn).toHaveBeenCalledOnce();
+  });
+
+  it('usa SMTP cuando solo hay credenciales SMTP', () => {
+    const { email } = loadConfig({
+      SMTP_HOST: 'smtp.dominio.com',
+      SMTP_USER: 'user@dominio.com',
+      SMTP_PASSWORD: 'secreto',
+    });
+    expect(email.enabled).toBe(true);
+    expect(email.provider).toBe('smtp');
+    expect(email.smtp?.host).toBe('smtp.dominio.com');
+  });
+});

@@ -20,7 +20,23 @@ import { BcryptPasswordHasher } from './auth/BcryptPasswordHasher.js';
 import { PrismaEmailVerificationRepository } from './repositories/PrismaEmailVerificationRepository.js';
 import { CryptoCodeGenerator } from './services/CryptoCodeGenerator.js';
 import { SmtpEmailService } from './email/SmtpEmailService.js';
+import { BrevoEmailService } from './email/BrevoEmailService.js';
 import type { EmailService } from '../domain/services/EmailService.js';
+
+/**
+ * Elige el adaptador de email según el proveedor resuelto en config (US-93): Brevo
+ * por API HTTP (el que funciona en PaaS que bloquean SMTP, p. ej. Render) o SMTP con
+ * nodemailer. Sin proveedor configurado devuelve `undefined` y el alta auto-verifica.
+ */
+function crearEmailService(config: Config): EmailService | undefined {
+  if (config.email.provider === 'brevo') {
+    return new BrevoEmailService({ brevo: config.email.brevo!, from: config.email.from! });
+  }
+  if (config.email.provider === 'smtp') {
+    return new SmtpEmailService({ smtp: config.email.smtp!, from: config.email.from! });
+  }
+  return undefined;
+}
 
 /**
  * Raíz de composición de producción: cablea los repos Prisma y el AIProvider real
@@ -50,11 +66,10 @@ export async function buildProductionDeps(config: Config, logger?: TTSLogger): P
 
   const settings = new PrismaSettingsRepository(prisma);
 
-  // Verificación de email (US-93): solo se cablea el servicio SMTP si hay
-  // credenciales; sin ellas, `emailService` queda `undefined` y el alta auto-verifica.
-  const emailService: EmailService | undefined = config.email.enabled
-    ? new SmtpEmailService({ smtp: config.email.smtp!, from: config.email.from! })
-    : undefined;
+  // Verificación de email (US-93): se cablea el proveedor elegido en config (Brevo por
+  // API HTTP —el que funciona en Render— o SMTP). Sin credenciales, `emailService`
+  // queda `undefined` y el alta auto-verifica.
+  const emailService: EmailService | undefined = crearEmailService(config);
 
   const deps: AppDeps = {
     guardians: new PrismaGuardianRepository(prisma),
