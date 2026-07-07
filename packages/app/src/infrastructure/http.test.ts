@@ -654,6 +654,13 @@ describe('warmUp (ping de arranque, US-53)', () => {
     expect(() => warmUp(BASE)).not.toThrow();
   });
 
+  it('sin fetch, resuelve onReady igualmente para no dejar el banner pegado (US-95)', () => {
+    vi.stubGlobal('fetch', undefined);
+    const onReady = vi.fn();
+    warmUp(BASE, onReady);
+    expect(onReady).toHaveBeenCalledTimes(1);
+  });
+
   it('reintenta con backoff si el ping falla, sin bloquear ni lanzar (US-53)', async () => {
     vi.useFakeTimers();
     const fetchMock = vi.fn().mockRejectedValue(new Error('backend caído'));
