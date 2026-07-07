@@ -60,12 +60,10 @@ services:
       ELEVENLABS_VOICE_ID_ES: ${ELEVENLABS_VOICE_ID_ES:-}
       ELEVENLABS_VOICE_ID_EN: ${ELEVENLABS_VOICE_ID_EN:-}
       ELEVENLABS_TIMEOUT_MS: ${ELEVENLABS_TIMEOUT_MS:-30000}
-      # Verificación de email por OTP (US-93). Secretos SMTP; VACÍO = verificación
-      # desactivada (la cuenta se crea verificada y auto-loguea; arranque reproducible).
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-465}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      # Verificación de email por OTP (US-93). VACÍO = verificación desactivada (la
+      # cuenta se crea verificada y auto-loguea; arranque reproducible). Proveedor por
+      # env, prioridad Brevo (API HTTP) > SMTP. Brevo necesita BREVO_API_KEY + EMAIL_FROM.
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
       OTP_TTL_MS: ${OTP_TTL_MS:-600000}
       OTP_MAX_INTENTOS: ${OTP_MAX_INTENTOS:-5}
