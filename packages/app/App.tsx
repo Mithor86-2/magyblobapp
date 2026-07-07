@@ -29,7 +29,7 @@ import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorS
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
 import { HistoryScreen } from './src/presentation/screens/HistoryScreen';
-import { DialogProvider } from './src/presentation/components/DialogProvider';
+import { DialogProvider, useDialog } from './src/presentation/components/DialogProvider';
 import { AppErrorBoundary } from './src/presentation/components/AppErrorBoundary';
 import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
@@ -196,6 +196,40 @@ function useStoreHydrated(): boolean {
 }
 
 /**
+ * Vigía de **incoherencia de datos de sesión** (US-98): cuando una ruta ligada a la
+ * sesión devuelve `404` (guardián/perfil inexistente en la BD), el store cierra la
+ * sesión y levanta `sessionDataError`. Aquí se muestra el aviso "error de datos" y se
+ * lleva al inicio sin sesión (`Dashboard`) para volver a identificarse y revalidar los
+ * datos. Vive bajo `DialogProvider` (usa `useDialog`) y en la raíz, así el aviso
+ * sobrevive a la navegación. Renderiza `null`.
+ */
+function DataErrorHandler({
+  navigationRef,
+}: {
+  navigationRef: ReturnType<typeof useNavigationContainerRef<RootStackParamList>>;
+}) {
+  const { t } = useTranslation();
+  const dialog = useDialog();
+  const sessionDataError = useAppStore((s) => s.sessionDataError);
+  const clearDataError = useAppStore((s) => s.clearDataError);
+
+  useEffect(() => {
+    if (!sessionDataError) return;
+    // La sesión ya fue limpiada en el store; se vuelve al inicio sin sesión y se avisa.
+    if (navigationRef.isReady()) {
+      navigationRef.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+    }
+    dialog.alert({
+      title: t('common.dataErrorTitle'),
+      message: t('common.dataErrorMessage'),
+    });
+    clearDataError();
+  }, [sessionDataError, navigationRef, dialog, clearDataError, t]);
+
+  return null;
+}
+
+/**
  * Cuerpo de la app **bajo el `ThemeProvider`** (US-66): consume la paleta activa
  * para tematizar splash, barra de estado, navegación, cabeceras y pestañas. Se
  * separa del `App` raíz porque necesita `useTheme()`, que solo existe dentro del
@@ -254,6 +288,7 @@ function ThemedApp() {
       <View style={styles.appBody}>
         <AppErrorBoundary label="app">
           <DialogProvider>
+            <DataErrorHandler navigationRef={navigationRef} />
             <NavigationContainer
               ref={navigationRef}
               theme={makeNavigationTheme(colors, scheme)}

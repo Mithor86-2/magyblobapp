@@ -127,6 +127,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-95 | Warm-up visible del servidor al arrancar               | Should    | Mejoras | Toda la app (banner arranque)              | [F](epic-f-plataforma.md#us-95)  |
 | US-96 | Cuento anónimo abre el lector + puerta de sesión       | Should    | Mejoras | Dashboard / Lector                         | [F](epic-f-plataforma.md#us-96)  |
 | US-97 | La última línea del cuento no se recorta               | Should    | Mejoras | Lector                                     | [F](epic-f-plataforma.md#us-97)  |
+| US-98 | Incoherencia de datos de sesión → error + logout       | Should    | Mejoras | Toda la app (peticiones de datos)          | [F](epic-f-plataforma.md#us-98)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

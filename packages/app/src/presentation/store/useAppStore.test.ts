@@ -62,6 +62,7 @@ beforeEach(() => {
     profiles: [],
     accessToken: null,
     refreshToken: null,
+    sessionDataError: false,
   });
 });
 
@@ -137,6 +138,31 @@ describe('useAppStore', () => {
     expect(s.profiles).toEqual([]);
     expect(s.accessToken).toBeNull();
     expect(s.refreshToken).toBeNull();
+  });
+
+  it('arranca sin marca de error de datos (US-98)', () => {
+    expect(useAppStore.getState().sessionDataError).toBe(false);
+  });
+
+  it('reportDataInconsistency cierra la sesión y activa sessionDataError (US-98)', () => {
+    useAppStore.getState().setSession(session, 'v1.0');
+    useAppStore.getState().setProfiles([profile, otroProfile]);
+    useAppStore.getState().setProfile(profile);
+    useAppStore.getState().reportDataInconsistency();
+    const s = useAppStore.getState();
+    expect(s.sessionDataError).toBe(true);
+    expect(s.guardian).toBeNull();
+    expect(s.currentProfile).toBeNull();
+    expect(s.profiles).toEqual([]);
+    expect(s.accessToken).toBeNull();
+    expect(s.refreshToken).toBeNull();
+  });
+
+  it('clearDataError baja la marca de error de datos (US-98)', () => {
+    useAppStore.getState().reportDataInconsistency();
+    expect(useAppStore.getState().sessionDataError).toBe(true);
+    useAppStore.getState().clearDataError();
+    expect(useAppStore.getState().sessionDataError).toBe(false);
   });
 
   it('arranca con el idioma del app por defecto (es)', () => {

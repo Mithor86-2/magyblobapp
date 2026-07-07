@@ -966,3 +966,21 @@ usuario y merge a `develop` tras confirmación.
 - **DoD:** ✅ `pnpm check` verde tras integrar (**backend 460 + app 300**); typecheck, ESLint y
   Prettier OK. Pendiente: pruebas manuales del usuario y merge a `develop` (con versionado diferido)
   tras confirmación.
+
+### Incoherencia de datos de sesión → error + cerrar sesión (2026-07-06, US-98, rama `feature/98-incoherencia-datos-logout`)
+
+Robustez de sesión (complementa el JWT US-45): cuando el `guardianId`/`profileId` de la sesión ya no
+existe en la BD (BD reseteada, perfil borrado), el backend responde `404 NotFoundError`. En vez del
+error crudo, la app muestra una modal **"Error de datos"** y **cierra sesión** para revalidar al volver
+a entrar. **Solo app**; versión diferida. Plan en
+[planes/feature-98-incoherencia-datos-logout.md](planes/feature-98-incoherencia-datos-logout.md).
+
+- [x] ✅ **App.** `http.ts` marca las rutas ligadas a la sesión (`profiles.list`, `stories.generate`,
+      `activities.recommend`, `history.get`, `achievements.get`) con `sessionBound`; un 404
+      `NotFoundError` en ellas dispara `SessionStore.onDataInconsistency`. El store cierra sesión y
+      levanta `sessionDataError`; `DataErrorHandler` (raíz, bajo `DialogProvider`) resetea a `Dashboard`
+      y muestra la modal. Los 404 de contenido puntual (marcar leído/favorito/continuar/completar) no
+      cierran sesión.
+- [x] ✅ **Docs/tests.** US-98 + trazabilidad; CHANGELOG (Unreleased) del app; tests de `http` (avisa
+      solo en ruta sessionBound + `NotFoundError`) y del store (`reportDataInconsistency`/`clearDataError`).
+- **DoD:** ✅ `pnpm check` verde (**backend 460 + app 306**). Pendiente: pruebas manuales del usuario.

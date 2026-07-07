@@ -98,6 +98,10 @@ export const es = {
     search: 'Buscar',
     clear: 'Limpiar',
     close: 'Cerrar',
+    // Incoherencia de datos de sesión (US-98): el guardián o el perfil ya no existen en la BD.
+    dataErrorTitle: 'Error de datos',
+    dataErrorMessage:
+      'Los datos de tu sesión ya no están disponibles. Se ha cerrado la sesión; vuelve a iniciar sesión para continuar.',
   },
 
   welcome: {

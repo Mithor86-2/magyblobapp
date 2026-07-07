@@ -20,6 +20,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   cuento en el Dashboard ahora se abre la vista de lectura (como con sesión) en vez de mostrarlo
   inline. Las acciones que requieren cuenta (Escuchar, Marcar como leído, Favorito, Continuar) abren
   una modal "Inicia sesión para continuar" con un botón **Crear cuenta** que lleva al alta.
+- **Incoherencia de datos de sesión → error + cerrar sesión (US-98).** Si una petición ligada a la
+  sesión (perfil/guardián: generar cuento/actividades, historial, logros, listar perfiles) responde
+  `404 NotFoundError` porque ese id ya no existe en la BD, en vez del error crudo se muestra una modal
+  "Error de datos", se cierra la sesión y se vuelve al inicio sin sesión para revalidar los datos al
+  volver a iniciar sesión. Los 404 de contenido puntual (marcar leído, favorito, continuar, completar)
+  no cierran sesión.
 
 ### Deprecated
 

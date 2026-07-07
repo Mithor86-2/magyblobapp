@@ -95,6 +95,10 @@ export const en: typeof es = {
     search: 'Search',
     clear: 'Clear',
     close: 'Close',
+    // Session data inconsistency (US-98): the guardian or profile no longer exists in the DB.
+    dataErrorTitle: 'Data error',
+    dataErrorMessage:
+      'Your session data is no longer available. You have been signed out; please sign in again to continue.',
   },
 
   welcome: {

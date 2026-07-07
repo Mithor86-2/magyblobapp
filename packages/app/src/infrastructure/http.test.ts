@@ -692,6 +692,7 @@ describe('sesión autenticada (US-45)', () => {
       getRefreshToken: vi.fn(() => tokens.refreshToken),
       setTokens: vi.fn(),
       onAuthExpired: vi.fn(),
+      onDataInconsistency: vi.fn(),
     };
   }
 
@@ -841,5 +842,54 @@ describe('sesión autenticada (US-45)', () => {
     expect(error).toBeInstanceOf(ApiError);
     expect(error.tipo).toBe('network');
     vi.useRealTimers();
+  });
+
+  // Incoherencia de datos de sesión (US-98): un 404 NotFoundError en una ruta ligada a
+  // la sesión (guardián/perfil) avisa a la sesión para cerrarla; el error se propaga igual.
+  it('un 404 NotFoundError en ruta ligada a la sesión avisa onDataInconsistency', async () => {
+    const session = fakeSession({ accessToken: 'at-1', refreshToken: 'rt-1' });
+    const authed = createApiGateways(BASE, session);
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(errorResponse(404, 'NotFoundError', 'No existe el perfil con id "x".')),
+    );
+
+    const error = await authed.activities.recommend({ profileId: 'x' }).catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(404);
+    expect(session.onDataInconsistency).toHaveBeenCalledTimes(1);
+  });
+
+  it('un 404 con otro tipo (no NotFoundError) NO avisa onDataInconsistency', async () => {
+    const session = fakeSession({ accessToken: 'at-1', refreshToken: 'rt-1' });
+    const authed = createApiGateways(BASE, session);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(errorResponse(404, 'ValidationError', 'algo')),
+    );
+
+    await authed.activities.recommend({ profileId: 'x' }).catch((e) => e);
+
+    expect(session.onDataInconsistency).not.toHaveBeenCalled();
+  });
+
+  it('un 404 NotFoundError en ruta NO ligada a la sesión NO avisa onDataInconsistency', async () => {
+    const session = fakeSession({ accessToken: 'at-1', refreshToken: 'rt-1' });
+    const authed = createApiGateways(BASE, session);
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(errorResponse(404, 'NotFoundError', 'No existe el cuento con id "s1".')),
+    );
+
+    const error = await authed.stories.markRead('s1').catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(404);
+    expect(session.onDataInconsistency).not.toHaveBeenCalled();
   });
 });

@@ -87,6 +87,12 @@ export interface SessionStore {
   getRefreshToken(): string | null;
   setTokens(tokens: SessionTokens): void;
   onAuthExpired(): void;
+  /**
+   * Datos de la sesión (guardián o perfil activo) inexistentes en la BD (US-98): una
+   * ruta `sessionBound` respondió `404 NotFoundError`. Fuerza el aviso de "error de
+   * datos" y el cierre de sesión para revalidarlos al volver a entrar.
+   */
+  onDataInconsistency(): void;
 }
 
 export function getBaseUrl(): string {
@@ -150,6 +156,13 @@ interface RequestOptions {
   timeoutMs?: number;
   /** La ruta exige access token: adjunta Bearer y aplica refresh-on-401 (US-45). */
   auth?: boolean;
+  /**
+   * Ruta **ligada a la sesión** (referencia al guardián o al perfil activo, US-98):
+   * un `404 NotFoundError` en ella significa que ese id ya no existe en la BD (datos
+   * de sesión obsoletos) → se avisa a la sesión (`onDataInconsistency`) para mostrar
+   * el error y cerrar sesión. No aplica a 404 de contenido puntual (cuento/actividad).
+   */
+  sessionBound?: boolean;
 }
 
 /** Renueva el par de tokens contra `POST /guardians/refresh`. Lanza `ApiError` si falla. */
@@ -267,11 +280,14 @@ async function request<TResponse>(
     const body = (await response.json().catch(() => null)) as {
       error?: { tipo?: string; mensaje?: string };
     } | null;
-    throw new ApiError(
-      response.status,
-      body?.error?.tipo ?? 'http',
-      body?.error?.mensaje ?? fallback,
-    );
+    const tipo = body?.error?.tipo ?? 'http';
+    // Incoherencia de datos de sesión (US-98): una ruta ligada a la sesión
+    // (guardián/perfil) responde 404 NotFoundError ⇒ ese id ya no existe en la BD.
+    // Se avisa a la sesión (aviso + cierre de sesión) y el error se propaga igual.
+    if (options.sessionBound && response.status === 404 && tipo === 'NotFoundError') {
+      session?.onDataInconsistency();
+    }
+    throw new ApiError(response.status, tipo, body?.error?.mensaje ?? fallback);
   }
 
   // Validación de la respuesta en la frontera: el backend puede cambiar o devolver
@@ -386,7 +402,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           `/guardians/${guardianId}/profiles`,
-          { method: 'GET', auth: true },
+          { method: 'GET', auth: true, sessionBound: true },
           childProfileListSchema,
           session,
         ),
@@ -396,7 +412,13 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           '/stories',
-          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
+          {
+            method: 'POST',
+            body: req,
+            timeoutMs: GENERATION_TIMEOUT_MS,
+            auth: true,
+            sessionBound: true,
+          },
           storySchema,
           session,
         ),
@@ -441,7 +463,13 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           '/activities/recommend',
-          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
+          {
+            method: 'POST',
+            body: req,
+            timeoutMs: GENERATION_TIMEOUT_MS,
+            auth: true,
+            sessionBound: true,
+          },
           activityListSchema,
           session,
         ),
@@ -477,7 +505,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           `/profiles/${profileId}/history`,
-          { method: 'GET', auth: true },
+          { method: 'GET', auth: true, sessionBound: true },
           historySchema,
           session,
         ),
@@ -488,7 +516,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           `/profiles/${profileId}/achievements`,
-          { method: 'GET', auth: true },
+          { method: 'GET', auth: true, sessionBound: true },
           achievementListSchema,
           session,
         ),

@@ -1825,3 +1825,37 @@ guardar se me invite a crear una cuenta.
   no lo tapa.
 - **(Fuente grande)** Dado un tamaño de fuente accesible del sistema, Entonces el texto encoge lo justo
   para caber en la hoja en lugar de recortarse.
+
+## US-98 — Incoherencia de datos de sesión → error y cerrar sesión · Should (Mejoras) {#us-98}
+
+> **Robustez de sesión.** Complementa la sesión JWT ([US-45](#us-45)): aquel maneja el token
+> **caducado** (401 → renovar o cerrar sesión); éste maneja los **datos** de la sesión que ya no
+> existen en la BD (guardián/perfil borrados, BD reseteada), que el backend devuelve como `404
+NotFoundError`.
+
+**Como** adulto con una sesión cuyos datos ya no existen en el servidor, **quiero** que la app me lo
+diga con un aviso claro y cierre la sesión, **para** volver a iniciar sesión y que se revaliden los
+datos, en vez de ver un error crudo y quedar en un estado inconsistente.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (peticiones de datos).
+
+**Alcance**
+
+1. El adaptador HTTP marca como **ligadas a la sesión** las rutas que referencian al guardián o al
+   perfil activo (`profiles.list`, `stories.generate`, `activities.recommend`, `history.get`,
+   `achievements.get`). Un `404 NotFoundError` en ellas ⇒ dato de sesión obsoleto → se avisa a la
+   sesión (`onDataInconsistency`) además de propagar el error.
+2. El store cierra la sesión y levanta una marca transitoria (`sessionDataError`); la raíz de la app
+   la observa, resetea la navegación al inicio sin sesión (`Dashboard`) y muestra una modal "Error de
+   datos".
+3. Los `404` de **contenido puntual** (marcar leído, favorito, continuar, completar actividad) **no**
+   cierran sesión.
+
+**Criterios de aceptación**
+
+- **(Aviso + cierre)** Dado que una acción sobre datos del perfil/guardián devuelve `404` por un id
+  inexistente en la BD, Entonces se muestra la modal "Error de datos" y se cierra la sesión.
+- **(Revalidar)** Dado ese cierre, Entonces la app vuelve al inicio sin sesión y, al iniciar sesión de
+  nuevo, los datos se consultan otra vez.
+- **(Contenido puntual)** Dado un `404` de un cuento/actividad concretos (no del perfil), Entonces
+  **no** se cierra la sesión.
