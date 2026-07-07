@@ -5,10 +5,8 @@ import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
-import { AuthorBadge } from '../components/AuthorBadge';
-import { StoryCover } from '../components/StoryCover';
 import { TEMAS, ESTILOS } from '../../domain/types';
-import type { AnonymousActivity, AnonymousStory, Estilo, Tema } from '../../domain/types';
+import type { AnonymousActivity, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { estiloLabel, temaLabel } from '../labels';
 import { estiloIcon, temaIcon } from '../chipIcons';
@@ -16,7 +14,7 @@ import { api } from '../../composition';
 import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
+import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
 /**
@@ -38,7 +36,6 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
   const styles = useThemedStyles(makeStyles);
   const [temas, setTemas] = useState<Tema[]>([TEMAS[0]]);
   const [estilos, setEstilos] = useState<Estilo[]>([ESTILOS[0]]);
-  const [story, setStory] = useState<AnonymousStory | null>(null);
   const [activities, setActivities] = useState<AnonymousActivity[]>([]);
   const [loadingStory, setLoadingStory] = useState(false);
   const [loadingActivities, setLoadingActivities] = useState(false);
@@ -67,7 +64,6 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
     if (!puedeGenerarCuento) return;
     setLoadingStory(true);
     setError(null);
-    setStory(null);
     trackAction('anonymous.story.generate', { temas: temas.join(','), estilos: estilos.join(',') });
     try {
       const result = await api.stories.generateAnonymous({
@@ -75,8 +71,25 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
         temas,
         estilos,
       });
-      setStory(result);
       setCuentosUsados((n) => n + 1);
+      // US-96: el cuento anónimo abre el mismo lector paginado que con sesión. Se
+      // adapta el `AnonymousStory` a un `Story` con id/perfil ficticios ('anon') y
+      // sin portada (el lector usará el respaldo local por tema). La bandera
+      // `anonimo` hace que el lector pida cuenta en las acciones que la requieren.
+      navigation.navigate('StoryReader', {
+        story: {
+          id: 'anon',
+          profileId: 'anon',
+          tema: result.tema,
+          estilo: result.estilo,
+          titulo: result.titulo,
+          cuerpo: result.cuerpo,
+          idioma: result.idioma,
+          estado: 'nuevo',
+          proveedor: result.proveedor,
+        },
+        anonimo: true,
+      });
     } catch (e) {
       // 429 = el backend ya agotó el cupo anónimo de esta IP (puede pasar tras recargar
       // la app, que reinicia el contador local pero no el del servidor): refleja el
@@ -186,19 +199,6 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
               <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
             </>
           ) : null}
-        </View>
-      ) : null}
-
-      {story ? (
-        <View style={styles.storyCard}>
-          <StoryCover
-            tema={story.tema}
-            style={styles.storyCover}
-            accessibilityLabel={story.titulo}
-          />
-          <Text style={styles.storyTitle}>{story.titulo}</Text>
-          <Text style={styles.storyBody}>{story.cuerpo}</Text>
-          <AuthorBadge proveedor={story.proveedor} />
         </View>
       ) : null}
 
@@ -315,26 +315,6 @@ const makeStyles = (colors: ColorTokens) =>
       ...typography.labelBold,
       color: colors.onErrorContainer,
       textAlign: 'center',
-    },
-    storyCard: {
-      backgroundColor: colors.surfaceContainer,
-      borderRadius: radius.lg,
-      padding: spacing.md,
-      gap: spacing.sm,
-      ...makeSoftShadow(colors),
-    },
-    storyCover: {
-      width: '100%',
-      height: 180,
-      borderRadius: radius.md,
-    },
-    storyTitle: {
-      ...typography.headlineMd,
-      color: colors.onSurface,
-    },
-    storyBody: {
-      ...typography.bodyLg,
-      color: colors.onSurface,
     },
     footerActions: {
       gap: spacing.sm,

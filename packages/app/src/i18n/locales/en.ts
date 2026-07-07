@@ -273,6 +273,12 @@ export const en: typeof es = {
     markReadPromptBody: "You've reached the end of the story. Do you want to mark it as read?",
     markReadPromptConfirm: 'Yes, mark it',
     markReadPromptCancel: 'Not now',
+    // Sign-in gate in the anonymous reader (US-96).
+    signInRequiredTitle: 'Sign in to continue',
+    signInRequiredBody:
+      "To listen to the story, mark it as read or save it you need an account. It's free!",
+    signInRequiredConfirm: 'Create account',
+    signInRequiredCancel: 'Not now',
   },
 
   history: {

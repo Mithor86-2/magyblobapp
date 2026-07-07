@@ -28,7 +28,7 @@ import type { RootScreenProps } from '../navigation';
  * "leído" refleje lectura o escucha real (relevante para los logros, US-68).
  */
 export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryReader'>) {
-  const { story } = route.params;
+  const { story, anonimo } = route.params;
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const dialog = useDialog();
@@ -36,6 +36,19 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
   // Fecha de generación localizada (US-62); ausente o inválida ⇒ no se muestra.
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
   const fecha = formatearFecha(story.creadoEn, idioma);
+
+  // US-96: en modo anónimo (cuento generado sin sesión) las acciones que requieren
+  // cuenta —escuchar, marcar leído, guardar como favorito, continuar— no operan:
+  // abren una modal que invita a crear cuenta y lleva al alta (pantalla `Consent`).
+  const pedirCuenta = useCallback(() => {
+    dialog.confirm({
+      title: t('reader.signInRequiredTitle'),
+      message: t('reader.signInRequiredBody'),
+      confirmLabel: t('reader.signInRequiredConfirm'),
+      cancelLabel: t('reader.signInRequiredCancel'),
+      onConfirm: () => navigation.navigate('Consent'),
+    });
+  }, [dialog, t, navigation]);
 
   const [leido, setLeido] = useState(story.estado === 'leido');
   // US-78: "Continuar la historia" — genera un capítulo nuevo y abre su lector.
@@ -77,7 +90,8 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
   // —**medio segundo después** de mostrarse la página, para que se vea el final antes—
   // si marcarlo como leído y, al confirmar, lo marca. Si ya lo está, no molesta.
   const alLlegarFinal = useCallback(() => {
-    if (leido) return;
+    // US-96: en modo anónimo no se auto-ofrece marcar como leído (requiere cuenta).
+    if (anonimo || leido) return;
     modalTimerRef.current = setTimeout(() => {
       dialog.confirm({
         title: t('reader.markReadPromptTitle'),
@@ -87,7 +101,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
         onConfirm: marcarLeido,
       });
     }, 500);
-  }, [leido, dialog, t, marcarLeido]);
+  }, [anonimo, leido, dialog, t, marcarLeido]);
 
   // US-83 (#5): la 1ª página del libro es la portada (imagen + título); luego la
   // historia paginada y, al final, una página "FIN".
@@ -109,7 +123,14 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
         <View style={styles.favoriteRow}>
           <FavoriteButton
             favorito={story.favorito}
-            onToggle={(favorito) => api.stories.setFavorite(story.id, favorito)}
+            // US-96: en anónimo, guardar como favorito requiere cuenta → pide alta.
+            onToggle={async (favorito) => {
+              if (anonimo) {
+                pedirCuenta();
+                return;
+              }
+              await api.stories.setFavorite(story.id, favorito);
+            }}
           />
         </View>
         {/* US-83 (#1/#5): el cuento se lee como un libro — portada con título, la historia
@@ -128,7 +149,22 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
           }
           onReachedEnd={alLlegarFinal}
         />
-        <NarrationControls story={story} onFinished={marcarLeido} />
+        {/* US-96: en anónimo la narración usa endpoints con id/sesión reales que no
+            existen; se muestra un botón "Escuchar" que invita a crear cuenta. */}
+        {anonimo ? (
+          <View style={styles.narrationAnon}>
+            <View style={styles.narrationAnonBtn}>
+              <BubblyButton
+                label={t('narration.idle')}
+                icon="play"
+                variant="secondary"
+                onPress={pedirCuenta}
+              />
+            </View>
+          </View>
+        ) : (
+          <NarrationControls story={story} onFinished={marcarLeido} />
+        )}
         {leido ? (
           <View style={styles.leidoRow}>
             <Icon name="check" size="sm" color={colors.tertiary} />
@@ -139,7 +175,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
             label={t('reader.markRead')}
             icon="check"
             variant="accent"
-            onPress={marcarLeido}
+            onPress={anonimo ? pedirCuenta : marcarLeido}
           />
         )}
         {/* US-78: continuar la historia con un capítulo nuevo generado por IA. */}
@@ -147,7 +183,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
           label={t('reader.continueStory')}
           icon="arrow-right"
           variant="secondary"
-          onPress={continuar}
+          onPress={anonimo ? pedirCuenta : continuar}
           loading={continuando}
         />
         {errorContinuar ? <Text style={styles.errorContinuar}>{errorContinuar}</Text> : null}
@@ -188,6 +224,14 @@ const makeStyles = (colors: ColorTokens) =>
       width: '70%',
       height: 150,
       borderRadius: radius.md,
+    },
+    // El botón "Escuchar" del modo anónimo ocupa el ancho como los controles reales.
+    narrationAnon: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+    },
+    narrationAnonBtn: {
+      flex: 1,
     },
     leidoRow: {
       flexDirection: 'row',

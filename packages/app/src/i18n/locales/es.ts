@@ -276,6 +276,12 @@ export const es = {
     markReadPromptBody: 'Has llegado al final del cuento. ¿Quieres marcarlo como leído?',
     markReadPromptConfirm: 'Sí, marcar',
     markReadPromptCancel: 'Ahora no',
+    // Puerta de sesión en el lector anónimo (US-96).
+    signInRequiredTitle: 'Inicia sesión para continuar',
+    signInRequiredBody:
+      'Para escuchar el cuento, marcarlo como leído o guardarlo necesitas una cuenta. ¡Es gratis!',
+    signInRequiredConfirm: 'Crear cuenta',
+    signInRequiredCancel: 'Ahora no',
   },
 
   history: {
