@@ -1641,7 +1641,7 @@ consentimiento lo dé una persona adulta, no un script.
   (cumple C-2 de [../cumplimiento-menores.md](../cumplimiento-menores.md)); la verificación por email
   queda documentada como mejora futura.
 
-## US-93 — Verificación de titularidad del email por OTP (SMTP) · Should (Mejoras) {#us-93}
+## US-93 — Verificación de titularidad del email por OTP · Should (Mejoras) {#us-93}
 
 Como **padre/tutor** quiero **demostrar que el email con el que creo la cuenta es mío** introduciendo un
 **código de 6 dígitos** que recibo por correo, para que nadie pueda registrar una cuenta con un email
@@ -1649,26 +1649,33 @@ ajeno y para reforzar el **consentimiento parental verificable**.
 
 **Contexto.** Materializa la mejora futura anotada en [US-92](#us-92)/C-16: la _verificación de
 titularidad del email (doble opt-in)_. Hoy `POST /guardians` **auto-loguea** (emite tokens) sin
-comprobar el email. Con esta historia, cuando hay **SMTP configurado**, el alta crea la cuenta como
-**no verificada**, **no** emite sesión y envía un **OTP de 6 dígitos** (hash bcrypt, caducidad 10 min,
-máx. 5 intentos, reenvío con cooldown) al email del adulto; la sesión (`accessToken`+`refreshToken`) se
-emite **solo** al validar el código en `POST /guardians/verify-email`. **Sin SMTP configurado** el paso
-se **omite** (la cuenta queda verificada al crearse y el alta conserva el auto-login), igual que la IA
+comprobar el email. Con esta historia, cuando hay **un proveedor de email configurado**, el alta crea la
+cuenta como **no verificada**, **no** emite sesión y envía un **OTP de 6 dígitos** (hash bcrypt, caducidad
+10 min, máx. 5 intentos, reenvío con cooldown) al email del adulto; la sesión (`accessToken`+`refreshToken`)
+se emite **solo** al validar el código en `POST /guardians/verify-email`. **Sin proveedor configurado** el
+paso se **omite** (la cuenta queda verificada al crearse y el alta conserva el auto-login), igual que la IA
 cloud "sin key cae a mock" — así se preserva el arranque reproducible ([US-06](#us-06)). Es **refuerzo**
 de C-1/C-10: server-side, sin SDK de terceros en la app y **sin PII del menor** (solo viaja el email del
-adulto y un código numérico). **Backend + app.** Ver el plan
-[93-verificacion-email-otp](../planes/feature-93-verificacion-email-otp.md).
+adulto y un código numérico). **Backend + app.** Ver los planes
+[93-verificacion-email-otp](../planes/feature-93-verificacion-email-otp.md) (flujo OTP) y
+[email-brevo-api](../planes/email-brevo-api.md) (canal de entrega por API HTTP).
 
-> **Cumplimiento.** Enviar el OTP usa un servidor SMTP (contacto server-side con un tercero), pero solo
+> **Canal de entrega.** El OTP se envía por un proveedor **por API HTTP (Brevo)** en producción, porque
+> **Render bloquea el egress SMTP**; en local o en hosts que lo permitan se puede usar **SMTP**
+> (nodemailer). Brevo tiene prioridad si están ambos. La selección es por env (`BREVO_API_KEY`+`EMAIL_FROM`
+> o `SMTP_*`); el flujo OTP y los criterios de abajo no dependen del canal.
+>
+> **Cumplimiento.** Enviar el OTP contacta server-side con un tercero (Brevo o el servidor SMTP), pero solo
 > transporta el **email del adulto** y un **código numérico** — nunca datos del niño ni identificadores,
 > ni añade un SDK de terceros a la app. Refuerza C-1/C-10 (ver **C-17** en
-> [../cumplimiento-menores.md](../cumplimiento-menores.md)). Sin SMTP no sale nada de la máquina.
+> [../cumplimiento-menores.md](../cumplimiento-menores.md)). Sin proveedor no sale nada de la máquina.
 
 **Criterios de aceptación**
 
-- Dado un backend **con SMTP configurado**, Cuando el adulto hace `POST /guardians` con datos válidos y
-  supera la puerta parental, Entonces la cuenta se crea con `emailVerificado=false`, se **envía un OTP de
-  6 dígitos** al email, y la respuesta incluye `requiereVerificacion:true` **sin** `accessToken`/`refreshToken`.
+- Dado un backend **con proveedor de email configurado** (Brevo API o SMTP), Cuando el adulto hace
+  `POST /guardians` con datos válidos y supera la puerta parental, Entonces la cuenta se crea con
+  `emailVerificado=false`, se **envía un OTP de 6 dígitos** al email, y la respuesta incluye
+  `requiereVerificacion:true` **sin** `accessToken`/`refreshToken`.
 - Dado un OTP vigente, Cuando el adulto hace `POST /guardians/verify-email` con el `guardianId` y el
   **código correcto**, Entonces la cuenta pasa a `emailVerificado=true` y la respuesta incluye el
   `Guardian` **y** `accessToken`+`refreshToken` (la sesión se emite al verificar).
@@ -1677,16 +1684,18 @@ adulto y un código numérico). **Backend + app.** Ver el plan
   responde **400** solicitando reenviar.
 - Dado que el adulto no recibió el correo, Cuando pulsa **reenviar** (`POST /guardians/resend-verification`),
   Entonces se genera y envía un **nuevo** código (respetando un **cooldown**), invalidando el anterior.
-- Dado un backend **sin SMTP configurado**, Cuando el adulto hace `POST /guardians`, Entonces la cuenta se
-  crea **verificada** y se **auto-loguea** (tokens en la respuesta), sin pantalla de verificación
-  (arranque reproducible intacto, [US-06](#us-06)).
+- Dado un backend **sin proveedor de email configurado**, Cuando el adulto hace `POST /guardians`, Entonces
+  la cuenta se crea **verificada** y se **auto-loguea** (tokens en la respuesta), sin pantalla de
+  verificación (arranque reproducible intacto, [US-06](#us-06)).
 - (App) Dado el alta con verificación requerida, Cuando se crea la cuenta, Entonces la app abre la pantalla
   **Verificar email**, y al introducir el código correcto **inicia sesión** y navega a Seleccionar perfil;
   muestra errores claros ante código incorrecto/caducado/intentos agotados y permite reenviar.
 - (Seguridad) Dado el OTP, Entonces **nunca** se guarda en claro (hash bcrypt) ni se registra en logs, y
-  el secreto SMTP va en variables de entorno, nunca en BD ni en el repo.
-- (No-funcional) Dado el flujo, Cuando no hay SMTP, Entonces **no** sale nada de la máquina; y con SMTP,
-  el correo solo transporta email del adulto + código (no afecta a la política de datos del menor).
+  las credenciales del proveedor (`BREVO_API_KEY`/`EMAIL_FROM` o `SMTP_*`) van en variables de entorno,
+  nunca en BD ni en el repo.
+- (No-funcional) Dado el flujo, Cuando no hay proveedor configurado, Entonces **no** sale nada de la
+  máquina; y con proveedor, el correo solo transporta email del adulto + código (no afecta a la política
+  de datos del menor).
 - (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: alta con verificación activa
   (OTP creado+enviado, sin tokens) y desactivada (verificado + tokens), verify-email (OK→tokens, 400
   incorrecto, 400 caducado, 429 intentos), reenvío, y en la app que `http.ts` mapea la respuesta de alta

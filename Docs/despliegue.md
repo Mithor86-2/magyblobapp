@@ -89,6 +89,8 @@ Hay dos formas; el Blueprint es la reproducible.
 | `DATABASE_URL`    | _connection string_ de Neon (`-pooler`, `sslmode=require`) | **Secreto** (panel) |
 | `JWT_SECRET`      | valor largo y aleatorio                                    | **Secreto** (panel) |
 | `GROQ_API_KEY`    | API key de Groq                                            | **Secreto** (panel) |
+| `BREVO_API_KEY`   | API key de Brevo (verificación email, US-93; opcional)     | **Secreto** (panel) |
+| `EMAIL_FROM`      | remitente verificado en Brevo (obligatorio con Brevo)      | **Secreto** (panel) |
 | `NODE_ENV`        | `production`                                               | fijo (blueprint)    |
 | `PORT`            | `3000`                                                     | fijo (blueprint)    |
 | `LOG_LEVEL`       | `info`                                                     | fijo (blueprint)    |
@@ -119,6 +121,29 @@ false`.
 > ([cumplimiento-menores.md](cumplimiento-menores.md), C-5). Salen **datos minimizados** (edad,
 > intereses, idioma; nunca nombre ni identificadores), los free tiers pueden entrenar con los datos, y
 > es incompatible con la categoría Kids de Apple. **Sin `GROQ_API_KEY` no sale nada** (modo conforme).
+
+## 3b. Verificación de email con Brevo (US-93)
+
+El alta de guardián puede enviar un **código OTP** para verificar la titularidad del email. Es
+**opcional**: sin proveedor configurado, la verificación se **omite** (la cuenta nace verificada y el
+alta auto-loguea), preservando el arranque reproducible.
+
+> **Render bloquea el egress SMTP.** El envío por SMTP (nodemailer) **no funciona en Render**: la
+> conexión saliente a los puertos SMTP se queda en timeout. Por eso en producción se usa un proveedor
+> **por API HTTP (puerto 443)**: **Brevo**.
+
+1. Crea una cuenta en [brevo.com](https://www.brevo.com) (free 300 emails/día) y una **API key**
+   (_SMTP & API → API Keys_).
+2. **Verifica un remitente** (_Senders_): un email desde el que se envían los OTP. Con Brevo puedes
+   enviar a cualquier destinatario sin tener dominio propio.
+3. En Render, pon como secretos **`BREVO_API_KEY`** (la key) y **`EMAIL_FROM`** (el remitente
+   verificado). Con ambos presentes, el backend envía los OTP por la API de Brevo; **sin ellos**, la
+   verificación se omite (modo reproducible). Brevo tiene **prioridad** sobre SMTP si ambos están.
+
+> **Cumplimiento.** A Brevo solo salen el **email del adulto** y el **código OTP**; **nunca** PII del
+> menor (C-17). Brevo actúa como procesador del correo transaccional: es una **desviación de privacidad
+> asumida del TFM**, coherente con la del modo cloud (Groq) y la monitorización (Sentry). Sin
+> `BREVO_API_KEY`/`EMAIL_FROM` no sale ningún correo.
 
 ## 4. Apuntar la app al backend de producción
 

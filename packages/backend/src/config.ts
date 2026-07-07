@@ -38,17 +38,27 @@ export interface Config {
 }
 
 /**
- * Configuración de la verificación de email por OTP (US-93). El SMTP es opcional:
- * si falta cualquier credencial (`enabled=false`), el alta **omite** la verificación
+ * Configuración de la verificación de email por OTP (US-93). El envío es opcional:
+ * si no hay proveedor configurado (`enabled=false`), el alta **omite** la verificación
  * (la cuenta queda verificada y se auto-loguea), preservando el arranque reproducible
- * (US-06) — igual patrón que la IA cloud ("sin key cae a mock"). El secreto SMTP vive
+ * (US-06) — igual patrón que la IA cloud ("sin key cae a mock"). Los secretos viven
  * solo en variables de entorno, nunca en BD ni en el repo.
+ *
+ * Hay dos proveedores de entrega, elegidos por env (Brevo tiene prioridad si ambos
+ * están presentes):
+ * - **`brevo`** (API HTTPS, `BREVO_API_KEY`): recomendado en PaaS como Render, que
+ *   **bloquean el egress SMTP**. Sale por el puerto 443.
+ * - **`smtp`** (nodemailer, `SMTP_*`): útil en local o en hosts que sí permiten SMTP.
  */
 export interface EmailConfig {
-  /** ¿Hay SMTP completo configurado? Si no, la verificación se omite (auto-verificado). */
+  /** ¿Hay un proveedor de email configurado? Si no, la verificación se omite. */
   enabled: boolean;
-  /** Credenciales SMTP; `undefined` cuando `enabled` es `false`. */
+  /** Proveedor de entrega elegido; `undefined` cuando `enabled` es `false`. */
+  provider?: 'smtp' | 'brevo';
+  /** Credenciales SMTP; presente solo cuando `provider === 'smtp'`. */
   smtp?: SmtpConfig;
+  /** Credenciales de Brevo; presente solo cuando `provider === 'brevo'`. */
+  brevo?: BrevoConfig;
   /** Remitente de los correos (env `EMAIL_FROM`; por defecto el `SMTP_USER`). */
   from?: string;
   /** Parámetros del código OTP. */
@@ -61,6 +71,11 @@ export interface SmtpConfig {
   port: number;
   user: string;
   password: string;
+}
+
+/** Credenciales del proveedor Brevo (email por API HTTP; env `BREVO_API_KEY`). */
+export interface BrevoConfig {
+  apiKey: string;
 }
 
 /** Parámetros del OTP de verificación (env `OTP_*`). */
@@ -287,8 +302,10 @@ const envSchema = z
     RATE_LIMIT_REFRESH_WINDOW_MS: enteroPositivoConDefecto(60_000),
     PARENTAL_CHALLENGE_TTL_MS: enteroPositivoConDefecto(300_000),
 
-    // Verificación de email por OTP (US-93). SMTP opcional: sin credenciales, la
+    // Verificación de email por OTP (US-93). Proveedor opcional: sin credenciales, la
     // verificación se omite (auto-verificado) y el alta auto-loguea como antes.
+    // Brevo (API HTTPS) tiene prioridad sobre SMTP; recomendado en PaaS que bloquean SMTP.
+    BREVO_API_KEY: cadenaOpcional,
     SMTP_HOST: cadenaOpcional,
     SMTP_PORT: enteroPositivoConDefecto(465),
     SMTP_USER: cadenaOpcional,
@@ -328,27 +345,51 @@ export class ConfigError extends Error {
 }
 
 /**
- * Deriva la configuración de email (US-93) desde el entorno ya parseado. La
- * verificación se considera **activa** solo si están presentes las cuatro
- * credenciales SMTP; en otro caso `enabled=false` y el alta omite la verificación
- * (auto-verificado), preservando el arranque reproducible.
+ * Deriva la configuración de email (US-93) desde el entorno ya parseado. Elige el
+ * proveedor de entrega con prioridad **Brevo (API HTTP) > SMTP**; si no hay ninguno
+ * configurado, `enabled=false` y el alta omite la verificación (auto-verificado),
+ * preservando el arranque reproducible.
+ *
+ * Brevo exige un remitente verificado (`EMAIL_FROM`): si está la `BREVO_API_KEY` pero
+ * falta `EMAIL_FROM`, se avisa y se cae al siguiente proveedor (SMTP) o a desactivado.
  */
-function leerConfigEmail(env: ParsedEnv): EmailConfig {
+function leerConfigEmail(env: ParsedEnv, warn: ConfigWarn): EmailConfig {
   const otp: OtpConfig = {
     ttlMs: env.OTP_TTL_MS,
     maxIntentos: env.OTP_MAX_INTENTOS,
     resendCooldownMs: env.OTP_RESEND_COOLDOWN_MS,
   };
-  const { SMTP_HOST, SMTP_USER, SMTP_PASSWORD } = env;
-  if (SMTP_HOST === undefined || SMTP_USER === undefined || SMTP_PASSWORD === undefined) {
-    return { enabled: false, otp };
+  const { BREVO_API_KEY, SMTP_HOST, SMTP_USER, SMTP_PASSWORD, EMAIL_FROM } = env;
+
+  // Brevo (API HTTPS) tiene prioridad: es el que funciona en PaaS que bloquean SMTP.
+  if (BREVO_API_KEY !== undefined) {
+    if (EMAIL_FROM !== undefined) {
+      return {
+        enabled: true,
+        provider: 'brevo',
+        brevo: { apiKey: BREVO_API_KEY },
+        from: EMAIL_FROM,
+        otp,
+      };
+    }
+    warn(
+      'BREVO_API_KEY presente pero falta EMAIL_FROM (remitente verificado en Brevo): ' +
+        'se ignora Brevo y se intenta SMTP o se desactiva la verificación.',
+    );
   }
-  return {
-    enabled: true,
-    smtp: { host: SMTP_HOST, port: env.SMTP_PORT, user: SMTP_USER, password: SMTP_PASSWORD },
-    from: env.EMAIL_FROM ?? SMTP_USER,
-    otp,
-  };
+
+  // SMTP como alternativa (local o hosts que permiten egress SMTP).
+  if (SMTP_HOST !== undefined && SMTP_USER !== undefined && SMTP_PASSWORD !== undefined) {
+    return {
+      enabled: true,
+      provider: 'smtp',
+      smtp: { host: SMTP_HOST, port: env.SMTP_PORT, user: SMTP_USER, password: SMTP_PASSWORD },
+      from: EMAIL_FROM ?? SMTP_USER,
+      otp,
+    };
+  }
+
+  return { enabled: false, otp };
 }
 
 function leerClavesCloud(env: ParsedEnv): Partial<Record<CloudTarget, string>> {
@@ -455,6 +496,6 @@ export function loadConfig(
       },
       parentalGate: { ttlMs: parsed.PARENTAL_CHALLENGE_TTL_MS },
     },
-    email: leerConfigEmail(parsed),
+    email: leerConfigEmail(parsed, warn),
   };
 }
