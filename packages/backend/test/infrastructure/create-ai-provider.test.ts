@@ -67,6 +67,19 @@ describe('createAIProvider', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it('con ai.cloud presente pero activo:false, usa el modo base (no llama a la nube)', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    const ai = createAIProvider(config({ aiProvider: 'mock', cloudApiKeys: { groq: 'sk-test' } }), {
+      settings: settingsConCloud(
+        JSON.stringify({ activo: false, target: 'groq', model: 'llama-3.3-70b-versatile' }),
+      ),
+    });
+    const result = await ai.generateStory(story);
+    expect(result.titulo).toBeTruthy();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it('con ai.cloud activo y key en env, genera vía proveedor cloud', async () => {
     const fetchSpy = vi.fn(
       async () =>
@@ -86,7 +99,8 @@ describe('createAIProvider', () => {
       ),
     });
     const result = await ai.generateStory(story);
-    expect(result).toMatchObject({ titulo: 'Nube', cuerpo: 'Cuerpo.', proveedor: 'cloud' });
+    // US-99: el proveedor efectivo estampado es el target concreto (groq), no 'cloud'.
+    expect(result).toMatchObject({ titulo: 'Nube', cuerpo: 'Cuerpo.', proveedor: 'groq' });
     expect(result.prompt).toContain('SYSTEM:'); // US-61: prompt usado presente
     const [url] = fetchSpy.mock.calls[0];
     expect(url).toBe('https://api.groq.com/openai/v1/chat/completions');
@@ -132,7 +146,7 @@ describe('createAIProvider', () => {
       ),
     });
     const acts = await ai.recommendActivities({ ...story, cantidad: 1 });
-    expect(acts[0]).toMatchObject({ categoria: 'arte', titulo: 'Collage', proveedor: 'cloud' });
+    expect(acts[0]).toMatchObject({ categoria: 'arte', titulo: 'Collage', proveedor: 'groq' });
     expect(fetchSpy).toHaveBeenCalled();
   });
 
@@ -186,5 +200,82 @@ describe('createAIProvider', () => {
     const result = await ai.generateStory(story);
     expect(result.titulo).toBeTruthy(); // contenido del MockProvider
     expect(fetchSpy).toHaveBeenCalled();
+  });
+
+  // --- Cascada de proveedores cloud (US-99): gemini → groq → mock ---
+
+  /** Respuesta OK de cuento del dialecto OpenAI. */
+  function respuestaCuento(titulo: string): Response {
+    return new Response(
+      JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ titulo, cuerpo: 'C.' }) } }],
+      }),
+      { status: 200 },
+    );
+  }
+
+  /** ai.cloud con cascada gemini → groq. */
+  const cascadaGeminiGroq = JSON.stringify({
+    activo: true,
+    target: 'gemini',
+    model: 'gemini-2.5-flash',
+    fallbacks: [{ target: 'groq', model: 'llama-3.3-70b-versatile' }],
+  });
+
+  it('cascada US-99: si Gemini falla (429), usa Groq y estampa proveedor "groq"', async () => {
+    const fetchSpy = vi.fn(async (url: string) =>
+      url.includes('generativelanguage')
+        ? new Response('rate', { status: 429 })
+        : respuestaCuento('Desde Groq'),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    const ai = createAIProvider(
+      config({ aiProvider: 'mock', cloudApiKeys: { gemini: 'gm', groq: 'gq' } }),
+      { settings: settingsConCloud(cascadaGeminiGroq) },
+    );
+    const result = await ai.generateStory(story);
+    expect(result).toMatchObject({ titulo: 'Desde Groq', proveedor: 'groq' });
+    // Se intentó Gemini primero y luego Groq.
+    expect(fetchSpy.mock.calls[0][0]).toContain('generativelanguage');
+    expect(fetchSpy.mock.calls[1][0]).toContain('api.groq.com');
+  });
+
+  it('cascada US-99: si Gemini responde, estampa proveedor "gemini" y no llama a Groq', async () => {
+    const fetchSpy = vi.fn(async () => respuestaCuento('Desde Gemini'));
+    vi.stubGlobal('fetch', fetchSpy);
+    const ai = createAIProvider(
+      config({ aiProvider: 'mock', cloudApiKeys: { gemini: 'gm', groq: 'gq' } }),
+      { settings: settingsConCloud(cascadaGeminiGroq) },
+    );
+    const result = await ai.generateStory(story);
+    expect(result).toMatchObject({ titulo: 'Desde Gemini', proveedor: 'gemini' });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy.mock.calls[0][0]).toContain('generativelanguage');
+  });
+
+  it('cascada US-99: si todos los proveedores cloud fallan, cae al mock', async () => {
+    const fetchSpy = vi.fn(async () => new Response('boom', { status: 500 }));
+    vi.stubGlobal('fetch', fetchSpy);
+    const ai = createAIProvider(
+      config({ aiProvider: 'mock', cloudApiKeys: { gemini: 'gm', groq: 'gq' } }),
+      { settings: settingsConCloud(cascadaGeminiGroq) },
+    );
+    const result = await ai.generateStory(story);
+    expect(result.proveedor).toBe('mock');
+    expect(result.titulo).toBeTruthy();
+    expect(fetchSpy).toHaveBeenCalledTimes(2); // gemini + groq, ambos fallan
+  });
+
+  it('cascada US-99: omite el paso sin API key (Gemini sin key) y usa el siguiente (Groq)', async () => {
+    const fetchSpy = vi.fn(async () => respuestaCuento('Desde Groq'));
+    vi.stubGlobal('fetch', fetchSpy);
+    const ai = createAIProvider(config({ aiProvider: 'mock', cloudApiKeys: { groq: 'gq' } }), {
+      settings: settingsConCloud(cascadaGeminiGroq),
+    });
+    const result = await ai.generateStory(story);
+    expect(result).toMatchObject({ titulo: 'Desde Groq', proveedor: 'groq' });
+    // Gemini se omite (sin key): la única llamada es a Groq.
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy.mock.calls[0][0]).toContain('api.groq.com');
   });
 });

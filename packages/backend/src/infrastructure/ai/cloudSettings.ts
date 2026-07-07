@@ -5,21 +5,39 @@ import { esCloudTarget, type CloudTarget } from './cloudPresets.js';
 /** Clave de `AppSetting` con la configuración (no secreta) del modo cloud. */
 export const AI_CLOUD_SETTING_KEY = 'ai.cloud';
 
+/** Un paso de la cascada cloud: proveedor (`target`) + modelo. */
+export interface CloudStep {
+  target: CloudTarget;
+  model: string;
+}
+
 /**
  * Selección del proveedor cloud, guardada como JSON en `AppSetting.ai.cloud`.
  * Solo selectores **no secretos**: la API key del `target` vive en env.
+ *
+ * `fallbacks` (US-99, opcional) define una **cascada**: si el `target` primario no
+ * responde, se intenta cada paso en orden y, si todos fallan, se cae al mock. Sin
+ * `fallbacks` el comportamiento es el de siempre (un único target → mock).
  */
 export interface CloudSetting {
   activo: boolean;
   target: CloudTarget;
   model: string;
+  fallbacks?: CloudStep[];
 }
 
-/** Esquema de la forma `{activo, target, model}`: `target` conocido, `model` no vacío. */
+/** Esquema de un paso de la cascada: `target` conocido y `model` no vacío. */
+const cloudStepSchema = z.object({
+  target: z.custom<CloudTarget>(esCloudTarget),
+  model: z.string().trim().min(1),
+});
+
+/** Esquema de `{activo, target, model, fallbacks?}`: `target` conocido, `model` no vacío. */
 const cloudSettingSchema = z.object({
   activo: z.boolean(),
   target: z.custom<CloudTarget>(esCloudTarget),
   model: z.string().trim().min(1),
+  fallbacks: z.array(cloudStepSchema).optional(),
 });
 
 /**

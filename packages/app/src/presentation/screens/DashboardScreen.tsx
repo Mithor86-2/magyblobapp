@@ -5,6 +5,7 @@ import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
+import { VersionFooter } from '../components/VersionFooter';
 import { TEMAS, ESTILOS } from '../../domain/types';
 import type { AnonymousActivity, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
@@ -139,6 +140,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
             onPress={() => navigation.navigate('Login')}
             variant="accent"
           />
+          <VersionFooter />
         </View>
       }
     >

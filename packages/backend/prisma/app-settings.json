@@ -62,9 +62,14 @@
     },
     {
       "key": "ai.cloud",
-      "version": 1,
-      "value": { "activo": true, "target": "groq", "model": "llama-3.3-70b-versatile" },
-      "descripcion": "Modo cloud {activo,target,model}. Key del target en env. ON por defecto (cae a base sin key)."
+      "version": 2,
+      "value": {
+        "activo": true,
+        "target": "gemini",
+        "model": "gemini-2.5-flash",
+        "fallbacks": [{ "target": "groq", "model": "llama-3.3-70b-versatile" }]
+      },
+      "descripcion": "Modo cloud {activo,target,model,fallbacks?}. Cascada Gemini→Groq→mock (US-99); keys en env, cada paso sin key se omite."
     }
   ]
 }

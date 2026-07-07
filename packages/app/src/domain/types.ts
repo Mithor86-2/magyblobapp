@@ -31,8 +31,20 @@ export type CodigoIdioma = (typeof IDIOMAS)[number];
 
 export type EstadoStory = 'nuevo' | 'leido';
 
-/** Proveedor de IA que generó realmente el contenido (Autor, US-25). */
-export const PROVEEDORES_IA = ['mock', 'local', 'cloud'] as const;
+/**
+ * Proveedor de IA que generó realmente el contenido (Autor, US-25). `cloud` es el
+ * genérico; desde US-99 el backend estampa el **target** cloud concreto
+ * (`gemini | groq | openrouter | cerebras`) para distinguirlo en el AuthorBadge.
+ */
+export const PROVEEDORES_IA = [
+  'mock',
+  'local',
+  'cloud',
+  'gemini',
+  'groq',
+  'openrouter',
+  'cerebras',
+] as const;
 export type ProveedorIa = (typeof PROVEEDORES_IA)[number];
 
 // --- Guardian (adulto responsable) ---

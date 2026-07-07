@@ -984,3 +984,22 @@ a entrar. **Solo app**; versión diferida. Plan en
 - [x] ✅ **Docs/tests.** US-98 + trazabilidad; CHANGELOG (Unreleased) del app; tests de `http` (avisa
       solo en ruta sessionBound + `NotFoundError`) y del store (`reportDataInconsistency`/`clearDataError`).
 - **DoD:** ✅ `pnpm check` verde (**backend 460 + app 306**). Pendiente: pruebas manuales del usuario.
+
+### Cascada de proveedores de IA + versión en Dashboard + autor por proveedor cloud (2026-07-07, US-99, rama `feature/99-cascada-proveedores-ia`)
+
+Tres ajustes: (1) el modo cloud encadena **Gemini → Groq → mock**; (2) la pantalla sin sesión muestra
+la versión; (3) el "Autor" distingue el proveedor cloud concreto. Backend + app; versión diferida.
+Plan en [planes/feature-99-cascada-proveedores-ia.md](planes/feature-99-cascada-proveedores-ia.md).
+
+- [x] ✅ **Cascada (backend).** `ai.cloud` admite `fallbacks[]`; el `resolver` de `createAIProvider`
+      construye la cadena (primario + fallbacks, omitiendo pasos sin API key) anidando
+      `FallbackProvider` y terminando en mock. Default: gemini (`gemini-2.5-flash`) → groq
+      (`llama-3.3-70b-versatile`) → mock (`app-settings.json`, `version` bump para el sync).
+- [x] ✅ **Autor por proveedor cloud (backend+app).** `PROVEEDORES_IA` se amplía con los targets
+      cloud; el `CloudProvider` estampa su `target` (no el genérico `cloud`). El `AuthorBadge` añade la
+      letra al final: G (Gemini) / GQ (Groq) / OR / CB, con el icono de nube.
+- [x] ✅ **Versión en el Dashboard (app).** `VersionFooter` al pie de la pantalla sin sesión.
+- [x] ✅ **Tests.** `cloudSettings` (fallbacks), `createAIProvider` (cascada: 429→siguiente, todos
+      fallan→mock, omitir sin key, estampado del target), `AuthorBadge` (G/GQ), `DashboardScreen`
+      (versión). `pnpm check` verde (**backend 470 + app 310**) + cobertura CORE 100%.
+- **DoD:** ✅ gate + cobertura verdes. Pendiente: pruebas manuales del usuario (cascada real y badge).

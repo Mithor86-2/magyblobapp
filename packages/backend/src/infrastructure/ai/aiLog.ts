@@ -1,3 +1,4 @@
+import type { ProveedorIa } from '../../domain/vocabulary.js';
 import type { AILogger } from './FallbackProvider.js';
 
 /** Operación de IA registrada. */
@@ -5,7 +6,7 @@ export type AiOp = 'generateStory' | 'recommendActivities';
 
 export interface PromptLog {
   op: AiOp;
-  proveedor: 'local' | 'cloud';
+  proveedor: ProveedorIa;
   model: string;
   temperature: number;
   /** Config resuelta del prompt (plantilla por defecto/AppSetting, params, cantidad…). */
@@ -39,7 +40,7 @@ export function logPromptEnviado(logger: AILogger | undefined, ctx: PromptLog): 
 export function logRespuestaLlm(
   logger: AILogger | undefined,
   op: AiOp,
-  proveedor: 'local' | 'cloud',
+  proveedor: ProveedorIa,
   respuesta: unknown,
 ): void {
   logger?.info?.({ op, proveedor, respuesta }, 'IA: respuesta del LLM');

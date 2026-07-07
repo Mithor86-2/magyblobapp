@@ -22,4 +22,16 @@ describe('AuthorBadge', () => {
 
     expect(screen.getByLabelText('Autor: IA en la nube')).toBeInTheDocument();
   });
+
+  it('distingue el proveedor cloud concreto con su letra (US-99): Gemini → G', () => {
+    render(<AuthorBadge proveedor="gemini" />);
+
+    expect(screen.getByText('Autor: IA en la nube (G)')).toBeVisible();
+  });
+
+  it('distingue el proveedor cloud concreto con su letra (US-99): Groq → GQ', () => {
+    render(<AuthorBadge proveedor="groq" />);
+
+    expect(screen.getByText('Autor: IA en la nube (GQ)')).toBeVisible();
+  });
 });

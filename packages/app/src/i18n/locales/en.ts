@@ -47,6 +47,11 @@ export const en: typeof es = {
       mock: 'Simulated',
       local: 'Local AI',
       cloud: 'Cloud AI',
+      // Concrete cloud targets (US-99): same label with the provider's letters at the end.
+      gemini: 'Cloud AI (G)',
+      groq: 'Cloud AI (GQ)',
+      openrouter: 'Cloud AI (OR)',
+      cerebras: 'Cloud AI (CB)',
     },
   },
 

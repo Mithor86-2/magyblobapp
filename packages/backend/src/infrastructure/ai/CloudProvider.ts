@@ -6,7 +6,7 @@ import type {
   RecommendActivitiesInput,
 } from '../../domain/ai/AIProvider.js';
 import type { SettingsRepository } from '../../domain/repositories/SettingsRepository.js';
-import { CATEGORIAS } from '../../domain/vocabulary.js';
+import { CATEGORIAS, type ProveedorIa } from '../../domain/vocabulary.js';
 import { type AiOp, logPromptEnviado, logRespuestaLlm } from './aiLog.js';
 import type { AILogger } from './FallbackProvider.js';
 import { parseActivities, parseStory } from './parseResponse.js';
@@ -27,6 +27,12 @@ export interface CloudProviderOptions {
   apiKey: string;
   /** Id del modelo en el proveedor (p. ej. `llama-3.3-70b-versatile`). */
   model: string;
+  /**
+   * Proveedor efectivo que se **estampa** en el contenido generado (US-99): el
+   * `target` concreto (`gemini | groq | …`) para distinguirlo en el autor. Por
+   * defecto `'cloud'` (genérico) si no se indica.
+   */
+  proveedor?: ProveedorIa;
   /** Aborta la petición si el proveedor tarda más de esto (ms). */
   timeoutMs?: number;
   /** Inyectable en tests; por defecto el `fetch` global de Node. */
@@ -55,6 +61,7 @@ export class CloudProvider implements AIProvider {
   private readonly baseUrl: string;
   private readonly apiKey: string;
   private readonly model: string;
+  private readonly proveedor: ProveedorIa;
   private readonly timeoutMs: number;
   private readonly fetchFn: typeof fetch;
   private readonly settings?: SettingsRepository;
@@ -64,6 +71,7 @@ export class CloudProvider implements AIProvider {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
     this.apiKey = options.apiKey;
     this.model = options.model;
+    this.proveedor = options.proveedor ?? 'cloud';
     this.timeoutMs = options.timeoutMs ?? 60_000;
     this.fetchFn = options.fetchFn ?? fetch;
     this.settings = options.settings;
@@ -86,7 +94,7 @@ export class CloudProvider implements AIProvider {
         params: params ?? null,
       },
     });
-    return parseStory(data, 'CloudProvider', 'cloud', joinPromptParts(enviado));
+    return parseStory(data, 'CloudProvider', this.proveedor, joinPromptParts(enviado));
   }
 
   /** Lee `prompt.story.params` y elige un formato al azar (variación por cuento). */
@@ -116,7 +124,7 @@ export class CloudProvider implements AIProvider {
       data,
       input.cantidad,
       'CloudProvider',
-      'cloud',
+      this.proveedor,
       joinPromptParts(enviado),
     );
   }
@@ -157,7 +165,7 @@ export class CloudProvider implements AIProvider {
     const temperature = await this.leerTemperatura();
     logPromptEnviado(this.logger, {
       op: logCtx.op,
-      proveedor: 'cloud',
+      proveedor: this.proveedor,
       model: this.model,
       temperature,
       config: logCtx.config,
@@ -193,7 +201,7 @@ export class CloudProvider implements AIProvider {
     }
     try {
       const data = JSON.parse(content) as T;
-      logRespuestaLlm(this.logger, logCtx.op, 'cloud', data);
+      logRespuestaLlm(this.logger, logCtx.op, this.proveedor, data);
       return data;
     } catch {
       throw new Error('El proveedor cloud devolvió un JSON no parseable.');
