@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -11,7 +11,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Quicksand_500Medium, Quicksand_700Bold, useFonts } from '@expo-google-fonts/quicksand';
 import { DashboardScreen } from './src/presentation/screens/DashboardScreen';
@@ -29,7 +29,7 @@ import { StoryGeneratorScreen } from './src/presentation/screens/StoryGeneratorS
 import { ActivitiesScreen } from './src/presentation/screens/ActivitiesScreen';
 import { HomeScreen } from './src/presentation/screens/HomeScreen';
 import { HistoryScreen } from './src/presentation/screens/HistoryScreen';
-import { DialogProvider } from './src/presentation/components/DialogProvider';
+import { DialogProvider, useDialog } from './src/presentation/components/DialogProvider';
 import { AppErrorBoundary } from './src/presentation/components/AppErrorBoundary';
 import { Icon, type IconName } from './src/presentation/components/Icon';
 import { useAppStore } from './src/presentation/store/useAppStore';
@@ -42,8 +42,15 @@ import type {
   RootStackParamList,
   TabScreenProps,
 } from './src/presentation/navigation';
+import { useServerWarmup } from './src/presentation/hooks/useServerWarmup';
 import { ThemeProvider, useTheme } from './src/presentation/theme/ThemeProvider';
-import { type ColorTokens, fonts, radius } from './src/presentation/theme/tokens';
+import {
+  type ColorTokens,
+  fonts,
+  radius,
+  spacing,
+  typography,
+} from './src/presentation/theme/tokens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -189,6 +196,40 @@ function useStoreHydrated(): boolean {
 }
 
 /**
+ * Vigía de **incoherencia de datos de sesión** (US-98): cuando una ruta ligada a la
+ * sesión devuelve `404` (guardián/perfil inexistente en la BD), el store cierra la
+ * sesión y levanta `sessionDataError`. Aquí se muestra el aviso "error de datos" y se
+ * lleva al inicio sin sesión (`Dashboard`) para volver a identificarse y revalidar los
+ * datos. Vive bajo `DialogProvider` (usa `useDialog`) y en la raíz, así el aviso
+ * sobrevive a la navegación. Renderiza `null`.
+ */
+function DataErrorHandler({
+  navigationRef,
+}: {
+  navigationRef: ReturnType<typeof useNavigationContainerRef<RootStackParamList>>;
+}) {
+  const { t } = useTranslation();
+  const dialog = useDialog();
+  const sessionDataError = useAppStore((s) => s.sessionDataError);
+  const clearDataError = useAppStore((s) => s.clearDataError);
+
+  useEffect(() => {
+    if (!sessionDataError) return;
+    // La sesión ya fue limpiada en el store; se vuelve al inicio sin sesión y se avisa.
+    if (navigationRef.isReady()) {
+      navigationRef.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+    }
+    dialog.alert({
+      title: t('common.dataErrorTitle'),
+      message: t('common.dataErrorMessage'),
+    });
+    clearDataError();
+  }, [sessionDataError, navigationRef, dialog, clearDataError, t]);
+
+  return null;
+}
+
+/**
  * Cuerpo de la app **bajo el `ThemeProvider`** (US-66): consume la paleta activa
  * para tematizar splash, barra de estado, navegación, cabeceras y pestañas. Se
  * separa del `App` raíz porque necesita `useTheme()`, que solo existe dentro del
@@ -197,6 +238,10 @@ function useStoreHydrated(): boolean {
 function ThemedApp() {
   const { t } = useTranslation();
   const { colors, scheme } = useTheme();
+  const insets = useSafeAreaInsets();
+  // Warm-up visible del backend en frío (US-95): mientras despierta, se muestra un
+  // banner no bloqueante; la app sigue completamente navegable.
+  const warmupStatus = useServerWarmup();
   const [fontsLoaded] = useFonts({ Quicksand_500Medium, Quicksand_700Bold });
   const hydrated = useStoreHydrated();
   const guardian = useAppStore((s) => s.guardian);
@@ -231,83 +276,96 @@ function ThemedApp() {
   }
 
   return (
-    <AppErrorBoundary label="app">
-      <DialogProvider>
-        <NavigationContainer
-          ref={navigationRef}
-          theme={makeNavigationTheme(colors, scheme)}
-          onStateChange={() => {
-            // Breadcrumb por cambio de pantalla: solo el nombre de ruta (sin params/PII).
-            const route = navigationRef.getCurrentRoute();
-            if (route) trackNavigation(route.name);
-          }}
-        >
-          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-          <Stack.Navigator
-            initialRouteName={initialRoute}
-            screenOptions={makeStackScreenOptions(colors)}
-          >
-            {/* Inicio sin sesión (US-50), bienvenida y las pestañas no llevan cabecera. */}
-            <Stack.Screen
-              name="Dashboard"
-              component={DashboardScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Welcome"
-              component={WelcomeScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Consent"
-              component={ConsentScreen}
-              options={{ title: t('nav.consent') }}
-            />
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ title: t('nav.login') }}
-            />
-            <Stack.Screen
-              name="VerifyEmail"
-              component={VerifyEmailScreen}
-              options={{ title: t('nav.verifyEmail') }}
-            />
-            <Stack.Screen
-              name="SelectProfile"
-              component={SelectProfileScreen}
-              options={{ title: t('nav.selectProfile') }}
-            />
-            <Stack.Screen
-              name="CreateProfile"
-              component={CreateProfileScreen}
-              options={{ title: t('nav.createProfile') }}
-            />
-            <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-            <Stack.Screen
-              name="Parental"
-              component={ParentalScreen}
-              options={{ title: t('nav.parental') }}
-            />
-            <Stack.Screen
-              name="Achievements"
-              component={AchievementsScreen}
-              options={{ title: t('nav.achievements') }}
-            />
-            <Stack.Screen
-              name="StoryReader"
-              component={LecturaScreen}
-              options={{ title: t('nav.storyReader') }}
-            />
-            <Stack.Screen
-              name="SearchResults"
-              component={SearchResultsScreen}
-              options={{ title: t('nav.search') }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </DialogProvider>
-    </AppErrorBoundary>
+    <View style={styles.appRoot}>
+      {/* Banner de warm-up (US-95): franja superior no bloqueante que respeta la safe
+          area; se oculta al pasar a 'ready'. La app queda navegable por debajo. */}
+      {warmupStatus === 'warming' && (
+        <View style={[styles.warmupBanner, { paddingTop: insets.top + spacing.xs }]}>
+          <ActivityIndicator size="small" color={colors.onPrimary} />
+          <Text style={styles.warmupText}>{t('warmup.deploying')}</Text>
+        </View>
+      )}
+      <View style={styles.appBody}>
+        <AppErrorBoundary label="app">
+          <DialogProvider>
+            <DataErrorHandler navigationRef={navigationRef} />
+            <NavigationContainer
+              ref={navigationRef}
+              theme={makeNavigationTheme(colors, scheme)}
+              onStateChange={() => {
+                // Breadcrumb por cambio de pantalla: solo el nombre de ruta (sin params/PII).
+                const route = navigationRef.getCurrentRoute();
+                if (route) trackNavigation(route.name);
+              }}
+            >
+              <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+              <Stack.Navigator
+                initialRouteName={initialRoute}
+                screenOptions={makeStackScreenOptions(colors)}
+              >
+                {/* Inicio sin sesión (US-50), bienvenida y las pestañas no llevan cabecera. */}
+                <Stack.Screen
+                  name="Dashboard"
+                  component={DashboardScreen}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="Welcome"
+                  component={WelcomeScreen}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="Consent"
+                  component={ConsentScreen}
+                  options={{ title: t('nav.consent') }}
+                />
+                <Stack.Screen
+                  name="Login"
+                  component={LoginScreen}
+                  options={{ title: t('nav.login') }}
+                />
+                <Stack.Screen
+                  name="VerifyEmail"
+                  component={VerifyEmailScreen}
+                  options={{ title: t('nav.verifyEmail') }}
+                />
+                <Stack.Screen
+                  name="SelectProfile"
+                  component={SelectProfileScreen}
+                  options={{ title: t('nav.selectProfile') }}
+                />
+                <Stack.Screen
+                  name="CreateProfile"
+                  component={CreateProfileScreen}
+                  options={{ title: t('nav.createProfile') }}
+                />
+                <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="Parental"
+                  component={ParentalScreen}
+                  options={{ title: t('nav.parental') }}
+                />
+                <Stack.Screen
+                  name="Achievements"
+                  component={AchievementsScreen}
+                  options={{ title: t('nav.achievements') }}
+                />
+                <Stack.Screen
+                  name="StoryReader"
+                  component={LecturaScreen}
+                  options={{ title: t('nav.storyReader') }}
+                />
+                <Stack.Screen
+                  name="SearchResults"
+                  component={SearchResultsScreen}
+                  options={{ title: t('nav.search') }}
+                />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </DialogProvider>
+        </AppErrorBoundary>
+      </View>
+    </View>
   );
 }
 
@@ -336,6 +394,28 @@ const makeStyles = (colors: ColorTokens) =>
       backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    appRoot: {
+      flex: 1,
+      backgroundColor: colors.surface,
+    },
+    appBody: {
+      flex: 1,
+    },
+    // Franja superior del banner de warm-up (US-95): fila centrada con el color
+    // primario del tema; el padding superior lo aporta la safe area en el render.
+    warmupBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.md,
+      paddingBottom: spacing.sm,
+      backgroundColor: colors.primary,
+    },
+    warmupText: {
+      ...typography.labelBold,
+      color: colors.onPrimary,
     },
     tabIcon: {
       width: 56,

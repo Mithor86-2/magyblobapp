@@ -95,11 +95,19 @@ export const en: typeof es = {
     search: 'Search',
     clear: 'Clear',
     close: 'Close',
+    // Session data inconsistency (US-98): the guardian or profile no longer exists in the DB.
+    dataErrorTitle: 'Data error',
+    dataErrorMessage:
+      'Your session data is no longer available. You have been signed out; please sign in again to continue.',
   },
 
   welcome: {
     subtitle:
       'Personalized stories and activities for your little ones. Start by creating your account or log in if you already have one.',
+  },
+
+  warmup: {
+    deploying: 'Waking up the server…',
   },
 
   dashboard: {
@@ -273,6 +281,12 @@ export const en: typeof es = {
     markReadPromptBody: "You've reached the end of the story. Do you want to mark it as read?",
     markReadPromptConfirm: 'Yes, mark it',
     markReadPromptCancel: 'Not now',
+    // Sign-in gate in the anonymous reader (US-96).
+    signInRequiredTitle: 'Sign in to continue',
+    signInRequiredBody:
+      "To listen to the story, mark it as read or save it you need an account. It's free!",
+    signInRequiredConfirm: 'Create account',
+    signInRequiredCancel: 'Not now',
   },
 
   history: {

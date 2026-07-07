@@ -1641,7 +1641,7 @@ consentimiento lo dé una persona adulta, no un script.
   (cumple C-2 de [../cumplimiento-menores.md](../cumplimiento-menores.md)); la verificación por email
   queda documentada como mejora futura.
 
-## US-93 — Verificación de titularidad del email por OTP (SMTP) · Should (Mejoras) {#us-93}
+## US-93 — Verificación de titularidad del email por OTP · Should (Mejoras) {#us-93}
 
 Como **padre/tutor** quiero **demostrar que el email con el que creo la cuenta es mío** introduciendo un
 **código de 6 dígitos** que recibo por correo, para que nadie pueda registrar una cuenta con un email
@@ -1649,26 +1649,33 @@ ajeno y para reforzar el **consentimiento parental verificable**.
 
 **Contexto.** Materializa la mejora futura anotada en [US-92](#us-92)/C-16: la _verificación de
 titularidad del email (doble opt-in)_. Hoy `POST /guardians` **auto-loguea** (emite tokens) sin
-comprobar el email. Con esta historia, cuando hay **SMTP configurado**, el alta crea la cuenta como
-**no verificada**, **no** emite sesión y envía un **OTP de 6 dígitos** (hash bcrypt, caducidad 10 min,
-máx. 5 intentos, reenvío con cooldown) al email del adulto; la sesión (`accessToken`+`refreshToken`) se
-emite **solo** al validar el código en `POST /guardians/verify-email`. **Sin SMTP configurado** el paso
-se **omite** (la cuenta queda verificada al crearse y el alta conserva el auto-login), igual que la IA
+comprobar el email. Con esta historia, cuando hay **un proveedor de email configurado**, el alta crea la
+cuenta como **no verificada**, **no** emite sesión y envía un **OTP de 6 dígitos** (hash bcrypt, caducidad
+10 min, máx. 5 intentos, reenvío con cooldown) al email del adulto; la sesión (`accessToken`+`refreshToken`)
+se emite **solo** al validar el código en `POST /guardians/verify-email`. **Sin proveedor configurado** el
+paso se **omite** (la cuenta queda verificada al crearse y el alta conserva el auto-login), igual que la IA
 cloud "sin key cae a mock" — así se preserva el arranque reproducible ([US-06](#us-06)). Es **refuerzo**
 de C-1/C-10: server-side, sin SDK de terceros en la app y **sin PII del menor** (solo viaja el email del
-adulto y un código numérico). **Backend + app.** Ver el plan
-[93-verificacion-email-otp](../planes/feature-93-verificacion-email-otp.md).
+adulto y un código numérico). **Backend + app.** Ver los planes
+[93-verificacion-email-otp](../planes/feature-93-verificacion-email-otp.md) (flujo OTP) y
+[email-brevo-api](../planes/email-brevo-api.md) (canal de entrega por API HTTP).
 
-> **Cumplimiento.** Enviar el OTP usa un servidor SMTP (contacto server-side con un tercero), pero solo
+> **Canal de entrega.** El OTP se envía por un proveedor **por API HTTP (Brevo)** en producción, porque
+> **Render bloquea el egress SMTP**; en local o en hosts que lo permitan se puede usar **SMTP**
+> (nodemailer). Brevo tiene prioridad si están ambos. La selección es por env (`BREVO_API_KEY`+`EMAIL_FROM`
+> o `SMTP_*`); el flujo OTP y los criterios de abajo no dependen del canal.
+>
+> **Cumplimiento.** Enviar el OTP contacta server-side con un tercero (Brevo o el servidor SMTP), pero solo
 > transporta el **email del adulto** y un **código numérico** — nunca datos del niño ni identificadores,
 > ni añade un SDK de terceros a la app. Refuerza C-1/C-10 (ver **C-17** en
-> [../cumplimiento-menores.md](../cumplimiento-menores.md)). Sin SMTP no sale nada de la máquina.
+> [../cumplimiento-menores.md](../cumplimiento-menores.md)). Sin proveedor no sale nada de la máquina.
 
 **Criterios de aceptación**
 
-- Dado un backend **con SMTP configurado**, Cuando el adulto hace `POST /guardians` con datos válidos y
-  supera la puerta parental, Entonces la cuenta se crea con `emailVerificado=false`, se **envía un OTP de
-  6 dígitos** al email, y la respuesta incluye `requiereVerificacion:true` **sin** `accessToken`/`refreshToken`.
+- Dado un backend **con proveedor de email configurado** (Brevo API o SMTP), Cuando el adulto hace
+  `POST /guardians` con datos válidos y supera la puerta parental, Entonces la cuenta se crea con
+  `emailVerificado=false`, se **envía un OTP de 6 dígitos** al email, y la respuesta incluye
+  `requiereVerificacion:true` **sin** `accessToken`/`refreshToken`.
 - Dado un OTP vigente, Cuando el adulto hace `POST /guardians/verify-email` con el `guardianId` y el
   **código correcto**, Entonces la cuenta pasa a `emailVerificado=true` y la respuesta incluye el
   `Guardian` **y** `accessToken`+`refreshToken` (la sesión se emite al verificar).
@@ -1677,16 +1684,18 @@ adulto y un código numérico). **Backend + app.** Ver el plan
   responde **400** solicitando reenviar.
 - Dado que el adulto no recibió el correo, Cuando pulsa **reenviar** (`POST /guardians/resend-verification`),
   Entonces se genera y envía un **nuevo** código (respetando un **cooldown**), invalidando el anterior.
-- Dado un backend **sin SMTP configurado**, Cuando el adulto hace `POST /guardians`, Entonces la cuenta se
-  crea **verificada** y se **auto-loguea** (tokens en la respuesta), sin pantalla de verificación
-  (arranque reproducible intacto, [US-06](#us-06)).
+- Dado un backend **sin proveedor de email configurado**, Cuando el adulto hace `POST /guardians`, Entonces
+  la cuenta se crea **verificada** y se **auto-loguea** (tokens en la respuesta), sin pantalla de
+  verificación (arranque reproducible intacto, [US-06](#us-06)).
 - (App) Dado el alta con verificación requerida, Cuando se crea la cuenta, Entonces la app abre la pantalla
   **Verificar email**, y al introducir el código correcto **inicia sesión** y navega a Seleccionar perfil;
   muestra errores claros ante código incorrecto/caducado/intentos agotados y permite reenviar.
 - (Seguridad) Dado el OTP, Entonces **nunca** se guarda en claro (hash bcrypt) ni se registra en logs, y
-  el secreto SMTP va en variables de entorno, nunca en BD ni en el repo.
-- (No-funcional) Dado el flujo, Cuando no hay SMTP, Entonces **no** sale nada de la máquina; y con SMTP,
-  el correo solo transporta email del adulto + código (no afecta a la política de datos del menor).
+  las credenciales del proveedor (`BREVO_API_KEY`/`EMAIL_FROM` o `SMTP_*`) van en variables de entorno,
+  nunca en BD ni en el repo.
+- (No-funcional) Dado el flujo, Cuando no hay proveedor configurado, Entonces **no** sale nada de la
+  máquina; y con proveedor, el correo solo transporta email del adulto + código (no afecta a la política
+  de datos del menor).
 - (Tests) Dado el flujo, Cuando se ejercita en test, Entonces se verifica: alta con verificación activa
   (OTP creado+enviado, sin tokens) y desactivada (verificado + tokens), verify-email (OK→tokens, 400
   incorrecto, 400 caducado, 429 intentos), reenvío, y en la app que `http.ts` mapea la respuesta de alta
@@ -1725,3 +1734,128 @@ y que ese mismo icono acompañe la acción **allá donde aparezca** en la app.
   actividades), Entonces muestra el **mismo icono** que su tile de Inicio.
 - **(Accesibilidad)** Dado cualquiera de esos botones, Entonces conserva su **nombre accesible** (la
   etiqueta) y su zona táctil ≥64px.
+
+## US-95 — Warm-up visible del servidor al arrancar · Should (Mejoras) {#us-95}
+
+> **Ajuste de UX (cold start).** Hace visible el warm-up ya existente ([US-53](#us-53), ping a
+> `/health`): en producción el backend (Render free) se suspende y la primera petición paga el
+> arranque en frío (~50 s). Antes era silencioso; ahora el usuario sabe que el servidor "se está
+> desplegando".
+
+**Como** adulto que abre la app, **quiero** ver un aviso de que el servidor se está preparando,
+**para** entender por qué la primera acción puede tardar y no pensar que la app está rota.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (banner de arranque).
+
+**Alcance**
+
+1. `warmUp` (adaptador HTTP) admite un callback `onReady`, invocado cuando `/health` responde OK,
+   cuando se agotan los reintentos o cuando no hay `fetch`, sin romper la llamada existente.
+2. Hook `useServerWarmup()` → `'warming' | 'ready'`: dispara el ping una vez al montar y pasa a
+   `ready` al responder o agotar reintentos (nunca deja el aviso pegado).
+3. `App` muestra una **franja superior no bloqueante** ("Preparando el servidor…") mientras el
+   estado es `warming`; la app es totalmente navegable mientras tanto.
+
+**Criterios de aceptación**
+
+- **(Aviso)** Dado que se abre la app y el backend está frío, Entonces se muestra arriba un aviso
+  "Preparando el servidor…" que **no** bloquea la navegación.
+- **(Desaparece)** Dado que `/health` responde (o se agotan los reintentos), Entonces el aviso
+  desaparece.
+- **(Local)** Dado un backend ya levantado (`docker compose up`), Entonces `/health` responde al
+  instante y el aviso apenas se percibe.
+
+## US-96 — El cuento anónimo abre el lector con puerta de sesión · Should (Mejoras) {#us-96}
+
+> **Ajuste de flujo (sin sesión).** Extiende el modo anónimo efímero ([US-50](#us-50)) y reutiliza el
+> lector tipo libro ([US-83](#us-83)). Iguala la experiencia con la de un usuario con sesión
+> ([US-73](#us-73)), pero protege las acciones que requieren cuenta.
+
+**Como** adulto que prueba la app sin cuenta, **quiero** leer el cuento generado en la misma vista de
+lectura que un usuario registrado, **para** valorar la experiencia real; y que al intentar escuchar o
+guardar se me invite a crear una cuenta.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Inicio sin sesión (Dashboard) / Lector.
+
+**Alcance**
+
+1. La ruta `StoryReader` admite `anonimo?: boolean`.
+2. Al generar el cuento en el Dashboard (sin sesión), se **navega** al lector con el cuento anónimo
+   adaptado (sin persistir nada), en vez de mostrarlo inline. Se conserva el contador efímero y la
+   sección de actividades.
+3. En modo anónimo, las acciones que requieren cuenta (Escuchar, Marcar como leído, Favorito,
+   Continuar la historia) abren una **modal** "Inicia sesión para continuar" con un botón principal
+   **Crear cuenta** que lleva al alta (`Consent`); la lectura paginada funciona igual.
+
+**Criterios de aceptación**
+
+- **(Abre el lector)** Dado el Dashboard sin sesión, Cuando se genera un cuento, Entonces se abre la
+  vista de lectura (no se muestra inline).
+- **(Puerta de sesión)** Dado el lector en modo anónimo, Cuando se pulsa Escuchar / Marcar como leído
+  / Favorito / Continuar, Entonces aparece una modal indicando que hay que iniciar sesión.
+- **(A crear cuenta)** Dada esa modal, Cuando se pulsa el botón principal, Entonces se navega al
+  formulario de crear cuenta.
+- **(Con sesión intacto)** Dado un usuario con sesión, Entonces el lector y sus acciones se comportan
+  como antes.
+
+## US-97 — La última línea del cuento no se recorta · Should (Mejoras) {#us-97}
+
+> **Corrección de UI (lector).** Afecta al lector tipo libro ([US-83](#us-83)/[US-91](#us-91)): la
+> hoja tiene alto fijo y el paginado ([US-73](#us-73)/[US-74](#us-74)) apuntaba a ~120 palabras, que
+> en pantallas pequeñas desbordaban y recortaban la última línea.
+
+**Como** niño (con el adulto) que lee un cuento, **quiero** ver todas las líneas de cada página,
+**para** no perderme el final de una frase por un recorte.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector.
+
+**Alcance**
+
+1. El paginado (`paginarCuento`) baja su objetivo por defecto (120→60 palabras/página) para caber en
+   el alto mínimo de hoja; se mantiene el mínimo de páginas y la lógica de troceo.
+2. `BookPages` garantiza que el texto **encoja para caber** (`adjustsFontSizeToFit` + `numberOfLines`
+   acorde al alto) y lo alinea arriba reservando el hueco del número de página, para no recortar ni
+   solapar ante fuentes accesibles grandes o palabras largas.
+
+**Criterios de aceptación**
+
+- **(Sin recorte)** Dado un cuento largo, Cuando se pasan sus páginas, Entonces ninguna página recorta
+  la última línea.
+- **(Número de página)** Dado el pie de la hoja, Entonces el número de página sigue visible y el texto
+  no lo tapa.
+- **(Fuente grande)** Dado un tamaño de fuente accesible del sistema, Entonces el texto encoge lo justo
+  para caber en la hoja en lugar de recortarse.
+
+## US-98 — Incoherencia de datos de sesión → error y cerrar sesión · Should (Mejoras) {#us-98}
+
+> **Robustez de sesión.** Complementa la sesión JWT ([US-45](#us-45)): aquel maneja el token
+> **caducado** (401 → renovar o cerrar sesión); éste maneja los **datos** de la sesión que ya no
+> existen en la BD (guardián/perfil borrados, BD reseteada), que el backend devuelve como `404
+NotFoundError`.
+
+**Como** adulto con una sesión cuyos datos ya no existen en el servidor, **quiero** que la app me lo
+diga con un aviso claro y cierre la sesión, **para** volver a iniciar sesión y que se revaliden los
+datos, en vez de ver un error crudo y quedar en un estado inconsistente.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (peticiones de datos).
+
+**Alcance**
+
+1. El adaptador HTTP marca como **ligadas a la sesión** las rutas que referencian al guardián o al
+   perfil activo (`profiles.list`, `stories.generate`, `activities.recommend`, `history.get`,
+   `achievements.get`). Un `404 NotFoundError` en ellas ⇒ dato de sesión obsoleto → se avisa a la
+   sesión (`onDataInconsistency`) además de propagar el error.
+2. El store cierra la sesión y levanta una marca transitoria (`sessionDataError`); la raíz de la app
+   la observa, resetea la navegación al inicio sin sesión (`Dashboard`) y muestra una modal "Error de
+   datos".
+3. Los `404` de **contenido puntual** (marcar leído, favorito, continuar, completar actividad) **no**
+   cierran sesión.
+
+**Criterios de aceptación**
+
+- **(Aviso + cierre)** Dado que una acción sobre datos del perfil/guardián devuelve `404` por un id
+  inexistente en la BD, Entonces se muestra la modal "Error de datos" y se cierra la sesión.
+- **(Revalidar)** Dado ese cierre, Entonces la app vuelve al inicio sin sesión y, al iniciar sesión de
+  nuevo, los datos se consultan otra vez.
+- **(Contenido puntual)** Dado un `404` de un cuento/actividad concretos (no del perfil), Entonces
+  **no** se cierra la sesión.

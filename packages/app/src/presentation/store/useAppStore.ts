@@ -55,6 +55,16 @@ interface AppState {
   clearProfile: () => void;
   /** Cierra la sesión: borra guardián, perfil y tokens, vuelve al onboarding. */
   logout: () => void;
+  /**
+   * Marca de **incoherencia de datos de sesión** (US-98): el `guardianId`/`profileId`
+   * de la sesión ya no existe en la BD. Es transitoria (no se persiste): la raíz de la
+   * app la observa para mostrar el aviso "error de datos" y llevar al inicio sin sesión.
+   */
+  sessionDataError: boolean;
+  /** Reporta datos de sesión obsoletos: cierra sesión y activa `sessionDataError` (US-98). */
+  reportDataInconsistency: () => void;
+  /** Baja la marca `sessionDataError` una vez atendida (mostrado el aviso) (US-98). */
+  clearDataError: () => void;
 }
 
 const SESION_VACIA = {
@@ -64,6 +74,7 @@ const SESION_VACIA = {
   profiles: [] as ChildProfile[],
   accessToken: null,
   refreshToken: null,
+  sessionDataError: false,
 } as const;
 
 export const useAppStore = create<AppState>()(
@@ -102,6 +113,13 @@ export const useAppStore = create<AppState>()(
         setActiveChildName(undefined);
         set({ ...SESION_VACIA });
       },
+      // Datos de sesión obsoletos (US-98): se cierra la sesión (como `logout`) y se deja
+      // la marca en alto para que la raíz muestre el aviso y navegue al inicio sin sesión.
+      reportDataInconsistency: () => {
+        setActiveChildName(undefined);
+        set({ ...SESION_VACIA, sessionDataError: true });
+      },
+      clearDataError: () => set({ sessionDataError: false }),
     }),
     {
       name: 'magyblob-app',

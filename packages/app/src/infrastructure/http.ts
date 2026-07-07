@@ -87,6 +87,12 @@ export interface SessionStore {
   getRefreshToken(): string | null;
   setTokens(tokens: SessionTokens): void;
   onAuthExpired(): void;
+  /**
+   * Datos de la sesión (guardián o perfil activo) inexistentes en la BD (US-98): una
+   * ruta `sessionBound` respondió `404 NotFoundError`. Fuerza el aviso de "error de
+   * datos" y el cierre de sesión para revalidarlos al volver a entrar.
+   */
+  onDataInconsistency(): void;
 }
 
 export function getBaseUrl(): string {
@@ -100,9 +106,19 @@ export function getBaseUrl(): string {
  * despertar puede tardar 50 s o más, usa un timeout amplio (`WARMUP_TIMEOUT_MS`) y
  * **reintenta** hasta que responda (o agotar `WARMUP_RETRIES`). No bloquea la
  * interfaz ni propaga errores; es best-effort en segundo plano.
+ *
+ * `onReady` (US-95, opcional) permite hacer **visible** el warm-up: se invoca cuando
+ * `/health` responde OK o cuando se agotan los reintentos (o si no hay `fetch`), de
+ * modo que un banner que dependa de él **nunca** quede pegado. La llamada histórica
+ * `warmUp(getBaseUrl())` sigue funcionando igual (sin callback, best-effort silencioso).
  */
-export function warmUp(baseUrl: string = getBaseUrl()): void {
-  if (typeof fetch !== 'function') return;
+export function warmUp(baseUrl: string = getBaseUrl(), onReady?: () => void): void {
+  if (typeof fetch !== 'function') {
+    // Sin red cableada (p. ej. algún entorno de test) no hay warm-up que hacer, pero
+    // se resuelve el callback para que el banner no quede colgado en 'warming'.
+    onReady?.();
+    return;
+  }
 
   async function pingOnce(): Promise<boolean> {
     const controller = new AbortController();
@@ -122,9 +138,15 @@ export function warmUp(baseUrl: string = getBaseUrl()): void {
 
   void (async () => {
     for (let intento = 0; intento <= WARMUP_RETRIES; intento++) {
-      if (await pingOnce()) return;
+      if (await pingOnce()) {
+        onReady?.();
+        return;
+      }
       await delay(RETRY_BASE_DELAY_MS * 2 ** intento);
     }
+    // Reintentos agotados: el servidor no respondió, pero se marca "listo" igualmente
+    // para no dejar el banner pegado (US-95); la primera petición real reintentará.
+    onReady?.();
   })();
 }
 
@@ -134,6 +156,13 @@ interface RequestOptions {
   timeoutMs?: number;
   /** La ruta exige access token: adjunta Bearer y aplica refresh-on-401 (US-45). */
   auth?: boolean;
+  /**
+   * Ruta **ligada a la sesión** (referencia al guardián o al perfil activo, US-98):
+   * un `404 NotFoundError` en ella significa que ese id ya no existe en la BD (datos
+   * de sesión obsoletos) → se avisa a la sesión (`onDataInconsistency`) para mostrar
+   * el error y cerrar sesión. No aplica a 404 de contenido puntual (cuento/actividad).
+   */
+  sessionBound?: boolean;
 }
 
 /** Renueva el par de tokens contra `POST /guardians/refresh`. Lanza `ApiError` si falla. */
@@ -251,11 +280,14 @@ async function request<TResponse>(
     const body = (await response.json().catch(() => null)) as {
       error?: { tipo?: string; mensaje?: string };
     } | null;
-    throw new ApiError(
-      response.status,
-      body?.error?.tipo ?? 'http',
-      body?.error?.mensaje ?? fallback,
-    );
+    const tipo = body?.error?.tipo ?? 'http';
+    // Incoherencia de datos de sesión (US-98): una ruta ligada a la sesión
+    // (guardián/perfil) responde 404 NotFoundError ⇒ ese id ya no existe en la BD.
+    // Se avisa a la sesión (aviso + cierre de sesión) y el error se propaga igual.
+    if (options.sessionBound && response.status === 404 && tipo === 'NotFoundError') {
+      session?.onDataInconsistency();
+    }
+    throw new ApiError(response.status, tipo, body?.error?.mensaje ?? fallback);
   }
 
   // Validación de la respuesta en la frontera: el backend puede cambiar o devolver
@@ -370,7 +402,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           `/guardians/${guardianId}/profiles`,
-          { method: 'GET', auth: true },
+          { method: 'GET', auth: true, sessionBound: true },
           childProfileListSchema,
           session,
         ),
@@ -380,7 +412,13 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           '/stories',
-          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
+          {
+            method: 'POST',
+            body: req,
+            timeoutMs: GENERATION_TIMEOUT_MS,
+            auth: true,
+            sessionBound: true,
+          },
           storySchema,
           session,
         ),
@@ -425,7 +463,13 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           '/activities/recommend',
-          { method: 'POST', body: req, timeoutMs: GENERATION_TIMEOUT_MS, auth: true },
+          {
+            method: 'POST',
+            body: req,
+            timeoutMs: GENERATION_TIMEOUT_MS,
+            auth: true,
+            sessionBound: true,
+          },
           activityListSchema,
           session,
         ),
@@ -461,7 +505,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           `/profiles/${profileId}/history`,
-          { method: 'GET', auth: true },
+          { method: 'GET', auth: true, sessionBound: true },
           historySchema,
           session,
         ),
@@ -472,7 +516,7 @@ export function createApiGateways(baseUrl: string = getBaseUrl(), session?: Sess
         request(
           baseUrl,
           `/profiles/${profileId}/achievements`,
-          { method: 'GET', auth: true },
+          { method: 'GET', auth: true, sessionBound: true },
           achievementListSchema,
           session,
         ),

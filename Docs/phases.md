@@ -940,3 +940,47 @@ Decisiones con el usuario: alcance = **Inicio + acciones equivalentes** del rest
       de Inicio (navegación) y del layout `stack` de `BubblyButton`.
 - **DoD:** ✅ `pnpm check` verde (**backend 452 + app 296**). Pendiente: pruebas manuales del usuario
   (visual de la rejilla) y `finish` tras confirmación.
+
+### Lote de ajustes: warm-up visible, lector anónimo y corte de línea (2026-07-06, US-95/96/97)
+
+Tres ajustes de `ideas.txt` ejecutados **en paralelo** (un worktree por feature desde `develop`),
+integrados en la rama `integracion/ajustes-lectura-warmup` y verificados en verde. Plan en
+[planes/coordinacion-ajustes-lectura-warmup.md](planes/coordinacion-ajustes-lectura-warmup.md).
+Solo app; **versión diferida** (se asigna al integrar en `develop`). Pendiente: pruebas manuales del
+usuario y merge a `develop` tras confirmación.
+
+- [x] ✅ **F1 · US-95 — Warm-up visible al arrancar** (rama `feature/95-warmup-banner`). Banner
+      superior **no bloqueante** ("Preparando el servidor…") mientras el backend despierta del cold
+      start (ping a `/health`, [US-53](historias-usuario/epic-f-plataforma.md#us-53)); desaparece al
+      responder o agotar reintentos. `warmUp` gana callback `onReady` (retrocompatible) + hook
+      `useServerWarmup`. La app es navegable mientras tanto.
+- [x] ✅ **F2 · US-96 — Cuento anónimo abre el lector con puerta de sesión** (rama
+      `feature/96-lector-anonimo`). Sin sesión, generar el cuento en el Dashboard ahora **navega al
+      lector** (como con sesión) en vez de pintarlo inline; las acciones que requieren cuenta
+      (Escuchar, Marcar como leído, Favorito, Continuar) abren una **modal** "Inicia sesión para
+      continuar" con botón **Crear cuenta** → alta (`Consent`). `StoryReader` admite `anonimo`.
+- [x] ✅ **F3 · US-97 — La última línea del cuento no se recorta** (rama
+      `feature/97-corte-ultima-linea`). Paginado 120→**60** palabras/página (cabe en el alto mínimo de
+      hoja) y `BookPages` **encoge el texto para caber** (`adjustsFontSizeToFit`, alineado arriba
+      reservando el número de página), de modo que ninguna página recorta contenido.
+- **DoD:** ✅ `pnpm check` verde tras integrar (**backend 460 + app 300**); typecheck, ESLint y
+  Prettier OK. Pendiente: pruebas manuales del usuario y merge a `develop` (con versionado diferido)
+  tras confirmación.
+
+### Incoherencia de datos de sesión → error + cerrar sesión (2026-07-06, US-98, rama `feature/98-incoherencia-datos-logout`)
+
+Robustez de sesión (complementa el JWT US-45): cuando el `guardianId`/`profileId` de la sesión ya no
+existe en la BD (BD reseteada, perfil borrado), el backend responde `404 NotFoundError`. En vez del
+error crudo, la app muestra una modal **"Error de datos"** y **cierra sesión** para revalidar al volver
+a entrar. **Solo app**; versión diferida. Plan en
+[planes/feature-98-incoherencia-datos-logout.md](planes/feature-98-incoherencia-datos-logout.md).
+
+- [x] ✅ **App.** `http.ts` marca las rutas ligadas a la sesión (`profiles.list`, `stories.generate`,
+      `activities.recommend`, `history.get`, `achievements.get`) con `sessionBound`; un 404
+      `NotFoundError` en ellas dispara `SessionStore.onDataInconsistency`. El store cierra sesión y
+      levanta `sessionDataError`; `DataErrorHandler` (raíz, bajo `DialogProvider`) resetea a `Dashboard`
+      y muestra la modal. Los 404 de contenido puntual (marcar leído/favorito/continuar/completar) no
+      cierran sesión.
+- [x] ✅ **Docs/tests.** US-98 + trazabilidad; CHANGELOG (Unreleased) del app; tests de `http` (avisa
+      solo en ruta sessionBound + `NotFoundError`) y del store (`reportDataInconsistency`/`clearDataError`).
+- **DoD:** ✅ `pnpm check` verde (**backend 460 + app 306**). Pendiente: pruebas manuales del usuario.

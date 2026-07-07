@@ -59,11 +59,12 @@ const STORY: Story = {
 };
 
 const pushMock = vi.fn();
+const navigateMock = vi.fn();
 
-function renderReader(story: Story = STORY) {
+function renderReader(story: Story = STORY, anonimo?: boolean) {
   const props = {
-    route: { params: { story } },
-    navigation: { push: pushMock },
+    route: { params: { story, anonimo } },
+    navigation: { push: pushMock, navigate: navigateMock },
   } as unknown as ComponentProps<typeof StoryReaderScreen>;
   return render(<StoryReaderScreen {...props} />);
 }
@@ -74,6 +75,7 @@ describe('StoryReaderScreen — marcar leído explícito (A2)', () => {
     markReadMock.mockResolvedValue(undefined);
     narrationOnFinished.current = undefined;
     confirmMock.mockReset();
+    navigateMock.mockReset();
   });
 
   it('NO marca leído solo por abrir la vista', () => {
@@ -169,5 +171,50 @@ describe('StoryReaderScreen — marcar leído explícito (A2)', () => {
     expect(continueStoryMock).toHaveBeenCalledWith('s1');
     await screen.findByText('El zorro valiente'); // sigue montado hasta que resuelve
     expect(pushMock).toHaveBeenCalledWith('StoryReader', { story: siguiente });
+  });
+
+  describe('modo anónimo — puerta de sesión (US-96)', () => {
+    it('"Escuchar" abre la modal de crear cuenta y no llama a la narración', () => {
+      renderReader(STORY, true);
+      // En anónimo no se montan los controles de narración reales.
+      expect(narrationOnFinished.current).toBeUndefined();
+      fireEvent.click(screen.getByRole('button', { name: 'Escuchar' }));
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+      expect(confirmMock.mock.calls[0][0].title).toBe('Inicia sesión para continuar');
+    });
+
+    it('"Marcar como leído" abre la modal en vez de marcar el cuento', () => {
+      renderReader(STORY, true);
+      fireEvent.click(screen.getByRole('button', { name: 'Marcar como leído' }));
+      expect(markReadMock).not.toHaveBeenCalled();
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('el botón principal de la modal navega a crear cuenta (Consent)', () => {
+      renderReader(STORY, true);
+      fireEvent.click(screen.getByRole('button', { name: 'Marcar como leído' }));
+      const { onConfirm, confirmLabel } = confirmMock.mock.calls[0][0] as {
+        onConfirm: () => void;
+        confirmLabel: string;
+      };
+      expect(confirmLabel).toBe('Crear cuenta');
+      onConfirm();
+      expect(navigateMock).toHaveBeenCalledWith('Consent');
+    });
+
+    it('no auto-ofrece marcar leído al llegar al final', () => {
+      vi.useFakeTimers();
+      try {
+        renderReader(STORY, true);
+        fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }));
+        act(() => {
+          vi.advanceTimersByTime(500);
+        });
+        expect(confirmMock).not.toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });

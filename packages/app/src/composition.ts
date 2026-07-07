@@ -16,6 +16,8 @@ const sessionStore: SessionStore = {
   getRefreshToken: () => useAppStore.getState().refreshToken,
   setTokens: (tokens) => useAppStore.getState().setTokens(tokens),
   onAuthExpired: () => useAppStore.getState().logout(),
+  // Datos de sesión inexistentes en la BD (US-98): cierra sesión y activa el aviso.
+  onDataInconsistency: () => useAppStore.getState().reportDataInconsistency(),
 };
 
 export const api: Api = createApiGateways(getBaseUrl(), sessionStore);

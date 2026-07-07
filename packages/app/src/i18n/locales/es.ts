@@ -98,11 +98,19 @@ export const es = {
     search: 'Buscar',
     clear: 'Limpiar',
     close: 'Cerrar',
+    // Incoherencia de datos de sesión (US-98): el guardián o el perfil ya no existen en la BD.
+    dataErrorTitle: 'Error de datos',
+    dataErrorMessage:
+      'Los datos de tu sesión ya no están disponibles. Se ha cerrado la sesión; vuelve a iniciar sesión para continuar.',
   },
 
   welcome: {
     subtitle:
       'Cuentos y actividades personalizados para tus peques. Empieza creando tu cuenta o entra si ya tienes una.',
+  },
+
+  warmup: {
+    deploying: 'Preparando el servidor…',
   },
 
   dashboard: {
@@ -276,6 +284,12 @@ export const es = {
     markReadPromptBody: 'Has llegado al final del cuento. ¿Quieres marcarlo como leído?',
     markReadPromptConfirm: 'Sí, marcar',
     markReadPromptCancel: 'Ahora no',
+    // Puerta de sesión en el lector anónimo (US-96).
+    signInRequiredTitle: 'Inicia sesión para continuar',
+    signInRequiredBody:
+      'Para escuchar el cuento, marcarlo como leído o guardarlo necesitas una cuenta. ¡Es gratis!',
+    signInRequiredConfirm: 'Crear cuenta',
+    signInRequiredCancel: 'Ahora no',
   },
 
   history: {
