@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.12.0] - 2026-07-07
+
+### Added
+
 - **Cascada de proveedores de IA (US-99).** `ai.cloud` admite un campo opcional `fallbacks`
   (`[{target, model}, …]`): el `resolver` intenta el `target` primario y, si no responde, cada paso de
   la cascada en orden, cayendo al **mock** si todos fallan (anidando `FallbackProvider`). Los pasos sin
@@ -20,14 +34,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   el contenido con su proveedor real (`gemini | groq | openrouter | cerebras`) en vez del genérico
   `cloud`, para poder distinguirlo en el "Autor". `PROVEEDORES_IA` se amplía con esos valores (la
   columna `proveedor` es `String`: sin migración; los datos antiguos con `cloud` siguen siendo válidos).
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [1.11.0] - 2026-07-06
 
