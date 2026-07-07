@@ -28,15 +28,15 @@ Leyenda: ✅ hecho · 🔄 en curso · ⬜ pendiente
 **Problema:** ya existe `warmUp()` (ping a `/health` con reintentos) pero es **silencioso**;
 el usuario no sabe que el backend (Render free) está despertando del cold start.
 
-- [ ] **T1.1** Exponer el estado del warm-up desde `http.ts` sin romper la llamada de
+- [x] **T1.1** Exponer el estado del warm-up desde `http.ts` sin romper la llamada de
       `composition.ts` (p. ej. `warmUp()` acepta callback de estado o versión que devuelve
       `Promise<boolean>`; mantener el best-effort actual).
-- [ ] **T1.2** Hook `useServerWarmup()` → `'warming' | 'ready'`: arranca al montar, pasa a
+- [x] **T1.2** Hook `useServerWarmup()` → `'warming' | 'ready'`: arranca al montar, pasa a
       `ready` cuando `/health` responde o al agotar reintentos (nunca deja el banner pegado).
-- [ ] **T1.3** Banner superpuesto no bloqueante en `App.tsx` (`ThemedApp`) con
+- [x] **T1.3** Banner superpuesto no bloqueante en `App.tsx` (`ThemedApp`) con
       `t('warmup.deploying')` mientras `warming`; la app sigue navegable.
-- [ ] **T1.4** i18n: `warmup.deploying` (ES/EN).
-- [ ] **T1.5** Tests: `useServerWarmup.test.ts` (warming→ready y timeout con `fetch` mockeado);
+- [x] **T1.4** i18n: `warmup.deploying` (ES/EN).
+- [x] **T1.5** Tests: `useServerWarmup.test.ts` (warming→ready y timeout con `fetch` mockeado);
       ajustar `http.test.ts` si cambia la firma de `warmUp`.
 
 **DoD F1:** banner visible en cold start y ausente cuando `/health` responde rápido (local);
@@ -47,17 +47,17 @@ el usuario no sabe que el backend (Render free) está despertando del cold start
 **Problema:** en `DashboardScreen` (sin login) el cuento se pinta **inline**; debe abrir el
 **lector** como con sesión, pero las acciones que requieren cuenta deben pedir iniciar sesión.
 
-- [ ] **T2.1** `navigation.ts`: `StoryReader` acepta `anonimo?: boolean`.
-- [ ] **T2.2** `DashboardScreen`: al generar, **navegar** a `StoryReader` con un `Story`
+- [x] **T2.1** `navigation.ts`: `StoryReader` acepta `anonimo?: boolean`.
+- [x] **T2.2** `DashboardScreen`: al generar, **navegar** a `StoryReader` con un `Story`
       adaptado (`id/profileId:'anon'`, `estado:'nuevo'`, sin `portada`) y `anonimo: true`, en
       vez de pintarlo inline. Conservar contador efímero y sección de actividades.
-- [ ] **T2.3** `StoryReaderScreen`: en modo `anonimo`, las acciones **Escuchar**, **Marcar
+- [x] **T2.3** `StoryReaderScreen`: en modo `anonimo`, las acciones **Escuchar**, **Marcar
       como leído**, **Favorito** y **Continuar historia** abren una **modal** (`useDialog().confirm`):
       título "Inicia sesión para continuar", botón principal **"Crear cuenta"** →
       `navigation.navigate('Consent')`, secundario "Ahora no". Omitir el auto-prompt de
       marcar-leído al final. La lectura del libro (pasar páginas) funciona igual.
-- [ ] **T2.4** i18n: claves de la modal de puerta de sesión (ES/EN).
-- [ ] **T2.5** Tests: `DashboardScreen.test.tsx` (genera → navega con `anonimo:true`, no pinta
+- [x] **T2.4** i18n: claves de la modal de puerta de sesión (ES/EN).
+- [x] **T2.5** Tests: `DashboardScreen.test.tsx` (genera → navega con `anonimo:true`, no pinta
       inline); `StoryReaderScreen.test.tsx` (en `anonimo`, Escuchar/Marcar leído abren modal y
       el botón lleva a `Consent`; sin `anonimo`, comportamiento actual intacto).
 
@@ -69,12 +69,12 @@ el usuario no sabe que el backend (Render free) está despertando del cold start
 **Problema:** hoja de alto fijo (320–460 px) + `paginarCuento` a 120 palabras/página → en
 pantallas pequeñas el texto desborda y `borderRadius` recorta la última línea.
 
-- [ ] **T3.1** Bajar `palabrasPorPagina` a un objetivo que quepa en el alto **mínimo** de hoja
+- [x] **T3.1** Bajar `palabrasPorPagina` a un objetivo que quepa en el alto **mínimo** de hoja
       (~60), manteniendo `minPaginas`.
-- [ ] **T3.2** `BookPages`: red de seguridad para fuentes accesibles/palabras largas — el texto
+- [x] **T3.2** `BookPages`: red de seguridad para fuentes accesibles/palabras largas — el texto
       **encoge para caber** (`adjustsFontSizeToFit`/`numberOfLines` acorde al alto) y se alinea
       arriba reservando el hueco del número de página, para no recortar ni solapar.
-- [ ] **T3.3** Tests: ampliar `paginarCuento.test.ts` (ninguna página supera el nuevo objetivo;
+- [x] **T3.3** Tests: ampliar `paginarCuento.test.ts` (ninguna página supera el nuevo objetivo;
       se mantiene `minPaginas`); test de `BookPages` que verifique que el texto completo se renderiza.
 
 **DoD F3:** ninguna página recorta la última línea; `pnpm --filter @magyblob/app check` verde.

@@ -124,6 +124,9 @@ Should = HITO 2 · Could = si hay margen.
 | US-92 | Endurecimiento de seguridad del API público            | Should    | Mejoras | Alta / Login (backend + app)               | [F](epic-f-plataforma.md#us-92)  |
 | US-93 | Verificación de email por OTP (SMTP)                   | Should    | Mejoras | Verificar email                            | [F](epic-f-plataforma.md#us-93)  |
 | US-94 | Inicio en 2 columnas + iconos en las acciones          | Could     | Mejoras | Inicio / Cuentos / Actividades / Dashboard | [F](epic-f-plataforma.md#us-94)  |
+| US-95 | Warm-up visible del servidor al arrancar               | Should    | Mejoras | Toda la app (banner arranque)              | [F](epic-f-plataforma.md#us-95)  |
+| US-96 | Cuento anónimo abre el lector + puerta de sesión       | Should    | Mejoras | Dashboard / Lector                         | [F](epic-f-plataforma.md#us-96)  |
+| US-97 | La última línea del cuento no se recorta               | Should    | Mejoras | Lector                                     | [F](epic-f-plataforma.md#us-97)  |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 

@@ -1734,3 +1734,94 @@ y que ese mismo icono acompañe la acción **allá donde aparezca** en la app.
   actividades), Entonces muestra el **mismo icono** que su tile de Inicio.
 - **(Accesibilidad)** Dado cualquiera de esos botones, Entonces conserva su **nombre accesible** (la
   etiqueta) y su zona táctil ≥64px.
+
+## US-95 — Warm-up visible del servidor al arrancar · Should (Mejoras) {#us-95}
+
+> **Ajuste de UX (cold start).** Hace visible el warm-up ya existente ([US-53](#us-53), ping a
+> `/health`): en producción el backend (Render free) se suspende y la primera petición paga el
+> arranque en frío (~50 s). Antes era silencioso; ahora el usuario sabe que el servidor "se está
+> desplegando".
+
+**Como** adulto que abre la app, **quiero** ver un aviso de que el servidor se está preparando,
+**para** entender por qué la primera acción puede tardar y no pensar que la app está rota.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Toda la app (banner de arranque).
+
+**Alcance**
+
+1. `warmUp` (adaptador HTTP) admite un callback `onReady`, invocado cuando `/health` responde OK,
+   cuando se agotan los reintentos o cuando no hay `fetch`, sin romper la llamada existente.
+2. Hook `useServerWarmup()` → `'warming' | 'ready'`: dispara el ping una vez al montar y pasa a
+   `ready` al responder o agotar reintentos (nunca deja el aviso pegado).
+3. `App` muestra una **franja superior no bloqueante** ("Preparando el servidor…") mientras el
+   estado es `warming`; la app es totalmente navegable mientras tanto.
+
+**Criterios de aceptación**
+
+- **(Aviso)** Dado que se abre la app y el backend está frío, Entonces se muestra arriba un aviso
+  "Preparando el servidor…" que **no** bloquea la navegación.
+- **(Desaparece)** Dado que `/health` responde (o se agotan los reintentos), Entonces el aviso
+  desaparece.
+- **(Local)** Dado un backend ya levantado (`docker compose up`), Entonces `/health` responde al
+  instante y el aviso apenas se percibe.
+
+## US-96 — El cuento anónimo abre el lector con puerta de sesión · Should (Mejoras) {#us-96}
+
+> **Ajuste de flujo (sin sesión).** Extiende el modo anónimo efímero ([US-50](#us-50)) y reutiliza el
+> lector tipo libro ([US-83](#us-83)). Iguala la experiencia con la de un usuario con sesión
+> ([US-73](#us-73)), pero protege las acciones que requieren cuenta.
+
+**Como** adulto que prueba la app sin cuenta, **quiero** leer el cuento generado en la misma vista de
+lectura que un usuario registrado, **para** valorar la experiencia real; y que al intentar escuchar o
+guardar se me invite a crear una cuenta.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Inicio sin sesión (Dashboard) / Lector.
+
+**Alcance**
+
+1. La ruta `StoryReader` admite `anonimo?: boolean`.
+2. Al generar el cuento en el Dashboard (sin sesión), se **navega** al lector con el cuento anónimo
+   adaptado (sin persistir nada), en vez de mostrarlo inline. Se conserva el contador efímero y la
+   sección de actividades.
+3. En modo anónimo, las acciones que requieren cuenta (Escuchar, Marcar como leído, Favorito,
+   Continuar la historia) abren una **modal** "Inicia sesión para continuar" con un botón principal
+   **Crear cuenta** que lleva al alta (`Consent`); la lectura paginada funciona igual.
+
+**Criterios de aceptación**
+
+- **(Abre el lector)** Dado el Dashboard sin sesión, Cuando se genera un cuento, Entonces se abre la
+  vista de lectura (no se muestra inline).
+- **(Puerta de sesión)** Dado el lector en modo anónimo, Cuando se pulsa Escuchar / Marcar como leído
+  / Favorito / Continuar, Entonces aparece una modal indicando que hay que iniciar sesión.
+- **(A crear cuenta)** Dada esa modal, Cuando se pulsa el botón principal, Entonces se navega al
+  formulario de crear cuenta.
+- **(Con sesión intacto)** Dado un usuario con sesión, Entonces el lector y sus acciones se comportan
+  como antes.
+
+## US-97 — La última línea del cuento no se recorta · Should (Mejoras) {#us-97}
+
+> **Corrección de UI (lector).** Afecta al lector tipo libro ([US-83](#us-83)/[US-91](#us-91)): la
+> hoja tiene alto fijo y el paginado ([US-73](#us-73)/[US-74](#us-74)) apuntaba a ~120 palabras, que
+> en pantallas pequeñas desbordaban y recortaban la última línea.
+
+**Como** niño (con el adulto) que lee un cuento, **quiero** ver todas las líneas de cada página,
+**para** no perderme el final de una frase por un recorte.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector.
+
+**Alcance**
+
+1. El paginado (`paginarCuento`) baja su objetivo por defecto (120→60 palabras/página) para caber en
+   el alto mínimo de hoja; se mantiene el mínimo de páginas y la lógica de troceo.
+2. `BookPages` garantiza que el texto **encoja para caber** (`adjustsFontSizeToFit` + `numberOfLines`
+   acorde al alto) y lo alinea arriba reservando el hueco del número de página, para no recortar ni
+   solapar ante fuentes accesibles grandes o palabras largas.
+
+**Criterios de aceptación**
+
+- **(Sin recorte)** Dado un cuento largo, Cuando se pasan sus páginas, Entonces ninguna página recorta
+  la última línea.
+- **(Número de página)** Dado el pie de la hoja, Entonces el número de página sigue visible y el texto
+  no lo tapa.
+- **(Fuente grande)** Dado un tamaño de fuente accesible del sistema, Entonces el texto encoge lo justo
+  para caber en la hoja en lugar de recortarse.
