@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.11.0] - 2026-07-06
+
+### Added
+
 - **Banner de warm-up no bloqueante al arrancar (US-95).** Al abrir la app se muestra una franja
   superior "Preparando el servidor…" mientras se despierta el backend (cold start de Render free,
   ping a `/health`); desaparece al responder o al agotar reintentos. La app es navegable mientras
@@ -27,18 +41,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   volver a iniciar sesión. Los 404 de contenido puntual (marcar leído, favorito, continuar, completar)
   no cierran sesión.
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - **Última línea del cuento recortada (US-97).** En pantallas donde la hoja del libro es pequeña, una
   página de ~120 palabras desbordaba el alto fijo y la última línea salía cortada. Se reduce el
   objetivo de paginado (120→60 palabras/página) y el texto encoge para caber (`adjustsFontSizeToFit`,
   alineado arriba reservando el número de página), de modo que ninguna página recorta contenido.
-
-### Security
 
 ## [1.10.2] - 2026-07-06
 

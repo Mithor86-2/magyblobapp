@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.11.0] - 2026-07-06
+
+### Added
+
 - Envío del email de verificación (US-93) por **API HTTP de Brevo** (`BrevoEmailService`), seleccionable
   por env `BREVO_API_KEY` + `EMAIL_FROM`. Es el canal que funciona en producción: **Render bloquea el
   egress SMTP**, así que la vía HTTPS (puerto 443) desbloquea el alta de guardián en prod. Brevo tiene
@@ -18,14 +32,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - Config de email (US-93) generalizada a **proveedor** (`provider: 'brevo' | 'smtp'`): `SMTP_*` sigue
   soportado (local / hosts que permiten SMTP) pero deja de ser el único canal.
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [1.10.2] - 2026-07-06
 
