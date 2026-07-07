@@ -102,6 +102,10 @@ export const en: typeof es = {
       'Personalized stories and activities for your little ones. Start by creating your account or log in if you already have one.',
   },
 
+  warmup: {
+    deploying: 'Waking up the server…',
+  },
+
   dashboard: {
     subtitle:
       'Personalized stories and activities for your little ones. Try it free without signing up: up to {{limite}} stories and {{limite}} activities. Create an account to save your child’s progress and generate stories and activities every day.',
