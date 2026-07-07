@@ -100,9 +100,19 @@ export function getBaseUrl(): string {
  * despertar puede tardar 50 s o más, usa un timeout amplio (`WARMUP_TIMEOUT_MS`) y
  * **reintenta** hasta que responda (o agotar `WARMUP_RETRIES`). No bloquea la
  * interfaz ni propaga errores; es best-effort en segundo plano.
+ *
+ * `onReady` (US-95, opcional) permite hacer **visible** el warm-up: se invoca cuando
+ * `/health` responde OK o cuando se agotan los reintentos (o si no hay `fetch`), de
+ * modo que un banner que dependa de él **nunca** quede pegado. La llamada histórica
+ * `warmUp(getBaseUrl())` sigue funcionando igual (sin callback, best-effort silencioso).
  */
-export function warmUp(baseUrl: string = getBaseUrl()): void {
-  if (typeof fetch !== 'function') return;
+export function warmUp(baseUrl: string = getBaseUrl(), onReady?: () => void): void {
+  if (typeof fetch !== 'function') {
+    // Sin red cableada (p. ej. algún entorno de test) no hay warm-up que hacer, pero
+    // se resuelve el callback para que el banner no quede colgado en 'warming'.
+    onReady?.();
+    return;
+  }
 
   async function pingOnce(): Promise<boolean> {
     const controller = new AbortController();
@@ -122,9 +132,15 @@ export function warmUp(baseUrl: string = getBaseUrl()): void {
 
   void (async () => {
     for (let intento = 0; intento <= WARMUP_RETRIES; intento++) {
-      if (await pingOnce()) return;
+      if (await pingOnce()) {
+        onReady?.();
+        return;
+      }
       await delay(RETRY_BASE_DELAY_MS * 2 ** intento);
     }
+    // Reintentos agotados: el servidor no respondió, pero se marca "listo" igualmente
+    // para no dejar el banner pegado (US-95); la primera petición real reintentará.
+    onReady?.();
   })();
 }
 

@@ -105,6 +105,10 @@ export const es = {
       'Cuentos y actividades personalizados para tus peques. Empieza creando tu cuenta o entra si ya tienes una.',
   },
 
+  warmup: {
+    deploying: 'Preparando el servidor…',
+  },
+
   dashboard: {
     subtitle:
       'Cuentos y actividades personalizados para tus peques. Pruébalo gratis sin registrarte: hasta {{limite}} cuentos y {{limite}} actividades. Crea una cuenta para guardar el progreso de tu peque y generar cuentos y actividades todos los dias.',
