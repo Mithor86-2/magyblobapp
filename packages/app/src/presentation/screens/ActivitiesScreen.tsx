@@ -39,7 +39,8 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
   const openParental = () =>
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
 
-  const [categoria, setCategoria] = useState<Categoria | null>(null);
+  // US-09: sin opción "Todas"; se genera UNA actividad de la categoría elegida por pulsación.
+  const [categoria, setCategoria] = useState<Categoria>(CATEGORIAS[0]);
   const [loading, setLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -49,11 +50,12 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
     if (!profile) return;
     setLoading(true);
     setError(null);
-    trackAction('activities.recommend', { categoria: categoria ?? 'todas' });
+    trackAction('activities.recommend', { categoria });
     try {
       const result = await api.activities.recommend({
         profileId: profile.id,
-        categoria: categoria ?? undefined,
+        categoria,
+        cantidad: 1,
       });
       setActivities(result);
       setGenerado(true);
@@ -99,11 +101,6 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
 
       <Text style={styles.fieldLabel}>{t('activities.category')}</Text>
       <View style={styles.chips}>
-        <SelectableChip
-          label={t('activities.all')}
-          selected={categoria === null}
-          onPress={() => setCategoria(null)}
-        />
         {CATEGORIAS.map((c) => (
           <SelectableChip
             key={c}

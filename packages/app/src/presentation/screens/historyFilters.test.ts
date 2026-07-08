@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity, Story } from '../../domain/types';
-import { filtrarActividades, filtrarCuentos, normalizar, TODOS } from './historyFilters';
+import {
+  filtrarActividades,
+  filtrarCuentos,
+  normalizar,
+  TODOS,
+  ultimaActividad,
+} from './historyFilters';
 
 /**
  * US-62: lógica de filtrado en cliente del Historial. Al elegir un tema/estilo/
@@ -99,6 +105,34 @@ describe('filtrarActividades', () => {
   it('reduce por categoría', () => {
     const out = filtrarActividades(actividades, 'arte');
     expect(out.map((a) => a.id)).toEqual(['a', 'c']);
+  });
+});
+
+describe('ultimaActividad (US-09/US-10)', () => {
+  it('devuelve la más reciente por completadaEn cuando todas están hechas', () => {
+    const acts = [
+      activity('a', 'arte', { completadaEn: '2026-06-10T10:00:00.000Z' }),
+      activity('b', 'musica', { completadaEn: '2026-06-20T10:00:00.000Z' }),
+    ];
+    expect(ultimaActividad(acts)?.id).toBe('b');
+  });
+
+  it('considera también las pendientes (por creadoEn): la más reciente puede no estar hecha', () => {
+    const acts = [
+      activity('a', 'arte', { completadaEn: '2026-06-10T10:00:00.000Z' }),
+      // Pendiente pero generada después ⇒ debe ser la última actividad.
+      activity('b', 'musica', { creadoEn: '2026-06-25T10:00:00.000Z' }),
+    ];
+    expect(ultimaActividad(acts)?.id).toBe('b');
+  });
+
+  it('con una sola actividad pendiente la devuelve (antes se ocultaba)', () => {
+    const acts = [activity('a', 'arte', { creadoEn: '2026-06-01T10:00:00.000Z' })];
+    expect(ultimaActividad(acts)?.id).toBe('a');
+  });
+
+  it('sin actividades devuelve undefined', () => {
+    expect(ultimaActividad([])).toBeUndefined();
   });
 });
 
