@@ -196,6 +196,7 @@ export const en: typeof es = {
     consentText:
       'I give my consent to process the child’s data for the sole purpose of generating stories and activities. The data is not shared with third parties and the content is generated locally. (Version {{version}})',
     submit: 'Accept and continue',
+    creating: 'Creating your account…',
     errorGeneric: 'Could not complete the registration.',
   },
 
@@ -223,6 +224,7 @@ export const en: typeof es = {
     avatar: "Choose your little one's avatar",
     interests: 'What does your little one like?',
     submit: 'Done!',
+    creating: 'Creating the profile…',
     errorGeneric: 'Could not create the profile.',
   },
 

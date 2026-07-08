@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
 import type { Ensenanza, Estilo, Tema } from '../../domain/types';
@@ -15,7 +16,6 @@ import { vocabColor } from '../vocabColor';
 import { avatarEmoji } from '../components/AvatarPicker';
 import { AnimatedAvatar } from '../components/AnimatedAvatar';
 import { api } from '../../composition';
-import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
@@ -58,8 +58,6 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
   const [usarNombre, setUsarNombre] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Aviso de espera larga (US-53, cold-start de Render free).
-  const lento = useSlowHint(loading);
 
   const puedeGenerar = temas.length > 0 && estilos.length > 0;
 
@@ -193,18 +191,12 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
         />
       </View>
 
-      {loading ? (
-        <View style={styles.statusBox}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>{t('storyGenerator.creating')}</Text>
-          {lento ? (
-            <>
-              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
-              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
-            </>
-          ) : null}
-        </View>
-      ) : null}
+      {/* US-102: loader a pantalla completa mientras se genera el cuento, con el avatar del perfil. */}
+      <FullScreenLoader
+        visible={loading}
+        message={t('storyGenerator.creating')}
+        avatar={profile ? avatarEmoji(profile.avatar) : undefined}
+      />
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>

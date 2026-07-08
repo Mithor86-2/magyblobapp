@@ -199,6 +199,7 @@ export const es = {
     consentText:
       'Doy mi consentimiento para tratar los datos del menor con la única finalidad de generar cuentos y actividades. Los datos no se comparten con terceros y el contenido se genera en local. (Versión {{version}})',
     submit: 'Aceptar y continuar',
+    creating: 'Creando tu cuenta…',
     errorGeneric: 'No se pudo completar el registro.',
   },
 
@@ -226,6 +227,7 @@ export const es = {
     avatar: 'Elige tu avatar de tu peque',
     interests: '¿Qué le gusta a tu peque?',
     submit: '¡Listo!',
+    creating: 'Creando el perfil…',
     errorGeneric: 'No se pudo crear el perfil.',
   },
 

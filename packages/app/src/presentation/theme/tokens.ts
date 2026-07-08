@@ -297,3 +297,16 @@ export function darken(hex: string, factor = 0.22): string {
   const b = clamp((n & 255) * (1 - factor));
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 }
+
+/**
+ * Convierte un color hex `#rrggbb` a `rgba(r,g,b,alpha)`. Útil para fondos **translúcidos**
+ * que dejan entrever la pantalla (p. ej. el loader a pantalla completa, US-102), sin fijar
+ * un color fuera del tema.
+ */
+export function withAlpha(hex: string, alpha: number): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}

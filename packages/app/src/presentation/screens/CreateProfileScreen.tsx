@@ -3,9 +3,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
-import { AvatarPicker } from '../components/AvatarPicker';
+import { AvatarPicker, avatarEmoji } from '../components/AvatarPicker';
 import { useDialog } from '../components/DialogProvider';
 import { IDIOMAS, TEMAS } from '../../domain/types';
 import type { CodigoIdioma, Tema } from '../../domain/types';
@@ -91,6 +92,12 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
         />
       }
     >
+      {/* US-102: loader a pantalla completa mientras se crea el perfil, con el avatar elegido. */}
+      <FullScreenLoader
+        visible={submitting}
+        message={t('createProfile.creating')}
+        avatar={avatar ? avatarEmoji(avatar) : undefined}
+      />
       <TextField
         label={t('createProfile.name')}
         value={nombre}

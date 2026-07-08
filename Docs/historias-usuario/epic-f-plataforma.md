@@ -1930,3 +1930,24 @@ Crear perfil / Dashboard.
   de la tarjeta y el botón/acción tienen el mismo color.
 - **(Icono + color)** Dada una tarjeta, Entonces muestra el icono de su tema/categoría tintado con el
   color de ese valor.
+
+## US-102 — Loader a pantalla completa en flujos con espera {#us-102}
+
+**Como** persona usuaria, **quiero** ver un indicador de carga a pantalla completa con un texto
+claro mientras la app trabaja (generar cuento/actividad, crear cuenta/perfil), **para** saber que
+está en marcha y no tocar nada por error.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Cuentos / Actividades / Alta / Crear perfil.
+
+**Alcance**
+
+1. Componente `FullScreenLoader` (modal a pantalla completa con `ActivityIndicator` + mensaje y
+   avisos de espera larga `useSlowHint`).
+2. Se usa en generar cuento (`storyGenerator.creating`), generar actividad (`activities.preparing`),
+   crear cuenta (`consent.creating`) y crear perfil (`createProfile.creating`).
+
+**Criterios de aceptación**
+
+- **(Visible)** Dado un flujo en curso, Entonces se muestra el loader a pantalla completa con su
+  mensaje y bloquea la interacción.
+- **(Oculto)** Dado que la operación termina, Entonces el loader desaparece.

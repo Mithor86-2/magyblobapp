@@ -13,6 +13,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   portada elegida por el backend (`portadaKey`) contra un catálogo local de imágenes, con
   orden **portada generada → portadaKey → respaldo por tema**. Se aplica en el lector y en el
   historial.
+- Loader **a pantalla completa** (US-102): nuevo componente `FullScreenLoader` (modal con
+  indicador + mensaje y avisos de espera larga) usado al **generar cuento**, **generar
+  actividad**, **crear cuenta** y **crear perfil**, en vez del feedback inline / solo-botón.
+  Fondo translúcido y muestra el **avatar del perfil** cuando aplica (generar cuento/actividad
+  y crear perfil).
 
 ### Changed
 
