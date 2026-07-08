@@ -81,7 +81,7 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
   return (
     <Screen
       headerImageName="actividades"
-      title={t('tabs.actividades')}
+      title={t('common.appName')}
       headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton

@@ -21,7 +21,8 @@ export function AdultsButton({ onPress }: { onPress: () => void }) {
       hitSlop={8}
       style={[styles.button, { backgroundColor: colors.surfaceContainerHigh }]}
     >
-      <Icon name="adults" size="md" color={colors.onSurfaceVariant} />
+      {/* US-100 (ajuste): icono un poco más pequeño y en color primario (coral). */}
+      <Icon name="adults" size={24} color={colors.primary} />
     </Pressable>
   );
 }

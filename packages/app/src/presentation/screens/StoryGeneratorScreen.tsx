@@ -111,7 +111,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
   return (
     <Screen
       headerImageName="cuentos"
-      title={t('tabs.cuentos')}
+      title={t('common.appName')}
       headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton
