@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import { createPrismaClient } from '../src/infrastructure/db/prismaClient.js';
 import { PrismaGuardianRepository } from '../src/infrastructure/repositories/PrismaGuardianRepository.js';
 import { PrismaChildProfileRepository } from '../src/infrastructure/repositories/PrismaChildProfileRepository.js';
@@ -18,6 +21,10 @@ import { Idioma } from '../src/domain/value-objects/Idioma.js';
  * ```bash
  * DATABASE_URL="<url-neon>" pnpm --filter @magyblob/backend seed:test-user
  * ```
+ *
+ * Para probarlo **en local** contra la pila de Docker (`pnpm up:mock`/`up:local`): si no defines
+ * `DATABASE_URL` en el shell, el script carga el `.env` de la raíz del repo (donde está la URL del
+ * Postgres de `docker compose`). La `DATABASE_URL` del shell **tiene prioridad** sobre el `.env`.
  *
  * Es **idempotente**: si el guardián ya existe (búsqueda por email) no crea nada ni falla,
  * así que puede re-ejecutarse sin duplicar datos. Reutiliza las entidades de dominio, el
@@ -51,7 +58,32 @@ const NINO_PRUEBA = {
   intereses: ['animales', 'magia'],
 } as const;
 
+/**
+ * Garantiza que `DATABASE_URL` está definida. Si el shell no la trae, intenta cargar el `.env`
+ * de la raíz del repo (útil al ejecutar en local contra el Postgres de `docker compose`). Si sigue
+ * sin estar, aborta con un mensaje claro en vez del error críptico de Prisma al conectar en vacío.
+ */
+function asegurarDatabaseUrl(): void {
+  if (!process.env.DATABASE_URL) {
+    // La raíz del repo está tres niveles por encima de este script (packages/backend/prisma).
+    const raizRepo = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+    const envRaiz = resolve(raizRepo, '.env');
+    if (existsSync(envRaiz)) {
+      process.loadEnvFile(envRaiz);
+    }
+  }
+  if (!process.env.DATABASE_URL) {
+    console.error(
+      '✖ DATABASE_URL no está definida. Ejecuta el seed apuntando a una BD alcanzable, p. ej.:\n' +
+        '  · Producción (Neon):  DATABASE_URL="<url-neon>" pnpm --filter @magyblob/backend seed:test-user\n' +
+        '  · Local (docker):     pnpm up:mock  (levanta Postgres)  →  pnpm --filter @magyblob/backend seed:test-user',
+    );
+    process.exit(1);
+  }
+}
+
 async function main(): Promise<void> {
+  asegurarDatabaseUrl();
   const prisma = createPrismaClient();
   const guardianes = new PrismaGuardianRepository(prisma);
   const perfiles = new PrismaChildProfileRepository(prisma);
@@ -104,9 +136,9 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  console.error(
-    '✖ Seed del usuario de prueba falló:',
-    error instanceof Error ? error.message : error,
-  );
+  // Se imprime el error completo (no solo `.message`): los errores de conexión de Prisma llevan el
+  // detalle útil fuera de `message`, y un `message` vacío no dice nada.
+  console.error('✖ Seed del usuario de prueba falló:');
+  console.error(error);
   process.exit(1);
 });

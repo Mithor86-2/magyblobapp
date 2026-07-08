@@ -1035,3 +1035,9 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
 - **Lección:** el gate de calidad de un script de `prisma/` lo pone el `eslint .` de raíz, no el filtro
   por paquete; y su typecheck **no está cubierto** → si el script es no trivial, valídalo aparte
   (tsconfig temporal) o ejecútalo contra una BD real.
+- **Extra (mismo script):** `tsx` **no** carga `.env` automáticamente y el backend no usa `dotenv` (en
+  local corre dentro de Docker, que inyecta la env). Un script de `prisma/` ejecutado con `tsx` fuera de
+  Docker ve `process.env.DATABASE_URL` vacío → `createPrismaClient` conecta a vacío y Prisma revienta con
+  un error de `message` vacío. Solución: en el propio script, cargar el `.env` de la raíz con
+  `process.loadEnvFile()` (Node ≥ 20.12) si el shell no trae la var, validar y **imprimir el error
+  completo** (no solo `.message`: el detalle útil —`ECONNREFUSED`, etc.— va fuera de `message`).
