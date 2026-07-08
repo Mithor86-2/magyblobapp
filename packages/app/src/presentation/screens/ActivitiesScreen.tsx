@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
 import { useDialog } from '../components/DialogProvider';
@@ -15,7 +16,6 @@ import { categoriaLabel } from '../labels';
 import { categoriaIcon } from '../chipIcons';
 import { vocabColor } from '../vocabColor';
 import { api } from '../../composition';
-import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
@@ -43,8 +43,6 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
   const [activities, setActivities] = useState<Activity[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [generado, setGenerado] = useState(false);
-  // Aviso de espera larga (US-53, cold-start de Render free).
-  const lento = useSlowHint(loading);
 
   async function onGenerate() {
     if (!profile) return;
@@ -117,18 +115,8 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
         ))}
       </View>
 
-      {loading ? (
-        <View style={styles.statusBox}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>{t('activities.preparing')}</Text>
-          {lento ? (
-            <>
-              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
-              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
-            </>
-          ) : null}
-        </View>
-      ) : null}
+      {/* US-102: loader a pantalla completa mientras se generan las actividades. */}
+      <FullScreenLoader visible={loading} message={t('activities.preparing')} />
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>

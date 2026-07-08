@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { AvatarPicker } from '../components/AvatarPicker';
@@ -91,6 +92,8 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
         />
       }
     >
+      {/* US-102: loader a pantalla completa mientras se crea el perfil. */}
+      <FullScreenLoader visible={submitting} message={t('createProfile.creating')} />
       <TextField
         label={t('createProfile.name')}
         value={nombre}

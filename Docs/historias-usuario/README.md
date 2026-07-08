@@ -130,6 +130,7 @@ Should = HITO 2 · Could = si hay margen.
 | US-98  | Incoherencia de datos de sesión → error + logout       | Should    | Mejoras | Toda la app (peticiones de datos)              | [F](epic-f-plataforma.md#us-98)  |
 | US-99  | Cascada IA (Gemini→Groq→mock) + versión + autor cloud  | Should    | Mejoras | Dashboard / Autor (cuentos·actividades)        | [F](epic-f-plataforma.md#us-99)  |
 | US-100 | Color e icono por vocabulario en tarjetas y chips      | Should    | Mejoras | Historial / Cuentos / Crear perfil / Dashboard | [F](epic-f-plataforma.md#us-100) |
+| US-102 | Loader a pantalla completa en flujos con espera        | Should    | Mejoras | Cuentos / Actividades / Alta / Crear perfil    | [F](epic-f-plataforma.md#us-102) |
 
 ## Inconsistencias detectadas y decisiones (resueltas 2026-06-10)
 
