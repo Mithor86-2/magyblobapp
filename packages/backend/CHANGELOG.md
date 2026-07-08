@@ -9,12 +9,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- Seed idempotente del **usuario de prueba** para la entrega del TFM (US-105): script
-  `seed:test-user` (`prisma/seed-usuario-prueba.ts`) que crea, si no existe, el guardián de prueba
-  (`usuariotest@mail.com`, email verificado, consentimiento otorgado) y un perfil de niño
-  («Fulanito», 3 años, intereses animales y magia). La contraseña se guarda hasheada (bcrypt) y la
-  `DATABASE_URL` llega por entorno; reutiliza entidades de dominio y repos Prisma.
-
 ### Changed
 
 ### Deprecated
@@ -24,6 +18,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+## [1.14.0] - 2026-07-08
+
+### Added
+
+- Seed idempotente del **usuario de prueba** para la entrega del TFM (US-105): script
+  `seed:test-user` (`prisma/seed-usuario-prueba.ts`) que crea, si no existe, el guardián de prueba
+  (`usuariotest@mail.com`, email verificado, consentimiento otorgado) y un perfil de niño
+  («Fulanito», 3 años, intereses animales y magia). La contraseña se guarda hasheada (bcrypt) y la
+  `DATABASE_URL` llega por entorno; reutiliza entidades de dominio y repos Prisma.
 
 ## [1.13.0] - 2026-07-07
 
