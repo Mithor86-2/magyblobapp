@@ -19,6 +19,7 @@ import { AuthorBadge } from '../components/AuthorBadge';
 import { BubblyButton } from '../components/BubblyButton';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { SelectableChip } from '../components/SelectableChip';
+import { StoryCover } from '../components/StoryCover';
 import { TextField } from '../components/TextField';
 import { Icon } from '../components/Icon';
 import { CATEGORIAS, ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
@@ -26,6 +27,8 @@ import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { categoriaLabel, ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
+import { temaIcon } from '../chipIcons';
+import { vocabColor } from '../vocabColor';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import {
@@ -157,40 +160,57 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const actividadDestacada = ultimaActividad(history.activities);
 
   // Tarjeta de cuento reutilizada por el destacado y por la lista de la pestaña Cuentos:
-  // título completo, estado, favorito y acción que abre el lector.
+  // portada + título + estado + favorito, y un botón que abre el lector. El color del tema
+  // (US-100) tiñe el borde de la tarjeta, el icono de tema y el botón (borde == botón).
   const renderStoryCard = (story: Story) => {
     const fecha = formatearFecha(story.creadoEn, idioma);
+    const { color, on } = vocabColor(colors, story.tema);
     return (
-      <Appear key={story.id} style={styles.storyCard}>
-        <View style={styles.storyHeader}>
-          {/* A3: título completo (sin numberOfLines). */}
-          <Text style={styles.storyTitle}>{story.titulo}</Text>
-          <View
-            style={[
-              styles.estado,
-              story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
-            ]}
-          >
-            <Text style={styles.estadoText}>
-              {story.estado === 'leido' ? t('history.read') : t('history.new')}
-            </Text>
+      <Appear key={story.id} style={[styles.storyCard, { borderColor: color }]}>
+        <View style={styles.storyTop}>
+          {/* US-100 (#1): portada del cuento (generada o respaldo por tema) como miniatura. */}
+          <StoryCover
+            generada={story.portada}
+            tema={story.tema}
+            style={styles.cover}
+            accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
+          />
+          <View style={styles.storyInfo}>
+            <View style={styles.storyTitleRow}>
+              {/* US-100 (#4): icono del tema tintado con su color. */}
+              <Icon name={temaIcon(story.tema)} size="sm" color={color} />
+              {/* A3: título completo (sin numberOfLines). */}
+              <Text style={styles.storyTitle}>{story.titulo}</Text>
+            </View>
+            <View style={styles.storyMeta}>
+              <View
+                style={[
+                  styles.estado,
+                  story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
+                ]}
+              >
+                <Text style={styles.estadoText}>
+                  {story.estado === 'leido' ? t('history.read') : t('history.new')}
+                </Text>
+              </View>
+              <AuthorBadge proveedor={story.proveedor} />
+            </View>
+            {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
           </View>
           <FavoriteButton
             favorito={story.favorito}
             onToggle={(favorito) => toggleFavoritoCuento(story.id, favorito)}
           />
         </View>
-        <Pressable
+        {/* US-100 (#1/#3): botón de leer estilado; su color es el del tema (== borde). */}
+        <BubblyButton
+          label={t('history.readStory')}
+          icon="story"
+          color={color}
+          on={on}
           onPress={() => openReader(story)}
-          accessibilityRole="button"
           accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
-          style={styles.accionRow}
-        >
-          <Text style={styles.accion}>{t('history.readStory')}</Text>
-          <Icon name="arrow-right" size="sm" color={colors.primary} />
-        </Pressable>
-        <AuthorBadge proveedor={story.proveedor} />
-        {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
+        />
       </Appear>
     );
   };
@@ -556,20 +576,43 @@ const makeStyles = (colors: ColorTokens) =>
     storyCard: {
       backgroundColor: colors.surfaceContainer,
       borderRadius: radius.lg,
+      // US-100 (#3): borde de la tarjeta del color del tema (== color del botón); el tono
+      // concreto se inyecta en línea por tema.
+      borderWidth: 2,
       padding: spacing.md,
       gap: spacing.sm,
       ...makeSoftShadow(colors),
     },
-    storyHeader: {
+    // US-100 (#1): fila superior con la portada (izquierda), la info (centro) y el favorito.
+    storyTop: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.sm,
+    },
+    cover: {
+      width: 72,
+      height: 72,
+      borderRadius: radius.md,
+    },
+    storyInfo: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    storyTitleRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: spacing.sm,
+      gap: spacing.xs,
     },
     storyTitle: {
       ...typography.bodyLg,
       color: colors.onSurface,
       flex: 1,
+    },
+    storyMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.xs,
     },
     estado: {
       borderRadius: radius.pill,
@@ -585,15 +628,6 @@ const makeStyles = (colors: ColorTokens) =>
     estadoText: {
       ...typography.labelBold,
       color: colors.onSurface,
-    },
-    accionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-    },
-    accion: {
-      ...typography.labelBold,
-      color: colors.primary,
     },
     modalBackdrop: {
       flex: 1,

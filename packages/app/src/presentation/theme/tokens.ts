@@ -283,3 +283,17 @@ export function makeSoftShadow(c: ColorTokens) {
 
 /** Sombra suave del tema claro (back-compat para imports estáticos). */
 export const softShadow = makeSoftShadow(lightColors);
+
+/**
+ * Oscurece un color hexadecimal `#rrggbb` un `factor` (0..1). Se usa para derivar el
+ * "labio" inferior de los botones tintados por vocabulario (US-100), donde no hay un
+ * token de borde oscuro predefinido como en las variantes fijas del `BubblyButton`.
+ */
+export function darken(hex: string, factor = 0.22): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+  const r = clamp(((n >> 16) & 255) * (1 - factor));
+  const g = clamp(((n >> 8) & 255) * (1 - factor));
+  const b = clamp((n & 255) * (1 - factor));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+}
