@@ -9,6 +9,20 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.13.0] - 2026-07-07
+
+### Added
+
 - Color e icono por **valor de vocabulario** (US-100): cada tema, estilo, enseñanza y
   categoría tiene un color propio y estable en toda la app (mismo texto → mismo color;
   "Música" tema y categoría comparten color), vía la paleta `categoryColors` del theme y el
@@ -30,18 +44,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   "Aprendizaje Mágico", **centrado** y en **color primario**; el icono de la zona de adultos
   es algo más pequeño y también en color primario.
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - La imagen de cabecera de las pantallas ocupa el 100 % del ancho con alto
   proporcional (`ancho / proporción`), mostrándose entera sin recorte ni bandas
   laterales (antes se estiraba/recortaba porque `aspectRatio` no fija el alto en
   react-native).
-
-### Security
 
 ## [1.12.0] - 2026-07-07
 
