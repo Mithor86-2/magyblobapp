@@ -3,7 +3,7 @@
  * semántico del wrapper `Icon` (US-89, ajuste #1). Se centraliza aquí para que las
  * pantallas (Cuentos, Crear perfil, Dashboard) usen los **mismos iconos** por opción.
  */
-import type { Ensenanza, Estilo, Tema } from '../domain/types';
+import type { Categoria, Ensenanza, Estilo, Tema } from '../domain/types';
 import type { IconName } from './components/Icon';
 
 const TEMA_ICON: Record<Tema, IconName> = {
@@ -27,6 +27,12 @@ const ENSENANZA_ICON: Record<Ensenanza, IconName> = {
   honestidad: 'ens-honestidad',
 };
 
+const CATEGORIA_ICON: Record<Categoria, IconName> = {
+  arte: 'cat-arte',
+  musica: 'cat-musica',
+  logica: 'cat-logica',
+};
+
 /** Icono del tema (`animales`, `espacio`, …). */
 export function temaIcon(tema: Tema): IconName {
   return TEMA_ICON[tema];
@@ -40,4 +46,9 @@ export function estiloIcon(estilo: Estilo): IconName {
 /** Icono de la enseñanza (`amistad`, `emociones`, `valentia`, `honestidad`). */
 export function ensenanzaIcon(ensenanza: Ensenanza): IconName {
   return ENSENANZA_ICON[ensenanza];
+}
+
+/** Icono de la categoría de actividad (`arte`, `musica`, `logica`). */
+export function categoriaIcon(categoria: Categoria): IconName {
+  return CATEGORIA_ICON[categoria];
 }

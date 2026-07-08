@@ -12,6 +12,8 @@ import { CATEGORIAS } from '../../domain/types';
 import type { Activity, Categoria } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { categoriaLabel } from '../labels';
+import { categoriaIcon } from '../chipIcons';
+import { vocabColor } from '../vocabColor';
 import { api } from '../../composition';
 import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
@@ -109,6 +111,8 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
             label={categoriaLabel(c)}
             selected={categoria === c}
             onPress={() => setCategoria(c)}
+            icon={categoriaIcon(c)}
+            tint={vocabColor(colors, c)}
           />
         ))}
       </View>

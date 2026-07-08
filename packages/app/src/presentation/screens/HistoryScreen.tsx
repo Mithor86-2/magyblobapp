@@ -27,8 +27,9 @@ import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { categoriaLabel, ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
-import { temaIcon } from '../chipIcons';
+import { categoriaIcon, ensenanzaIcon, estiloIcon, temaIcon } from '../chipIcons';
 import { vocabColor } from '../vocabColor';
+import type { IconName } from '../components/Icon';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import {
@@ -44,7 +45,14 @@ import {
 } from './historyFilters';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
+import {
+  type CategoryColor,
+  type ColorTokens,
+  makeSoftShadow,
+  radius,
+  spacing,
+  typography,
+} from '../theme/tokens';
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /**
@@ -378,6 +386,7 @@ interface SearchFiltersModalProps {
  */
 export function SearchFiltersModal(props: SearchFiltersModalProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -399,25 +408,45 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
           <ScrollView contentContainerStyle={styles.modalBody}>
             <FilterGroup
               label={t('history.filterTheme')}
-              options={TEMAS.map((tema) => ({ value: tema, label: temaLabel(tema) }))}
+              options={TEMAS.map((tema) => ({
+                value: tema,
+                label: temaLabel(tema),
+                icon: temaIcon(tema),
+                tint: vocabColor(colors, tema),
+              }))}
               selected={props.temaFiltro}
               onSelect={(v) => props.setTemaFiltro(v as FiltroTema)}
             />
             <FilterGroup
               label={t('history.filterStyle')}
-              options={ESTILOS.map((e) => ({ value: e, label: estiloLabel(e) }))}
+              options={ESTILOS.map((e) => ({
+                value: e,
+                label: estiloLabel(e),
+                icon: estiloIcon(e),
+                tint: vocabColor(colors, e),
+              }))}
               selected={props.estiloFiltro}
               onSelect={(v) => props.setEstiloFiltro(v as FiltroEstilo)}
             />
             <FilterGroup
               label={t('history.filterTeaching')}
-              options={ENSENANZAS.map((e) => ({ value: e, label: ensenanzaLabel(e) }))}
+              options={ENSENANZAS.map((e) => ({
+                value: e,
+                label: ensenanzaLabel(e),
+                icon: ensenanzaIcon(e),
+                tint: vocabColor(colors, e),
+              }))}
               selected={props.ensenanzaFiltro}
               onSelect={(v) => props.setEnsenanzaFiltro(v as FiltroEnsenanza)}
             />
             <FilterGroup
               label={t('history.filterCategory')}
-              options={CATEGORIAS.map((c) => ({ value: c, label: categoriaLabel(c) }))}
+              options={CATEGORIAS.map((c) => ({
+                value: c,
+                label: categoriaLabel(c),
+                icon: categoriaIcon(c),
+                tint: vocabColor(colors, c),
+              }))}
               selected={props.categoriaFiltro}
               onSelect={(v) => props.setCategoriaFiltro(v as FiltroCategoria)}
             />
@@ -445,7 +474,8 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
 
 interface FilterGroupProps {
   label: string;
-  options: { value: string; label: string }[];
+  /** Cada opción con su etiqueta y, para los vocabularios, su icono y color por valor (US-100). */
+  options: { value: string; label: string; icon?: IconName; tint?: CategoryColor }[];
   selected: string;
   onSelect: (value: string) => void;
 }
@@ -458,6 +488,7 @@ function FilterGroup({ label, options, selected, onSelect }: FilterGroupProps) {
     <View style={styles.filterGroup}>
       <Text style={styles.filterLabel}>{label}</Text>
       <View style={styles.chipRowWrap}>
+        {/* "Todos" es una opción transversal (sin vocabulario): sin icono ni color propio. */}
         <SelectableChip
           label={t('history.filterAll')}
           selected={selected === TODOS}
@@ -469,6 +500,8 @@ function FilterGroup({ label, options, selected, onSelect }: FilterGroupProps) {
             label={o.label}
             selected={selected === o.value}
             onPress={() => onSelect(o.value)}
+            icon={o.icon}
+            tint={o.tint}
           />
         ))}
       </View>
