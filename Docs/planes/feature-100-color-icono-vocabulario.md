@@ -60,43 +60,43 @@ _Mismo texto → mismo color_: `musica` (tema) y `musica` (categoría) comparten
 
 ### Fase 0 — Fundación (secuencial; el resto depende de ella)
 
-- ⬜ `tokens.ts`: añadir `categoryColors` (claro + oscuro) y su tipo.
-- ⬜ `vocabColor.ts`: resolver `{ color, on }` por valor; música compartida.
-- ⬜ `vocabColor.test.ts` (**nuevo**): mismo texto→mismo color; música compartida; resuelve para todos
+- ✅ `tokens.ts`: añadir `categoryColors` (claro + oscuro) y su tipo.
+- ✅ `vocabColor.ts`: resolver `{ color, on }` por valor; música compartida.
+- ✅ `vocabColor.test.ts` (**nuevo**): mismo texto→mismo color; música compartida; resuelve para todos
   los valores de `TEMAS`/`ESTILOS`/`ENSENANZAS`/`CATEGORIAS` en claro y oscuro.
-- ⬜ Commit de fundación en la rama base (los worktrees de Fase 1 parten de aquí).
+- ✅ Commit de fundación en la rama base (los worktrees de Fase 1 parten de aquí).
 
 ### Fase 1 — Tracks en paralelo (worktrees; archivos disjuntos)
 
 **Track A — Tarjeta de cuento (historial)** · ficheros: `HistoryScreen.tsx` (+ su test)
 
-- ⬜ Añadir **portada** miniatura con `StoryCover` (usa `story.portada` + `story.tema`).
-- ⬜ Convertir "Ver de nuevo" (hoy texto+flecha) en **botón** estilado (`BubblyButton` o pill), con
+- ✅ Añadir **portada** miniatura con `StoryCover` (usa `story.portada` + `story.tema`).
+- ✅ Convertir "Ver de nuevo" (hoy texto+flecha) en **botón** estilado (`BubblyButton` o pill), con
   color = `vocabColor(tema)`.
-- ⬜ **Borde** de la tarjeta del mismo color que el botón (`vocabColor(tema)`).
-- ⬜ Icono de tema (`temaIcon`) tintado con el color del tema.
-- ⬜ Tests: la tarjeta renderiza portada (rol `image`), botón de acción y borde/color por tema.
+- ✅ **Borde** de la tarjeta del mismo color que el botón (`vocabColor(tema)`).
+- ✅ Icono de tema (`temaIcon`) tintado con el color del tema.
+- ✅ Tests: la tarjeta renderiza portada (rol `image`), botón de acción y borde/color por tema.
 
 **Track B — ActivityCard** · ficheros: `ActivityCard.tsx` (+ su test)
 
-- ⬜ Reemplazar `categoriaColor` local por `vocabColor(colors, categoria)`.
-- ⬜ **Borde** de la tarjeta == color del botón/acción de la categoría.
-- ⬜ Icono + badge de categoría con el color del mapa central.
-- ⬜ Tests: borde == color de acción; usa el color central por categoría.
+- ✅ Reemplazar `categoriaColor` local por `vocabColor(colors, categoria)`.
+- ✅ **Borde** de la tarjeta == color del botón/acción de la categoría.
+- ✅ Icono + badge de categoría con el color del mapa central.
+- ✅ Tests: borde == color de acción; usa el color central por categoría.
 
 **Track C — Chips/selectores** · ficheros: `SelectableChip.tsx`, `StoryGeneratorScreen.tsx`,
 `CreateProfileScreen.tsx`, `DashboardScreen.tsx` (+ tests afectados)
 
-- ⬜ `SelectableChip`: aceptar un color arbitrario por valor (además de las variantes de familia).
-- ⬜ Selectores: pintar cada chip con `vocabColor(valor)` (color por valor, no por tipo de chip).
-- ⬜ Tests: chips siguen localizándose por texto; el color viene por valor.
+- ✅ `SelectableChip`: aceptar un color arbitrario por valor (además de las variantes de familia).
+- ✅ Selectores: pintar cada chip con `vocabColor(valor)` (color por valor, no por tipo de chip).
+- ✅ Tests: chips siguen localizándose por texto; el color viene por valor.
 
 ### Fase 2 — Cierre
 
-- ⬜ Integrar los 3 tracks a `feature/100-…`.
-- ⬜ Gate verde: `pnpm check` (typecheck + lint + format:check + test).
-- ⬜ Actualizar `Docs/historias-usuario/` (US-100 + tabla de trazabilidad) y CHANGELOG Unreleased del app.
-- ⬜ Entregar pasos de prueba en **develop local** (Expo web + dispositivo) y pedir confirmación antes
+- ✅ Integrar los 3 tracks a `feature/100-…`.
+- ✅ Gate verde: `pnpm check` (typecheck + lint + format:check + test).
+- ✅ Actualizar `Docs/historias-usuario/` (US-100 + tabla de trazabilidad) y CHANGELOG Unreleased del app.
+- 🔄 Entregar pasos de prueba en **develop local** (Expo web + dispositivo) y pedir confirmación antes
   de `git flow feature finish` (regla del proyecto: no finalizar sin confirmación explícita).
 
 ## Tests (resumen del DoD de esta feature)

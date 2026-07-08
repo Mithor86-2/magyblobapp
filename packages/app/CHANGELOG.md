@@ -9,7 +9,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Color e icono por **valor de vocabulario** (US-100): cada tema, estilo, enseñanza y
+  categoría tiene un color propio y estable en toda la app (mismo texto → mismo color;
+  "Música" tema y categoría comparten color), vía la paleta `categoryColors` del theme y el
+  resolvedor `vocabColor`. Se refleja en los chips de selección (Cuentos, Crear perfil,
+  Dashboard) y en las tarjetas.
+- La tarjeta de cuento del **historial** muestra la **portada** y un **botón** de leer
+  estilado; el **borde** de la tarjeta usa el color del tema (== color del botón) y muestra
+  el icono del tema tintado (US-100).
+
 ### Changed
+
+- La tarjeta de actividad usa el color central por categoría; el **borde** de la tarjeta y la
+  acción ("Ver pasos") comparten color (US-100).
 
 ### Deprecated
 
