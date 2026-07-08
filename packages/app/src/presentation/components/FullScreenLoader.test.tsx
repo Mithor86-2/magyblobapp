@@ -19,7 +19,7 @@ describe('FullScreenLoader', () => {
   });
 
   it('muestra el avatar del perfil cuando se pasa', () => {
-    render(<FullScreenLoader visible message="Creando un cuento mágico…" avatar="🦊" />);
-    expect(screen.getByText('🦊')).toBeVisible();
+    render(<FullScreenLoader visible message="Creando un cuento mágico…" avatarId="zorro" />);
+    expect(screen.getByLabelText('zorro')).toBeInTheDocument();
   });
 });

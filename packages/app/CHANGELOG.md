@@ -9,11 +9,19 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Avatares de perfil con **imágenes propias** (US-95): set de 12 ilustraciones empaquetadas
+  (256×256, sin descargas en runtime) que sustituyen a los emojis en el selector y en todas las
+  pantallas que muestran el avatar (Inicio, elegir perfil, generador de cuentos, crear perfil y
+  loader a pantalla completa). Los perfiles antiguos con un `id` sin imagen caen a un avatar por
+  defecto.
+
 ### Changed
 
 ### Deprecated
 
 ### Removed
+
+- Avatares emoji y el helper `avatarEmoji` (reemplazados por imágenes, US-95).
 
 ### Fixed
 

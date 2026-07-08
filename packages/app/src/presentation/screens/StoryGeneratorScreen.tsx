@@ -13,7 +13,7 @@ import { ApiError } from '../../domain/errors';
 import { ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
 import { ensenanzaIcon, estiloIcon, temaIcon } from '../chipIcons';
 import { vocabColor } from '../vocabColor';
-import { avatarEmoji } from '../components/AvatarPicker';
+import { avatarSource } from '../components/AvatarPicker';
 import { AnimatedAvatar } from '../components/AnimatedAvatar';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
@@ -122,11 +122,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
       }
     >
       <View style={styles.header}>
-        <AnimatedAvatar
-          emoji={profile ? avatarEmoji(profile.avatar) : '🦊'}
-          style={styles.avatar}
-          interactive
-        />
+        <AnimatedAvatar source={avatarSource(profile?.avatar ?? 'zorro')} size={64} interactive />
         <Text style={styles.title}>
           {t('storyGenerator.title', {
             nombre: profile?.nombre ?? t('storyGenerator.youFallback'),
@@ -195,7 +191,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
       <FullScreenLoader
         visible={loading}
         message={t('storyGenerator.creating')}
-        avatar={profile ? avatarEmoji(profile.avatar) : undefined}
+        avatarId={profile?.avatar}
       />
 
       {error ? (
@@ -213,9 +209,6 @@ const makeStyles = (colors: ColorTokens) =>
     header: {
       alignItems: 'center',
       gap: spacing.sm,
-    },
-    avatar: {
-      fontSize: 56,
     },
     title: {
       ...typography.headlineMd,

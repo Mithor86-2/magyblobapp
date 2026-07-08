@@ -1,54 +1,85 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View, type ImageSourcePropType } from 'react-native';
 import { AnimatedAvatar } from './AnimatedAvatar';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, radius, tapTarget } from '../theme/tokens';
 
 /**
- * Avatares predefinidos como emojis: sin assets externos ni descargas en runtime
- * (coherente con el cumplimiento para menores). El `id` ASCII es lo que se guarda
- * en el perfil; el emoji es solo presentación.
+ * Avatares predefinidos como **imágenes propias** empaquetadas en la app (sin descargas
+ * en runtime, coherente con el cumplimiento para menores). El `id` ASCII es lo que se
+ * guarda en el perfil; la imagen es solo presentación. Los `require` son **estáticos**
+ * porque Metro no resuelve `require` dinámicos: solo se empaqueta lo referenciado
+ * literalmente en `avatarImages`.
  */
-export const AVATARS: ReadonlyArray<{ id: string; emoji: string }> = [
-  { id: 'zorro', emoji: '🦊' },
-  { id: 'gato', emoji: '🐱' },
-  { id: 'oso', emoji: '🐻' },
-  { id: 'conejo', emoji: '🐰' },
-  { id: 'leon', emoji: '🦁' },
-  { id: 'rana', emoji: '🐸' },
-  { id: 'pollito', emoji: '🐥' },
-  { id: 'unicornio', emoji: '🦄' },
+const avatarImages: Record<string, ImageSourcePropType> = {
+  zorro: require('../../../assets/images/avatars/zorro.png'),
+  leon: require('../../../assets/images/avatars/leon.png'),
+  tigre: require('../../../assets/images/avatars/tigre.png'),
+  panda: require('../../../assets/images/avatars/panda.png'),
+  koala: require('../../../assets/images/avatars/koala.png'),
+  mono: require('../../../assets/images/avatars/mono.png'),
+  conejo: require('../../../assets/images/avatars/conejo.png'),
+  elefante: require('../../../assets/images/avatars/elefante.png'),
+  jirafa: require('../../../assets/images/avatars/jirafa.png'),
+  venado: require('../../../assets/images/avatars/venado.png'),
+  pinguino: require('../../../assets/images/avatars/pinguino.png'),
+  lechuza: require('../../../assets/images/avatars/lechuza.png'),
+};
+
+/** Avatar por defecto: se usa cuando un perfil guarda un `id` sin imagen (perfiles antiguos). */
+const DEFAULT_AVATAR = 'zorro';
+
+/** IDs de avatar seleccionables, en el orden en que se muestran en el selector. */
+export const AVATARS: ReadonlyArray<string> = [
+  'zorro',
+  'leon',
+  'tigre',
+  'panda',
+  'koala',
+  'mono',
+  'conejo',
+  'elefante',
+  'jirafa',
+  'venado',
+  'pinguino',
+  'lechuza',
 ];
 
-export function avatarEmoji(id: string): string {
-  return AVATARS.find((a) => a.id === id)?.emoji ?? '🦊';
+/**
+ * Resuelve el `id` de avatar guardado en el perfil a su imagen empaquetada. Ante un `id`
+ * desconocido (p. ej. un emoji antiguo como `gato`/`unicornio`) devuelve el avatar por
+ * defecto, de modo que ningún perfil existente queda sin imagen.
+ */
+export function avatarSource(id: string): ImageSourcePropType {
+  return avatarImages[id] ?? avatarImages[DEFAULT_AVATAR];
 }
+
+/** Tamaño de cada avatar dentro de la celda del selector. */
+const PICKER_AVATAR_SIZE = 44;
 
 interface AvatarPickerProps {
   value: string | null;
   onChange: (id: string) => void;
 }
 
+/**
+ * Selector de avatar: rejilla de imágenes; resalta el elegido. Emite el `id` del avatar.
+ */
 export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
   const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.grid}>
-      {AVATARS.map((avatar) => {
-        const selected = value === avatar.id;
+      {AVATARS.map((id) => {
+        const selected = value === id;
         return (
           <Pressable
-            key={avatar.id}
+            key={id}
             accessibilityRole="button"
-            accessibilityLabel={avatar.id}
+            accessibilityLabel={id}
             accessibilityState={{ selected }}
-            onPress={() => onChange(avatar.id)}
+            onPress={() => onChange(id)}
             style={[styles.cell, selected ? styles.selected : styles.unselected]}
           >
-            {/* El avatar elegido se anima (US-90); los demás, estáticos. */}
-            {selected ? (
-              <AnimatedAvatar emoji={avatar.emoji} style={styles.emoji} />
-            ) : (
-              <Text style={styles.emoji}>{avatar.emoji}</Text>
-            )}
+            <AnimatedAvatar source={avatarSource(id)} size={PICKER_AVATAR_SIZE} />
           </Pressable>
         );
       })}
@@ -78,8 +109,5 @@ const makeStyles = (colors: ColorTokens) =>
     unselected: {
       backgroundColor: colors.surfaceContainer,
       borderColor: colors.outline,
-    },
-    emoji: {
-      fontSize: 32,
     },
   });
