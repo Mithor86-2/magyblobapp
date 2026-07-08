@@ -11,12 +11,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
-- Selector de avatar (Crear perfil) en **rejilla de 4 columnas** (12 avatares en 3 filas de 4) cuyas
-  imágenes **ocupan el ancho del contenedor**, **redondas** (recortadas en círculo) y **sin fondo**;
-  el avatar elegido se marca con un **anillo redondo**. (US-104, amplía US-103)
-- Título de la **tarjeta de cuento** del Historial en **negrita** (antes en peso normal).
-- Texto del cuento **centrado verticalmente** en la hoja del lector (antes alineado arriba).
-
 ### Deprecated
 
 ### Removed
@@ -24,6 +18,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+## [1.16.0] - 2026-07-08
+
+### Changed
+
+- Selector de avatar (Crear perfil) en **rejilla de 4 columnas** (12 avatares en 3 filas de 4) cuyas
+  imágenes **ocupan el ancho del contenedor**, **redondas** (recortadas en círculo) y **sin fondo**;
+  el avatar elegido se marca con un **anillo redondo**. (US-104, amplía US-103)
+- Título de la **tarjeta de cuento** del Historial en **negrita** (antes en peso normal).
+- Texto del cuento **centrado verticalmente** en la hoja del lector (antes alineado arriba).
 
 ## [1.15.0] - 2026-07-07
 
