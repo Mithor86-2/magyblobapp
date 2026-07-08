@@ -28,6 +28,8 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   el avatar elegido se marca con un **anillo redondo**. (US-104, amplía US-103)
 - Título de la **tarjeta de cuento** del Historial en **negrita** (antes en peso normal).
 - Texto del cuento **centrado verticalmente** en la hoja del lector (antes alineado arriba).
+- **Nuevas ilustraciones de avatares** (arte actualizado de los 12 animales, 211×211 con
+  transparencia, ~60 KB c/u).
 
 ## [1.15.0] - 2026-07-07
 
