@@ -124,15 +124,23 @@ Fecha de entrega: **20/07/2026**.
       árbol por capas (domain/application/infrastructure/routes en backend; domain/infra/presentation/
       store en app). Complementa el ER de [modelo-datos.md](../modelo-datos.md).
 
+> **Nota:** el **contenido de entrega final** (slides + guion de vídeo) es material del alumno y **no
+> se versiona** — vive como **archivos locales** en `Docs/entrega/` (carpeta ignorada en `.gitignore`,
+> mismo criterio que `README.local.md`). Aquí solo se lleva su **estado**.
+
 ## Fase E — Slides (contenido + guion; el alumno los monta)
 
-- [ ] E1. Guion/estructura: problema → solución → demo → arquitectura → decisiones (ADRs) →
-      calidad (tests/CI/cumplimiento de menores) → aprendizajes → cierre.
-- [ ] E2. Texto por slide listo para pegar en Canva/Google Slides.
+- [x] E1. ✅ Guion/estructura (14 slides): problema → solución → demo → arquitectura → decisiones
+      (ADRs) → calidad → aprendizajes → cierre. Redactado como archivo **local** (`Docs/entrega/slides.md`,
+      no versionado).
+- [x] E2. ✅ Texto por slide listo para pegar en Canva/Google Slides (mismo archivo local).
+      _(Falta: montaje visual + URL pública de las slides para el bloque de entrega C1.)_
 
 ## Fase F — Vídeo (guion; el alumno graba con captura de pantalla)
 
-- [ ] F1. Guion cronometrado + checklist de demo (qué pantallas mostrar, en qué orden, qué decir).
+- [x] F1. ✅ Guion **cronometrado** (~8-10 min) + checklist de preparación y de demo (qué pantallas,
+      en qué orden, qué decir). Redactado como archivo **local** (`Docs/entrega/guion-video.md`, no
+      versionado). _(Falta: grabar y publicar el vídeo + su URL pública para C1.)_
 
 ## Fase G — Cierre y defensa
 
