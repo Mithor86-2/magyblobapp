@@ -12,8 +12,14 @@ en local **sin GPU ni claves**.
 
 ## Descargar la app (Android)
 
-**APK lista para instalar (v1.16.0):** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/85ddeabf-1f84-4ec4-ba1e-faae7e3aad9f)
-→ en esa página, **Install** (QR o descarga directa del `.apk`).
+**APK lista para instalar (v1.16.0):**
+
+- **Descarga directa (recomendada, enlace permanente):**
+  [`aprendizajemagico_v_1.16.0.1.apk`](https://github.com/Mithor86-2/magyblobapp/releases/download/v1.16.0/aprendizajemagico_v_1.16.0.1.apk)
+  (asset de la [Release v1.16.0](https://github.com/Mithor86-2/magyblobapp/releases/tag/v1.16.0)).
+- **Alternativa:** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/85ddeabf-1f84-4ec4-ba1e-faae7e3aad9f)
+  → en esa página, **Install** (QR o descarga del `.apk`). _El enlace de EAS puede caducar; la Release
+  es el respaldo permanente._
 
 En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos» (o por cable,
 `adb install <fichero>.apk`). La app apunta al **backend de producción**; la primera petición tras

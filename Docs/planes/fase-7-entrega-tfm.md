@@ -93,15 +93,14 @@ Fecha de entrega: **20/07/2026**.
 
 ## Fase B — Acceso del evaluador (APK + credenciales)
 
-- [🔄] B1. **APK con EAS Build** — ✅ enlace de descarga de Expo en el README (v1.16.0). ⬜ **Falta**
-  adjuntar el `.apk` a la **Release de GitHub** como respaldo permanente (el enlace de EAS puede
-  caducar; hoy ninguna release tiene el APK como asset).
-- [🔄] B2. **Sembrar usuario de prueba en producción** (Neon): guardián con email+contraseña
-  conocidos + ≥1 perfil de niño, vía seed idempotente o alta única. Credenciales genéricas, no
-  personales. **US-105** — rama `feature/106-entrega-tfm-usuario-prueba-diagrama`. ✅ Seed
-  idempotente `prisma/seed-usuario-prueba.ts` (script `seed:test-user`) + credenciales documentadas
-  en el README (`usuariotest@mail.com` / `S12345678s`, perfil «Fulanito» 3 años, animales+magia).
-  ⏳ **Falta ejecutarlo contra Neon** (el usuario, con `DATABASE_URL` de prod).
+- [x] B1. ✅ **APK con EAS Build** (v1.16.0). Enlace EAS en el README **y respaldo permanente** como
+      asset de la **GitHub Release v1.16.0**
+      (`aprendizajemagico_v_1.16.0.1.apk`, subido el 2026-07-08 con `gh release upload`); el `*.apk`
+      sigue ignorado en git (convención: se distribuye por Releases, no en el árbol).
+- [x] B2. ✅ **Usuario de prueba en producción (Neon)** sembrado y **verificado el 2026-07-08**: el
+      login contra Render (`POST /guardians/login`) devuelve sesión JWT para `usuariotest@mail.com`
+      (guardián «Sutanito Test», `emailVerificado: true`) con el perfil «Fulanito» (3 años,
+      animales+magia). **US-105**, seed idempotente `seed:test-user`. Credenciales en el README.
 - [ ] B3. Smoke **sobre el APK** (no web): instalar → login con las credenciales → generar cuento →
       historial, contra el backend de Render. _Depende de B2; verificación manual del usuario._
 
