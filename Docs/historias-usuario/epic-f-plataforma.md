@@ -1892,3 +1892,41 @@ versión de la app.
 - **(Autor)** Dado un cuento/actividad generado por Gemini, Entonces el Autor muestra "IA en la nube
   (G)"; por Groq, "(GQ)".
 - **(Versión sin sesión)** Dado el Dashboard, Entonces se muestra la versión de la app al pie.
+
+## US-100 — Color e icono por vocabulario en tarjetas y chips {#us-100}
+
+> **Ajuste (lote de ideas UI).** Amplía US-89 (chips con color por _familia_) a un **color propio por
+> valor**, estable en toda la app, y lo lleva a las tarjetas.
+
+**Como** persona usuaria, **quiero** que cada tema, estilo, enseñanza y categoría tenga su **color** e
+**icono** propios y consistentes en toda la app (mismo texto → mismo color), y que las tarjetas de
+cuento y actividad los reflejen, **para** reconocer de un vistazo de qué trata cada elemento.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Historial (cuentos/actividades) / Cuentos /
+Crear perfil / Dashboard.
+
+**Alcance**
+
+1. Fuente única de **color por valor** (`vocabColor`, respaldada por la paleta `categoryColors` del
+   theme en claro y oscuro): tema/estilo/enseñanza/categoría. _Mismo texto → mismo color_ ("Música"
+   tema y categoría comparten color). Reemplaza el mapa local de color de `ActivityCard`.
+2. **Tarjeta de cuento** del historial: muestra la **portada** (`StoryCover`), "Ver de nuevo" pasa a
+   ser un **botón** estilado, y el **borde** de la tarjeta es del **mismo color** que el botón
+   (color del tema); icono de tema tintado con ese color.
+3. **Tarjeta de actividad**: el **borde** es del mismo color que el botón/acción de su categoría;
+   icono y badge con el color central.
+4. **Chips** de selección (Cuentos, Crear perfil, Dashboard): cada chip usa el color **de su valor**,
+   no un color de familia fijo.
+
+**Criterios de aceptación**
+
+- **(Color estable)** Dado un valor de vocabulario (p. ej. "Animales"), Entonces se pinta con el mismo
+  color en cualquier pantalla y componente (chip, tarjeta, icono).
+- **(Mismo texto, mismo color)** Dado "Música" como tema y como categoría, Entonces ambos usan el
+  mismo color.
+- **(Portada en historial)** Dada una tarjeta de cuento en el historial, Entonces muestra su portada
+  y un botón "Ver de nuevo" estilado.
+- **(Borde == acción)** Dada una tarjeta de cuento o de actividad en el historial, Entonces el borde
+  de la tarjeta y el botón/acción tienen el mismo color.
+- **(Icono + color)** Dada una tarjeta, Entonces muestra el icono de su tema/categoría tintado con el
+  color de ese valor.
