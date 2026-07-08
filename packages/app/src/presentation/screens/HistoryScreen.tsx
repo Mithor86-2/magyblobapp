@@ -19,6 +19,7 @@ import { AuthorBadge } from '../components/AuthorBadge';
 import { BubblyButton } from '../components/BubblyButton';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { SelectableChip } from '../components/SelectableChip';
+import { StoryCover } from '../components/StoryCover';
 import { TextField } from '../components/TextField';
 import { Icon } from '../components/Icon';
 import { CATEGORIAS, ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
@@ -26,6 +27,9 @@ import type { History, Story } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
 import { categoriaLabel, ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
+import { categoriaIcon, ensenanzaIcon, estiloIcon, temaIcon } from '../chipIcons';
+import { vocabColor } from '../vocabColor';
+import type { IconName } from '../components/Icon';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import {
@@ -41,7 +45,14 @@ import {
 } from './historyFilters';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
+import {
+  type CategoryColor,
+  type ColorTokens,
+  makeSoftShadow,
+  radius,
+  spacing,
+  typography,
+} from '../theme/tokens';
 import type { RootStackParamList, TabScreenProps } from '../navigation';
 
 /**
@@ -157,46 +168,63 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
   const actividadDestacada = ultimaActividad(history.activities);
 
   // Tarjeta de cuento reutilizada por el destacado y por la lista de la pestaña Cuentos:
-  // título completo, estado, favorito y acción que abre el lector.
+  // portada + título + estado + favorito, y un botón que abre el lector. El color del tema
+  // (US-100) tiñe el borde de la tarjeta, el icono de tema y el botón (borde == botón).
   const renderStoryCard = (story: Story) => {
     const fecha = formatearFecha(story.creadoEn, idioma);
+    const { color, on } = vocabColor(colors, story.tema);
     return (
-      <Appear key={story.id} style={styles.storyCard}>
-        <View style={styles.storyHeader}>
-          {/* A3: título completo (sin numberOfLines). */}
-          <Text style={styles.storyTitle}>{story.titulo}</Text>
-          <View
-            style={[
-              styles.estado,
-              story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
-            ]}
-          >
-            <Text style={styles.estadoText}>
-              {story.estado === 'leido' ? t('history.read') : t('history.new')}
-            </Text>
+      <Appear key={story.id} style={[styles.storyCard, { borderColor: color }]}>
+        <View style={styles.storyTop}>
+          {/* US-100 (#1): portada del cuento (generada o respaldo por tema) como miniatura. */}
+          <StoryCover
+            generada={story.portada}
+            tema={story.tema}
+            style={styles.cover}
+            accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
+          />
+          <View style={styles.storyInfo}>
+            <View style={styles.storyTitleRow}>
+              {/* US-100 (#4): icono del tema tintado con su color. */}
+              <Icon name={temaIcon(story.tema)} size="sm" color={color} />
+              {/* A3: título completo (sin numberOfLines). */}
+              <Text style={styles.storyTitle}>{story.titulo}</Text>
+            </View>
+            <View style={styles.storyMeta}>
+              <View
+                style={[
+                  styles.estado,
+                  story.estado === 'leido' ? styles.estadoLeido : styles.estadoNuevo,
+                ]}
+              >
+                <Text style={styles.estadoText}>
+                  {story.estado === 'leido' ? t('history.read') : t('history.new')}
+                </Text>
+              </View>
+              <AuthorBadge proveedor={story.proveedor} />
+            </View>
+            {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
           </View>
           <FavoriteButton
             favorito={story.favorito}
             onToggle={(favorito) => toggleFavoritoCuento(story.id, favorito)}
           />
         </View>
-        <Pressable
+        {/* US-100 (#1/#3): botón de leer estilado; su color es el del tema (== borde). */}
+        <BubblyButton
+          label={t('history.readStory')}
+          icon="story"
+          color={color}
+          on={on}
           onPress={() => openReader(story)}
-          accessibilityRole="button"
           accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}
-          style={styles.accionRow}
-        >
-          <Text style={styles.accion}>{t('history.readStory')}</Text>
-          <Icon name="arrow-right" size="sm" color={colors.primary} />
-        </Pressable>
-        <AuthorBadge proveedor={story.proveedor} />
-        {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
+        />
       </Appear>
     );
   };
 
   return (
-    <Screen title={t('tabs.historial')} headerAction={<AdultsButton onPress={openParental} />}>
+    <Screen title={t('common.appName')} headerAction={<AdultsButton onPress={openParental} />}>
       <Text style={styles.title}>{t('history.title')}</Text>
       <Text style={styles.subtitle}>{t('history.subtitle')}</Text>
 
@@ -221,7 +249,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
           {actividadDestacada ? (
             <View>
               <Text style={styles.destacadoLabel}>{t('history.lastActivity')}</Text>
-              <ActivityCard activity={actividadDestacada} />
+              <ActivityCard activity={actividadDestacada} compact />
             </View>
           ) : null}
         </View>
@@ -308,7 +336,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
             <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
           ) : (
             actividadesVisibles.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} />
+              <ActivityCard key={activity.id} activity={activity} compact />
             ))
           )}
         </View>
@@ -358,6 +386,7 @@ interface SearchFiltersModalProps {
  */
 export function SearchFiltersModal(props: SearchFiltersModalProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
 
   return (
@@ -379,25 +408,45 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
           <ScrollView contentContainerStyle={styles.modalBody}>
             <FilterGroup
               label={t('history.filterTheme')}
-              options={TEMAS.map((tema) => ({ value: tema, label: temaLabel(tema) }))}
+              options={TEMAS.map((tema) => ({
+                value: tema,
+                label: temaLabel(tema),
+                icon: temaIcon(tema),
+                tint: vocabColor(colors, tema),
+              }))}
               selected={props.temaFiltro}
               onSelect={(v) => props.setTemaFiltro(v as FiltroTema)}
             />
             <FilterGroup
               label={t('history.filterStyle')}
-              options={ESTILOS.map((e) => ({ value: e, label: estiloLabel(e) }))}
+              options={ESTILOS.map((e) => ({
+                value: e,
+                label: estiloLabel(e),
+                icon: estiloIcon(e),
+                tint: vocabColor(colors, e),
+              }))}
               selected={props.estiloFiltro}
               onSelect={(v) => props.setEstiloFiltro(v as FiltroEstilo)}
             />
             <FilterGroup
               label={t('history.filterTeaching')}
-              options={ENSENANZAS.map((e) => ({ value: e, label: ensenanzaLabel(e) }))}
+              options={ENSENANZAS.map((e) => ({
+                value: e,
+                label: ensenanzaLabel(e),
+                icon: ensenanzaIcon(e),
+                tint: vocabColor(colors, e),
+              }))}
               selected={props.ensenanzaFiltro}
               onSelect={(v) => props.setEnsenanzaFiltro(v as FiltroEnsenanza)}
             />
             <FilterGroup
               label={t('history.filterCategory')}
-              options={CATEGORIAS.map((c) => ({ value: c, label: categoriaLabel(c) }))}
+              options={CATEGORIAS.map((c) => ({
+                value: c,
+                label: categoriaLabel(c),
+                icon: categoriaIcon(c),
+                tint: vocabColor(colors, c),
+              }))}
               selected={props.categoriaFiltro}
               onSelect={(v) => props.setCategoriaFiltro(v as FiltroCategoria)}
             />
@@ -425,7 +474,8 @@ export function SearchFiltersModal(props: SearchFiltersModalProps) {
 
 interface FilterGroupProps {
   label: string;
-  options: { value: string; label: string }[];
+  /** Cada opción con su etiqueta y, para los vocabularios, su icono y color por valor (US-100). */
+  options: { value: string; label: string; icon?: IconName; tint?: CategoryColor }[];
   selected: string;
   onSelect: (value: string) => void;
 }
@@ -438,6 +488,7 @@ function FilterGroup({ label, options, selected, onSelect }: FilterGroupProps) {
     <View style={styles.filterGroup}>
       <Text style={styles.filterLabel}>{label}</Text>
       <View style={styles.chipRowWrap}>
+        {/* "Todos" es una opción transversal (sin vocabulario): sin icono ni color propio. */}
         <SelectableChip
           label={t('history.filterAll')}
           selected={selected === TODOS}
@@ -449,6 +500,8 @@ function FilterGroup({ label, options, selected, onSelect }: FilterGroupProps) {
             label={o.label}
             selected={selected === o.value}
             onPress={() => onSelect(o.value)}
+            icon={o.icon}
+            tint={o.tint}
           />
         ))}
       </View>
@@ -556,20 +609,43 @@ const makeStyles = (colors: ColorTokens) =>
     storyCard: {
       backgroundColor: colors.surfaceContainer,
       borderRadius: radius.lg,
+      // US-100 (#3): borde de la tarjeta del color del tema (== color del botón); el tono
+      // concreto se inyecta en línea por tema.
+      borderWidth: 2,
       padding: spacing.md,
       gap: spacing.sm,
       ...makeSoftShadow(colors),
     },
-    storyHeader: {
+    // US-100 (#1): fila superior con la portada (izquierda), la info (centro) y el favorito.
+    storyTop: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.sm,
+    },
+    cover: {
+      width: 72,
+      height: 72,
+      borderRadius: radius.md,
+    },
+    storyInfo: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    storyTitleRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: spacing.sm,
+      gap: spacing.xs,
     },
     storyTitle: {
       ...typography.bodyLg,
       color: colors.onSurface,
       flex: 1,
+    },
+    storyMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.xs,
     },
     estado: {
       borderRadius: radius.pill,
@@ -585,15 +661,6 @@ const makeStyles = (colors: ColorTokens) =>
     estadoText: {
       ...typography.labelBold,
       color: colors.onSurface,
-    },
-    accionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-    },
-    accion: {
-      ...typography.labelBold,
-      color: colors.primary,
     },
     modalBackdrop: {
       flex: 1,

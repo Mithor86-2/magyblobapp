@@ -13,6 +13,19 @@
  * renderizan sin provider (contexto por defecto = claro).
  */
 
+import type { Categoria, Ensenanza, Estilo, Tema } from '../../domain/types';
+
+/**
+ * Clave de color por **valor de vocabulario** (US-100): cada tema, estilo, enseñanza y
+ * categoría tiene su color propio y estable en toda la app. Al ser la unión de los cuatro
+ * vocabularios, un mismo texto comparte clave (p. ej. `musica` es tema **y** categoría), de
+ * modo que "Música" se pinta con el mismo color en cualquier sitio.
+ */
+export type CategoryColorKey = Tema | Estilo | Ensenanza | Categoria;
+
+/** Color de una categoría/valor: el `color` base (borde/icono/relleno) y el `on` legible encima. */
+export type CategoryColor = { color: string; on: string };
+
 /**
  * Contrato de colores del tema: las claves son idénticas en claro y oscuro, de
  * modo que cualquier `StyleSheet` funciona con ambas paletas (US-66).
@@ -49,6 +62,11 @@ export type ColorTokens = {
   onErrorContainer: string;
   /** Borde inferior "squishy" (tono oscuro del error) — sombra del botón destructivo (US-87). */
   errorBorder: string;
+  /**
+   * Color por **valor de vocabulario** (US-100): tema/estilo/enseñanza/categoría → color propio.
+   * Fuente única del color por valor; lo consume el resolvedor `vocabColor`.
+   */
+  category: Record<CategoryColorKey, CategoryColor>;
 };
 
 /** Paleta clara (la histórica): superficies crema cálidas, coral/menta/cielo. */
@@ -86,6 +104,27 @@ export const lightColors: ColorTokens = {
   errorContainer: '#ffdad6',
   onErrorContainer: '#93000a',
   errorBorder: '#8c1414', // tono oscuro del rojo (borde del botón destructivo)
+  // Color por valor de vocabulario (US-100): tonos medios saturados con texto blanco encima.
+  category: {
+    // Temas.
+    animales: { color: '#3f8a5c', on: '#ffffff' }, // verde
+    aventuras: { color: '#1f6f9c', on: '#ffffff' }, // azul cielo
+    musica: { color: '#9c4143', on: '#ffffff' }, // coral (compartido con la categoría "Música")
+    espacio: { color: '#3f4d9c', on: '#ffffff' }, // índigo
+    magia: { color: '#7a3f9c', on: '#ffffff' }, // púrpura
+    // Estilos.
+    aventura: { color: '#6b8e23', on: '#ffffff' }, // oliva
+    divertido: { color: '#c2477a', on: '#ffffff' }, // magenta
+    educativo: { color: '#2f5aa0', on: '#ffffff' }, // azul marino
+    // Enseñanzas.
+    amistad: { color: '#c26a2f', on: '#ffffff' }, // naranja tostado
+    emociones: { color: '#a83f6b', on: '#ffffff' }, // frambuesa
+    valentia: { color: '#3f7a9c', on: '#ffffff' }, // azul acero
+    honestidad: { color: '#5a7a3f', on: '#ffffff' }, // verde oliva oscuro
+    // Categorías de actividad ("musica" comparte entrada con el tema).
+    arte: { color: '#b5651d', on: '#ffffff' }, // naranja/ámbar
+    logica: { color: '#1f8a8a', on: '#ffffff' }, // teal
+  },
 };
 
 /**
@@ -131,6 +170,28 @@ export const darkColors: ColorTokens = {
   errorContainer: '#93000a',
   onErrorContainer: '#ffdad6',
   errorBorder: '#d1746b', // tono oscuro del rojo claro (borde del botón destructivo)
+  // Color por valor de vocabulario (US-100): mismos tonos aclarados para legibilidad sobre
+  // el índigo nocturno; texto oscuro encima de estos pasteles claros.
+  category: {
+    // Temas.
+    animales: { color: '#7fce9f', on: '#111125' }, // verde
+    aventuras: { color: '#76c3e1', on: '#111125' }, // azul cielo
+    musica: { color: '#ffb4a7', on: '#111125' }, // coral (compartido con la categoría "Música")
+    espacio: { color: '#a8b1f0', on: '#111125' }, // índigo claro
+    magia: { color: '#d3bcfc', on: '#111125' }, // púrpura claro
+    // Estilos.
+    aventura: { color: '#bcd88a', on: '#111125' }, // oliva claro
+    divertido: { color: '#f4a8c8', on: '#111125' }, // magenta claro
+    educativo: { color: '#a0bce8', on: '#111125' }, // azul marino claro
+    // Enseñanzas.
+    amistad: { color: '#f0b088', on: '#111125' }, // naranja claro
+    emociones: { color: '#e087a8', on: '#111125' }, // frambuesa claro
+    valentia: { color: '#8fc4e0', on: '#111125' }, // azul acero claro
+    honestidad: { color: '#b8d090', on: '#111125' }, // verde oliva claro
+    // Categorías de actividad ("musica" comparte entrada con el tema).
+    arte: { color: '#f0b878', on: '#111125' }, // ámbar claro
+    logica: { color: '#76d5d5', on: '#111125' }, // teal claro
+  },
 };
 
 /** Paletas indexadas por esquema (las selecciona el `ThemeProvider`, US-66). */
@@ -222,3 +283,17 @@ export function makeSoftShadow(c: ColorTokens) {
 
 /** Sombra suave del tema claro (back-compat para imports estáticos). */
 export const softShadow = makeSoftShadow(lightColors);
+
+/**
+ * Oscurece un color hexadecimal `#rrggbb` un `factor` (0..1). Se usa para derivar el
+ * "labio" inferior de los botones tintados por vocabulario (US-100), donde no hay un
+ * token de borde oscuro predefinido como en las variantes fijas del `BubblyButton`.
+ */
+export function darken(hex: string, factor = 0.22): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+  const r = clamp(((n >> 16) & 255) * (1 - factor));
+  const g = clamp(((n >> 8) & 255) * (1 - factor));
+  const b = clamp((n & 255) * (1 - factor));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+}

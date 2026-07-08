@@ -63,7 +63,7 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
   return (
     <Screen
       headerImageName="home"
-      title={t('tabs.inicio')}
+      title={t('common.appName')}
       headerAction={<AdultsButton onPress={openParental} />}
     >
       <View style={styles.hero}>

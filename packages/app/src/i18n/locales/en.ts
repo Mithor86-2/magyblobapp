@@ -360,6 +360,8 @@ export const en: typeof es = {
     howTo: 'How to do it',
     showSteps: 'Show steps',
     hideSteps: 'Hide steps',
+    showMore: 'See more',
+    showLess: 'See less',
     done: 'Done!',
     howWasIt: 'How was it?',
     markDone: 'Done',

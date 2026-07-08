@@ -93,18 +93,21 @@ export function Screen({
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* A6/US-80: barra fija con el nombre de sección (izquierda) y las acciones
-            (zona de adultos, derecha), dentro del área segura y por encima del scroll. */}
+        {/* A6/US-80: barra fija dentro del área segura y por encima del scroll. El título va
+            **centrado** (US-100) con un espaciador a cada lado del mismo ancho que la acción,
+            para que quede centrado en toda la barra aunque la acción (zona de adultos) esté a
+            la derecha. */}
         {title || headerAction ? (
           <View style={styles.headerBar}>
+            <View style={styles.headerSide} />
             {title ? (
               <Text style={styles.headerTitle} accessibilityRole="header" numberOfLines={1}>
                 {title}
               </Text>
             ) : (
-              <View />
+              <View style={styles.headerTitle} />
             )}
-            {headerAction ?? <View />}
+            <View style={styles.headerSideRight}>{headerAction}</View>
           </View>
         ) : null}
         <ScrollView
@@ -167,13 +170,22 @@ const makeStyles = (colors: ColorTokens) =>
     headerBar: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
       paddingHorizontal: spacing.containerPadding,
       paddingTop: spacing.sm,
     },
     headerTitle: {
       ...typography.headlineMd,
-      color: colors.onSurface,
-      flexShrink: 1,
+      color: colors.primary,
+      flex: 1,
+      textAlign: 'center',
+    },
+    // Espaciadores del mismo ancho que la acción (zona de adultos, ~48px) para que el título
+    // quede centrado en toda la barra; el derecho aloja la acción alineada a la derecha.
+    headerSide: {
+      width: 48,
+    },
+    headerSideRight: {
+      width: 48,
+      alignItems: 'flex-end',
     },
   });

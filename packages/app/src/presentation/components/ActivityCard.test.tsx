@@ -123,6 +123,66 @@ describe('ActivityCard', () => {
   });
 });
 
+describe('ActivityCard · color por categoría (US-100)', () => {
+  const bordeDe = (activity: Activity) => {
+    const { container } = render(<ActivityCard activity={activity} />);
+    const card = container.firstChild as HTMLElement;
+    return getComputedStyle(card).borderBottomColor;
+  };
+
+  it('el borde de la tarjeta y la acción "Ver pasos" usan el mismo color', () => {
+    const { container } = render(
+      <ActivityCard
+        activity={{ ...base, categoria: 'musica', instrucciones: '1. Uno. 2. Dos.' }}
+      />,
+    );
+    const card = container.firstChild as HTMLElement;
+    const borde = getComputedStyle(card).borderBottomColor;
+    const accion = getComputedStyle(screen.getByText('Ver pasos')).color;
+
+    expect(borde).toBeTruthy();
+    expect(accion).toBe(borde);
+  });
+
+  it('cada categoría tiñe el borde con un color distinto', () => {
+    expect(bordeDe({ ...base, categoria: 'arte' })).not.toBe(
+      bordeDe({ ...base, categoria: 'logica' }),
+    );
+  });
+});
+
+describe('ActivityCard · modo compacto en historial (US-100)', () => {
+  const conPasos = { ...base, instrucciones: '1. Uno. 2. Dos.' };
+
+  it('oculta descripción y pasos hasta pulsar "Ver más", y los repliega con "Ver menos"', () => {
+    render(<ActivityCard activity={conPasos} compact />);
+
+    // El título y la categoría se ven siempre; el detalle no.
+    expect(screen.getByText('Pintar un dragón')).toBeVisible();
+    expect(screen.getByText('Arte')).toBeVisible();
+    expect(screen.queryByText('Con acuarelas de colores')).not.toBeInTheDocument();
+    expect(screen.queryByText('Uno.')).not.toBeInTheDocument();
+    // En compacto no hay botón separado de "Ver pasos": todo cuelga de "Ver más".
+    expect(screen.queryByRole('button', { name: 'Ver pasos' })).not.toBeInTheDocument();
+
+    // "Ver más" despliega descripción y pasos.
+    fireEvent.click(screen.getByRole('button', { name: 'Ver más' }));
+    expect(screen.getByText('Con acuarelas de colores')).toBeVisible();
+    expect(screen.getByText('Uno.')).toBeVisible();
+    expect(screen.getByText('Dos.')).toBeVisible();
+
+    // "Ver menos" los vuelve a ocultar.
+    fireEvent.click(screen.getByRole('button', { name: 'Ver menos' }));
+    expect(screen.queryByText('Con acuarelas de colores')).not.toBeInTheDocument();
+  });
+
+  it('sin compacto, la descripción se ve siempre (comportamiento por defecto)', () => {
+    render(<ActivityCard activity={conPasos} />);
+    expect(screen.getByText('Con acuarelas de colores')).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Ver más' })).not.toBeInTheDocument();
+  });
+});
+
 describe('pasosDeInstrucciones', () => {
   it('parte un texto numerado "1. … 2. …" en pasos sin el marcador', () => {
     expect(pasosDeInstrucciones('1. Coge el papel. 2. Pinta. 3. Limpia.')).toEqual([

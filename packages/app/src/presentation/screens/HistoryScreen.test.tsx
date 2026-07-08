@@ -300,6 +300,48 @@ describe('HistoryScreen — destacados y toggle (A3/US-74)', () => {
   });
 });
 
+describe('HistoryScreen — tarjeta de cuento (US-100)', () => {
+  beforeEach(() => {
+    getHistoryMock.mockReset();
+    getHistoryMock.mockResolvedValue({
+      stories: [story('1', 'animales', 'aventura', '2026-06-25T10:00:00.000Z')],
+      activities: [],
+    });
+  });
+
+  it('muestra la portada y un botón de leer estilado con el color del tema (borde == botón)', async () => {
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(enCuentos().getByText('Cuento 1')).toBeVisible());
+    const lista = screen.getByTestId('history-stories');
+
+    // (#1) La tarjeta muestra la portada (StoryCover no está mockeada → renderiza una imagen).
+    expect(within(lista).getAllByRole('img').length).toBeGreaterThan(0);
+
+    // (#1) "Leer cuento" es ahora un botón (no un enlace de texto).
+    const card = lista.firstElementChild as HTMLElement;
+    const boton = within(lista).getByRole('button', { name: 'Leer el cuento Cuento 1' });
+
+    // (#3) El borde de la tarjeta y el fondo del botón son el mismo color.
+    const borde = getComputedStyle(card).borderTopColor;
+    const fondoBoton = getComputedStyle(boton).backgroundColor;
+    expect(borde).toBeTruthy();
+    expect(fondoBoton).toBe(borde);
+  });
+
+  it('cada tema tiñe el borde de la tarjeta con un color distinto', async () => {
+    const bordeDelTema = async (tema: Story['tema']) => {
+      getHistoryMock.mockResolvedValue({ stories: [story('1', tema, 'aventura')], activities: [] });
+      const { unmount } = render(<HistoryScreen {...props} />);
+      await waitFor(() => expect(enCuentos().getByText('Cuento 1')).toBeVisible());
+      const card = screen.getByTestId('history-stories').firstElementChild as HTMLElement;
+      const borde = getComputedStyle(card).borderTopColor;
+      unmount();
+      return borde;
+    };
+    expect(await bordeDelTema('animales')).not.toBe(await bordeDelTema('espacio'));
+  });
+});
+
 /**
  * A3: la modal de búsqueda tiene un botón "X" (Cerrar) arriba a la derecha que
  * dispara el cierre. Se prueba el componente exportado en aislamiento con un espía
