@@ -62,7 +62,7 @@ start en la primera petición.)_ La cuenta se siembra de forma idempotente con
 | **App móvil**  | Expo (React Native) · React Navigation · Zustand · Playwright (E2E web)                                   |
 | **IA**         | `AIProvider` conmutable: mock · Ollama (`gemma:2b`) · cloud (cascada Gemini→Groq→mock, OpenAI-compatible) |
 | **Monorepo**   | pnpm workspaces · Docker Compose · ESLint + Prettier · Husky                                              |
-| **Producción** | Render (backend Docker) · Neon (PostgreSQL) · Groq (IA) · Expo EAS (APK)                                  |
+| **Producción** | Render (backend Docker) · Neon (PostgreSQL) · IA cloud Gemini→Groq · Expo EAS (APK)                       |
 
 ## Requisitos
 
