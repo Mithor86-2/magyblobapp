@@ -17,12 +17,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+### Security
+
+## [1.16.1] - 2026-07-08
+
+### Fixed
+
 - El **pie de versión** muestra ahora la versión del **código/release** (`app.json` vía
   `expo-constants`, la misma fuente que Sentry) en vez de la del binario nativo
   (`expo-application`), que se congelaba al compilar y quedaba desincronizada tras un cambio de
   versión.
-
-### Security
 
 ## [1.16.0] - 2026-07-08
 
