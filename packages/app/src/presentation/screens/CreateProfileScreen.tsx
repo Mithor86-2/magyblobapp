@@ -6,7 +6,7 @@ import { BubblyButton } from '../components/BubblyButton';
 import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
-import { AvatarPicker, avatarEmoji } from '../components/AvatarPicker';
+import { AvatarPicker } from '../components/AvatarPicker';
 import { useDialog } from '../components/DialogProvider';
 import { IDIOMAS, TEMAS } from '../../domain/types';
 import type { CodigoIdioma, Tema } from '../../domain/types';
@@ -96,7 +96,7 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
       <FullScreenLoader
         visible={submitting}
         message={t('createProfile.creating')}
-        avatar={avatar ? avatarEmoji(avatar) : undefined}
+        avatarId={avatar ?? undefined}
       />
       <TextField
         label={t('createProfile.name')}
