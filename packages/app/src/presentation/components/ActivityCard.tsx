@@ -118,26 +118,29 @@ export function ActivityCard({
         </View>
       ) : null}
       {meta.length > 0 ? <Text style={styles.meta}>{meta.join(' · ')}</Text> : null}
-
-      {completada ? (
-        <View style={styles.progreso}>
-          {/* Hecha pero aún sin puntuar y editable ⇒ invita a valorar; ya puntuada ⇒ "¡Hecha!". */}
-          <Text style={styles.meta}>
-            {activity.valoracion == null && onComplete
-              ? t('activityCard.howWasIt')
-              : t('activityCard.done')}
-          </Text>
-          <StarRating value={activity.valoracion ?? 0} onChange={onComplete} />
-        </View>
-      ) : onComplete ? (
-        <BubblyButton
-          label={t('activityCard.markDone')}
-          onPress={() => onComplete()}
-          variant="accent"
-        />
-      ) : null}
     </>
   );
+
+  // Bloque de progreso (US-72): hecha ⇒ "¡Hecha!"/valoración con estrellas; pendiente y
+  // con `onComplete` ⇒ botón "Realizado". Va fuera de `detalle` para verse también en
+  // compacto sin desplegar "Ver más" (US-10: marcar realizado desde el Historial).
+  const progreso = completada ? (
+    <View style={styles.progreso}>
+      {/* Hecha pero aún sin puntuar y editable ⇒ invita a valorar; ya puntuada ⇒ "¡Hecha!". */}
+      <Text style={styles.meta}>
+        {activity.valoracion == null && onComplete
+          ? t('activityCard.howWasIt')
+          : t('activityCard.done')}
+      </Text>
+      <StarRating value={activity.valoracion ?? 0} onChange={onComplete} />
+    </View>
+  ) : onComplete ? (
+    <BubblyButton
+      label={t('activityCard.markDone')}
+      onPress={() => onComplete()}
+      variant="accent"
+    />
+  ) : null;
 
   return (
     <Appear style={[styles.card, { borderBottomColor: color }]}>
@@ -157,6 +160,7 @@ export function ActivityCard({
       </View>
       <Text style={styles.titulo}>{activity.titulo}</Text>
       {detalleVisible ? detalle : null}
+      {progreso}
 
       <AuthorBadge proveedor={activity.proveedor} />
       {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}

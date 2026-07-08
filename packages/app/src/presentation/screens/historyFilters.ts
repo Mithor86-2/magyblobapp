@@ -39,14 +39,15 @@ export function ultimoCuento(stories: Story[]): Story | undefined {
 }
 
 /**
- * Devuelve la actividad **completada más reciente** por `completadaEn` (ISO, desc)
- * para la franja de destacados "Lo último" del Historial (A3/US-74), o `undefined` si
- * no hay actividades hechas. Solo considera las que tienen `completadaEn`.
+ * Devuelve la actividad **más reciente** para la franja de destacados "Lo último" del
+ * Historial (A3/US-74), o `undefined` si no hay actividades. Considera **todas** las
+ * actividades (US-09/US-10), completadas o pendientes: ordena por la fecha más
+ * significativa de cada una —`completadaEn` si está hecha, si no `creadoEn`— en orden
+ * descendente. Las que no traen ninguna fecha van al final (cadena vacía).
  */
 export function ultimaActividad(activities: Activity[]): Activity | undefined {
-  return [...activities]
-    .filter((a) => a.completadaEn != null)
-    .sort((a, b) => (b.completadaEn ?? '').localeCompare(a.completadaEn ?? ''))[0];
+  const fecha = (a: Activity) => a.completadaEn ?? a.creadoEn ?? '';
+  return [...activities].sort((a, b) => fecha(b).localeCompare(fecha(a)))[0];
 }
 
 /**

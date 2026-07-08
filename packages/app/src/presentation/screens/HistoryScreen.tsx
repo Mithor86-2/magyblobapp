@@ -148,9 +148,10 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     setBusqueda('');
   };
 
-  // "Hechas" = completadas (por `completadaEn`), aunque no tengan valoración (US-72);
-  // coherente con cómo el backend cuenta las actividades completadas para los logros.
-  const hechas = history.activities.filter((a) => a.completadaEn != null);
+  // US-09/US-10: el Historial lista **todas** las actividades del perfil —las hechas
+  // (con `completadaEn`) y las **pendientes**—, para poder marcarlas realizadas desde aquí.
+  // La `ActivityCard` distingue el estado (estrellas/"¡Hecha!" vs botón "Realizado").
+  const todasActividades = history.activities;
   // Listas filtradas en cliente (US-62 + US-64 + US-69) sobre lo ya cargado.
   const cuentosVisibles = filtrarCuentos(
     history.stories,
@@ -160,7 +161,19 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
     busqueda,
     ensenanzaFiltro,
   );
-  const actividadesVisibles = filtrarActividades(hechas, categoriaFiltro, soloFavoritos, busqueda);
+  const actividadesVisibles = filtrarActividades(
+    todasActividades,
+    categoriaFiltro,
+    soloFavoritos,
+    busqueda,
+  );
+
+  // US-10: marca una actividad como realizada (o la puntúa) desde el propio Historial y
+  // recarga la lista para reflejar el nuevo estado (mismo loader que usa el foco).
+  const completarActividad = async (activityId: string, valoracion?: number) => {
+    await api.activities.complete(activityId, valoracion);
+    await load();
+  };
 
   // A3/US-74: destacados "Lo último" — el cuento y la actividad más recientes (por fecha),
   // al margen de los filtros; siempre visibles si existen.
@@ -331,13 +344,18 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
         // `testID` para acotar la sección en los E2E: el tab navigator mantiene
         // montada también la pestaña Actividades, cuyas tarjetas coinciden en texto.
         <View testID="history-activities" style={styles.activitiesSection}>
-          {hechas.length === 0 ? (
+          {todasActividades.length === 0 ? (
             <Text style={styles.vacio}>{t('history.emptyActivities')}</Text>
           ) : actividadesVisibles.length === 0 ? (
             <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
           ) : (
             actividadesVisibles.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} compact />
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                compact
+                onComplete={(v) => void completarActividad(activity.id, v)}
+              />
             ))
           )}
         </View>
