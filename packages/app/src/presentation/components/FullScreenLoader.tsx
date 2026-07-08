@@ -2,7 +2,7 @@ import { ActivityIndicator, Modal, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSlowHint } from '../hooks/useSlowHint';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, spacing, typography } from '../theme/tokens';
+import { type ColorTokens, spacing, typography, withAlpha } from '../theme/tokens';
 
 interface FullScreenLoaderProps {
   /** Si el loader está visible (cubre la pantalla y bloquea la interacción). */
@@ -43,8 +43,9 @@ const makeStyles = (colors: ColorTokens) =>
   StyleSheet.create({
     backdrop: {
       flex: 1,
-      // Cubre la pantalla con la superficie del tema (loader "de pantalla", no un scrim translúcido).
-      backgroundColor: colors.surface,
+      // Superficie del tema con algo de transparencia (US-102): deja entrever la pantalla
+      // detrás sin perder legibilidad del indicador y el texto (opacos por encima).
+      backgroundColor: withAlpha(colors.surface, 0.88),
       alignItems: 'center',
       justifyContent: 'center',
       padding: spacing.lg,
