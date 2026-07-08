@@ -249,7 +249,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
           {actividadDestacada ? (
             <View>
               <Text style={styles.destacadoLabel}>{t('history.lastActivity')}</Text>
-              <ActivityCard activity={actividadDestacada} />
+              <ActivityCard activity={actividadDestacada} compact />
             </View>
           ) : null}
         </View>
@@ -336,7 +336,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
             <Text style={styles.vacio}>{t('history.noMatchActivities')}</Text>
           ) : (
             actividadesVisibles.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} />
+              <ActivityCard key={activity.id} activity={activity} compact />
             ))
           )}
         </View>

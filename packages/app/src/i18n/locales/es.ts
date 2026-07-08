@@ -364,6 +364,8 @@ export const es = {
     howTo: 'Cómo hacerlo',
     showSteps: 'Ver pasos',
     hideSteps: 'Ocultar pasos',
+    showMore: 'Ver más',
+    showLess: 'Ver menos',
     done: '¡Hecha!',
     howWasIt: '¿Qué tal estuvo?',
     markDone: 'Realizado',

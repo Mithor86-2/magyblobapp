@@ -49,6 +49,12 @@ interface ActivityCardProps {
    * que las actividades recién generadas muestren el paso a paso de inmediato.
    */
   pasosVisiblesInicial?: boolean;
+  /**
+   * Modo **compacto** (Historial, US-100): la tarjeta queda corta —cabecera, título, autor
+   * y fecha— y todo el **detalle** (descripción, pasos, duración/nivel y valoración) se
+   * oculta tras un botón **"Ver más"**, para igualar el tamaño a las tarjetas de cuento.
+   */
+  compact?: boolean;
 }
 
 /** Tarjeta de actividad: emoji + categoría + título + descripción + progreso. */
@@ -56,14 +62,17 @@ export function ActivityCard({
   activity,
   onComplete,
   pasosVisiblesInicial = false,
+  compact = false,
 }: ActivityCardProps) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   // US-81: los pasos se pliegan/despliegan; arrancan según `pasosVisiblesInicial`.
   const [mostrarPasos, setMostrarPasos] = useState(pasosVisiblesInicial);
+  // Modo compacto (US-100): el detalle completo se muestra/oculta con "Ver más".
+  const [expandido, setExpandido] = useState(false);
   // Color por valor de categoría (US-100): borde de tarjeta, icono, badge y la acción
-  // ("Ver pasos") comparten el mismo color; `on` es el texto legible sobre el color.
+  // ("Ver pasos"/"Ver más") comparten el mismo color; `on` es el texto legible encima.
   const { color, on } = vocabColor(colors, activity.categoria);
   const meta = [
     activity.duracionMin ? t('activityCard.minutes', { min: activity.duracionMin }) : null,
@@ -76,38 +85,29 @@ export function ActivityCard({
   const idioma = esIdiomaApp(i18n.language) ? i18n.language : DEFAULT_APP_LANGUAGE;
   const fecha = formatearFecha(activity.creadoEn, idioma);
 
-  return (
-    <Appear style={[styles.card, { borderBottomColor: color }]}>
-      <View style={styles.header}>
-        <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
-        <View style={styles.headerRight}>
-          <View style={[styles.badge, { backgroundColor: color }]}>
-            <Text style={[styles.badgeText, { color: on }]}>
-              {categoriaLabel(activity.categoria)}
-            </Text>
-          </View>
-          <FavoriteButton
-            favorito={activity.favorito}
-            onToggle={(favorito) => api.activities.setFavorite(activity.id, favorito)}
-          />
-        </View>
-      </View>
-      <Text style={styles.titulo}>{activity.titulo}</Text>
+  // En modo compacto el detalle solo se ve al expandir; si no, siempre.
+  const detalleVisible = !compact || expandido;
+
+  const detalle = (
+    <>
       <Text style={styles.descripcion}>{activity.descripcion}</Text>
       {activity.instrucciones ? (
         <View style={styles.instrucciones}>
-          {/* US-81: los pasos se ocultan por defecto; el botón los muestra/oculta. */}
-          <Pressable
-            onPress={() => setMostrarPasos((v) => !v)}
-            accessibilityRole="button"
-            accessibilityState={{ expanded: mostrarPasos }}
-            style={styles.pasosToggle}
-          >
-            <Text style={[styles.pasosToggleText, { color }]}>
-              {mostrarPasos ? t('activityCard.hideSteps') : t('activityCard.showSteps')}
-            </Text>
-          </Pressable>
-          {mostrarPasos
+          {/* En compacto los pasos ya cuelgan de "Ver más", así que se muestran directos;
+              fuera de compacto conservan su propio botón "Ver pasos" (US-81). */}
+          {compact ? null : (
+            <Pressable
+              onPress={() => setMostrarPasos((v) => !v)}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: mostrarPasos }}
+              style={styles.pasosToggle}
+            >
+              <Text style={[styles.pasosToggleText, { color }]}>
+                {mostrarPasos ? t('activityCard.hideSteps') : t('activityCard.showSteps')}
+              </Text>
+            </Pressable>
+          )}
+          {compact || mostrarPasos
             ? pasosDeInstrucciones(activity.instrucciones).map((paso, i) => (
                 <View key={i} style={styles.pasoFila}>
                   <Text style={styles.pasoNum}>{i + 1}.</Text>
@@ -136,9 +136,41 @@ export function ActivityCard({
           variant="accent"
         />
       ) : null}
+    </>
+  );
+
+  return (
+    <Appear style={[styles.card, { borderBottomColor: color }]}>
+      <View style={styles.header}>
+        <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
+        <View style={styles.headerRight}>
+          <View style={[styles.badge, { backgroundColor: color }]}>
+            <Text style={[styles.badgeText, { color: on }]}>
+              {categoriaLabel(activity.categoria)}
+            </Text>
+          </View>
+          <FavoriteButton
+            favorito={activity.favorito}
+            onToggle={(favorito) => api.activities.setFavorite(activity.id, favorito)}
+          />
+        </View>
+      </View>
+      <Text style={styles.titulo}>{activity.titulo}</Text>
+      {detalleVisible ? detalle : null}
 
       <AuthorBadge proveedor={activity.proveedor} />
       {fecha ? <Text style={styles.fecha}>{t('common.generatedOn', { fecha })}</Text> : null}
+
+      {/* US-100: en el historial la tarjeta es compacta; "Ver más" despliega el detalle.
+          El botón usa el color de la categoría (== borde de la tarjeta). */}
+      {compact ? (
+        <BubblyButton
+          label={expandido ? t('activityCard.showLess') : t('activityCard.showMore')}
+          color={color}
+          on={on}
+          onPress={() => setExpandido((v) => !v)}
+        />
+      ) : null}
     </Appear>
   );
 }

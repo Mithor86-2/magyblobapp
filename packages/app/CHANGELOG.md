@@ -23,6 +23,9 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 - La tarjeta de actividad usa el color central por categoría; el **borde** de la tarjeta y la
   acción ("Ver pasos") comparten color (US-100).
+- En el **Historial**, las tarjetas de actividad son **compactas** (altura similar a las de
+  cuento): descripción, pasos, duración/nivel y valoración quedan ocultos tras un botón
+  "Ver más" (US-100). Fuera del historial la tarjeta no cambia.
 - La barra de cabecera de Inicio, Actividades, Cuentos e Historial muestra siempre
   "Aprendizaje Mágico", **centrado** y en **color primario**; el icono de la zona de adultos
   es algo más pequeño y también en color primario.
