@@ -278,14 +278,34 @@ Bearer`, renueva ante 401 y cierra sesión si el refresh falla. Sin contraseña 
 
 ---
 
-## FASE 7 — Documentación y defensa ⬜
+## FASE 7 — Documentación y defensa 🔄
 
-- [ ] Prueba del repo en limpio en otra carpeta/máquina.
-- [ ] README profesional + guías instalación/ejecución/pruebas.
+En curso. El plan detallado de la entrega (los 5 entregables del formulario) vive en
+[planes/fase-7-entrega-tfm.md](planes/fase-7-entrega-tfm.md); ahí está el gap analysis y el estado
+tarea a tarea. Verificación plan↔app **2026-07-08**: producto en **v1.16.1** (backend v1.13.0),
+repo público, Render vivo, releases hasta v1.16.0.
+
+- [ ] Prueba del repo en limpio en otra carpeta/máquina (DoD; verificación manual pendiente).
+- [x] README profesional + guías instalación/ejecución/pruebas (descripción, stack, estructura por
+      capas, instalación Docker/dev build, modos de IA, API, despliegue).
 - [x] 3-4 ADRs: Clean Architecture, 3 modos de IA, Gemma 2B por defecto, Vector DB
       (adelantados a Fase 0; ver [ADR/](ADR/) — repasar en la defensa).
-- [ ] Diagrama de arquitectura.
+- [x] Diagrama de arquitectura (Mermaid en el README: Clean Arch + monorepo + capa IA + despliegue).
 - [ ] Guion de demo y respuestas a preguntas del tribunal.
+
+**Feature `feature/106-entrega-tfm-usuario-prueba-diagrama` (2026-07-08):**
+
+- [x] ✅ **Usuario de prueba (US-105).** Seed idempotente `prisma/seed-usuario-prueba.ts` (script
+      `seed:test-user`): guardián `usuariotest@mail.com` / «Sutanito Test» (contraseña bcrypt, email
+      verificado, consentimiento) + perfil «Fulanito» 3 años (animales+magia). Credenciales
+      documentadas en el README (subsección «Acceso de prueba (evaluador)»). ⏳ **Falta ejecutarlo
+      contra Neon** (paso manual del usuario con `DATABASE_URL` de prod) + smoke B3 sobre el APK.
+- [x] ✅ **Diagrama de arquitectura + estructura (D1/C3).** Sección «Arquitectura» del README con el
+      diagrama Mermaid y «Estructura del monorepo» ampliada por capas.
+
+**Pendiente de la fase** (ver el plan): B1-respaldo (adjuntar APK a la Release), C1 (bloque único de
+entrega con slides/vídeo), E (slides), F (vídeo), G (defensa), y las verificaciones manuales A1/B3.
+
 - **DoD:** clonar → `docker compose up` → app corriendo, sin pasos ocultos.
 
 ---
