@@ -1951,3 +1951,38 @@ está en marcha y no tocar nada por error.
 - **(Visible)** Dado un flujo en curso, Entonces se muestra el loader a pantalla completa con su
   mensaje y bloquea la interacción.
 - **(Oculto)** Dado que la operación termina, Entonces el loader desaparece.
+
+## US-105 — Acceso del evaluador con usuario de prueba en producción {#us-105}
+
+> **Entregable de FASE 7 (entrega del TFM).** El formulario de entrega exige, por haber login,
+> **usuario y contraseña de prueba**. Se siembra una cuenta genérica (no personal) en la BD de
+> producción (Neon) mediante un **seed idempotente**, para que el evaluador entre sin registrarse.
+
+**Como** evaluador del TFM, **quiero** unas credenciales de prueba ya listas con al menos un perfil
+de niño, **para** iniciar sesión en la APK contra el backend de producción y revisar el flujo
+completo (cuentos, actividades, historial) sin tener que darme de alta.
+
+**Prioridad:** Must · **Fase:** 7 (Entrega) · **Pantalla:** Iniciar sesión (app) / backend.
+
+**Alcance**
+
+1. **Seed idempotente** (`prisma/seed-usuario-prueba.ts`, script `seed:test-user`) que crea, si no
+   existe ya (búsqueda por email), el guardián de prueba y su perfil de niño. Reutiliza las entidades
+   de dominio, `BcryptPasswordHasher` y los repos Prisma para mantener el mismo mapeo que el alta real.
+2. **Datos** (genéricos, no personales): guardián `usuariotest@mail.com` / «Sutanito Test» con
+   contraseña conocida; email marcado como **verificado** (para poder entrar sin OTP) y
+   **consentimiento** otorgado. Perfil de niño «Fulanito», 3 años, idioma `es`, intereses
+   `animales` + `magia`.
+3. **Documentación** en el bloque «Entrega TFM» del README (credenciales de prueba) y en el plan de
+   FASE 7. La contraseña se documenta por ser una cuenta de prueba deliberada.
+
+**Criterios de aceptación**
+
+- **(Idempotente)** Dado que el usuario de prueba ya existe, Cuando se ejecuta el seed de nuevo,
+  Entonces no crea duplicados ni falla (lo detecta por email y termina sin error).
+- **(Login funciona)** Dadas las credenciales sembradas, Cuando el evaluador inicia sesión en la app,
+  Entonces obtiene sesión (sin pedir verificación de email) y ve el perfil «Fulanito».
+- **(Perfil coherente)** Dado el perfil sembrado, Entonces tiene 3 años, idioma español e intereses
+  animales y magia, y permite generar cuentos y actividades.
+- **(Sin secretos en el repo)** Dado el seed, Entonces la contraseña se hashea (bcrypt) y la URL de
+  la BD llega por variable de entorno (`DATABASE_URL`), nunca embebida en el código.

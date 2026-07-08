@@ -19,6 +19,22 @@ En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos
 `adb install <fichero>.apk`). La app apunta al **backend de producción**; la primera petición tras
 inactividad tarda ~50 s (_cold start_ del plan gratuito de Render).
 
+### Acceso de prueba (evaluador)
+
+La app tiene login, así que hay una **cuenta de prueba** sembrada en producción con un perfil de
+niño listo para usar (no hace falta registrarse):
+
+| Campo          | Valor                                              |
+| -------------- | -------------------------------------------------- |
+| **Email**      | `usuariotest@mail.com`                             |
+| **Contraseña** | `S12345678s`                                       |
+| Perfil de niño | «Fulanito», 3 años, intereses _animales_ y _magia_ |
+
+Inicia sesión con esas credenciales para generar cuentos y actividades, escuchar la narración y ver
+el historial. _(Backend de producción: `https://magyblobapp.onrender.com`; recuerda el ~50 s de cold
+start en la primera petición.)_ La cuenta se siembra de forma idempotente con
+`pnpm --filter @magyblob/backend seed:test-user` (ver US-105).
+
 ## Funcionalidades
 
 - **Onboarding y sesión** — alta del adulto con consentimiento, login por email y **sesión JWT**;
@@ -97,13 +113,87 @@ cd packages/app && npx expo run:android          # o run:ios (macOS + Xcode)
 > `.env`, **relanza** `expo run:*` (no basta recargar). Detalle en `README.local.md` (runbook local,
 > no versionado) y en [Docs/despliegue.md](Docs/despliegue.md).
 
+## Arquitectura
+
+**Clean Architecture** en un monorepo pnpm: las dependencias apuntan **hacia dentro** (`domain` no
+depende de nada; la aplicación depende solo de interfaces de `domain`; la infraestructura implementa
+esas interfaces). El corazón es la **capa de IA**: una interfaz `AIProvider` con proveedores
+intercambiables (`mock`/`local`/`cloud`) y _fallback_ automático a `mock` ante cualquier fallo. La
+frontera de capas está reforzada por ESLint (ver [ADR 0001](Docs/ADR/0001-arquitectura-limpia-monorepo.md) y
+[ADR 0002](Docs/ADR/0002-tres-modos-de-ia.md)).
+
+```mermaid
+flowchart TB
+  subgraph app["App móvil (Expo · React Native)"]
+    UI["presentation<br/>(pantallas · componentes)"]
+    ST["estado (Zustand)"]
+    HTTP["infrastructure/http<br/>(gateways al API)"]
+    UI --> ST --> HTTP
+  end
+
+  subgraph backend["Backend (Fastify · Node)"]
+    direction TB
+    R["routes (Fastify + Zod)"]
+    subgraph clean["Clean Architecture"]
+      direction TB
+      APP["application<br/>(casos de uso + DTOs)"]
+      DOM["domain<br/>(entidades · value-objects · interfaces)"]
+      INFRA["infrastructure<br/>(repos Prisma · capa IA · auth)"]
+      APP --> DOM
+      INFRA -.implementa.-> DOM
+    end
+    R --> APP
+    R --> INFRA
+    subgraph ai["Capa de IA (AIProvider)"]
+      direction LR
+      MOCK["MockProvider"]
+      LOCAL["OllamaProvider"]
+      CLOUD["CloudProvider"]
+      FB["FallbackProvider<br/>(→ mock)"]
+    end
+    INFRA --> ai
+  end
+
+  subgraph prod["Producción"]
+    RENDER["Render<br/>(backend Docker)"]
+    NEON["Neon<br/>(PostgreSQL 16)"]
+    GROQ["Groq<br/>(IA cloud)"]
+  end
+
+  HTTP -->|"HTTPS + JWT"| R
+  INFRA -->|"Prisma"| NEON
+  CLOUD -->|"HTTPS"| GROQ
+  RENDER -.aloja.-> backend
+```
+
 ## Estructura del monorepo
 
 ```text
-packages/
-  backend/   API Fastify + Prisma + capa de IA (Clean Architecture)
-  app/       App móvil Expo + React Navigation + Zustand
-Docs/        Documentación viva (plan, fases, decisiones, API, despliegue…)
+magyblobApp/
+├─ packages/
+│  ├─ backend/                 API Fastify + Prisma + capa de IA (Clean Architecture)
+│  │  ├─ src/
+│  │  │  ├─ domain/            Entidades, value-objects e interfaces (sin frameworks ni IO)
+│  │  │  │  ├─ entities/       Guardian · ChildProfile · Story · Activity · Achievement…
+│  │  │  │  ├─ value-objects/  Edad (2–6) · Idioma (es/en)
+│  │  │  │  ├─ repositories/   Interfaces de persistencia (puertos)
+│  │  │  │  ├─ ai/             Interfaz AIProvider (puerto)
+│  │  │  │  └─ events/         EventBus + eventos de dominio (Observer)
+│  │  │  ├─ application/       Casos de uso + DTOs (dependen solo de domain)
+│  │  │  ├─ infrastructure/    Adaptadores: repos Prisma · IA · auth · email · eventos
+│  │  │  │  └─ ai/             MockProvider · OllamaProvider · CloudProvider · Fallback
+│  │  │  └─ routes/            Rutas Fastify (validación Zod) + composition root
+│  │  ├─ prisma/               schema.prisma · migraciones · seeds (AppSetting + usuario prueba)
+│  │  └─ test/                 Integración de rutas · integración Prisma · E2E backend
+│  └─ app/                     App móvil Expo (Clean Architecture ligera)
+│     └─ src/
+│        ├─ domain/            Tipos y contratos de gateway
+│        ├─ infrastructure/    Cliente HTTP · esquemas Zod · Sentry · telemetría
+│        ├─ presentation/      Pantallas · componentes · navegación · theme
+│        └─ store/             Estado global (Zustand, persistido)
+├─ Docs/                       Documentación viva (plan, fases, decisiones, API, despliegue…)
+├─ docker-compose.yml          Pila local: backend + PostgreSQL 16 + Ollama
+└─ render.yaml                 Infra como código del despliegue en Render
 ```
 
 ## Comandos
