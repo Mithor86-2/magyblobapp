@@ -14,6 +14,7 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 - Selector de avatar (Crear perfil) en **rejilla de 4 columnas** (12 avatares en 3 filas de 4) cuyas
   imágenes **ocupan el ancho del contenedor**, **redondas** (recortadas en círculo) y **sin fondo**;
   el avatar elegido se marca con un **anillo redondo**. (US-104, amplía US-103)
+- Título de la **tarjeta de cuento** del Historial en **negrita** (antes en peso normal).
 
 ### Deprecated
 
