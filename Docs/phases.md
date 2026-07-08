@@ -1026,3 +1026,20 @@ en [planes/coordinacion-avatares-actividad-singular.md](planes/coordinacion-avat
       modo `compact`.
 - **DoD:** ✅ `pnpm check` verde tras integrar (**backend 483 + app 332**); typecheck, ESLint y Prettier
   OK. Pendiente: **pruebas manuales del usuario** en develop local.
+
+### Ajustes visuales: selector de avatar + tarjeta y lector de cuento (2026-07-08, rama `feature/104-avatar-picker-grid`)
+
+Lote de retoques de UI (**solo app**; backend sin cambios) sobre la rama `feature/104`. Plan en
+[planes/feature-104-avatar-picker-grid.md](planes/feature-104-avatar-picker-grid.md).
+
+- [x] ✅ **Selector de avatar en rejilla, redondo y sin fondo (US-104, amplía US-103).** `AvatarPicker`
+      pasa a **4 columnas** (12 avatares en 3 filas de 4) cuyas celdas **ocupan el ancho del contenedor**
+      (medido con `onLayout`); cada avatar es **redondo** (recorte circular) y **sin fondo**, con
+      **anillo** del color primario al seleccionar.
+- [x] ✅ **Título de la tarjeta de cuento del Historial en negrita.** `storyTitle` pasa de `bodyLg`
+      (regular) a Quicksand bold, manteniendo el tamaño (la tarjeta de búsqueda ya era bold).
+- [x] ✅ **Texto del cuento centrado verticalmente en el lector.** `BookPages`: el contenedor de texto
+      pasa de alineado arriba a **centrado** (`justifyContent: 'center'`); el número de página sigue al
+      pie y `adjustsFontSizeToFit` evita recortes.
+- **DoD:** ✅ `pnpm check` verde (**backend 483 + app 332**). Pendiente: pruebas del usuario + versión
+  al integrar en `develop`.

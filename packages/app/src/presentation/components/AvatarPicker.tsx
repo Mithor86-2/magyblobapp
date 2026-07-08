@@ -1,7 +1,15 @@
-import { Pressable, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import { useState } from 'react';
+import {
+  type LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ImageSourcePropType,
+} from 'react-native';
 import { AnimatedAvatar } from './AnimatedAvatar';
 import { useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, radius, tapTarget } from '../theme/tokens';
+import { type ColorTokens, spacing } from '../theme/tokens';
 
 /**
  * Avatares predefinidos como **imágenes propias** empaquetadas en la app (sin descargas
@@ -53,8 +61,10 @@ export function avatarSource(id: string): ImageSourcePropType {
   return avatarImages[id] ?? avatarImages[DEFAULT_AVATAR];
 }
 
-/** Tamaño de cada avatar dentro de la celda del selector. */
-const PICKER_AVATAR_SIZE = 44;
+/** Columnas del selector: los 12 avatares se disponen en **3 filas de 4** (US-104). */
+const COLUMNS = 4;
+/** Separación entre celdas (horizontal y vertical). */
+const GAP = spacing.sm;
 
 interface AvatarPickerProps {
   value: string | null;
@@ -62,12 +72,25 @@ interface AvatarPickerProps {
 }
 
 /**
- * Selector de avatar: rejilla de imágenes; resalta el elegido. Emite el `id` del avatar.
+ * Selector de avatar (US-104): rejilla de 4 columnas cuyas celdas **ocupan el ancho del
+ * contenedor** (cada avatar es 1/4 del ancho, descontando los huecos). Cada avatar es
+ * **redondo** (la celda recorta la imagen en círculo) y se muestra **sin fondo** —no hay
+ * recuadro de color—; el avatar elegido se marca con un **anillo redondo** del color
+ * primario. Emite el `id` del avatar.
  */
 export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
   const styles = useThemedStyles(makeStyles);
+  const { width: windowWidth } = useWindowDimensions();
+  // Estimación inicial (ancho del contenido ≈ ventana − 2·containerPadding) para pintar ya
+  // con el tamaño correcto; `onLayout` la corrige con el ancho real del grid.
+  const [gridWidth, setGridWidth] = useState(windowWidth - spacing.containerPadding * 2);
+  const onLayout = (e: LayoutChangeEvent) => setGridWidth(e.nativeEvent.layout.width);
+
+  // Cada celda ocupa 1/4 del ancho disponible, descontando los 3 huecos entre columnas.
+  const cellSize = Math.max(0, Math.floor((gridWidth - GAP * (COLUMNS - 1)) / COLUMNS));
+
   return (
-    <View style={styles.grid}>
+    <View style={styles.grid} onLayout={onLayout}>
       {AVATARS.map((id) => {
         const selected = value === id;
         return (
@@ -77,9 +100,15 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
             accessibilityLabel={id}
             accessibilityState={{ selected }}
             onPress={() => onChange(id)}
-            style={[styles.cell, selected ? styles.selected : styles.unselected]}
+            style={[
+              styles.cell,
+              // Círculo: el radio es la mitad del lado (celda cuadrada), así se recorta la
+              // imagen en redondo y el anillo de selección también es circular.
+              { width: cellSize, height: cellSize, borderRadius: cellSize / 2 },
+              selected ? styles.selected : styles.unselected,
+            ]}
           >
-            <AnimatedAvatar source={avatarSource(id)} size={PICKER_AVATAR_SIZE} />
+            <AnimatedAvatar source={avatarSource(id)} size={cellSize} />
           </Pressable>
         );
       })}
@@ -92,22 +121,21 @@ const makeStyles = (colors: ColorTokens) =>
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 12,
+      gap: GAP,
     },
+    // Sin fondo (US-104): la celda no pinta recuadro; la imagen (con transparencia) va sola,
+    // recortada en círculo (`borderRadius` inline = lado/2 + `overflow: hidden`). El borde
+    // reserva el hueco del anillo de selección para que no salte el layout al elegir.
     cell: {
-      width: tapTarget,
-      height: tapTarget,
-      borderRadius: radius.lg,
-      borderWidth: 2,
+      borderWidth: 3,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
     },
     selected: {
-      backgroundColor: colors.primaryContainer,
       borderColor: colors.primary,
     },
     unselected: {
-      backgroundColor: colors.surfaceContainer,
-      borderColor: colors.outline,
+      borderColor: 'transparent',
     },
   });

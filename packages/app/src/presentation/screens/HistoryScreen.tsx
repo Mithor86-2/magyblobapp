@@ -48,6 +48,7 @@ import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import {
   type CategoryColor,
   type ColorTokens,
+  fonts,
   makeSoftShadow,
   radius,
   spacing,
@@ -657,6 +658,8 @@ const makeStyles = (colors: ColorTokens) =>
     },
     storyTitle: {
       ...typography.bodyLg,
+      // Título de la tarjeta de cuento en negrita (mantiene el tamaño de bodyLg).
+      fontFamily: fonts.bold,
       color: colors.onSurface,
       flex: 1,
     },
