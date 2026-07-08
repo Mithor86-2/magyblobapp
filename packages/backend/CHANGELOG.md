@@ -9,12 +9,6 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- Portadas de cuento **configurables por BD** (US-101): nueva clave `AppSetting`
-  **`story.covers`** (JSON `[{imagen, tema?, estilo?}]`, editable en caliente). Al crear un
-  cuento el backend elige la portada por prioridad **tema+estilo → tema → estilo** y la
-  **persiste** en `Story.portadaKey` (columna nueva + migración). También se expone en el
-  cuento anónimo del Dashboard (sin persistir).
-
 ### Changed
 
 ### Deprecated
@@ -24,6 +18,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 ### Fixed
 
 ### Security
+
+## [1.13.0] - 2026-07-07
+
+### Added
+
+- Portadas de cuento **configurables por BD** (US-101): nueva clave `AppSetting`
+  **`story.covers`** (JSON `[{imagen, tema?, estilo?}]`, editable en caliente). Al crear un
+  cuento el backend elige la portada por prioridad **tema+estilo → tema → estilo** y la
+  **persiste** en `Story.portadaKey` (columna nueva + migración). También se expone en el
+  cuento anónimo del Dashboard (sin persistir).
 
 ## [1.12.0] - 2026-07-07
 
