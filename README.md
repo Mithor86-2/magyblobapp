@@ -1,4 +1,4 @@
-# magyblobapp
+# Aprendizaje Mágico
 
 App infantil **bilingüe (ES/EN)** que crea perfiles de niño y genera **cuentos** y
 **actividades** personalizados con IA, bajo una **arquitectura limpia** en monorepo (backend
@@ -56,13 +56,13 @@ start en la primera petición.)_ La cuenta se siembra de forma idempotente con
 
 ## Stack técnico
 
-| Capa           | Tecnologías                                                                          |
-| -------------- | ------------------------------------------------------------------------------------ |
-| **Backend**    | Node ≥ 24 · Fastify · Prisma · PostgreSQL 16 · pino · Vitest                         |
-| **App móvil**  | Expo (React Native) · React Navigation · Zustand · Playwright (E2E web)              |
-| **IA**         | `AIProvider` conmutable: mock · Ollama (`gemma:2b`) · cloud (Groq/OpenAI-compatible) |
-| **Monorepo**   | pnpm workspaces · Docker Compose · ESLint + Prettier · Husky                         |
-| **Producción** | Render (backend Docker) · Neon (PostgreSQL) · Groq (IA) · Expo EAS (APK)             |
+| Capa           | Tecnologías                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------- |
+| **Backend**    | Node ≥ 24 · Fastify · Prisma · PostgreSQL 16 · pino · Vitest                                              |
+| **App móvil**  | Expo (React Native) · React Navigation · Zustand · Playwright (E2E web)                                   |
+| **IA**         | `AIProvider` conmutable: mock · Ollama (`gemma:2b`) · cloud (cascada Gemini→Groq→mock, OpenAI-compatible) |
+| **Monorepo**   | pnpm workspaces · Docker Compose · ESLint + Prettier · Husky                                              |
+| **Producción** | Render (backend Docker) · Neon (PostgreSQL) · IA cloud Gemini→Groq · Expo EAS (APK)                       |
 
 ## Requisitos
 
@@ -95,8 +95,10 @@ El proveedor de IA es conmutable y siempre cae a un modo seguro si algo falla:
 - **`mock`** — por defecto en local; sin GPU ni modelo. Es también el _fallback_ automático.
 - **`local`** — Ollama + `gemma:2b`. Descarga el modelo con `pnpm ollama:setup` y pon
   `AI_PROVIDER=local`.
-- **`cloud`** — proveedor compatible con OpenAI (Groq por defecto), conmutable en caliente desde la
-  BD. Con API key genera en la nube; **sin key, cae al modo base**.
+- **`cloud`** — proveedores compatibles con OpenAI en **cascada `Gemini → Groq → mock`** (US-99):
+  el primario es **Gemini** (`gemini-2.5-flash`); si falla o no tiene key, **Groq**
+  (`llama-3.3-70b`); si tampoco, **mock**. Cada paso sin su API key en env se **omite** y la cadena
+  **termina siempre en mock**. Conmutable en caliente desde la BD (`ai.cloud`); las keys van en env.
 
 > ⚠️ El modo cloud saca datos **minimizados** del perfil a un tercero (edad, intereses, idioma;
 > nunca nombre) — desviación de privacidad asumida en el TFM. Ver
@@ -163,7 +165,7 @@ flowchart TB
   subgraph prod["Producción"]
     RENDER["Render<br/>(backend Docker)"]
     NEON["Neon<br/>(PostgreSQL 16)"]
-    GROQ["Groq<br/>(IA cloud)"]
+    GROQ["IA cloud<br/>Gemini → Groq → mock"]
   end
 
   HTTP -->|"HTTPS + JWT"| R
@@ -231,7 +233,7 @@ parámetros, esquemas y ejemplos `curl` (incluido el flujo alta → perfil → c
 ## Despliegue
 
 Backend como web service Docker en **Render** (`main`), PostgreSQL gestionado en **Neon** e IA
-cloud en **Groq** (todo en plan free); infra como código en [`render.yaml`](render.yaml). La app se
+cloud en **cascada Gemini→Groq→mock** (todo en plan free); infra como código en [`render.yaml`](render.yaml). La app se
 publica con **Expo EAS** (perfil `preview`, APK) o como export web estático. Guía reproducible paso
 a paso (variables, secretos, validación en prod) en [Docs/despliegue.md](Docs/despliegue.md).
 

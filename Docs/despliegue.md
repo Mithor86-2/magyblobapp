@@ -23,8 +23,9 @@ Render). Esta guía es el **cómo** paso a paso, sin pasos ocultos.
 ```
 
 - **Ollama no va a producción** (el plan free de Render no tiene GPU). En producción `AI_PROVIDER=mock`
-  y la calidad real se obtiene con el **modo cloud** (Groq), que se activa desde la BD (`AppSetting`
-  `ai.cloud`) y solo necesita la `GROQ_API_KEY` en el entorno.
+  y la calidad real se obtiene con el **modo cloud** en **cascada Gemini→Groq→mock** (US-99), que se
+  activa desde la BD (`AppSetting` `ai.cloud`) y necesita en el entorno la key de cada target
+  (`GEMINI_API_KEY` para el primario, `GROQ_API_KEY` para el fallback).
 - **Migraciones automáticas:** el `CMD` del [`Dockerfile`](../packages/backend/Dockerfile) ejecuta
   `prisma migrate deploy && node dist/index.js`, así que al arrancar el servicio aplica las migraciones
   pendientes contra la BD y luego levanta el servidor. No hay paso manual de migración.
@@ -107,13 +108,19 @@ false`.
   arranque** (`exit 1`) con un mensaje claro si falta o está vacía. Por eso conviene tenerla puesta
   antes del primer deploy.
 
-## 3. IA en la nube con Groq
+## 3. IA en la nube (cascada Gemini→Groq→mock)
 
-1. Crea una API key en [console.groq.com](https://console.groq.com) (free tier).
-2. Ponla como secreto **`GROQ_API_KEY`** en Render.
-3. El modo cloud (Groq como `target`) ya viene **activo por defecto** en la BD (`AppSetting`
-   `ai.cloud`, sembrado por migración, US-14). Con la key presente, los cuentos y actividades se
-   generan con Groq; **sin la key**, el backend cae al modo base (`mock`) automáticamente.
+El modo cloud ya viene **activo por defecto** en la BD (`AppSetting` `ai.cloud`) con la **cascada
+`Gemini → Groq → mock`** (US-99): primario **Gemini** (`gemini-2.5-flash`), fallback **Groq**
+(`llama-3.3-70b-versatile`) y, si ninguno tiene key o fallan, **mock**.
+
+1. Crea las API keys que quieras usar: **Gemini** en [aistudio.google.com](https://aistudio.google.com/apikey)
+   (primario) y/o **Groq** en [console.groq.com](https://console.groq.com) (free tier, fallback).
+2. Ponlas como secretos en Render: **`GEMINI_API_KEY`** (primario) y **`GROQ_API_KEY`** (fallback).
+3. Comportamiento: cada paso de la cascada **sin su key en env se omite**; con al menos una key
+   presente, los cuentos/actividades se generan en la nube por ese proveedor; **sin ninguna key**, el
+   backend cae al modo base (`mock`) automáticamente. La cascada es configurable en caliente en
+   `ai.cloud`.
 4. Es **conmutable en caliente** desde la BD (`ai.cloud.activo=false` restaura mock/local).
 
 > **Cumplimiento.** Usar Groq en producción implica que el **texto del cuento sale a un tercero** en la
