@@ -15,6 +15,7 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   imágenes **ocupan el ancho del contenedor**, **redondas** (recortadas en círculo) y **sin fondo**;
   el avatar elegido se marca con un **anillo redondo**. (US-104, amplía US-103)
 - Título de la **tarjeta de cuento** del Historial en **negrita** (antes en peso normal).
+- Texto del cuento **centrado verticalmente** en la hoja del lector (antes alineado arriba).
 
 ### Deprecated
 

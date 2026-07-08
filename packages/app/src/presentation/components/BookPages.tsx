@@ -259,12 +259,13 @@ const makeStyles = (colors: ColorTokens) =>
       // Ocupa el ancho de la hoja para que `adjustsFontSizeToFitWidth` acote y encoja a 1 línea.
       alignSelf: 'stretch',
     },
-    // Página de texto: contenido alineado ARRIBA (US-97), no centrado, para que el
-    // texto no invada el hueco del número de página ni se recorte por abajo cuando la
-    // hoja es pequeña. `flex:1` reserva el espacio y el número de página queda debajo.
+    // Página de texto: contenido **centrado verticalmente** (US-104) dentro del espacio
+    // disponible sobre el número de página. `flex:1` reserva ese espacio (el número queda
+    // debajo, fuera de este contenedor) y `adjustsFontSizeToFit` + `numberOfLines` encogen
+    // el texto para que quepa sin recorte aunque la hoja sea pequeña.
     texto: {
       flex: 1,
-      justifyContent: 'flex-start',
+      justifyContent: 'center',
     },
     // Número de página impreso al pie de la hoja (US-91).
     numeroPagina: {
