@@ -232,8 +232,9 @@ elegir mejor. Ajuste visual que amplía [US-103](#us-103); no cambia el `avatar`
 - Dado el selector de avatar (al crear perfil), Cuando lo veo, Entonces los 12 avatares se
   disponen en **3 filas de 4** y cada imagen **ocupa 1/4 del ancho** del contenedor (llenan
   el ancho, más grandes que antes).
-- Dado un avatar en el selector, Cuando se muestra, Entonces **no** tiene recuadro de fondo
-  de color detrás; solo se ve la imagen (con transparencia).
-- Dado que elijo un avatar, Cuando queda seleccionado, Entonces se marca con un **anillo**
-  del color primario (sin fondo), y el resto no muestra anillo; elegir otro no desplaza el
-  layout.
+- Dado un avatar en el selector, Cuando se muestra, Entonces es **redondo** (la imagen se
+  recorta en círculo) y **no** tiene recuadro de fondo de color detrás; solo se ve la imagen
+  (con transparencia).
+- Dado que elijo un avatar, Cuando queda seleccionado, Entonces se marca con un **anillo
+  redondo** del color primario (sin fondo), y el resto no muestra anillo; elegir otro no
+  desplaza el layout.

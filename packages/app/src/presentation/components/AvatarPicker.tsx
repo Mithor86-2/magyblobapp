@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { AnimatedAvatar } from './AnimatedAvatar';
 import { useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, radius, spacing } from '../theme/tokens';
+import { type ColorTokens, spacing } from '../theme/tokens';
 
 /**
  * Avatares predefinidos como **imágenes propias** empaquetadas en la app (sin descargas
@@ -73,9 +73,10 @@ interface AvatarPickerProps {
 
 /**
  * Selector de avatar (US-104): rejilla de 4 columnas cuyas celdas **ocupan el ancho del
- * contenedor** (cada avatar es 1/4 del ancho, descontando los huecos). Las imágenes se
- * muestran **sin fondo** —la celda ya no pinta un recuadro de color—; el avatar elegido se
- * marca con un **anillo** del color primario. Emite el `id` del avatar.
+ * contenedor** (cada avatar es 1/4 del ancho, descontando los huecos). Cada avatar es
+ * **redondo** (la celda recorta la imagen en círculo) y se muestra **sin fondo** —no hay
+ * recuadro de color—; el avatar elegido se marca con un **anillo redondo** del color
+ * primario. Emite el `id` del avatar.
  */
 export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
   const styles = useThemedStyles(makeStyles);
@@ -101,7 +102,9 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
             onPress={() => onChange(id)}
             style={[
               styles.cell,
-              { width: cellSize, height: cellSize },
+              // Círculo: el radio es la mitad del lado (celda cuadrada), así se recorta la
+              // imagen en redondo y el anillo de selección también es circular.
+              { width: cellSize, height: cellSize, borderRadius: cellSize / 2 },
               selected ? styles.selected : styles.unselected,
             ]}
           >
@@ -120,10 +123,10 @@ const makeStyles = (colors: ColorTokens) =>
       flexWrap: 'wrap',
       gap: GAP,
     },
-    // Sin fondo (US-104): la celda no pinta recuadro; la imagen (con transparencia) va sola.
-    // El borde reserva el hueco del anillo de selección para que no salte el layout al elegir.
+    // Sin fondo (US-104): la celda no pinta recuadro; la imagen (con transparencia) va sola,
+    // recortada en círculo (`borderRadius` inline = lado/2 + `overflow: hidden`). El borde
+    // reserva el hueco del anillo de selección para que no salte el layout al elegir.
     cell: {
-      borderRadius: radius.lg,
       borderWidth: 3,
       alignItems: 'center',
       justifyContent: 'center',

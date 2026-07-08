@@ -11,9 +11,11 @@ datos (el `avatar` guardado sigue siendo el mismo `id`).
   los huecos): los 12 avatares quedan en **3 filas de 4** y las imágenes se agrandan hasta llenar
   el ancho. El ancho real del grid se mide con `onLayout` (estimación inicial con
   `useWindowDimensions` para evitar un salto en el primer frame).
-- ✅ **Sin fondo.** La celda ya no pinta el recuadro de color (`surfaceContainer`/`primaryContainer`);
-  las imágenes (con canal alfa) se muestran solas. La **selección** se marca con un **anillo** del
-  color primario (borde), que reserva su hueco en ambos estados para no desplazar el layout.
+- ✅ **Redondo y sin fondo.** La celda es **circular** (`borderRadius` = lado/2 + `overflow: hidden`,
+  que recorta la imagen en círculo) y ya no pinta el recuadro de color
+  (`surfaceContainer`/`primaryContainer`); las imágenes (con canal alfa) se muestran solas. La
+  **selección** se marca con un **anillo redondo** del color primario (borde), que reserva su hueco
+  en ambos estados para no desplazar el layout.
 - ✅ **Gate.** `pnpm --filter @magyblob/app` typecheck + lint + prettier + test (332) en verde. El
   test de `AvatarPicker` sigue válido (12 botones localizables por `id`, `avatarSource` con fallback).
 - ✅ **Docs.** US-104 en épica A + trazabilidad; CHANGELOG (Unreleased) del app.
