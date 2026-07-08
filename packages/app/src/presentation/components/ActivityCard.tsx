@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { Activity, Categoria } from '../../domain/types';
+import type { Activity } from '../../domain/types';
 import { categoriaLabel } from '../labels';
+import { vocabColor } from '../vocabColor';
 import { formatearFecha } from '../formatFecha';
 import { DEFAULT_APP_LANGUAGE, esIdiomaApp } from '../../i18n';
 import { Appear } from './Appear';
@@ -14,13 +15,6 @@ import { Icon } from './Icon';
 import { api } from '../../composition';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, makeSoftShadow, radius, spacing, typography } from '../theme/tokens';
-
-/** Color por categoría (borde de tarjeta e icono según el design system). */
-const categoriaColor = (colors: ColorTokens): Record<Categoria, string> => ({
-  arte: colors.primary,
-  musica: colors.secondary,
-  logica: colors.tertiary,
-});
 
 /**
  * Parte las instrucciones (texto con pasos "1. … 2. … 3. …" o por líneas) en una
@@ -68,7 +62,9 @@ export function ActivityCard({
   const styles = useThemedStyles(makeStyles);
   // US-81: los pasos se pliegan/despliegan; arrancan según `pasosVisiblesInicial`.
   const [mostrarPasos, setMostrarPasos] = useState(pasosVisiblesInicial);
-  const color = categoriaColor(colors)[activity.categoria];
+  // Color por valor de categoría (US-100): borde de tarjeta, icono, badge y la acción
+  // ("Ver pasos") comparten el mismo color; `on` es el texto legible sobre el color.
+  const { color, on } = vocabColor(colors, activity.categoria);
   const meta = [
     activity.duracionMin ? t('activityCard.minutes', { min: activity.duracionMin }) : null,
     activity.nivel ? t('activityCard.level', { nivel: activity.nivel }) : null,
@@ -86,7 +82,9 @@ export function ActivityCard({
         <Icon name={`cat-${activity.categoria}`} size="lg" color={color} />
         <View style={styles.headerRight}>
           <View style={[styles.badge, { backgroundColor: color }]}>
-            <Text style={styles.badgeText}>{categoriaLabel(activity.categoria)}</Text>
+            <Text style={[styles.badgeText, { color: on }]}>
+              {categoriaLabel(activity.categoria)}
+            </Text>
           </View>
           <FavoriteButton
             favorito={activity.favorito}
@@ -105,7 +103,7 @@ export function ActivityCard({
             accessibilityState={{ expanded: mostrarPasos }}
             style={styles.pasosToggle}
           >
-            <Text style={styles.pasosToggleText}>
+            <Text style={[styles.pasosToggleText, { color }]}>
               {mostrarPasos ? t('activityCard.hideSteps') : t('activityCard.showSteps')}
             </Text>
           </Pressable>

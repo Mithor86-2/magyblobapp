@@ -123,6 +123,34 @@ describe('ActivityCard', () => {
   });
 });
 
+describe('ActivityCard · color por categoría (US-100)', () => {
+  const bordeDe = (activity: Activity) => {
+    const { container } = render(<ActivityCard activity={activity} />);
+    const card = container.firstChild as HTMLElement;
+    return getComputedStyle(card).borderBottomColor;
+  };
+
+  it('el borde de la tarjeta y la acción "Ver pasos" usan el mismo color', () => {
+    const { container } = render(
+      <ActivityCard
+        activity={{ ...base, categoria: 'musica', instrucciones: '1. Uno. 2. Dos.' }}
+      />,
+    );
+    const card = container.firstChild as HTMLElement;
+    const borde = getComputedStyle(card).borderBottomColor;
+    const accion = getComputedStyle(screen.getByText('Ver pasos')).color;
+
+    expect(borde).toBeTruthy();
+    expect(accion).toBe(borde);
+  });
+
+  it('cada categoría tiñe el borde con un color distinto', () => {
+    expect(bordeDe({ ...base, categoria: 'arte' })).not.toBe(
+      bordeDe({ ...base, categoria: 'logica' }),
+    );
+  });
+});
+
 describe('pasosDeInstrucciones', () => {
   it('parte un texto numerado "1. … 2. …" en pasos sin el marcador', () => {
     expect(pasosDeInstrucciones('1. Coge el papel. 2. Pinta. 3. Limpia.')).toEqual([
