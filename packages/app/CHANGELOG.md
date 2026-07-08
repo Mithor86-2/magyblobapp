@@ -17,6 +17,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+- La imagen de cabecera de las pantallas ocupa el 100 % del ancho con alto
+  proporcional (`ancho / proporción`), mostrándose entera sin recorte ni bandas
+  laterales (antes se estiraba/recortaba porque `aspectRatio` no fija el alto en
+  react-native).
+
 ### Security
 
 ## [1.12.0] - 2026-07-07
