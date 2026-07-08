@@ -1,7 +1,13 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon, type IconName } from './Icon';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, radius, tapTarget, typography } from '../theme/tokens';
+import {
+  type CategoryColor,
+  type ColorTokens,
+  radius,
+  tapTarget,
+  typography,
+} from '../theme/tokens';
 
 /** Color de categoría del chip seleccionado (US-89): un color por familia de opciones. */
 export type ChipColor = 'primary' | 'secondary' | 'tertiary' | 'quaternary';
@@ -14,6 +20,12 @@ interface SelectableChipProps {
   icon?: IconName;
   /** Color del chip seleccionado; por defecto coral (`primary`). Un color por categoría (US-89). */
   color?: ChipColor;
+  /**
+   * Color **por valor de vocabulario** (US-100): `{ color, on }` resuelto con `vocabColor`.
+   * Cuando se pasa, tiñe el chip seleccionado con ese color en vez de la familia `color`,
+   * de modo que un mismo valor (p. ej. "Animales") se ve igual en todas las pantallas.
+   */
+  tint?: CategoryColor;
 }
 
 /** Fondo del chip seleccionado por color de categoría. */
@@ -43,11 +55,13 @@ export function SelectableChip({
   onPress,
   icon,
   color = 'primary',
+  tint,
 }: SelectableChipProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
-  const bg = chipBg(colors)[color];
-  const fg = chipFg(colors)[color];
+  // El color por valor (`tint`, US-100) tiene prioridad sobre la familia `color` (US-89).
+  const bg = tint ? tint.color : chipBg(colors)[color];
+  const fg = tint ? tint.on : chipFg(colors)[color];
   const iconColor = selected ? fg : colors.onSurfaceVariant;
   return (
     <Pressable

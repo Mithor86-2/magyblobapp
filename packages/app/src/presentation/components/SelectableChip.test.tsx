@@ -63,4 +63,20 @@ describe('SelectableChip', () => {
       backgroundColor: 'rgb(138, 83, 0)',
     });
   });
+
+  it('US-100: con `tint`, el chip seleccionado usa el color por valor (prioridad sobre la familia)', () => {
+    render(
+      <SelectableChip
+        label="Animales"
+        selected
+        onPress={vi.fn()}
+        color="quaternary"
+        tint={{ color: '#3f8a5c', on: '#ffffff' }}
+      />,
+    );
+    // El `tint` (#3f8a5c → rgb(63, 138, 92)) gana a la familia `quaternary`.
+    expect(screen.getByRole('button', { name: /Animales/ })).toHaveStyle({
+      backgroundColor: 'rgb(63, 138, 92)',
+    });
+  });
 });
