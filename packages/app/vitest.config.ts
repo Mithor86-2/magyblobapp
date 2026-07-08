@@ -82,6 +82,9 @@ export default defineConfig({
       'expo-application': fileURLToPath(
         new URL('./test/expo-application-stub.ts', import.meta.url),
       ),
+      // `expo-constants` arrastra `expo-modules-core` (nativo); no carga bajo Vitest.
+      // Stub con un `expoConfig.version` fijo para `VersionFooter` (US-105, mismo patrón).
+      'expo-constants': fileURLToPath(new URL('./test/expo-constants-stub.ts', import.meta.url)),
       // Módulos nativos del tema del SO (US-66): no resuelven bajo Vitest. El
       // `ThemeProvider` los importa; los aliasamos a stubs inocuos (mismo patrón).
       'expo-navigation-bar': fileURLToPath(
