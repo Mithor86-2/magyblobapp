@@ -5,7 +5,7 @@ desde `develop`). Ambos son **solo app** (`@magyblob/app`); el backend no cambia
 tarea: `❌` pendiente · `🔄` en curso · `✅` hecha.
 
 - Ramas: `feature/95-avatares-imagen` · `feature/96-actividad-singular-historial`.
-- Historias de usuario: **US-95** (avatares con imagen) · **US-09/US-10 ampliadas** (generar una
+- Historias de usuario: **US-103** (avatares con imagen) · **US-09/US-10 ampliadas** (generar una
   actividad y verla/completarla desde el historial).
 - Punto de solape conocido: `ActivitiesScreen.tsx` (F95 toca la línea del avatar del loader; F96
   toca categoría/botón/cantidad). Se resuelve al integrar en `develop`.

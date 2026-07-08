@@ -1,7 +1,7 @@
 import { Image, type ImageSourcePropType, type ImageStyle, type StyleProp } from 'react-native';
 
 /**
- * Avatar del niño como **imagen** empaquetada (US-95; antes era un emoji, US-90/US-94).
+ * Avatar del niño como **imagen** empaquetada (US-103; antes era un emoji, US-90/US-94).
  *
  * **Nota (crash):** US-90 introdujo un **balanceo idle en bucle** + un **estallido de estrellas**
  * al tocar, con reanimated; se **desactivó** porque provoca un crash nativo de **reanimated 4 /

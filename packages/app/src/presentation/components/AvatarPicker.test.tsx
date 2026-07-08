@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { AVATARS, AvatarPicker, avatarSource } from './AvatarPicker';
 
 /**
- * Tests user-centric del selector de avatar (US-30/US-95). Cada avatar es un botón con
+ * Tests user-centric del selector de avatar (US-30/US-103). Cada avatar es un botón con
  * su `id` como nombre accesible; elegirlo notifica ese `id`. (El estado seleccionado se
  * transmite con `accessibilityState`, no proyectado a ARIA por el adaptador web; ver nota
  * en `SelectableChip.test.tsx`.)

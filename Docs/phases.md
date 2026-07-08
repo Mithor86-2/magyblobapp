@@ -299,9 +299,9 @@ se abra). Algunas parten de algo ya existente (se indica).
 
 **Recursos visuales (imágenes propias en vez de emojis):**
 
-- [ ] **Avatares con imagen.** Crear un set de imágenes para los avatares e implementarlas en
-      la app (hoy `AvatarPicker` usa emojis con `id` ASCII; sustituir por assets locales sin
-      romper el `avatar` que se guarda en el perfil). Sin descargas en runtime (cumplimiento).
+- [x] ✅ **Avatares con imagen (US-103, 2026-07-07).** Set de 12 imágenes propias empaquetadas (256×256)
+      en lugar de emojis, sin romper el `avatar` guardado en el perfil (fallback al defecto para ids
+      antiguos). Sin descargas en runtime (cumplimiento). Ver la subsección del lote más abajo.
 - [ ] **Imágenes de temas y estilos de cuento.** Ilustraciones para los temas
       (`animales · espacio · magia · aventuras · música`) y los estilos
       (`aventura · divertido · educativo`), usadas en el selector y en la cabecera del cuento.
@@ -1003,3 +1003,26 @@ Plan en [planes/feature-99-cascada-proveedores-ia.md](planes/feature-99-cascada-
       fallan→mock, omitir sin key, estampado del target), `AuthorBadge` (G/GQ), `DashboardScreen`
       (versión). `pnpm check` verde (**backend 470 + app 310**) + cobertura CORE 100%.
 - **DoD:** ✅ gate + cobertura verdes. Pendiente: pruebas manuales del usuario (cascada real y badge).
+
+### Avatares con imagen + actividad singular en historial (2026-07-07, app v1.15.0 / raíz v1.15.0)
+
+Dos ajustes de la Fase de mejoras ejecutados **en paralelo** (una rama/worktree por feature desde
+`develop`), integrados juntos con versionado diferido. Ambos **solo app**; backend sin cambios. Plan
+en [planes/coordinacion-avatares-actividad-singular.md](planes/coordinacion-avatares-actividad-singular.md).
+
+- [x] ✅ **Avatares con imagen (US-103, rama `feature/95-avatares-imagen`).** Sustituye los avatares
+      emoji por un set de **12 imágenes propias** empaquetadas (256×256, optimizadas de ~14 MB a
+      ~1,1 MB con `sips`; sin descargas en runtime → C-2/C-5). `AvatarPicker` expone `avatarSource(id)`
+      (mapa `require` estático) con **fallback al avatar por defecto** para ids antiguos sin imagen
+      (`gato`, `unicornio`…); `AnimatedAvatar` y `FullScreenLoader` renderizan `<Image>`. Actualizadas
+      las pantallas que muestran el avatar (Inicio, elegir perfil, generador, crear perfil) y sus tests.
+      Cierra el ítem "Avatares con imagen" del backlog de la Fase de mejoras.
+- [x] ✅ **Generar una actividad + historial (US-09/US-10 ampliadas, rama
+      `feature/96-actividad-singular-historial`).** El generador produce **una actividad por pulsación**
+      (`cantidad: 1`), sin la categoría "Todas" (se elige una concreta; botón en singular "Generar
+      actividad"/"Generar otra"). El **historial** muestra ahora también las actividades **pendientes** y
+      permite **marcarlas como realizadas** —con valoración— desde ahí (el backend ya persistía toda
+      actividad generada; el filtro "solo completadas" era de app). `ActivityCard` expone "Realizado" en
+      modo `compact`.
+- **DoD:** ✅ `pnpm check` verde tras integrar (**backend 483 + app 332**); typecheck, ESLint y Prettier
+  OK. Pendiente: **pruebas manuales del usuario** en develop local.

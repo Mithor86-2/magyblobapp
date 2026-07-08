@@ -9,7 +9,21 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
-- Avatares de perfil con **imágenes propias** (US-95): set de 12 ilustraciones empaquetadas
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.15.0] - 2026-07-07
+
+### Added
+
+- Avatares de perfil con **imágenes propias** (US-103): set de 12 ilustraciones empaquetadas
   (256×256, sin descargas en runtime) que sustituyen a los emojis en el selector y en todas las
   pantallas que muestran el avatar (Inicio, elegir perfil, generador de cuentos, crear perfil y
   loader a pantalla completa). Los perfiles antiguos con un `id` sin imagen caen a un avatar por
@@ -17,15 +31,16 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Changed
 
-### Deprecated
+- Generación de actividades **una a una** (antes en lote) y sin la categoría "Todas": se elige una
+  categoría concreta y el botón pasa a singular ("Generar actividad" / "Generar otra"). (US-09)
+- El **historial de actividades** muestra también las **pendientes** (antes solo las completadas) y
+  permite **marcarlas como realizadas** —con valoración— desde ahí; el resumen "Lo último" de
+  Inicio considera también las pendientes. (US-10)
 
 ### Removed
 
-- Avatares emoji y el helper `avatarEmoji` (reemplazados por imágenes, US-95).
-
-### Fixed
-
-### Security
+- Avatares emoji y el helper `avatarEmoji` (reemplazados por imágenes, US-103).
+- Opción "Todas" del selector de categorías de actividades (clave i18n `activities.all`). (US-09)
 
 ## [1.14.0] - 2026-07-07
 

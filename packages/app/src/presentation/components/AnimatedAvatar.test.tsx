@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { AnimatedAvatar } from './AnimatedAvatar';
 
 /**
- * El avatar del niño se renderiza como **imagen** estática empaquetada (US-95; antes era un
+ * El avatar del niño se renderiza como **imagen** estática empaquetada (US-103; antes era un
  * emoji, US-90). `interactive` se conserva por compatibilidad pero ya no anima (crash de
  * reanimated 4 / New Arch — ver lecciones-aprendidas).
  */

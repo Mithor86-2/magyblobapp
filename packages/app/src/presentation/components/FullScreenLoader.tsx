@@ -12,7 +12,7 @@ interface FullScreenLoaderProps {
   /** Mensaje que se muestra bajo el indicador (p. ej. "Creando un cuento mágico…"). */
   message: string;
   /**
-   * `id` del avatar del perfil (US-95): si se pasa, se muestra su imagen sobre el indicador
+   * `id` del avatar del perfil (US-103): si se pasa, se muestra su imagen sobre el indicador
    * para dar calidez y contexto (de quién es lo que se está generando/creando). Ausente en
    * flujos sin perfil (p. ej. crear cuenta).
    */
