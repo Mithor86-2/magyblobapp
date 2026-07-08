@@ -14,6 +14,7 @@ import type { Activity, Categoria } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { categoriaLabel } from '../labels';
 import { categoriaIcon } from '../chipIcons';
+import { avatarEmoji } from '../components/AvatarPicker';
 import { vocabColor } from '../vocabColor';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
@@ -115,8 +116,12 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
         ))}
       </View>
 
-      {/* US-102: loader a pantalla completa mientras se generan las actividades. */}
-      <FullScreenLoader visible={loading} message={t('activities.preparing')} />
+      {/* US-102: loader a pantalla completa mientras se generan las actividades, con el avatar. */}
+      <FullScreenLoader
+        visible={loading}
+        message={t('activities.preparing')}
+        avatar={profile ? avatarEmoji(profile.avatar) : undefined}
+      />
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>

@@ -17,4 +17,9 @@ describe('FullScreenLoader', () => {
     render(<FullScreenLoader visible={false} message="Creando un cuento mágico…" />);
     expect(screen.queryByText('Creando un cuento mágico…')).not.toBeInTheDocument();
   });
+
+  it('muestra el avatar del perfil cuando se pasa', () => {
+    render(<FullScreenLoader visible message="Creando un cuento mágico…" avatar="🦊" />);
+    expect(screen.getByText('🦊')).toBeVisible();
+  });
 });

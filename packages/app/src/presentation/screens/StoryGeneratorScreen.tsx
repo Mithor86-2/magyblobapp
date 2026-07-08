@@ -191,8 +191,12 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
         />
       </View>
 
-      {/* US-102: loader a pantalla completa mientras se genera el cuento. */}
-      <FullScreenLoader visible={loading} message={t('storyGenerator.creating')} />
+      {/* US-102: loader a pantalla completa mientras se genera el cuento, con el avatar del perfil. */}
+      <FullScreenLoader
+        visible={loading}
+        message={t('storyGenerator.creating')}
+        avatar={profile ? avatarEmoji(profile.avatar) : undefined}
+      />
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>
