@@ -93,6 +93,8 @@ model Story {
   estado    String       @default("nuevo")
   proveedor String       @default("mock")
   portada   String?
+  /// US-101: nombre de la portada empaquetada elegida de la config `story.covers` (tema/estilo).
+  portadaKey String?
   prompt    String?
   continuacionDe String?
   favorito  Boolean      @default(false)

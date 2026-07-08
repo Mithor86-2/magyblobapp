@@ -9,6 +9,11 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Portadas de cuento **empaquetadas por tema/estilo** (US-101): `StoryCover` resuelve la
+  portada elegida por el backend (`portadaKey`) contra un catálogo local de imágenes, con
+  orden **portada generada → portadaKey → respaldo por tema**. Se aplica en el lector y en el
+  historial.
+
 ### Changed
 
 ### Deprecated

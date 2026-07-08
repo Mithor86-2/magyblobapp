@@ -82,6 +82,8 @@ export const storySchema = z.object({
   proveedor: z.enum(PROVEEDORES_IA),
   // US-59: portada generada (data URL); opcional, ausente ⇒ respaldo local.
   portada: z.string().optional(),
+  // US-101: nombre de la portada empaquetada elegida por el backend; opcional.
+  portadaKey: z.string().optional(),
   // US-62: fecha de generación (ISO); opcional para no romper si el backend aún no la envía.
   creadoEn: z.string().optional(),
   // US-64: favorito; opcional para no romper hasta integrar el backend (feature A, US-63).

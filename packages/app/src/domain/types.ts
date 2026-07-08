@@ -157,6 +157,12 @@ export interface Story {
   proveedor: ProveedorIa;
   /** Portada generada (data URL, US-59); ausente ⇒ la app usa el respaldo local por tema. */
   portada?: string;
+  /**
+   * Nombre de la portada empaquetada elegida por el backend según la config `story.covers`
+   * (US-101). La app la resuelve contra sus imágenes locales; prioritaria sobre el respaldo
+   * por tema y secundaria a `portada` (generada).
+   */
+  portadaKey?: string;
   /** Fecha de generación en ISO 8601 (US-62); ausente ⇒ la UI no muestra fecha. */
   creadoEn?: string;
   /** Marcado como favorito por el perfil (US-64). Opcional: ausente ⇒ no favorito (backend antiguo). */

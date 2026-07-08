@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GenerateStoryAnonymous } from '../../src/application/use-cases/GenerateStoryAnonymous.js';
 import { DomainError } from '../../src/domain/errors.js';
-import { FakeAIProvider } from '../support/doubles.js';
+import { FakeAIProvider, FakeStoryCoverCatalog } from '../support/doubles.js';
 
 /**
  * Modo anónimo efímero (US-50): genera un cuento sin sesión, sin perfil y **sin
@@ -9,8 +9,11 @@ import { FakeAIProvider } from '../support/doubles.js';
  * `profileId` ni nombre de niño.
  */
 describe('GenerateStoryAnonymous', () => {
-  function build() {
-    return new GenerateStoryAnonymous({ ai: new FakeAIProvider() });
+  function build(coverName: string | null = null) {
+    return new GenerateStoryAnonymous({
+      ai: new FakeAIProvider(),
+      covers: new FakeStoryCoverCatalog(coverName),
+    });
   }
 
   it('genera un cuento en el idioma indicado sin pedir perfil ni nombre', async () => {
@@ -33,6 +36,15 @@ describe('GenerateStoryAnonymous', () => {
   it('usa el idioma por defecto (es) si no se indica', async () => {
     const out = await build().execute({ edad: 5, temas: ['magia'], estilos: ['divertido'] });
     expect(out.idioma).toBe('es');
+  });
+
+  it('US-101: incluye portadaKey del catálogo en la salida (sin persistir)', async () => {
+    const out = await build('magia+divertido.png').execute({
+      edad: 5,
+      temas: ['magia'],
+      estilos: ['divertido'],
+    });
+    expect(out.portadaKey).toBe('magia+divertido.png');
   });
 
   it('admite varios temas y estilos y usa el primero como representante', async () => {

@@ -10,6 +10,7 @@ import { wireDomainEvents } from '../../src/infrastructure/events/subscribers.js
 import {
   FakeCodeGenerator,
   FakePasswordHasher,
+  FakeStoryCoverCatalog,
   FakeTTSProvider,
   InMemoryAchievementRepository,
   InMemoryActivityRepository,
@@ -78,6 +79,7 @@ export function makeInMemoryDeps(options: { emailService?: EmailService } = {}) 
   const guardians = new InMemoryGuardianRepository();
   const profiles = new InMemoryChildProfileRepository();
   const stories = new InMemoryStoryRepository();
+  const covers = new FakeStoryCoverCatalog();
   const narrations = new InMemoryStoryNarrationRepository();
   const activities = new InMemoryActivityRepository();
   const achievements = new InMemoryAchievementRepository();
@@ -92,6 +94,7 @@ export function makeInMemoryDeps(options: { emailService?: EmailService } = {}) 
     guardians,
     profiles,
     stories,
+    covers,
     narrations,
     activities,
     achievements,
@@ -116,6 +119,7 @@ export function makeInMemoryDeps(options: { emailService?: EmailService } = {}) 
     guardians,
     profiles,
     stories,
+    covers,
     narrations,
     activities,
     achievements,

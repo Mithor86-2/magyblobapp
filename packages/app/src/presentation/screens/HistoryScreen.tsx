@@ -179,6 +179,7 @@ export function HistoryScreen({ navigation }: TabScreenProps<'Historial'>) {
           {/* US-100 (#1): portada del cuento (generada o respaldo por tema) como miniatura. */}
           <StoryCover
             generada={story.portada}
+            portadaKey={story.portadaKey}
             tema={story.tema}
             style={styles.cover}
             accessibilityLabel={t('history.readStoryA11y', { titulo: story.titulo })}

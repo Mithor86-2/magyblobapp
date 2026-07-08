@@ -30,6 +30,25 @@ describe('portadaSource', () => {
     // El tema desconocido cae al respaldo de `aventuras` (default), nunca a undefined.
     expect(portadaSource(undefined, 'piratas')).toEqual(portadaSource(undefined, 'aventuras'));
   });
+
+  // US-101: portada empaquetada elegida por el backend (`portadaKey`).
+  it('usa la portada empaquetada indicada por portadaKey (tema+estilo)', () => {
+    const combo = portadaSource(undefined, 'animales', 'animales+aventura.png');
+    // Debe ser una portada distinta del respaldo por tema simple.
+    expect(combo).toBeTruthy();
+    expect(combo).not.toEqual(portadaSource(undefined, 'animales'));
+  });
+
+  it('la imagen generada (data URL) tiene prioridad sobre portadaKey', () => {
+    const url = 'data:image/png;base64,ABC';
+    expect(portadaSource(url, 'animales', 'animales+aventura.png')).toEqual({ uri: url });
+  });
+
+  it('cae al respaldo por tema si portadaKey no está en el catálogo', () => {
+    expect(portadaSource(undefined, 'magia', 'inexistente.png')).toEqual(
+      portadaSource(undefined, 'magia'),
+    );
+  });
 });
 
 describe('temaDeCategoria', () => {

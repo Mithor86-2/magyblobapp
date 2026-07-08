@@ -113,6 +113,8 @@ export interface StoryOutput {
   proveedor: ProveedorIa;
   /** Portada generada (data URL, US-59); ausente si no se generó (la app usa respaldo). */
   portada?: string;
+  /** Nombre de la portada empaquetada elegida de la config (US-101); ausente si ninguna. */
+  portadaKey?: string;
   /** Marcado como favorito por el tutor (US-63). */
   favorito: boolean;
   /** Fecha de generación en ISO 8601 (US-61); la app la muestra formateada. */
@@ -139,6 +141,8 @@ export interface AnonymousStoryOutput {
   cuerpo: string;
   idioma: CodigoIdioma;
   proveedor: ProveedorIa;
+  /** Nombre de la portada empaquetada elegida de la config (US-101); ausente si ninguna. */
+  portadaKey?: string;
 }
 
 // --- NarrateStory ---

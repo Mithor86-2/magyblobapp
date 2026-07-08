@@ -70,6 +70,23 @@ describe('POST /stories (integración)', () => {
     expect(evento?.profileId).toBe(profileId);
   });
 
+  it('US-101: devuelve y persiste portadaKey elegido del catálogo de portadas', async () => {
+    const profileId = await crearPerfil();
+    handles.covers.resultado = 'animales+aventura.png';
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/stories',
+      headers: authHeaders(app),
+      payload: { profileId, temas: ['animales'], estilos: ['aventura'] },
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json().portadaKey).toBe('animales+aventura.png');
+    const guardado = await handles.stories.findById(res.json().id as string);
+    expect(guardado?.portadaKey).toBe('animales+aventura.png');
+  });
+
   it('devuelve 404 si el perfil no existe', async () => {
     const res = await app.inject({
       method: 'POST',

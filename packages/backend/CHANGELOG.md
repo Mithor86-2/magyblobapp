@@ -9,6 +9,12 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Added
 
+- Portadas de cuento **configurables por BD** (US-101): nueva clave `AppSetting`
+  **`story.covers`** (JSON `[{imagen, tema?, estilo?}]`, editable en caliente). Al crear un
+  cuento el backend elige la portada por prioridad **tema+estilo → tema → estilo** y la
+  **persiste** en `Story.portadaKey` (columna nueva + migración). También se expone en el
+  cuento anónimo del Dashboard (sin persistir).
+
 ### Changed
 
 ### Deprecated

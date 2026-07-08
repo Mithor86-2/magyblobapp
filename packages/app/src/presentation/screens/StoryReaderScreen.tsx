@@ -109,6 +109,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
     <>
       <StoryCover
         generada={story.portada}
+        portadaKey={story.portadaKey}
         tema={story.tema}
         style={styles.cover}
         accessibilityLabel={story.titulo}
@@ -142,6 +143,7 @@ export function StoryReaderScreen({ route, navigation }: RootScreenProps<'StoryR
           finImagen={
             <StoryCover
               generada={story.portada}
+              portadaKey={story.portadaKey}
               tema={story.tema}
               style={styles.coverFin}
               accessibilityLabel={story.titulo}

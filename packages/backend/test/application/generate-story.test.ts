@@ -6,6 +6,7 @@ import { Edad } from '../../src/domain/value-objects/Edad.js';
 import { Idioma } from '../../src/domain/value-objects/Idioma.js';
 import {
   FakeAIProvider,
+  FakeStoryCoverCatalog,
   InMemoryChildProfileRepository,
   InMemoryStoryRepository,
   relojFijo,
@@ -36,6 +37,7 @@ describe('GenerateStory', () => {
       profiles,
       stories,
       ai: new FakeAIProvider(),
+      covers: new FakeStoryCoverCatalog(),
       newId: secuencialIdGenerator('s'),
       now: relojFijo(),
     });
@@ -200,6 +202,7 @@ describe('GenerateStory', () => {
       profiles,
       stories,
       ai,
+      covers: new FakeStoryCoverCatalog(),
       newId: secuencialIdGenerator('s'),
       now: relojFijo(),
     });
@@ -218,6 +221,7 @@ describe('GenerateStory', () => {
       profiles,
       stories,
       ai,
+      covers: new FakeStoryCoverCatalog(),
       newId: secuencialIdGenerator('s'),
       now: relojFijo(),
     });
@@ -233,6 +237,7 @@ describe('GenerateStory', () => {
       profiles,
       stories,
       ai,
+      covers: new FakeStoryCoverCatalog(),
       newId: secuencialIdGenerator('s'),
       now: relojFijo(),
     });
@@ -252,6 +257,7 @@ describe('GenerateStory', () => {
       profiles,
       stories,
       ai,
+      covers: new FakeStoryCoverCatalog(),
       newId: secuencialIdGenerator('s'),
       now: relojFijo(),
     });
@@ -284,6 +290,7 @@ describe('GenerateStory', () => {
       profiles,
       stories,
       ai,
+      covers: new FakeStoryCoverCatalog(),
       newId: secuencialIdGenerator('s'),
       now: relojFijo(),
     });
@@ -295,5 +302,35 @@ describe('GenerateStory', () => {
     expect(out.id).toBe('s-1');
     expect(out.portada).toBeUndefined();
     expect(await stories.findById(out.id)).not.toBeNull();
+  });
+
+  // --- Portada configurable por BD (US-101) ---
+
+  it('US-101: elige y persiste portadaKey del catálogo según tema/estilo', async () => {
+    useCase = new GenerateStory({
+      profiles,
+      stories,
+      ai: new FakeAIProvider(),
+      covers: new FakeStoryCoverCatalog('animales+aventura.png'),
+      newId: secuencialIdGenerator('s'),
+      now: relojFijo(),
+    });
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(out.portadaKey).toBe('animales+aventura.png');
+    const guardado = await stories.findById(out.id);
+    expect(guardado?.portadaKey).toBe('animales+aventura.png');
+  });
+
+  it('US-101: sin portada configurada (catálogo null), portadaKey queda indefinido', async () => {
+    const out = await useCase.execute({
+      profileId: 'p-1',
+      temas: ['animales'],
+      estilos: ['aventura'],
+    });
+    expect(out.portadaKey).toBeUndefined();
   });
 });
