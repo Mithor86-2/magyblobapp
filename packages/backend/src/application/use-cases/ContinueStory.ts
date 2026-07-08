@@ -62,6 +62,8 @@ export class ContinueStory {
       // Reutiliza la portada del origen (misma temática); si el origen no tenía, queda
       // undefined y la app cae al respaldo local por tema.
       portada: origen.portada,
+      // US-101: hereda la portada empaquetada del origen (mismo tema/estilo).
+      portadaKey: origen.portadaKey,
       prompt: generado.prompt,
       // US-78: enlace al cuento del que es continuación (encadena capítulos).
       continuacionDe: origen.id,

@@ -7,7 +7,7 @@ import { Screen } from '../components/Screen';
 import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
 import { ProgressBar } from '../components/ProgressBar';
-import { avatarEmoji } from '../components/AvatarPicker';
+import { avatarSource } from '../components/AvatarPicker';
 import { AnimatedAvatar } from '../components/AnimatedAvatar';
 import { VersionFooter } from '../components/VersionFooter';
 import { api } from '../../composition';
@@ -63,15 +63,11 @@ export function HomeScreen({ navigation }: TabScreenProps<'Inicio'>) {
   return (
     <Screen
       headerImageName="home"
-      title={t('tabs.inicio')}
+      title={t('common.appName')}
       headerAction={<AdultsButton onPress={openParental} />}
     >
       <View style={styles.hero}>
-        <AnimatedAvatar
-          emoji={profile ? avatarEmoji(profile.avatar) : '✨'}
-          style={styles.avatar}
-          interactive
-        />
+        <AnimatedAvatar source={avatarSource(profile?.avatar ?? 'zorro')} size={96} interactive />
         <Text style={styles.title}>
           {t('home.greeting', { nombre: profile ? `, ${profile.nombre}` : '' })}
         </Text>
@@ -161,9 +157,6 @@ const makeStyles = (colors: ColorTokens) =>
       alignItems: 'center',
       gap: spacing.sm,
       paddingTop: spacing.lg,
-    },
-    avatar: {
-      fontSize: 80,
     },
     title: {
       ...typography.displayLg,

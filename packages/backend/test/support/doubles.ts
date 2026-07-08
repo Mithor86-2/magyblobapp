@@ -17,6 +17,7 @@ import type { ChildProfileRepository } from '../../src/domain/repositories/Child
 import type { GuardianRepository } from '../../src/domain/repositories/GuardianRepository.js';
 import type { EmailVerificationRepository } from '../../src/domain/repositories/EmailVerificationRepository.js';
 import type { StoryRepository } from '../../src/domain/repositories/StoryRepository.js';
+import type { StoryCoverCatalog } from '../../src/domain/repositories/StoryCoverCatalog.js';
 import type { StoryNarrationRepository } from '../../src/domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from '../../src/domain/repositories/ActivityRepository.js';
 import type { AchievementRepository } from '../../src/domain/repositories/AchievementRepository.js';
@@ -196,6 +197,19 @@ export class InMemorySettingsRepository implements SettingsRepository {
 
   async get(key: string): Promise<string | null> {
     return this.map.get(key) ?? null;
+  }
+}
+
+/**
+ * Catálogo de portadas falso (US-101): devuelve un nombre fijo para cualquier
+ * tema/estilo. `resultado` ajustable por test (por defecto `null` = sin portada
+ * configurada, que es el comportamiento neutro que no afecta a los tests existentes).
+ */
+export class FakeStoryCoverCatalog implements StoryCoverCatalog {
+  constructor(public resultado: string | null = null) {}
+
+  async pick(): Promise<string | null> {
+    return this.resultado;
   }
 }
 

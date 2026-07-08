@@ -4,6 +4,7 @@ import type { EventBus } from './domain/events/EventBus.js';
 import type { GuardianRepository } from './domain/repositories/GuardianRepository.js';
 import type { ChildProfileRepository } from './domain/repositories/ChildProfileRepository.js';
 import type { StoryRepository } from './domain/repositories/StoryRepository.js';
+import type { StoryCoverCatalog } from './domain/repositories/StoryCoverCatalog.js';
 import type { StoryNarrationRepository } from './domain/repositories/StoryNarrationRepository.js';
 import type { ActivityRepository } from './domain/repositories/ActivityRepository.js';
 import type { AchievementRepository } from './domain/repositories/AchievementRepository.js';
@@ -24,6 +25,8 @@ export interface AppDeps {
   guardians: GuardianRepository;
   profiles: ChildProfileRepository;
   stories: StoryRepository;
+  /** Catálogo de portadas configurables por tema/estilo (US-101, `story.covers`). */
+  covers: StoryCoverCatalog;
   narrations: StoryNarrationRepository;
   activities: ActivityRepository;
   /** Logros desbloqueados por perfil (US-68). */

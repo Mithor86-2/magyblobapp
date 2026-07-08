@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { ActivityCard } from '../components/ActivityCard';
 import { useDialog } from '../components/DialogProvider';
@@ -12,8 +13,9 @@ import { CATEGORIAS } from '../../domain/types';
 import type { Activity, Categoria } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { categoriaLabel } from '../labels';
+import { categoriaIcon } from '../chipIcons';
+import { vocabColor } from '../vocabColor';
 import { api } from '../../composition';
-import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
@@ -36,23 +38,23 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
   const openParental = () =>
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Parental');
 
-  const [categoria, setCategoria] = useState<Categoria | null>(null);
+  // US-09: sin opción "Todas"; se genera UNA actividad de la categoría elegida por pulsación.
+  const [categoria, setCategoria] = useState<Categoria>(CATEGORIAS[0]);
   const [loading, setLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [generado, setGenerado] = useState(false);
-  // Aviso de espera larga (US-53, cold-start de Render free).
-  const lento = useSlowHint(loading);
 
   async function onGenerate() {
     if (!profile) return;
     setLoading(true);
     setError(null);
-    trackAction('activities.recommend', { categoria: categoria ?? 'todas' });
+    trackAction('activities.recommend', { categoria });
     try {
       const result = await api.activities.recommend({
         profileId: profile.id,
-        categoria: categoria ?? undefined,
+        categoria,
+        cantidad: 1,
       });
       setActivities(result);
       setGenerado(true);
@@ -79,7 +81,7 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
   return (
     <Screen
       headerImageName="actividades"
-      title={t('tabs.actividades')}
+      title={t('common.appName')}
       headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton
@@ -98,33 +100,24 @@ export function ActivitiesScreen({ navigation }: TabScreenProps<'Actividades'>) 
 
       <Text style={styles.fieldLabel}>{t('activities.category')}</Text>
       <View style={styles.chips}>
-        <SelectableChip
-          label={t('activities.all')}
-          selected={categoria === null}
-          onPress={() => setCategoria(null)}
-        />
         {CATEGORIAS.map((c) => (
           <SelectableChip
             key={c}
             label={categoriaLabel(c)}
             selected={categoria === c}
             onPress={() => setCategoria(c)}
+            icon={categoriaIcon(c)}
+            tint={vocabColor(colors, c)}
           />
         ))}
       </View>
 
-      {loading ? (
-        <View style={styles.statusBox}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>{t('activities.preparing')}</Text>
-          {lento ? (
-            <>
-              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
-              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
-            </>
-          ) : null}
-        </View>
-      ) : null}
+      {/* US-102: loader a pantalla completa mientras se generan las actividades, con el avatar. */}
+      <FullScreenLoader
+        visible={loading}
+        message={t('activities.preparing')}
+        avatarId={profile?.avatar}
+      />
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>

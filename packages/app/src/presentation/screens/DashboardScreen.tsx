@@ -11,6 +11,7 @@ import type { AnonymousActivity, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { estiloLabel, temaLabel } from '../labels';
 import { estiloIcon, temaIcon } from '../chipIcons';
+import { vocabColor } from '../vocabColor';
 import { api } from '../../composition';
 import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
@@ -160,7 +161,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
             selected={temas.includes(tema)}
             onPress={() => toggleTema(tema)}
             icon={temaIcon(tema)}
-            color="tertiary"
+            tint={vocabColor(colors, tema)}
           />
         ))}
       </View>
@@ -173,7 +174,7 @@ export function DashboardScreen({ navigation }: RootScreenProps<'Dashboard'>) {
             selected={estilos.includes(s)}
             onPress={() => toggleEstilo(s)}
             icon={estiloIcon(s)}
-            color="secondary"
+            tint={vocabColor(colors, s)}
           />
         ))}
       </View>

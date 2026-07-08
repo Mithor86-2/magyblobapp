@@ -3,11 +3,14 @@ import { ChildProfile } from '../../domain/entities/ChildProfile.js';
 import { DomainError } from '../../domain/errors.js';
 import { Edad } from '../../domain/value-objects/Edad.js';
 import { Idioma } from '../../domain/value-objects/Idioma.js';
+import type { StoryCoverCatalog } from '../../domain/repositories/StoryCoverCatalog.js';
 import { esEstilo, esTema } from '../../domain/vocabulary.js';
 import type { AnonymousStoryOutput, GenerateStoryAnonymousRequest } from '../dto.js';
 
 export interface GenerateStoryAnonymousDeps {
   ai: AIProvider;
+  /** Catálogo de portadas configurables (US-101): elige la imagen por tema/estilo. */
+  covers: StoryCoverCatalog;
 }
 
 /**
@@ -44,6 +47,8 @@ export class GenerateStoryAnonymous {
     });
 
     const generado = await this.deps.ai.generateStory({ perfil: perfilEfimero, temas, estilos });
+    // US-101: portada empaquetada elegida de la config (no se persiste; solo en la respuesta).
+    const portadaKey = (await this.deps.covers.pick(temas[0]!, estilos[0]!)) ?? undefined;
 
     return {
       tema: temas[0]!,
@@ -52,6 +57,7 @@ export class GenerateStoryAnonymous {
       cuerpo: generado.cuerpo,
       idioma: idioma.value,
       proveedor: generado.proveedor,
+      portadaKey,
     };
   }
 

@@ -12,7 +12,7 @@ en local **sin GPU ni claves**.
 
 ## Descargar la app (Android)
 
-**APK lista para instalar (v1.12.0):** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/2bda56a5-16e6-46bb-a353-ffd343fb4639)
+**APK lista para instalar (v1.16.0):** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/85ddeabf-1f84-4ec4-ba1e-faae7e3aad9f)
 → en esa página, **Install** (QR o descarga directa del `.apk`).
 
 En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos» (o por cable,

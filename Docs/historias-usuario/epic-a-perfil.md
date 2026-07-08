@@ -1,7 +1,7 @@
 # Epic A — Perfil del niño y cuenta del adulto
 
 Historias de la **cuenta del adulto** (**US-16**, **US-19**, **US-20**, **US-21**, **US-48**) y del
-**perfil del niño** (**US-01**, **US-02**). Volver al [índice](README.md).
+**perfil del niño** (**US-01**, **US-02**, **US-49**, **US-103**, **US-104**). Volver al [índice](README.md).
 
 ## US-16 — Registro del adulto y consentimiento · Must
 
@@ -200,3 +200,41 @@ guardián (reaprovecha la pantalla `SelectProfileScreen` ya existente).
 - (Estado) Dado el store, Cuando se cargan los perfiles del guardián, Entonces quedan
   disponibles en `profiles` (vía `setProfiles`) para que la lógica de arranque pueda
   contar cuántos hay; los perfiles se persisten junto al resto de la sesión.
+
+## US-103 — Avatares con imagen · Should · Mejoras
+
+Como **niño/a** quiero elegir mi avatar entre **imágenes** bonitas (no emojis) para
+personalizar mi perfil. Amplía la selección de avatar de [US-01](#us-01): el `avatar`
+que se guarda en el perfil sigue siendo un `id` de texto; solo cambia la **presentación**
+(imagen en vez de emoji).
+
+**Criterios de aceptación**
+
+- Dado el selector de avatar (al crear perfil), Cuando lo abro, Entonces veo un set de
+  **imágenes propias** (12 animales) empaquetadas en la app, y al elegir una se guarda su
+  `id` en el perfil (mismo contrato que antes; el backend no cambia).
+- Dado un perfil con avatar, Cuando aparece en cualquier pantalla (Inicio, elegir perfil,
+  generador de cuentos, loader a pantalla completa), Entonces se muestra su **imagen**.
+- Dado un perfil antiguo cuyo `avatar` es un id sin imagen (p. ej. un emoji previo como
+  `gato`/`unicornio`), Cuando se muestra, Entonces cae a un **avatar por defecto** sin
+  error.
+- (Cumplimiento) Dado que las imágenes se **empaquetan en build-time**, Cuando se usan,
+  Entonces **no hay descargas en runtime** ni SDK de terceros (C-2/C-5). Las imágenes se
+  **optimizan** (256×256) para no inflar el bundle.
+
+## US-104 — Selector de avatar en rejilla a ancho completo, sin fondo · Should · Mejoras
+
+Como **niño/a** quiero ver los avatares **grandes y ordenados** al crear mi perfil para
+elegir mejor. Ajuste visual que amplía [US-103](#us-103); no cambia el `avatar` guardado.
+
+**Criterios de aceptación**
+
+- Dado el selector de avatar (al crear perfil), Cuando lo veo, Entonces los 12 avatares se
+  disponen en **3 filas de 4** y cada imagen **ocupa 1/4 del ancho** del contenedor (llenan
+  el ancho, más grandes que antes).
+- Dado un avatar en el selector, Cuando se muestra, Entonces es **redondo** (la imagen se
+  recorta en círculo) y **no** tiene recuadro de fondo de color detrás; solo se ve la imagen
+  (con transparencia).
+- Dado que elijo un avatar, Cuando queda seleccionado, Entonces se marca con un **anillo
+  redondo** del color primario (sin fondo), y el resto no muestra anillo; elegir otro no
+  desplaza el layout.

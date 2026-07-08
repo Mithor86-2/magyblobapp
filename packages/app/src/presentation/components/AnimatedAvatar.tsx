@@ -1,7 +1,7 @@
-import { Text, type StyleProp, type TextStyle } from 'react-native';
+import { Image, type ImageSourcePropType, type ImageStyle, type StyleProp } from 'react-native';
 
 /**
- * Avatar del niño (emoji de animal). (US-90/US-94).
+ * Avatar del niño como **imagen** empaquetada (US-103; antes era un emoji, US-90/US-94).
  *
  * **Nota (crash):** US-90 introdujo un **balanceo idle en bucle** + un **estallido de estrellas**
  * al tocar, con reanimated; se **desactivó** porque provoca un crash nativo de **reanimated 4 /
@@ -11,19 +11,25 @@ import { Text, type StyleProp, type TextStyle } from 'react-native';
  * `interactive`) para no tocar las pantallas que lo usan; ya no anima ni es pulsable.
  */
 export function AnimatedAvatar({
-  emoji,
+  source,
+  size,
   style,
   accessibilityLabel,
 }: {
-  emoji: string;
-  style?: StyleProp<TextStyle>;
+  source: ImageSourcePropType;
+  /** Lado del avatar en px (imagen cuadrada). */
+  size: number;
+  style?: StyleProp<ImageStyle>;
   accessibilityLabel?: string;
   /** Conservado por compatibilidad (US-90); sin efecto tras desactivar la animación. */
   interactive?: boolean;
 }) {
   return (
-    <Text style={style} accessibilityLabel={accessibilityLabel}>
-      {emoji}
-    </Text>
+    <Image
+      source={source}
+      style={[{ width: size, height: size }, style]}
+      resizeMode="contain"
+      accessibilityLabel={accessibilityLabel}
+    />
   );
 }

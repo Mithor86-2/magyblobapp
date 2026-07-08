@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { AvatarPicker } from '../components/AvatarPicker';
@@ -12,10 +13,11 @@ import type { CodigoIdioma, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { idiomaLabel, temaLabel } from '../labels';
 import { temaIcon } from '../chipIcons';
+import { vocabColor } from '../vocabColor';
 import { api } from '../../composition';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
-import { useThemedStyles } from '../theme/ThemeProvider';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { type ColorTokens, spacing, typography } from '../theme/tokens';
 import type { RootScreenProps } from '../navigation';
 
@@ -28,6 +30,7 @@ const EDADES = [2, 3, 4, 5, 6] as const;
  */
 export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfile'>) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const guardianId = useAppStore((s) => s.guardian?.id ?? null);
   const setProfile = useAppStore((s) => s.setProfile);
@@ -89,6 +92,12 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
         />
       }
     >
+      {/* US-102: loader a pantalla completa mientras se crea el perfil, con el avatar elegido. */}
+      <FullScreenLoader
+        visible={submitting}
+        message={t('createProfile.creating')}
+        avatarId={avatar ?? undefined}
+      />
       <TextField
         label={t('createProfile.name')}
         value={nombre}
@@ -133,7 +142,7 @@ export function CreateProfileScreen({ navigation }: RootScreenProps<'CreateProfi
             selected={intereses.includes(tema)}
             onPress={() => toggleInteres(tema)}
             icon={temaIcon(tema)}
-            color="tertiary"
+            tint={vocabColor(colors, tema)}
           />
         ))}
       </View>

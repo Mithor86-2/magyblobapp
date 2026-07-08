@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Config } from '../config.js';
 import type { AppDeps } from '../dependencies.js';
 import { createAIProvider } from './ai/createAIProvider.js';
+import { SettingsStoryCoverCatalog } from './ai/storyCovers.js';
 import { ElevenLabsProvider, type TTSLogger } from './tts/ElevenLabsProvider.js';
 import { InMemoryEventBus } from './events/InMemoryEventBus.js';
 import { wireDomainEvents } from './events/subscribers.js';
@@ -75,6 +76,7 @@ export async function buildProductionDeps(config: Config, logger?: TTSLogger): P
     guardians: new PrismaGuardianRepository(prisma),
     profiles: new PrismaChildProfileRepository(prisma),
     stories: new PrismaStoryRepository(prisma),
+    covers: new SettingsStoryCoverCatalog(settings),
     narrations: new PrismaStoryNarrationRepository(prisma),
     activities: new PrismaActivityRepository(prisma),
     achievements: new PrismaAchievementRepository(prisma),

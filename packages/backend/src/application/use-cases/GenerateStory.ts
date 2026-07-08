@@ -2,6 +2,7 @@ import type { AIProvider } from '../../domain/ai/AIProvider.js';
 import { Story } from '../../domain/entities/Story.js';
 import { DomainError, NotFoundError } from '../../domain/errors.js';
 import type { ChildProfileRepository } from '../../domain/repositories/ChildProfileRepository.js';
+import type { StoryCoverCatalog } from '../../domain/repositories/StoryCoverCatalog.js';
 import type { StoryRepository } from '../../domain/repositories/StoryRepository.js';
 import { esEnsenanza, esEstilo, esTema, type Ensenanza } from '../../domain/vocabulary.js';
 import type { Clock, IdGenerator } from '../ports.js';
@@ -13,6 +14,8 @@ export interface GenerateStoryDeps {
   profiles: ChildProfileRepository;
   stories: StoryRepository;
   ai: AIProvider;
+  /** Catálogo de portadas configurables (US-101): elige la imagen por tema/estilo. */
+  covers: StoryCoverCatalog;
   newId: IdGenerator;
   now: Clock;
 }
@@ -53,6 +56,8 @@ export class GenerateStory {
     // `undefined` y la app usa el respaldo local. Nunca rompe la creación.
     const tituloSinNombre = redactarNombre(generado.titulo, perfil.nombre);
     const portada = await this.generarPortada(temas[0]!, estilos[0]!, tituloSinNombre);
+    // US-101: portada empaquetada elegida de la config `story.covers` por tema/estilo.
+    const portadaKey = (await this.deps.covers.pick(temas[0]!, estilos[0]!)) ?? undefined;
 
     // `Story` conserva las columnas singulares `tema`/`estilo`; se guarda el primero
     // de cada lista como valor representativo de la selección (decisión del lote).
@@ -67,6 +72,7 @@ export class GenerateStory {
       idioma: perfil.idioma.value,
       proveedor: generado.proveedor,
       portada,
+      portadaKey,
       // US-61: se persiste el prompt usado (solo BD; no se expone en el DTO).
       prompt: generado.prompt,
       estado: 'nuevo',

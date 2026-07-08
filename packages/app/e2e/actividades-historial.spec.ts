@@ -99,13 +99,12 @@ test('actividades: generar recomendadas y marcar una como realizada', async ({
   await page.getByText('Actividades', { exact: true }).last().click();
   await expect(page.getByText('Actividades para hoy')).toBeVisible();
 
-  // Generar actividades recomendadas (US-09)
-  await page.getByRole('button', { name: 'Generar actividades' }).click();
+  // Generar UNA actividad recomendada (US-09): sin opción "Todas", se genera una sola
+  // actividad de la categoría seleccionada (por defecto la primera, "arte").
+  await page.getByRole('button', { name: 'Generar actividad' }).click();
 
-  // Aparecen tarjetas del mock: «Actividad de {categoria} nº {n}».
-  // Con categoría "Todas" el mock devuelve 3 (arte, musica, logica).
+  // Aparece la tarjeta del mock para la categoría por defecto: «Actividad de arte nº 1».
   await expect(page.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(/Actividad de \w+ nº \d+/).first()).toBeVisible();
 
   // Marcar la primera actividad como realizada (US-10): "Realizado" → valoración.
   await page.getByRole('button', { name: 'Realizado' }).first().click();
@@ -117,29 +116,31 @@ test('actividades: generar recomendadas y marcar una como realizada', async ({
   await expect(page.getByText('¡Hecha!').first()).toBeVisible();
 });
 
-test('historial: la actividad marcada como realizada aparece en la sección Actividades', async ({
+test('historial: una actividad pendiente aparece y se puede marcar realizada allí', async ({
   page,
 }, testInfo) => {
   await completarOnboarding(page, correoUnico(testInfo));
 
-  // Ir a "Actividades", generar y marcar la primera como realizada (US-10).
+  // Ir a "Actividades" y generar UNA actividad, SIN marcarla como realizada (US-09).
   await page.getByText('Actividades', { exact: true }).last().click();
   await expect(page.getByText('Actividades para hoy')).toBeVisible();
-  await page.getByRole('button', { name: 'Generar actividades' }).click();
+  await page.getByRole('button', { name: 'Generar actividad' }).click();
   await expect(page.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
-  await page.getByRole('button', { name: 'Realizado' }).first().click();
-  await page.getByRole('button', { name: '3 estrellas' }).first().click();
-  await expect(page.getByText('¡Hecha!').first()).toBeVisible();
 
-  // Ir al Historial: la actividad realizada debe aparecer en la pestaña Actividades con
-  // "¡Hecha!" (reproduce el bug: marcar realizada → verla en el Historial). El Historial
-  // (US-74) arranca en la pestaña Cuentos, así que pulsamos el toggle "Actividades" (por
-  // testID, para no chocar con la pestaña inferior homónima) y acotamos por su testID de sección.
+  // Ir al Historial: la actividad PENDIENTE (aún sin completar) debe aparecer en la
+  // pestaña Actividades (US-09/US-10), no solo las hechas. El Historial (US-74) arranca en
+  // la pestaña Cuentos, así que pulsamos el toggle "Actividades" (por testID, para no chocar
+  // con la pestaña inferior homónima) y acotamos por su testID de sección.
   await page.getByText('Historial', { exact: true }).last().click();
   await expect(page.getByText('Tu historial')).toBeVisible();
   await page.getByTestId('history-tab-activities').click();
   const seccion = page.getByTestId('history-activities');
   await expect(seccion.getByText(/Actividad de arte nº 1/)).toBeVisible({ timeout: 30_000 });
+
+  // Marcar la actividad como realizada DESDE el Historial (US-10): "Realizado" → valoración →
+  // efecto observable "¡Hecha!" sin salir de la pestaña Actividades.
+  await seccion.getByRole('button', { name: 'Realizado' }).first().click();
+  await page.getByRole('button', { name: '3 estrellas' }).first().click();
   await expect(seccion.getByText('¡Hecha!')).toBeVisible();
 });
 

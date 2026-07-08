@@ -33,6 +33,12 @@ export interface StoryProps {
    */
   portada?: string;
   /**
+   * Nombre de la portada empaquetada elegida de la config `story.covers` (US-101), según
+   * el tema/estilo del cuento. La app resuelve este nombre contra sus imágenes locales.
+   * Ausente si no hay ninguna configurada para esa combinación.
+   */
+  portadaKey?: string;
+  /**
    * Prompt (system + user) usado para generar el cuento (US-61). Trazabilidad
    * técnica: se persiste en BD pero **no** se expone en el DTO público. Nullable
    * (filas antiguas o modo anónimo no lo tienen).
@@ -65,6 +71,7 @@ export class Story {
   readonly idioma: CodigoIdioma;
   readonly proveedor: ProveedorIa;
   readonly portada?: string;
+  readonly portadaKey?: string;
   readonly prompt?: string;
   readonly continuacionDe?: string;
   estado: EstadoStory;
@@ -91,6 +98,7 @@ export class Story {
     this.idioma = props.idioma;
     this.proveedor = props.proveedor;
     this.portada = props.portada;
+    this.portadaKey = props.portadaKey;
     this.prompt = props.prompt;
     this.continuacionDe = props.continuacionDe;
     this.estado = props.estado ?? 'nuevo';

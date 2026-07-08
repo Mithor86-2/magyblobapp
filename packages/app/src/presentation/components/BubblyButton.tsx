@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import * as Haptics from 'expo-haptics';
 import { Icon, type IconName } from './Icon';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, radius, spacing, tapTarget, typography } from '../theme/tokens';
+import { type ColorTokens, darken, radius, spacing, tapTarget, typography } from '../theme/tokens';
 
 interface BubblyButtonProps {
   /** Texto del botón. Opcional para botones solo-icono (usar `accessibilityLabel`). */
@@ -15,6 +15,14 @@ interface BubblyButtonProps {
   disabled?: boolean;
   loading?: boolean;
   variant?: 'primary' | 'secondary' | 'danger' | 'accent' | 'quaternary';
+  /**
+   * Color de relleno arbitrario (US-100): tiñe el botón con un color por valor de vocabulario
+   * (p. ej. el tema del cuento) en vez de una variante fija. `color` = fondo, `on` = texto/icono;
+   * el labio inferior se deriva oscureciendo `color`. Cuando se pasa, ignora `variant`.
+   */
+  color?: string;
+  /** Color del texto/icono cuando se usa `color` (por defecto blanco). */
+  on?: string;
   /**
    * Disposición del contenido. `row` (por defecto): icono a la izquierda del texto (píldora).
    * `stack`: icono grande **encima** del texto (hasta 2 líneas), para servir de "tile" en una
@@ -72,13 +80,16 @@ export function BubblyButton({
   disabled = false,
   loading = false,
   variant = 'primary',
+  color,
+  on,
   layout = 'row',
 }: BubblyButtonProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
-  const bg = variantBg(colors)[variant];
-  const borderColor = variantBorder(colors)[variant];
-  const fg = variantFg(colors)[variant];
+  // Color arbitrario por vocabulario (US-100) tiene prioridad sobre la variante fija.
+  const bg = color ?? variantBg(colors)[variant];
+  const borderColor = color ? darken(color) : variantBorder(colors)[variant];
+  const fg = color ? (on ?? '#ffffff') : variantFg(colors)[variant];
   const isDisabled = disabled || loading;
   const isStack = layout === 'stack';
 

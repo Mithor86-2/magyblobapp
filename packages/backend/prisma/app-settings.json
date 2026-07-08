@@ -70,6 +70,27 @@
         "fallbacks": [{ "target": "groq", "model": "llama-3.3-70b-versatile" }]
       },
       "descripcion": "Modo cloud {activo,target,model,fallbacks?}. Cascada Gemini→Groq→mock (US-99); keys en env, cada paso sin key se omite."
+    },
+    {
+      "key": "story.covers",
+      "version": 1,
+      "value": [
+        { "imagen": "animales+aventura.png", "tema": "animales", "estilo": "aventura" },
+        { "imagen": "animales+divertido.png", "tema": "animales", "estilo": "divertido" },
+        { "imagen": "espacio+aventura.png", "tema": "espacio", "estilo": "aventura" },
+        { "imagen": "espacio+divertido.png", "tema": "espacio", "estilo": "divertido" },
+        { "imagen": "magia+divertido.png", "tema": "magia", "estilo": "divertido" },
+        { "imagen": "musica+aventura.png", "tema": "musica", "estilo": "aventura" },
+        { "imagen": "musica+divertido.png", "tema": "musica", "estilo": "divertido" },
+        { "imagen": "animales.png", "tema": "animales" },
+        { "imagen": "espacio.png", "tema": "espacio" },
+        { "imagen": "magia.png", "tema": "magia" },
+        { "imagen": "musica.png", "tema": "musica" },
+        { "imagen": "aventuras.png", "tema": "aventuras" },
+        { "imagen": "aventura.png", "estilo": "aventura" },
+        { "imagen": "divertido.png", "estilo": "divertido" }
+      ],
+      "descripcion": "US-101: portadas de cuento por tema/estilo (nombre de imagen empaquetada en la app). El backend elige por prioridad tema+estilo → tema → estilo. Editable en caliente."
     }
   ]
 }

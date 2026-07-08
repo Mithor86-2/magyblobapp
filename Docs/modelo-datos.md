@@ -70,6 +70,7 @@ erDiagram
         string   estado    "nuevo | leido"
         string   proveedor "IA efectiva: mock | local | cloud"
         string   portada   "opcional — data URL de portada (US-59)"
+        string   portadaKey "opcional — nombre de portada empaquetada elegida de story.covers (US-101)"
         text     prompt    "opcional — prompt usado (system+user), solo BD (US-61)"
         string   continuacionDe "opcional — id del cuento origen si es continuación (US-78), solo BD"
         boolean  favorito  "marcado como favorito (US-63); por defecto false"
@@ -154,6 +155,14 @@ empaquetado por tema** (cero latencia, sin red). **Aviso de privacidad:** genera
 un tercero el tema/estilo/título (con el **nombre del niño redactado** del título); es una desviación
 de C-5 asumida para el TFM, ver [cumplimiento-menores.md](cumplimiento-menores.md) (C-5). Sin clave no
 sale nada (privacidad por diseño).
+
+**Portada empaquetada configurable (US-101).** `Story.portadaKey` guarda, de forma **opcional**, el
+**nombre** de una portada **empaquetada en la app** (variantes por `tema` y `tema+estilo`). El backend
+la elige al crear el cuento a partir de la clave de configuración **`story.covers`** (`AppSetting`, JSON
+`[{imagen, tema?, estilo?}]`, editable en caliente en BD), con prioridad **tema+estilo → tema → estilo**.
+La app resuelve `portadaKey` contra sus imágenes locales; el orden de resolución es **portada generada
+(`portada`) → `portadaKey` → respaldo por tema**. Reconfigurar el mapeo es solo-BD; añadir una imagen
+nueva exige incluirla también en el bundle del app.
 
 **Prompt usado (US-61).** `Story.prompt` y `Activity.prompt` guardan, de forma **opcional** (`NULL`-able),
 el prompt realmente empleado para generar el contenido (texto `system` + `user` concatenado) como

@@ -3,7 +3,8 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
-import { avatarEmoji } from '../components/AvatarPicker';
+import { AnimatedAvatar } from '../components/AnimatedAvatar';
+import { avatarSource } from '../components/AvatarPicker';
 import type { ChildProfile } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { api } from '../../composition';
@@ -91,7 +92,7 @@ export function SelectProfileScreen({ navigation }: RootScreenProps<'SelectProfi
           accessibilityRole="button"
           accessibilityLabel={t('selectProfile.chooseA11y', { nombre: profile.nombre })}
         >
-          <Text style={styles.avatar}>{avatarEmoji(profile.avatar)}</Text>
+          <AnimatedAvatar source={avatarSource(profile.avatar)} size={56} />
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{profile.nombre}</Text>
             <Text style={styles.profileMeta}>
@@ -141,9 +142,6 @@ const makeStyles = (colors: ColorTokens) =>
       backgroundColor: colors.secondaryContainer,
       borderRadius: radius.lg,
       padding: spacing.md,
-    },
-    avatar: {
-      fontSize: 48,
     },
     profileInfo: {
       flex: 1,

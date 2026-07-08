@@ -19,6 +19,87 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.16.0] - 2026-07-08
+
+### Changed
+
+- Selector de avatar (Crear perfil) en **rejilla de 4 columnas** (12 avatares en 3 filas de 4) cuyas
+  imágenes **ocupan el ancho del contenedor**, **redondas** (recortadas en círculo) y **sin fondo**;
+  el avatar elegido se marca con un **anillo redondo**. (US-104, amplía US-103)
+- Título de la **tarjeta de cuento** del Historial en **negrita** (antes en peso normal).
+- Texto del cuento **centrado verticalmente** en la hoja del lector (antes alineado arriba).
+- **Nuevas ilustraciones de avatares** (arte actualizado de los 12 animales, 211×211 con
+  transparencia, ~60 KB c/u).
+
+## [1.15.0] - 2026-07-07
+
+### Added
+
+- Avatares de perfil con **imágenes propias** (US-103): set de 12 ilustraciones empaquetadas
+  (256×256, sin descargas en runtime) que sustituyen a los emojis en el selector y en todas las
+  pantallas que muestran el avatar (Inicio, elegir perfil, generador de cuentos, crear perfil y
+  loader a pantalla completa). Los perfiles antiguos con un `id` sin imagen caen a un avatar por
+  defecto.
+
+### Changed
+
+- Generación de actividades **una a una** (antes en lote) y sin la categoría "Todas": se elige una
+  categoría concreta y el botón pasa a singular ("Generar actividad" / "Generar otra"). (US-09)
+- El **historial de actividades** muestra también las **pendientes** (antes solo las completadas) y
+  permite **marcarlas como realizadas** —con valoración— desde ahí; el resumen "Lo último" de
+  Inicio considera también las pendientes. (US-10)
+
+### Removed
+
+- Avatares emoji y el helper `avatarEmoji` (reemplazados por imágenes, US-103).
+- Opción "Todas" del selector de categorías de actividades (clave i18n `activities.all`). (US-09)
+
+## [1.14.0] - 2026-07-07
+
+### Added
+
+- Portadas de cuento **empaquetadas por tema/estilo** (US-101): `StoryCover` resuelve la
+  portada elegida por el backend (`portadaKey`) contra un catálogo local de imágenes, con
+  orden **portada generada → portadaKey → respaldo por tema**. Se aplica en el lector y en el
+  historial.
+- Loader **a pantalla completa** (US-102): nuevo componente `FullScreenLoader` (modal con
+  indicador + mensaje y avisos de espera larga) usado al **generar cuento**, **generar
+  actividad**, **crear cuenta** y **crear perfil**, en vez del feedback inline / solo-botón.
+  Fondo translúcido y muestra el **avatar del perfil** cuando aplica (generar cuento/actividad
+  y crear perfil).
+
+## [1.13.0] - 2026-07-07
+
+### Added
+
+- Color e icono por **valor de vocabulario** (US-100): cada tema, estilo, enseñanza y
+  categoría tiene un color propio y estable en toda la app (mismo texto → mismo color;
+  "Música" tema y categoría comparten color), vía la paleta `categoryColors` del theme y el
+  resolvedor `vocabColor`. Se refleja en los chips de selección (Cuentos, Crear perfil,
+  Dashboard), en los chips de **categoría** de Actividades y en los filtros del Historial
+  (con su icono), y en las tarjetas.
+- La tarjeta de cuento del **historial** muestra la **portada** y un **botón** de leer
+  estilado; el **borde** de la tarjeta usa el color del tema (== color del botón) y muestra
+  el icono del tema tintado (US-100).
+
+### Changed
+
+- La tarjeta de actividad usa el color central por categoría; el **borde** de la tarjeta y la
+  acción ("Ver pasos") comparten color (US-100).
+- En el **Historial**, las tarjetas de actividad son **compactas** (altura similar a las de
+  cuento): descripción, pasos, duración/nivel y valoración quedan ocultos tras un botón
+  "Ver más" (US-100). Fuera del historial la tarjeta no cambia.
+- La barra de cabecera de Inicio, Actividades, Cuentos e Historial muestra siempre
+  "Aprendizaje Mágico", **centrado** y en **color primario**; el icono de la zona de adultos
+  es algo más pequeño y también en color primario.
+
+### Fixed
+
+- La imagen de cabecera de las pantallas ocupa el 100 % del ancho con alto
+  proporcional (`ancho / proporción`), mostrándose entera sin recorte ni bandas
+  laterales (antes se estiraba/recortaba porque `aspectRatio` no fija el alto en
+  react-native).
+
 ## [1.12.0] - 2026-07-07
 
 ### Added

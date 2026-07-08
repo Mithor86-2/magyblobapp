@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Appear } from './Appear';
 import { BouncingHeaderImage } from './BouncingHeaderImage';
 import { useThemedStyles } from '../theme/ThemeProvider';
-import { type ColorTokens, radius, spacing, typography } from '../theme/tokens';
+import { type ColorTokens, spacing, typography } from '../theme/tokens';
 
 /**
  * Nombre lógico de cada cabecera ilustrada (US-58). El mapa a la imagen usa
@@ -41,16 +41,17 @@ const headerImages: Record<HeaderImageName, ImageSourcePropType> = {
  * `headerImageName` (US-58): si se pasa, pinta la imagen de cabecera correspondiente
  * arriba del contenido, dentro del área segura y por encima del `ScrollView` (se
  * desplaza con el contenido), conservando el footer fijo y el `KeyboardAvoidingView`.
- * La imagen se muestra **completa** (`resizeMode="contain"`) dentro de una **banda de alto
- * proporcional** al alto de pantalla (~22 %, acotado a `[HEADER_MIN, HEADER_MAX]`, feature 65),
- * centrada, con el fondo del theme (`colors.surface`) rellenando el espacio sobrante: queda
- * entera y bien encuadrada sin la banda gigante que dejaba el `aspectRatio` cuadrado del origen.
+ * La imagen ocupa el **100 % del ancho** y su alto se calcula como `ancho / HEADER_ASPECT_RATIO`
+ * (alto numérico explícito): se ve **entera, sin recorte ni bandas laterales**, como un banner
+ * apaisado. Se usa un alto en píxeles y no `aspectRatio` porque en react-native(-web) el
+ * `aspectRatio` sobre `Image` no fija el alto (la imagen se estira a su alto natural).
  */
 
-/** Banda de cabecera (US-58, ajuste feature 65): proporción del alto de pantalla y cota. */
-const HEADER_RATIO = 0.22;
-const HEADER_MIN = 170;
-const HEADER_MAX = 200;
+/**
+ * Proporción (ancho/alto) del banner de cabecera. Las cinco imágenes comparten origen
+ * 2752×1536 (≈ 1.79, apaisado 16:9).
+ */
+const HEADER_ASPECT_RATIO = 2752 / 1536;
 
 export function Screen({
   children,
@@ -81,10 +82,10 @@ export function Screen({
    */
   title?: string;
 }) {
-  const { height } = useWindowDimensions();
   const styles = useThemedStyles(makeStyles);
-  // Alto proporcional acotado: ni minúscula en pantallas bajas ni gigante en altas.
-  const headerHeight = Math.max(HEADER_MIN, Math.min(HEADER_MAX, height * HEADER_RATIO));
+  const { width } = useWindowDimensions();
+  // Alto explícito = ancho de pantalla / proporción: banner a ancho completo, entero.
+  const headerHeight = width / HEADER_ASPECT_RATIO;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -92,18 +93,21 @@ export function Screen({
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* A6/US-80: barra fija con el nombre de sección (izquierda) y las acciones
-            (zona de adultos, derecha), dentro del área segura y por encima del scroll. */}
+        {/* A6/US-80: barra fija dentro del área segura y por encima del scroll. El título va
+            **centrado** (US-100) con un espaciador a cada lado del mismo ancho que la acción,
+            para que quede centrado en toda la barra aunque la acción (zona de adultos) esté a
+            la derecha. */}
         {title || headerAction ? (
           <View style={styles.headerBar}>
+            <View style={styles.headerSide} />
             {title ? (
               <Text style={styles.headerTitle} accessibilityRole="header" numberOfLines={1}>
                 {title}
               </Text>
             ) : (
-              <View />
+              <View style={styles.headerTitle} />
             )}
-            {headerAction ?? <View />}
+            <View style={styles.headerSideRight}>{headerAction}</View>
           </View>
         ) : null}
         <ScrollView
@@ -146,12 +150,8 @@ const makeStyles = (colors: ColorTokens) =>
     },
     header: {
       width: '100%',
-      // El alto (banda proporcional acotada) se inyecta en línea (feature 65). Con
-      // `resizeMode="contain"` la imagen se ve completa y centrada dentro de la banda; el
-      // fondo del theme rellena de forma equilibrada el espacio sobrante a los lados.
-      backgroundColor: colors.surface,
-      borderBottomLeftRadius: radius.lg,
-      borderBottomRightRadius: radius.lg,
+      // Banner a ancho completo y full-bleed: el alto se inyecta en línea (ancho / proporción),
+      // así la imagen se ve entera, sin recorte ni bandas laterales.
     },
     body: {
       flexGrow: 1,
@@ -170,13 +170,22 @@ const makeStyles = (colors: ColorTokens) =>
     headerBar: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
       paddingHorizontal: spacing.containerPadding,
       paddingTop: spacing.sm,
     },
     headerTitle: {
       ...typography.headlineMd,
-      color: colors.onSurface,
-      flexShrink: 1,
+      color: colors.primary,
+      flex: 1,
+      textAlign: 'center',
+    },
+    // Espaciadores del mismo ancho que la acción (zona de adultos, ~48px) para que el título
+    // quede centrado en toda la barra; el derecho aloja la acción alineada a la derecha.
+    headerSide: {
+      width: 48,
+    },
+    headerSideRight: {
+      width: 48,
+      alignItems: 'flex-end',
     },
   });

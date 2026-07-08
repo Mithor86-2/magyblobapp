@@ -1,20 +1,21 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { AdultsButton } from '../components/AdultsButton';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { ENSENANZAS, ESTILOS, TEMAS } from '../../domain/types';
 import type { Ensenanza, Estilo, Tema } from '../../domain/types';
 import { ApiError } from '../../domain/errors';
 import { ensenanzaLabel, estiloLabel, temaLabel } from '../labels';
 import { ensenanzaIcon, estiloIcon, temaIcon } from '../chipIcons';
-import { avatarEmoji } from '../components/AvatarPicker';
+import { vocabColor } from '../vocabColor';
+import { avatarSource } from '../components/AvatarPicker';
 import { AnimatedAvatar } from '../components/AnimatedAvatar';
 import { api } from '../../composition';
-import { useSlowHint } from '../hooks/useSlowHint';
 import { trackAction } from '../../infrastructure/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
@@ -57,8 +58,6 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
   const [usarNombre, setUsarNombre] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Aviso de espera larga (US-53, cold-start de Render free).
-  const lento = useSlowHint(loading);
 
   const puedeGenerar = temas.length > 0 && estilos.length > 0;
 
@@ -110,7 +109,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
   return (
     <Screen
       headerImageName="cuentos"
-      title={t('tabs.cuentos')}
+      title={t('common.appName')}
       headerAction={<AdultsButton onPress={openParental} />}
       footer={
         <BubblyButton
@@ -123,11 +122,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
       }
     >
       <View style={styles.header}>
-        <AnimatedAvatar
-          emoji={profile ? avatarEmoji(profile.avatar) : '🦊'}
-          style={styles.avatar}
-          interactive
-        />
+        <AnimatedAvatar source={avatarSource(profile?.avatar ?? 'zorro')} size={64} interactive />
         <Text style={styles.title}>
           {t('storyGenerator.title', {
             nombre: profile?.nombre ?? t('storyGenerator.youFallback'),
@@ -144,7 +139,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
             selected={temas.includes(tema)}
             onPress={() => toggleTema(tema)}
             icon={temaIcon(tema)}
-            color="tertiary"
+            tint={vocabColor(colors, tema)}
           />
         ))}
       </View>
@@ -158,7 +153,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
             selected={estilos.includes(s)}
             onPress={() => toggleEstilo(s)}
             icon={estiloIcon(s)}
-            color="secondary"
+            tint={vocabColor(colors, s)}
           />
         ))}
       </View>
@@ -173,7 +168,7 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
             selected={ensenanza === e}
             onPress={() => toggleEnsenanza(e)}
             icon={ensenanzaIcon(e)}
-            color="quaternary"
+            tint={vocabColor(colors, e)}
           />
         ))}
       </View>
@@ -192,18 +187,12 @@ export function StoryGeneratorScreen({ navigation }: TabScreenProps<'Cuentos'>) 
         />
       </View>
 
-      {loading ? (
-        <View style={styles.statusBox}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.statusText}>{t('storyGenerator.creating')}</Text>
-          {lento ? (
-            <>
-              <Text style={styles.statusText}>{t('common.slowHint')}</Text>
-              <Text style={styles.statusText}>{t('common.slowHintServer')}</Text>
-            </>
-          ) : null}
-        </View>
-      ) : null}
+      {/* US-102: loader a pantalla completa mientras se genera el cuento, con el avatar del perfil. */}
+      <FullScreenLoader
+        visible={loading}
+        message={t('storyGenerator.creating')}
+        avatarId={profile?.avatar}
+      />
 
       {error ? (
         <View style={[styles.statusBox, styles.errorBox]}>
@@ -220,9 +209,6 @@ const makeStyles = (colors: ColorTokens) =>
     header: {
       alignItems: 'center',
       gap: spacing.sm,
-    },
-    avatar: {
-      fontSize: 56,
     },
     title: {
       ...typography.headlineMd,

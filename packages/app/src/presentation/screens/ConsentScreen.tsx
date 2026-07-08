@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { BubblyButton } from '../components/BubblyButton';
+import { FullScreenLoader } from '../components/FullScreenLoader';
 import { SelectableChip } from '../components/SelectableChip';
 import { TextField } from '../components/TextField';
 import { ParentalGate } from '../components/ParentalGate';
@@ -98,6 +99,8 @@ export function ConsentScreen({ navigation }: RootScreenProps<'Consent'>) {
           />
         }
       >
+        {/* US-102: loader a pantalla completa mientras se crea la cuenta. */}
+        <FullScreenLoader visible={submitting} message={t('consent.creating')} />
         <Text style={styles.title}>{t('consent.title')}</Text>
         <Text style={styles.body}>{t('consent.body')}</Text>
 

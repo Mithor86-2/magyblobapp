@@ -16,18 +16,45 @@ import type { Activity, ChildProfile, History, Story } from '../../domain/types'
  * (`api`, store) y los subcomponentes con SVG/safe-area que jsdom no transforma;
  * `ActivityCard` se reduce a su título para asertar el filtrado.
  */
-const { getHistoryMock, setStoryFavoriteMock } = vi.hoisted(() => ({
+const { getHistoryMock, setStoryFavoriteMock, completeActivityMock } = vi.hoisted(() => ({
   getHistoryMock: vi.fn(),
   setStoryFavoriteMock: vi.fn(),
+  completeActivityMock: vi.fn(),
 }));
 vi.mock('../../composition', () => ({
-  api: { history: { get: getHistoryMock }, stories: { setFavorite: setStoryFavoriteMock } },
+  api: {
+    history: { get: getHistoryMock },
+    stories: { setFavorite: setStoryFavoriteMock },
+    activities: { complete: completeActivityMock },
+  },
 }));
 vi.mock('../components/AuthorBadge', () => ({ AuthorBadge: () => null }));
 vi.mock('../components/Icon', () => ({ Icon: () => null }));
+// La `ActivityCard` real se reduce a: su título, el estado (pendiente ⇒ botón
+// "Realizado" que invoca `onComplete`; hecha ⇒ texto "¡Hecha!") para asertar el
+// listado, el filtrado y el marcado desde el Historial (US-09/US-10).
 vi.mock('../components/ActivityCard', async () => {
-  const { Text } = await import('react-native');
-  return { ActivityCard: ({ activity }: { activity: Activity }) => <Text>{activity.titulo}</Text> };
+  const { Pressable, Text } = await import('react-native');
+  return {
+    ActivityCard: ({
+      activity,
+      onComplete,
+    }: {
+      activity: Activity;
+      onComplete?: (valoracion?: number) => void;
+    }) => (
+      <>
+        <Text>{activity.titulo}</Text>
+        {activity.completadaEn != null ? (
+          <Text>¡Hecha!</Text>
+        ) : onComplete ? (
+          <Pressable accessibilityRole="button" onPress={() => onComplete()}>
+            <Text>Realizado</Text>
+          </Pressable>
+        ) : null}
+      </>
+    ),
+  };
 });
 vi.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: ReactNode }) => children,
@@ -94,6 +121,21 @@ const activity = (
   // la valoración; la puntuación es opcional.
   completadaEn,
   valoracion: 2,
+  proveedor: 'mock',
+});
+
+/** Actividad **pendiente** (sin `completadaEn`): US-09/US-10, debe salir en el Historial. */
+const pendiente = (
+  id: string,
+  categoria: Activity['categoria'],
+  creadoEn = '2026-06-12T10:00:00.000Z',
+): Activity => ({
+  id,
+  profileId: 'p1',
+  categoria,
+  titulo: `Actividad ${id}`,
+  descripcion: '...',
+  creadoEn,
   proveedor: 'mock',
 });
 
@@ -297,6 +339,97 @@ describe('HistoryScreen — destacados y toggle (A3/US-74)', () => {
     expect(screen.queryByTestId('history-stories')).not.toBeInTheDocument();
     expect(enActividades().getByText('Actividad a')).toBeVisible();
     expect(enActividades().getByText('Actividad b')).toBeVisible();
+  });
+});
+
+describe('HistoryScreen — actividades pendientes y marcar realizado (US-09/US-10)', () => {
+  beforeEach(() => {
+    getHistoryMock.mockReset();
+    completeActivityMock.mockReset();
+  });
+
+  it('muestra las actividades PENDIENTES (sin completar) en la pestaña Actividades', async () => {
+    getHistoryMock.mockResolvedValue({ stories: [], activities: [pendiente('a', 'arte')] });
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Tu historial')).toBeVisible());
+
+    irAActividades();
+    // La pendiente aparece (antes se ocultaba) y ofrece "Realizado", no "¡Hecha!".
+    expect(enActividades().getByText('Actividad a')).toBeVisible();
+    expect(enActividades().getByRole('button', { name: 'Realizado' })).toBeVisible();
+    expect(enActividades().queryByText('¡Hecha!')).not.toBeInTheDocument();
+  });
+
+  it('muestra a la vez pendientes y hechas en la pestaña Actividades', async () => {
+    getHistoryMock.mockResolvedValue({
+      stories: [],
+      activities: [pendiente('a', 'arte'), activity('b', 'musica')],
+    });
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Tu historial')).toBeVisible());
+
+    irAActividades();
+    expect(enActividades().getByText('Actividad a')).toBeVisible();
+    expect(enActividades().getByText('Actividad b')).toBeVisible();
+  });
+
+  it('marcar "Realizado" desde el Historial completa la actividad y recarga la lista', async () => {
+    // 1ª carga: pendiente; tras completar, la recarga la trae ya hecha.
+    getHistoryMock
+      .mockResolvedValueOnce({ stories: [], activities: [pendiente('a', 'arte')] })
+      .mockResolvedValue({ stories: [], activities: [activity('a', 'arte')] });
+    completeActivityMock.mockResolvedValue(activity('a', 'arte'));
+
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(screen.getByText('Tu historial')).toBeVisible());
+
+    irAActividades();
+    fireEvent.click(enActividades().getByRole('button', { name: 'Realizado' }));
+    // Se registra sin valoración (US-72) y luego se recarga el historial.
+    expect(completeActivityMock).toHaveBeenCalledWith('a', undefined);
+    await waitFor(() => expect(enActividades().getByText('¡Hecha!')).toBeVisible());
+  });
+});
+
+describe('HistoryScreen — tarjeta de cuento (US-100)', () => {
+  beforeEach(() => {
+    getHistoryMock.mockReset();
+    getHistoryMock.mockResolvedValue({
+      stories: [story('1', 'animales', 'aventura', '2026-06-25T10:00:00.000Z')],
+      activities: [],
+    });
+  });
+
+  it('muestra la portada y un botón de leer estilado con el color del tema (borde == botón)', async () => {
+    render(<HistoryScreen {...props} />);
+    await waitFor(() => expect(enCuentos().getByText('Cuento 1')).toBeVisible());
+    const lista = screen.getByTestId('history-stories');
+
+    // (#1) La tarjeta muestra la portada (StoryCover no está mockeada → renderiza una imagen).
+    expect(within(lista).getAllByRole('img').length).toBeGreaterThan(0);
+
+    // (#1) "Leer cuento" es ahora un botón (no un enlace de texto).
+    const card = lista.firstElementChild as HTMLElement;
+    const boton = within(lista).getByRole('button', { name: 'Leer el cuento Cuento 1' });
+
+    // (#3) El borde de la tarjeta y el fondo del botón son el mismo color.
+    const borde = getComputedStyle(card).borderTopColor;
+    const fondoBoton = getComputedStyle(boton).backgroundColor;
+    expect(borde).toBeTruthy();
+    expect(fondoBoton).toBe(borde);
+  });
+
+  it('cada tema tiñe el borde de la tarjeta con un color distinto', async () => {
+    const bordeDelTema = async (tema: Story['tema']) => {
+      getHistoryMock.mockResolvedValue({ stories: [story('1', tema, 'aventura')], activities: [] });
+      const { unmount } = render(<HistoryScreen {...props} />);
+      await waitFor(() => expect(enCuentos().getByText('Cuento 1')).toBeVisible());
+      const card = screen.getByTestId('history-stories').firstElementChild as HTMLElement;
+      const borde = getComputedStyle(card).borderTopColor;
+      unmount();
+      return borde;
+    };
+    expect(await bordeDelTema('animales')).not.toBe(await bordeDelTema('espacio'));
   });
 });
 

@@ -466,3 +466,30 @@ protagonista genérico, **para** minimizar los datos personales enviados al prov
   en el lector.
 - **(Contexto)** Dado el origen, Entonces el proveedor recibe su cuerpo como contexto para continuar.
 - **(No existe)** Dado `POST /stories/:id/continue` con un id inexistente, Entonces responde **404**.
+
+## US-101 — Portadas de cuento configurables por BD {#us-101}
+
+**Como** administrador, **quiero** configurar en la BD (app-settings JSON) qué imagen de portada
+aplica a cada tema/estilo, **para** poder cambiar/actualizar las portadas sin tocar código, y que el
+backend elija de esa lista la portada del cuento creado.
+
+**Prioridad:** Should · **Fase:** Mejoras · **Pantalla:** Lector de cuento / Historial.
+
+**Alcance**
+
+1. Clave `AppSetting` **`story.covers`** (JSON `[{imagen, tema?, estilo?}]`) en
+   `prisma/app-settings.json` (versionada, sincronizada a BD y editable directamente en BD).
+2. El backend resuelve la portada del cuento con prioridad **tema+estilo → tema → estilo → ninguna**
+   (`pickCover`) y **persiste** el nombre elegido en `Story.portadaKey` al crear el cuento.
+3. La app empaqueta las imágenes (mapa estático `coversByName`) y `StoryCover` resuelve
+   **portada generada (data URL) → `coversByName[portadaKey]` → respaldo por tema**.
+
+**Criterios de aceptación**
+
+- **(Config en BD)** Dada una entrada en `story.covers`, Cuando se crea un cuento de ese tema/estilo,
+  Entonces su `portadaKey` es la imagen configurada.
+- **(Prioridad)** Dado tema+estilo con imagen específica, Entonces se elige esa; si no, la del tema;
+  si no, la del estilo; si no, ninguna (respaldo local).
+- **(Persistencia)** Dado un cuento creado, Entonces `portadaKey` queda guardado y se devuelve en el DTO.
+- **(Render)** Dada la app con `portadaKey`, Entonces muestra esa portada empaquetada; sin ella, el
+  respaldo por tema.

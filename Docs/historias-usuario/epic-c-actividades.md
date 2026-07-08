@@ -1,6 +1,7 @@
 # Epic C — Actividades
 
-Historias: **US-09**, **US-10**, **US-67**. Volver al [índice](README.md).
+Historias: **US-09**, **US-10**, **US-67**. Volver al [índice](README.md). (US-09/US-10 ampliadas en
+el lote de avatares/actividad singular, 2026-07-07.)
 
 ## US-09 — Ver actividades recomendadas · Should
 
@@ -16,6 +17,11 @@ Como **niño/a** quiero ver actividades sugeridas para hoy para jugar y aprender
   con sus intereses/edad.
 - Dado `AI_PROVIDER=mock` o IA caída, Cuando pido actividades, Entonces el fallback a
   mock devuelve un conjunto determinista válido (sin romper la pantalla).
+- (Mejoras, 2026-07-07) Dado el generador de actividades, Cuando pulso el botón, Entonces se genera
+  **una sola actividad** (`cantidad: 1`) de la **categoría elegida** —ya no existe la opción "Todas";
+  hay una categoría seleccionada por defecto— y el botón está en **singular** ("Generar actividad" /
+  "Generar otra"). La actividad generada queda persistida y visible en el Historial aunque no se
+  complete (ver US-10).
 
 ## US-10 — Registrar actividad completada · Should
 
@@ -31,6 +37,10 @@ valoración para llevar seguimiento del progreso.
 - (Mejoras) Dada una actividad sin completar, Cuando pulso el botón **"Realizado"**, Entonces se me
   pide la valoración (1-3 estrellas) y al elegirla se registra la actividad como completada
   (`complete`); el botón es una entrada explícita además de tocar directamente las estrellas.
+- (Mejoras, 2026-07-07) Dada una actividad generada **sin completar**, Cuando abro el Historial,
+  Entonces aparece en la pestaña "Actividades" (antes solo se mostraban las completadas), y Cuando
+  pulso "Realizado" **desde el Historial**, Entonces se registra como completada con su valoración y
+  la vista se actualiza. El resumen "Lo último" de Inicio considera también las pendientes.
 
 ## US-67 — Actividades más significativas con instrucciones de al menos 6 pasos · Mejoras
 
