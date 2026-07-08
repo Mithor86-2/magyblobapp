@@ -19,6 +19,10 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.16.2] - 2026-07-08
+
+### Security
+
 - Forzada la versión parcheada de `uuid` (`>=11.1.1`, resuelto **14.0.1**) vía `overrides` en
   `pnpm-workspace.yaml`, cerrando la alerta Dependabot moderate (falta de comprobación de límites de
   buffer en v3/v5/v6). Es un transitivo de tooling de build
