@@ -19,6 +19,25 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.16.2] - 2026-07-08
+
+### Security
+
+- Forzada la versión parcheada de `uuid` (`>=11.1.1`, resuelto **14.0.1**) vía `overrides` en
+  `pnpm-workspace.yaml`, cerrando la alerta Dependabot moderate (falta de comprobación de límites de
+  buffer en v3/v5/v6). Es un transitivo de tooling de build
+  (`@sentry/react-native` › `expo` › `@expo/config-plugins` › `xcode`), sin exposición en runtime;
+  `xcode` solo usa `uuid.v4()` sin argumento de buffer, compatible con la versión nueva.
+
+## [1.16.1] - 2026-07-08
+
+### Fixed
+
+- El **pie de versión** muestra ahora la versión del **código/release** (`app.json` vía
+  `expo-constants`, la misma fuente que Sentry) en vez de la del binario nativo
+  (`expo-application`), que se congelaba al compilar y quedaba desincronizada tras un cambio de
+  versión.
+
 ## [1.16.0] - 2026-07-08
 
 ### Changed

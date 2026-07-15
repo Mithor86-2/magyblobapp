@@ -229,17 +229,17 @@ claves de la BD ausentes del JSON se **conservan** (no se borran). "Migrar" una 
 
 **Claves previstas (fuente `app-settings.json`):**
 
-| key                        | Ejemplo de value                                                                            | Uso                                                            |
-| -------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `ai.model.local`           | `gemma:2b`                                                                                  | Modelo Ollama por defecto                                      |
-| `prompt.story.template`    | "Crea un cuento para {nombre} ({edad}) sobre {tema}…"                                       | Plantilla del cuento                                           |
-| `prompt.activity.system`   | "Diseñas actividades educativas seguras…"                                                   | System prompt de `recommendActivities`                         |
-| `prompt.activity.template` | "Propón {n} actividades para {edad} de {categoria}…"                                        | Plantilla de actividades                                       |
-| `story.maxTokens`          | `800`                                                                                       | Límite de longitud del cuento                                  |
-| `story.temperature`        | `0.7`                                                                                       | Creatividad del LLM                                            |
-| `prompt.story.params`      | `{"palabrasMin":150,"palabrasMax":200,"rima":false,"formatos":["cuento","fabula","poema"]}` | Longitud/rima/formatos del cuento (uno al azar por generación) |
-| `activity.count`           | `3`                                                                                         | Nº de actividades a generar                                    |
-| `ai.cloud`                 | `{"activo":true,"target":"groq","model":"llama-3.3-70b-versatile"}`                         | Modo cloud (**ON por defecto**); key del target en env         |
+| key                        | Ejemplo de value                                                                                                                 | Uso                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `ai.model.local`           | `gemma:2b`                                                                                                                       | Modelo Ollama por defecto                                                                    |
+| `prompt.story.template`    | "Crea un cuento para {nombre} ({edad}) sobre {tema}…"                                                                            | Plantilla del cuento                                                                         |
+| `prompt.activity.system`   | "Diseñas actividades educativas seguras…"                                                                                        | System prompt de `recommendActivities`                                                       |
+| `prompt.activity.template` | "Propón {n} actividades para {edad} de {categoria}…"                                                                             | Plantilla de actividades                                                                     |
+| `story.maxTokens`          | `800`                                                                                                                            | Límite de longitud del cuento                                                                |
+| `story.temperature`        | `0.7`                                                                                                                            | Creatividad del LLM                                                                          |
+| `prompt.story.params`      | `{"palabrasMin":150,"palabrasMax":200,"rima":false,"formatos":["cuento","fabula","poema"]}`                                      | Longitud/rima/formatos del cuento (uno al azar por generación)                               |
+| `activity.count`           | `3`                                                                                                                              | Nº de actividades a generar                                                                  |
+| `ai.cloud`                 | `{"activo":true,"target":"gemini","model":"gemini-2.5-flash","fallbacks":[{"target":"groq","model":"llama-3.3-70b-versatile"}]}` | Modo cloud (**ON por defecto**); cascada Gemini→Groq→mock (US-99); key de cada target en env |
 
 **Reglas (importante):**
 

@@ -24,10 +24,13 @@ React Native y no sirve un dev server web en producción).
 | moderate | `uuid`              | app › @sentry/react-native › expo › @expo/cli › xcode | `≥11.1.1`     |
 
 **Decisión con el usuario:** corregir con `overrides` en `pnpm-workspace.yaml` (pnpm 11 ya **no** lee
-el campo `pnpm` del `package.json`), forzando las versiones parcheadas de los transitivos. **`uuid` se
-excluye**: forzar v11 bajo un `xcode` que espera la API de `uuid` v3 tiene riesgo real de romper el
-prebuild nativo/EAS; se acepta el riesgo (es tooling de build, moderate, Windows/uso concreto) y se
-deja anotado.
+el campo `pnpm` del `package.json`), forzando las versiones parcheadas de los transitivos.
+
+`uuid` (feature/110, 2026-07-08): inicialmente se excluyó por temor a romper el prebuild nativo al
+forzar un major (v7 → v11). Al revisarlo, el riesgo era **infundado**: `xcode@3.0.1` solo usa
+`uuid.v4()` **sin** argumento de buffer (ver `lib/pbxProject.js` → `generateUuid`), API estable en
+todas las versiones y ajena a la vía vulnerable (buffer bounds en v3/v5/v6). Se fuerza `uuid ≥11.1.1`
+(resuelto **14.0.1**), cargable vía CommonJS desde `xcode`.
 
 Cobertura de los overrides (versiones resueltas tras `pnpm install`):
 
@@ -35,9 +38,9 @@ Cobertura de los overrides (versiones resueltas tras `pnpm install`):
 - `vite@<=6.4.2 → >=6.4.3` (resuelto **8.1.3**, deduplicado con vitest) → cubre la **high**, la
   path-traversal y la de `launch-editor`.
 - `@hono/node-server@<1.19.13 → >=1.19.13` → cubre el bypass de serveStatic.
+- `uuid@<11.1.1 → >=11.1.1` (resuelto **14.0.1**) → cubre el buffer bounds check (tooling `xcode`).
 
-Resuelve **6 de 7** (todas menos `uuid`), incluida la única high. `pnpm audit` final: 1 moderate
-(`uuid`).
+Resuelve **las 7**, incluida la única high. `pnpm audit` final: **0 vulnerabilidades**.
 
 ## Historias cubiertas
 
@@ -51,4 +54,6 @@ Resuelve **6 de 7** (todas menos `uuid`), incluida la única high. `pnpm audit` 
 - [x] ✅ Verificar con `pnpm audit`: 0 high, solo queda `uuid` (moderate) documentada.
 - [x] ✅ Anotar entrada `Security` en los CHANGELOG de backend y app (`## [Unreleased]`).
 - [x] ✅ Marcar `uuid` como riesgo aceptado / pendiente en `mejoras-cicd-pendientes.md`.
-- [x] ✅ Gate verde (`pnpm check`, exit 0). Pendiente: cierre con `cerrar-feature` (confirmación).
+- [x] ✅ Gate verde (`pnpm check`, exit 0).
+- [x] ✅ (feature/110) Añadir override `uuid@<11.1.1 → >=11.1.1`; `pnpm audit`: 0 vulnerabilidades;
+      gate verde. Pendiente: cierre con `cerrar-feature` (confirmación).

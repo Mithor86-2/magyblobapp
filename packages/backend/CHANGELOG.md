@@ -19,6 +19,25 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Security
 
+## [1.14.1] - 2026-07-08
+
+### Fixed
+
+- Seed del usuario de prueba (`seed:test-user`, US-105): ejecutado con `tsx` no cargaba el `.env`, así
+  que sin `DATABASE_URL` en el shell fallaba con un error críptico de Prisma. Ahora carga el `.env` de
+  la raíz si el shell no trae `DATABASE_URL` (el shell tiene prioridad), aborta con un mensaje claro si
+  no hay URL, e imprime el error completo (que revela p. ej. `ECONNREFUSED`) en vez de un `message` vacío.
+
+## [1.14.0] - 2026-07-08
+
+### Added
+
+- Seed idempotente del **usuario de prueba** para la entrega del TFM (US-105): script
+  `seed:test-user` (`prisma/seed-usuario-prueba.ts`) que crea, si no existe, el guardián de prueba
+  (`usuariotest@mail.com`, email verificado, consentimiento otorgado) y un perfil de niño
+  («Fulanito», 3 años, intereses animales y magia). La contraseña se guarda hasheada (bcrypt) y la
+  `DATABASE_URL` llega por entorno; reutiliza entidades de dominio y repos Prisma.
+
 ## [1.13.0] - 2026-07-07
 
 ### Added

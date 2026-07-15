@@ -1017,3 +1017,27 @@ xcode → uuid@7`, y subirlo a 11 (cambio de major) rompe `xcode`/prebuild.
   por IP + `tls.servername`; no confíes en `family` ni en el orden de resolución de la librería. El
   diagnóstico rápido: si un endpoint que toca un servicio externo da 500 pero los que no lo tocan van
   bien, mira los logs del servidor por `ENETUNREACH`/`ETIMEDOUT` antes de sospechar de la BD.
+
+### Los scripts de `prisma/` no los ve el typecheck/lint del backend, pero sí el `eslint .` de raíz
+
+- **Síntoma:** un script nuevo en `packages/backend/prisma/` (p. ej. `seed-usuario-prueba.ts`) pasa
+  `pnpm --filter @magyblob/backend typecheck` y `lint` sin tocarse… pero `pnpm check` (gate) **falla**
+  en lint con `sonarjs/no-hardcoded-passwords`.
+- **Causa:** el `tsconfig.json` del backend tiene `include: ["src/**/*.ts"]` y su script de lint es
+  `eslint src test` → **`prisma/` queda fuera** de ambos. En cambio, el `lint` **raíz** del monorepo es
+  `eslint .`, que sí recorre `prisma/`. Así que el gate lintea esos scripts aunque el filtro por paquete
+  no lo haga, y typecheck **no** los cubre en absoluto.
+- **Solución:** (1) para validar el **tipo** de un script de `prisma/` antes del gate, crea un tsconfig
+  temporal que extienda el del backend con `compilerOptions.rootDir: "."` y `include` que sume
+  `prisma/**/*.ts` (sin ese `rootDir`, tsc da `TS6059 not under rootDir 'src'`), corre `tsc --noEmit` y
+  bórralo. (2) La contraseña del usuario de prueba es deliberada y pública: override por env con default
+  documentado + `// eslint-disable-next-line sonarjs/no-hardcoded-passwords -- credencial de prueba…`.
+- **Lección:** el gate de calidad de un script de `prisma/` lo pone el `eslint .` de raíz, no el filtro
+  por paquete; y su typecheck **no está cubierto** → si el script es no trivial, valídalo aparte
+  (tsconfig temporal) o ejecútalo contra una BD real.
+- **Extra (mismo script):** `tsx` **no** carga `.env` automáticamente y el backend no usa `dotenv` (en
+  local corre dentro de Docker, que inyecta la env). Un script de `prisma/` ejecutado con `tsx` fuera de
+  Docker ve `process.env.DATABASE_URL` vacío → `createPrismaClient` conecta a vacío y Prisma revienta con
+  un error de `message` vacío. Solución: en el propio script, cargar el `.env` de la raíz con
+  `process.loadEnvFile()` (Node ≥ 20.12) si el shell no trae la var, validar y **imprimir el error
+  completo** (no solo `.message`: el detalle útil —`ECONNREFUSED`, etc.— va fuera de `message`).

@@ -3,7 +3,7 @@
 App infantil **bilingüe (ES/EN)** que crea perfiles de niño y genera **cuentos** y
 **actividades** personalizados con IA, bajo una **arquitectura limpia** en monorepo (backend
 Node + app móvil React Native). La IA tiene modos intercambiables (`mock` · `local` con Ollama ·
-`cloud` compatible con OpenAI) con _fallback_ automático, de modo que todo el flujo funciona
+`cloud` compatible con GEMINI y GROQ) con _fallback_ automático, de modo que todo el flujo funciona
 en local **sin GPU ni claves**.
 
 > Proyecto de TFM (Máster IA). El alcance por fases vive en
@@ -12,12 +12,34 @@ en local **sin GPU ni claves**.
 
 ## Descargar la app (Android)
 
-**APK lista para instalar (v1.16.0):** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/85ddeabf-1f84-4ec4-ba1e-faae7e3aad9f)
-→ en esa página, **Install** (QR o descarga directa del `.apk`).
+**APK lista para instalar (v1.16.0):**
+
+- **Descarga directa (recomendada, enlace permanente):**
+  [`aprendizajemagico_v_1.16.0.1.apk`](https://github.com/Mithor86-2/magyblobapp/releases/download/v1.16.0/aprendizajemagico_v_1.16.0.1.apk)
+  (asset de la [Release v1.16.0](https://github.com/Mithor86-2/magyblobapp/releases/tag/v1.16.0)).
+- **Alternativa:** [build en Expo EAS](https://expo.dev/accounts/mithor1986/projects/magyblob-app/builds/85ddeabf-1f84-4ec4-ba1e-faae7e3aad9f)
+  → en esa página, **Install** (QR o descarga del `.apk`). _El enlace de EAS puede caducar; la Release
+  es el respaldo permanente._
 
 En el móvil: abre el `.apk` y permite «instalar apps de orígenes desconocidos» (o por cable,
 `adb install <fichero>.apk`). La app apunta al **backend de producción**; la primera petición tras
 inactividad tarda ~50 s (_cold start_ del plan gratuito de Render).
+
+### Acceso de prueba (evaluador)
+
+La app tiene login, así que hay una **cuenta de prueba** sembrada en producción con un perfil de
+niño listo para usar (no hace falta registrarse):
+
+| Campo          | Valor                                              |
+| -------------- | -------------------------------------------------- |
+| **Email**      | `usuariotest@mail.com`                             |
+| **Contraseña** | `S12345678s`                                       |
+| Perfil de niño | «Fulanito», 3 años, intereses _animales_ y _magia_ |
+
+Inicia sesión con esas credenciales para generar cuentos y actividades, escuchar la narración y ver
+el historial. _(Backend de producción: `https://magyblobapp.onrender.com`; recuerda el ~50 s de cold
+start en la primera petición.)_ La cuenta se siembra de forma idempotente con
+`pnpm --filter @magyblob/backend seed:test-user` (ver US-105).
 
 ## Funcionalidades
 
@@ -34,13 +56,13 @@ inactividad tarda ~50 s (_cold start_ del plan gratuito de Render).
 
 ## Stack técnico
 
-| Capa           | Tecnologías                                                                          |
-| -------------- | ------------------------------------------------------------------------------------ |
-| **Backend**    | Node ≥ 24 · Fastify · Prisma · PostgreSQL 16 · pino · Vitest                         |
-| **App móvil**  | Expo (React Native) · React Navigation · Zustand · Playwright (E2E web)              |
-| **IA**         | `AIProvider` conmutable: mock · Ollama (`gemma:2b`) · cloud (Groq/OpenAI-compatible) |
-| **Monorepo**   | pnpm workspaces · Docker Compose · ESLint + Prettier · Husky                         |
-| **Producción** | Render (backend Docker) · Neon (PostgreSQL) · Groq (IA) · Expo EAS (APK)             |
+| Capa           | Tecnologías                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------- |
+| **Backend**    | Node ≥ 24 · Fastify · Prisma · PostgreSQL 16 · pino · Vitest                                              |
+| **App móvil**  | Expo (React Native) · React Navigation · Zustand · Playwright (E2E web)                                   |
+| **IA**         | `AIProvider` conmutable: mock · Ollama (`gemma:2b`) · cloud (cascada Gemini→Groq→mock, OpenAI-compatible) |
+| **Monorepo**   | pnpm workspaces · Docker Compose · ESLint + Prettier · Husky                                              |
+| **Producción** | Render (backend Docker) · Neon (PostgreSQL) · IA cloud Gemini→Groq · Expo EAS (APK)                       |
 
 ## Requisitos
 
@@ -73,8 +95,10 @@ El proveedor de IA es conmutable y siempre cae a un modo seguro si algo falla:
 - **`mock`** — por defecto en local; sin GPU ni modelo. Es también el _fallback_ automático.
 - **`local`** — Ollama + `gemma:2b`. Descarga el modelo con `pnpm ollama:setup` y pon
   `AI_PROVIDER=local`.
-- **`cloud`** — proveedor compatible con OpenAI (Groq por defecto), conmutable en caliente desde la
-  BD. Con API key genera en la nube; **sin key, cae al modo base**.
+- **`cloud`** — proveedores compatibles con OpenAI en **cascada `Gemini → Groq → mock`** (US-99):
+  el primario es **Gemini** (`gemini-2.5-flash`); si falla o no tiene key, **Groq**
+  (`llama-3.3-70b`); si tampoco, **mock**. Cada paso sin su API key en env se **omite** y la cadena
+  **termina siempre en mock**. Conmutable en caliente desde la BD (`ai.cloud`); las keys van en env.
 
 > ⚠️ El modo cloud saca datos **minimizados** del perfil a un tercero (edad, intereses, idioma;
 > nunca nombre) — desviación de privacidad asumida en el TFM. Ver
@@ -97,13 +121,87 @@ cd packages/app && npx expo run:android          # o run:ios (macOS + Xcode)
 > `.env`, **relanza** `expo run:*` (no basta recargar). Detalle en `README.local.md` (runbook local,
 > no versionado) y en [Docs/despliegue.md](Docs/despliegue.md).
 
+## Arquitectura
+
+**Clean Architecture** en un monorepo pnpm: las dependencias apuntan **hacia dentro** (`domain` no
+depende de nada; la aplicación depende solo de interfaces de `domain`; la infraestructura implementa
+esas interfaces). El corazón es la **capa de IA**: una interfaz `AIProvider` con proveedores
+intercambiables (`mock`/`local`/`cloud`) y _fallback_ automático a `mock` ante cualquier fallo. La
+frontera de capas está reforzada por ESLint (ver [ADR 0001](Docs/ADR/0001-arquitectura-limpia-monorepo.md) y
+[ADR 0002](Docs/ADR/0002-tres-modos-de-ia.md)).
+
+```mermaid
+flowchart TB
+  subgraph app["App móvil (Expo · React Native)"]
+    UI["presentation<br/>(pantallas · componentes)"]
+    ST["estado (Zustand)"]
+    HTTP["infrastructure/http<br/>(gateways al API)"]
+    UI --> ST --> HTTP
+  end
+
+  subgraph backend["Backend (Fastify · Node)"]
+    direction TB
+    R["routes (Fastify + Zod)"]
+    subgraph clean["Clean Architecture"]
+      direction TB
+      APP["application<br/>(casos de uso + DTOs)"]
+      DOM["domain<br/>(entidades · value-objects · interfaces)"]
+      INFRA["infrastructure<br/>(repos Prisma · capa IA · auth)"]
+      APP --> DOM
+      INFRA -.implementa.-> DOM
+    end
+    R --> APP
+    R --> INFRA
+    subgraph ai["Capa de IA (AIProvider)"]
+      direction LR
+      MOCK["MockProvider"]
+      LOCAL["OllamaProvider"]
+      CLOUD["CloudProvider"]
+      FB["FallbackProvider<br/>(→ mock)"]
+    end
+    INFRA --> ai
+  end
+
+  subgraph prod["Producción"]
+    RENDER["Render<br/>(backend Docker)"]
+    NEON["Neon<br/>(PostgreSQL 16)"]
+    GROQ["IA cloud<br/>Gemini → Groq → mock"]
+  end
+
+  HTTP -->|"HTTPS + JWT"| R
+  INFRA -->|"Prisma"| NEON
+  CLOUD -->|"HTTPS"| GROQ
+  RENDER -.aloja.-> backend
+```
+
 ## Estructura del monorepo
 
 ```text
-packages/
-  backend/   API Fastify + Prisma + capa de IA (Clean Architecture)
-  app/       App móvil Expo + React Navigation + Zustand
-Docs/        Documentación viva (plan, fases, decisiones, API, despliegue…)
+magyblobApp/
+├─ packages/
+│  ├─ backend/                 API Fastify + Prisma + capa de IA (Clean Architecture)
+│  │  ├─ src/
+│  │  │  ├─ domain/            Entidades, value-objects e interfaces (sin frameworks ni IO)
+│  │  │  │  ├─ entities/       Guardian · ChildProfile · Story · Activity · Achievement…
+│  │  │  │  ├─ value-objects/  Edad (2–6) · Idioma (es/en)
+│  │  │  │  ├─ repositories/   Interfaces de persistencia (puertos)
+│  │  │  │  ├─ ai/             Interfaz AIProvider (puerto)
+│  │  │  │  └─ events/         EventBus + eventos de dominio (Observer)
+│  │  │  ├─ application/       Casos de uso + DTOs (dependen solo de domain)
+│  │  │  ├─ infrastructure/    Adaptadores: repos Prisma · IA · auth · email · eventos
+│  │  │  │  └─ ai/             MockProvider · OllamaProvider · CloudProvider · Fallback
+│  │  │  └─ routes/            Rutas Fastify (validación Zod) + composition root
+│  │  ├─ prisma/               schema.prisma · migraciones · seeds (AppSetting + usuario prueba)
+│  │  └─ test/                 Integración de rutas · integración Prisma · E2E backend
+│  └─ app/                     App móvil Expo (Clean Architecture ligera)
+│     └─ src/
+│        ├─ domain/            Tipos y contratos de gateway
+│        ├─ infrastructure/    Cliente HTTP · esquemas Zod · Sentry · telemetría
+│        ├─ presentation/      Pantallas · componentes · navegación · theme
+│        └─ store/             Estado global (Zustand, persistido)
+├─ Docs/                       Documentación viva (plan, fases, decisiones, API, despliegue…)
+├─ docker-compose.yml          Pila local: backend + PostgreSQL 16 + Ollama
+└─ render.yaml                 Infra como código del despliegue en Render
 ```
 
 ## Comandos
@@ -135,7 +233,7 @@ parámetros, esquemas y ejemplos `curl` (incluido el flujo alta → perfil → c
 ## Despliegue
 
 Backend como web service Docker en **Render** (`main`), PostgreSQL gestionado en **Neon** e IA
-cloud en **Groq** (todo en plan free); infra como código en [`render.yaml`](render.yaml). La app se
+cloud en **cascada Gemini→Groq→mock** (todo en plan free); infra como código en [`render.yaml`](render.yaml). La app se
 publica con **Expo EAS** (perfil `preview`, APK) o como export web estático. Guía reproducible paso
 a paso (variables, secretos, validación en prod) en [Docs/despliegue.md](Docs/despliegue.md).
 

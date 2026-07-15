@@ -265,8 +265,16 @@ reactivada), pero acotado para no romper la privacidad por diseño. Detalle en
   Cerebras exponen el mismo dialecto `/chat/completions`; un solo `CloudProvider` parametrizado los
   cubre todos cambiando `baseUrl + model + apiKey`. Registro de presets en `cloudPresets.ts`
   (solo info no secreta: `baseUrl` + nombre de la env con la key). YAGNI: una abstracción, no N.
+- **Cascada de proveedores cloud: `Gemini → Groq → mock` (2026-07-07, US-99).** El modo `cloud`
+  dejó de tener un único `target` y pasó a una **cascada** configurable en `ai.cloud`
+  (`{activo,target,model,fallbacks?}`). El **defecto del proyecto es Gemini primario**
+  (`gemini-2.5-flash`) con **Groq de fallback** (`llama-3.3-70b-versatile`) y **mock** al final:
+  `createAIProvider` construye la cadena en orden, **omite cada paso sin API key en env** y
+  **termina siempre en mock**. Motivo del orden: Gemini como primario y Groq como red de respaldo;
+  sin ninguna key, un evaluador ejecuta en mock. Documentado en el README (modos de IA + diagrama) y
+  en [ADR 0002](ADR/0002-tres-modos-de-ia.md).
 - **Selección por BD (hot-swap), no por env.** La clave `ai.cloud` de `AppSetting`
-  (`{activo,target,model}`, validada en `cloudSettings.ts`) decide el proveedor. Se eligió **una
+  (`{activo,target,model,fallbacks?}`, validada en `cloudSettings.ts`) decide el proveedor. Se eligió **una
   clave JSON** (atómica, sin estados inconsistentes) en vez de claves sueltas o tabla nueva
   (`AppSetting` ya existía para esto). El cambio se aplica **por petición**: `HotSwapAIProvider`
   (en `createAIProvider`) lee `ai.cloud` en cada generación y enruta a cloud o al base, así que
@@ -944,3 +952,19 @@ evita resolver conflictos entre los ~10 ficheros compartidos por ambas features.
 - **2 columnas ⇒ layout vertical (`stack`) en el botón.** Con la fuente de botón (22px) el texto no
   cabe junto al icono en una columna; se apila (icono grande arriba). Ver
   [lecciones-aprendidas.md](lecciones-aprendidas.md).
+
+## Usuario de prueba de la entrega TFM (2026-07-08, US-105, FASE 7)
+
+- **Seed idempotente, no alta por API.** El formulario del TFM exige credenciales de prueba porque hay
+  login. Se optó por un **seed** (`prisma/seed-usuario-prueba.ts`, script `seed:test-user`) que se
+  ejecuta una vez contra Neon (con `DATABASE_URL` de prod), frente a un alta por API: el registro tiene
+  reto parental firmado + rate limit y habría que resolverlo a mano; el seed reutiliza entidades de
+  dominio + repos Prisma y queda reproducible e idempotente (busca por email; si existe, no hace nada).
+- **Email verificado + consentimiento al sembrar.** Para que el evaluador entre sin OTP, el guardián se
+  crea con `emailVerificado: true` y consentimiento otorgado (mismo efecto que el alta sin SMTP).
+- **Contraseña de prueba deliberada.** `S12345678s` es intencionadamente conocida y está en el README;
+  se guarda hasheada (bcrypt). Se permite override por env `SEED_TEST_USER_PASSWORD`; el default es el
+  documentado. La regla `sonarjs/no-hardcoded-passwords` se desactiva en esa línea con justificación.
+- **Diagrama de arquitectura en el README (no en Docs aparte).** Mermaid `flowchart` con Clean Arch por
+  capas + monorepo + capa IA (mock/local/cloud + fallback) + despliegue (Render/Neon/Groq), junto a la
+  estructura del monorepo ampliada por capas. Es entregable D1 de la FASE 7 (defensa).

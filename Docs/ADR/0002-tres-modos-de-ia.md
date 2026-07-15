@@ -20,6 +20,13 @@
   por lo que un evaluador sin keys ejecuta en mock igual que antes. **Asume conscientemente** el
   coste de privacidad (C-5): con key presente, los datos minimizados del perfil salen a un tercero.
   Las keys siguen en env, nunca en BD.
+- **Actualización (2026-07-07, US-99 — cascada de proveedores):** el modo `cloud` deja de tener un
+  único `target` y pasa a una **cascada**. El defecto del proyecto es **Gemini → Groq → mock**:
+  `ai.cloud.target = gemini` (`gemini-2.5-flash`) con `fallbacks: [groq (llama-3.3-70b-versatile)]`;
+  `createAIProvider` construye la cadena en orden, **omitiendo cada paso sin API key en env** y
+  **terminando siempre en mock**. Así, con la key de Gemini se usa Gemini; si falla o no está, Groq;
+  y sin ninguna key, mock (el evaluador sigue ejecutando en mock). Configurable en caliente por BD
+  (`ai.cloud`). Ver [US-99](../historias-usuario/epic-f-plataforma.md#us-99).
 - **Relacionada con:** [ADR 0001](0001-arquitectura-limpia-monorepo.md),
   [ADR 0003](0003-gemma-2b-llm-local-por-defecto.md)
 

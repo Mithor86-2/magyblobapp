@@ -417,8 +417,8 @@ pero su resultado **no bloquea** el merge; la barrera efectiva ahí es el hook l
 Entrega continua por **auto-deploy de git** declarado como IaC en [`render.yaml`](../render.yaml)
 (`branch: main`, runtime Docker). **No hay workflow de deploy en Actions**: Render observa `main`,
 construye el Dockerfile y arranca con `CMD: prisma migrate deploy && node dist/index.js` (las
-migraciones corren solas). En producción `AI_PROVIDER=mock` (plan free sin GPU); el modo cloud (Groq)
-se activa desde la BD.
+migraciones corren solas). En producción `AI_PROVIDER=mock` (plan free sin GPU); el modo cloud
+(cascada Gemini→Groq→mock, US-99) se activa desde la BD.
 
 ### Paso 3.1 — Deploy en Render
 

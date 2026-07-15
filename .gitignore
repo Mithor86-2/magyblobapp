@@ -44,3 +44,6 @@ packages/app/test-results/
 
 # README local (runbook operativo completo; no se versiona — el README versionado es el conciso)
 README.local.md
+
+# Docs de entrega final del TFM (slides + guion de vídeo): material del alumno, no se versiona
+Docs/entrega/
