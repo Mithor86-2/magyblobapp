@@ -1,4 +1,4 @@
-# magyblobapp
+# Aprendizaje Mágico
 
 App infantil **bilingüe (ES/EN)** que crea perfiles de niño y genera **cuentos** y
 **actividades** personalizados con IA, bajo una **arquitectura limpia** en monorepo (backend
