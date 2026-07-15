@@ -3,7 +3,7 @@
 App infantil **bilingüe (ES/EN)** que crea perfiles de niño y genera **cuentos** y
 **actividades** personalizados con IA, bajo una **arquitectura limpia** en monorepo (backend
 Node + app móvil React Native). La IA tiene modos intercambiables (`mock` · `local` con Ollama ·
-`cloud` compatible con OpenAI) con _fallback_ automático, de modo que todo el flujo funciona
+`cloud` compatible con GEMINI y GROQ) con _fallback_ automático, de modo que todo el flujo funciona
 en local **sin GPU ni claves**.
 
 > Proyecto de TFM (Máster IA). El alcance por fases vive en
