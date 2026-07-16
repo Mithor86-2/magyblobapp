@@ -10,6 +10,11 @@ en local **sin GPU ni claves**.
 > [Docs/plan-ejecucion-master.md](Docs/plan-ejecucion-master.md) y la guía para agentes en
 > [CLAUDE.md](CLAUDE.md). Licencia [PolyForm Noncommercial 1.0.0](LICENSE).
 
+## TFM: vídeo y presentación
+
+- 🎬 **Vídeo de demostración:** <https://canva.link/zhrj9ajsty1i7ds>
+- 📊 **Presentación:** <https://canva.link/wtpxox4rg45kjkc>
+
 ## Descargar la app (Android)
 
 **APK lista para instalar (v1.16.0):**
