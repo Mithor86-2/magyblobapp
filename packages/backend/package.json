@@ -25,14 +25,14 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@fastify/cors": "^11.2.0",
-    "@fastify/helmet": "^13.0.2",
-    "@fastify/jwt": "^10.1.0",
+    "@fastify/cors": "^11.3.0",
+    "@fastify/helmet": "^13.1.0",
+    "@fastify/jwt": "^10.2.0",
     "@fastify/rate-limit": "^11.1.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
-    "fastify": "^5.2.0",
+    "fastify": "^5.10.0",
     "fastify-type-provider-zod": "^7.0.0",
     "nodemailer": "^9.0.3",
     "pg": "^8.22.0",
@@ -41,14 +41,14 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@testcontainers/postgresql": "^12.0.3",
-    "@types/node": "^22.10.2",
+    "@testcontainers/postgresql": "^12.0.4",
+    "@types/node": "^22.20.1",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
-    "@vitest/coverage-v8": "^3.2.6",
+    "@vitest/coverage-v8": "^3.2.7",
     "pino-pretty": "^13.0.0",
-    "tsx": "^4.19.2",
+    "tsx": "^4.23.0",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.7"
   }
 }
