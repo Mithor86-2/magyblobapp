@@ -37,12 +37,16 @@ const HITOS_RACHA = [3, 7] as const;
  * la app lo pinta tal cual (hitos crecientes, luego racha, luego temas).
  */
 export const LOGROS: readonly Logro[] = [
-  ...HITOS_CUENTOS.map(
-    (meta): Logro => ({ clave: `cuentos_leidos_${meta}`, categoria: 'cuentos', meta }),
-  ),
-  ...HITOS_ACTIVIDADES.map(
-    (meta): Logro => ({ clave: `actividades_completadas_${meta}`, categoria: 'actividades', meta }),
-  ),
+  ...HITOS_CUENTOS.map((meta): Logro => ({
+    clave: `cuentos_leidos_${meta}`,
+    categoria: 'cuentos',
+    meta,
+  })),
+  ...HITOS_ACTIVIDADES.map((meta): Logro => ({
+    clave: `actividades_completadas_${meta}`,
+    categoria: 'actividades',
+    meta,
+  })),
   ...HITOS_RACHA.map((meta): Logro => ({ clave: `racha_dias_${meta}`, categoria: 'racha', meta })),
   ...TEMAS.map((tema): Logro => ({ clave: `tema_${tema}`, categoria: 'temas', meta: 1, tema })),
 ];
