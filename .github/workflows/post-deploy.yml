@@ -25,7 +25,9 @@ jobs:
         env:
           URL: https://magyblobapp.onrender.com/health
         run: |
-          EXPECTED=$(node -p "require('./package.json').version")
+          # La versión la sirve el BACKEND (/health lee packages/backend/package.json),
+          # no la raíz del monorepo: con versionado por-paquete son distintas.
+          EXPECTED=$(node -p "require('./packages/backend/package.json').version")
           echo "Esperando que $URL sirva version=$EXPECTED (Render tarda unos min en build+deploy)…"
           for i in $(seq 1 45); do
             BODY=$(curl -s --max-time 70 "$URL" || true)
