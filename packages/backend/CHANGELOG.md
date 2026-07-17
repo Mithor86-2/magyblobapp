@@ -17,11 +17,15 @@ y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Fixed
 
+### Security
+
+## [1.14.2] - 2026-07-17
+
+### Fixed
+
 - El smoke post-deploy (`post-deploy.yml`) comparaba el `version` de `/health` con la versión
   de la raíz del monorepo en vez de la del backend; con versionado por-paquete nunca coincidían
   y el job fallaba pese a un deploy correcto. Ahora lee `packages/backend/package.json`.
-
-### Security
 
 ## [1.14.1] - 2026-07-08
 
