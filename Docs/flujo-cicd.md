@@ -433,7 +433,9 @@ Workflow [`post-deploy.yml`](../.github/workflows/post-deploy.yml): dispara en `
 manual). `timeout-minutes: 20`.
 
 - **Qué ejecuta:** _polling_ (hasta 45 intentos) a `https://magyblobapp.onrender.com/health`
-  comparando el campo `version` con la versión de `package.json`.
+  comparando el campo `version` con la versión de `packages/backend/package.json` — la que
+  sirve `/health`. Con versionado por-paquete, la versión del backend difiere de la de la raíz
+  del monorepo, así que la sonda debe leer la del backend (no la raíz) o nunca coincidirá.
 - **Tests que corre:** ninguno de Vitest; verificación de despliegue por HTTP (`/health`).
 - **Condición de aceptación:** producción sirve la **versión esperada** dentro del plazo. Si no,
   falla (deploy fallido o instancia vieja viva). Cierra el único punto del pipeline que antes no
